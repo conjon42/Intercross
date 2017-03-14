@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Verify</string>
+    <string name="action_open">Open a new csv file.</string>
+    <string name="action_camera">Open camera view.</string>
+</resources>
