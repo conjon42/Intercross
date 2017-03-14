@@ -1,13 +1,17 @@
 package edu.ksu.cis.verify;
 
 import android.Manifest;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.util.SparseArray;
@@ -35,6 +39,9 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
     private Context _ctx;
     private SparseArray<String> _ids;
     private String _prevValue;
+    private NotificationCompat.Builder _builder;
+    private NotificationManager _notificationManager;
+    private int _sameCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,12 +51,19 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 100);
 
         _ctx = this;
-
+        _sameCount = 0;
         _ids = new SparseArray<String>();
         _cameraView = (SurfaceView) findViewById(R.id.cameraView);
         _detector = new BarcodeDetector.Builder(this)
                 .setBarcodeFormats(Barcode.ALL_FORMATS)
                 .build();
+
+        _notificationManager = (NotificationManager) _ctx.getSystemService(NOTIFICATION_SERVICE);
+        final Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        _builder = new NotificationCompat.Builder(_ctx.getApplicationContext())
+                .setSmallIcon(R.drawable.ic_action_camera)
+                .setAutoCancel(true)
+                .setSound(soundUri);
 
         final Intent calledIntent = getIntent();
         if (calledIntent.hasExtra(VerifyConstants.KEY_ARRAY)) {
@@ -70,10 +84,17 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
             @Override
             public void receiveDetections(Detector.Detections<Barcode> detections) {
                 final SparseArray<Barcode> barcodes = detections.getDetectedItems();
-                if (barcodes.size() != 0 && !barcodes.valueAt(0).rawValue.equals(_prevValue)) {
-                    _prevValue = barcodes.valueAt(0).rawValue;
-                    new AsyncValueUpdate().execute(_prevValue);
-                } else _prevValue = "";
+                if (barcodes.size() != 0) {
+                    if (!barcodes.valueAt(0).rawValue.equals(_prevValue)) {
+                        _prevValue = barcodes.valueAt(0).rawValue;
+                        _sameCount = 0;
+                    } else _sameCount++;
+                    if (_sameCount == 0 || _sameCount > 10) {
+                        _sameCount = 0;
+                        new AsyncValueUpdate().execute(_prevValue);
+                        _notificationManager.notify(0, _builder.build());
+                    }
+                } else _sameCount++;
             }
         });
 
@@ -84,22 +105,6 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
                 .build();
 
         _cameraView.getHolder().addCallback(this);
-
-        ((Button) findViewById(R.id.clearButton))
-                .setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        _ids.clear();
-                    }
-                });
-
-        ((Button) findViewById(R.id.openButton))
-                .setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-
-                    }
-                });
 
         if (savedInstanceState != null) {
             final String[] savedIds = savedInstanceState.getStringArray(VerifyConstants.KEY_ARRAY);
@@ -154,6 +159,14 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
     }
 
     @Override
+    public void onBackPressed() {
+        final Intent intent = new Intent();
+        intent.putExtra(VerifyConstants.PREV_ID_LOOKUP, _prevValue);
+        setResult(RESULT_OK, intent);
+        finish();
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         final String[] ids = new String[_ids.size()];
@@ -161,6 +174,7 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
             ids[i] = _ids.get(_ids.keyAt(i));
         }
         outState.putStringArray(VerifyConstants.KEY_ARRAY, ids);
+        outState.putString(VerifyConstants.PREV_ID_LOOKUP, _prevValue);
     }
 
     /**
@@ -222,7 +236,7 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
         _camera.stop();
     }
 
-    private class AsyncValueUpdate extends AsyncTask<String, Void, Pair<Boolean, String>> {
+    private class AsyncValueUpdate extends AsyncTask<String, Void, Boolean> {
 
         /**
          * Override this method to perform a computation on a background thread. The
@@ -239,38 +253,38 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
          * @see #publishProgress
          */
         @Override
-        protected Pair<Boolean, String> doInBackground(String... params) {
+        protected Boolean doInBackground(String... params) {
             return checkId(params[0]);
         }
 
         @Override
-        protected void onPostExecute(Pair<Boolean, String> result) {
+        protected void onPostExecute(Boolean result) {
 
-            if (result.first) {
-                Toast.makeText(_ctx, "ID Found! " + result.second, Toast.LENGTH_SHORT).show();
-                final Intent resIntent = new Intent();
-                resIntent.putExtra(VerifyConstants.PREV_ID_LOOKUP, result.second);
+            if (result) {
+                Toast.makeText(_ctx, "ID Found! " + _prevValue, Toast.LENGTH_SHORT).show();
+                //final Intent resIntent = new Intent();
+                /*resIntent.putExtra(VerifyConstants.PREV_ID_LOOKUP, result.second);
                 setResult(RESULT_OK, resIntent);
-                finish();
+                finish();*/
             } else {
-                if (result.second != null) {
-                    Toast.makeText(_ctx, "ID not in list: " + result.second, Toast.LENGTH_SHORT).show();
+                if (_prevValue != null) {
+                    Toast.makeText(_ctx, "ID not in list: " + _prevValue, Toast.LENGTH_SHORT).show();
                 }
             }
 
         }
 
-        private Pair<Boolean, String> checkId(String value) {
+        private boolean checkId(String value) {
 
             if (value != null) {
                 for (int i = 0; i < _ids.size(); i = i + 1) {
                     final String s = _ids.get(_ids.keyAt(i));
-                    if (s.equals(value)) {
-                        return new Pair<>(true, value);
+                    if (s.equals(_prevValue)) {
+                        return true;
                     }
                 }
             }
-            return new Pair<>(false, value);
+            return false;
         }
     }
 
