@@ -14,6 +14,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -26,13 +27,13 @@ import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
+import java.io.File;
 import java.io.IOException;
 
 import edu.ksu.cis.mobilevisbarcodechecker.R;
 
 public class CameraActivity extends AppCompatActivity implements SurfaceHolder.Callback {
 
-    private final static int OPEN_CSV_FILE = 100;
     private SurfaceView _cameraView;
     private CameraSource _camera;
     private BarcodeDetector _detector;
@@ -160,6 +161,10 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
 
     @Override
     public void onBackPressed() {
+        _camera.stop();
+        _camera.release();
+        this._ids.clear();
+        this._notificationManager.cancelAll();
         final Intent intent = new Intent();
         intent.putExtra(VerifyConstants.PREV_ID_LOOKUP, _prevValue);
         setResult(RESULT_OK, intent);
@@ -233,7 +238,9 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
      */
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        _camera.stop();
+        if (_camera != null) {
+            _camera.stop();
+        }
     }
 
     private class AsyncValueUpdate extends AsyncTask<String, Void, Boolean> {

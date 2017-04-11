@@ -11,4 +11,6 @@ class VerifyConstants {
      final static String KEY_ARRAY = "edu.cis.wheatgenetics.verify.KEY_ARRAY";
      final static String CSV_URI = "edu.ksu.cis.wheatgenetics.verify.CSV_URI";
      final static String PREV_ID_LOOKUP = "edu.ksu.cis.wheatgenetics.verify.PREV_ID_LOOKUP";
+     final static String HEADER_VALUE = "edu.ksu.cis.wheatgenetics.verify.HEADER_VALUE";
+     final static String CSV_MAP = "edu.ksu.cis.wheatgenetics.verify.CSV_MAP";
 }

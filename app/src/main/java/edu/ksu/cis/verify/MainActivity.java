@@ -7,9 +7,11 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,6 +22,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,14 +70,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 if (s.length() > 0) {
-                    if (_csvUri != null) {
+                    //if (_csvUri != null) {
                         final TextView tv = (TextView) findViewById(R.id.valueView);
                         final String key = s.toString();
                         if (_idMap.containsKey(key)) {
                             tv.setText(_idMap.get(key));
                             _prevIdLookup = key;
                         } else tv.setText("");
-                    }
+                    //}
                 }
 
             }
@@ -87,14 +90,16 @@ public class MainActivity extends AppCompatActivity {
             //if a previous id was selected, update the table with a csv lookup
             if (savedInstanceState.containsKey(CSV_URI)) {
                 _csvUri = Uri.parse(savedInstanceState.getString(CSV_URI));
-                new AsyncCSVParse().execute(_csvUri);
 
                 if (savedInstanceState.containsKey(PREV_ID_LOOKUP)) {
                     final String id = savedInstanceState.getString(PREV_ID_LOOKUP);
-                    new AsyncCSVLookup().execute(id);
+                    //new AsyncCSVLookup().execute(id); TODO SAVE ID MAP 
                 }
             }
         }
+
+        final File dir = _ctx.getDir("Verify", Context.MODE_PRIVATE);
+        Log.d("directory", dir.getAbsolutePath().toString());
     }
 
     @Override
@@ -108,9 +113,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_open:
-                final Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-                i.setType("text/*");
-                startActivityForResult(Intent.createChooser(i, "Open CSV"), OPEN_CSV_FILE);
+                final Intent i = new Intent(this, LoaderActivity.class);
+                startActivityForResult(i, OPEN_CSV_FILE);
                 return true;
             case R.id.action_camera:
                 final Intent cameraIntent = new Intent(this, CameraActivity.class);
@@ -131,7 +135,17 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == OPEN_CSV_FILE) {
             if (resultCode == RESULT_OK) {
                 _csvUri = intent.getData();
-                new AsyncCSVParse().execute(_csvUri);
+                _idMap = (HashMap<String, String>) intent.getSerializableExtra(VerifyConstants.CSV_MAP);
+
+                if (_idMap != null) {
+                    final ListView lv = ((ListView) findViewById(R.id.idTable));
+                    final ArrayAdapter<String> idAdapter =
+                            new ArrayAdapter<String>(_ctx, R.layout.row);
+                    for (String id : _idMap.keySet()) {
+                        idAdapter.add(id);
+                    }
+                    lv.setAdapter(idAdapter);
+                }
             }
         } else if (requestCode == CAMERA_SCAN_KEY) {
             if (resultCode == RESULT_OK) {
@@ -153,121 +167,5 @@ public class MainActivity extends AppCompatActivity {
 
         if (_prevIdLookup != null)
             outState.putString(PREV_ID_LOOKUP, _prevIdLookup);
-    }
-
-    private class AsyncCSVLookup extends AsyncTask<String, Void, String[]> {
-
-        @Override
-        protected String[] doInBackground(String... params) {
-
-            if (params.length > 0 && params[0] != null) try {
-                final InputStream is = getContentResolver().openInputStream(_csvUri);
-                if (is != null) {
-                    final BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                    final String[] headers = br.readLine().split(","); //assume first line contains headers
-                    String temp = null;
-                    while ((temp = br.readLine()) != null) {
-                        final String[] id_line = temp.split(",");
-                        if (id_line.length != 0) {
-                            if (id_line[0].equals(params[0])) { //assume first column is always the id column
-                                final String[] cols = new String[id_line.length];
-                                for (int i = 0; i < id_line.length; i = i + 1) {
-                                    cols[i] = headers[i] + ": " + id_line[i];
-                                }
-                                return cols;
-                            }
-                        }
-                    }
-                }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String[] cols) {
-            final TextView tv = ((TextView) findViewById(R.id.valueView));
-            //final ListView lv = ((ListView) findViewById(R.id.valueTable));
-            if (cols != null && cols.length > 0 && cols[0] != null) {
-                //final ArrayAdapter<String> valueAdapter =
-                  //      new ArrayAdapter<>(_ctx, R.layout.row);
-                int size = cols.length;
-                for (int i = 0; i < size; i = i + 1) {
-                   // valueAdapter.add(cols[i]);
-                    tv.append(cols[i]);
-                    tv.append("\n");
-                }
-               // lv.setAdapter(valueAdapter);
-            } else tv.setText(""); // else lv.setAdapter(null);
-        }
-    }
-
-    private class AsyncCSVParse extends AsyncTask<Uri, Void, String[]> {
-
-        /**
-         * Override this method to perform a computation on a background thread. The
-         * specified parameters are the parameters passed to {@link #execute}
-         * by the caller of this task.
-         * <p>
-         * This method can call {@link #publishProgress} to publish updates
-         * on the UI thread.
-         *
-         * @param params The parameters of the task.
-         * @return A result, defined by the subclass of this task.
-         * @see #onPreExecute()
-         * @see #onPostExecute
-         * @see #publishProgress
-         */
-        @Override
-        protected String[] doInBackground(Uri[] params) {
-
-            if (params.length > 0 && params[0] != null) try {
-                final InputStream is = getContentResolver().openInputStream(params[0]);
-                if (is != null) {
-                    final BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                    final String[] headers = br.readLine().split(",");
-                    String temp = null;
-
-                    while ((temp = br.readLine()) != null) {
-                        final String[] id_line = temp.split(",");
-                        final int size = id_line.length;
-                        if (size != 0) {
-                            final String id = id_line[0];
-                            final StringBuilder sb = new StringBuilder();
-                            for (int i = 0; i < size; i = i + 1) {
-                                sb.append(headers[i]);
-                                sb.append(": ");
-                                sb.append(id_line[i]);
-                                sb.append("\n");
-                            }
-                            _idMap.put(id, sb.toString());
-                        }
-                    }
-                    return headers;
-                }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String[] headers) {
-
-            final ListView lv = ((ListView) findViewById(R.id.idTable));
-            if (headers != null && headers.length > 0 && headers[0] != null) {
-                final ArrayAdapter<String> idAdapter = new ArrayAdapter<String>(_ctx, R.layout.row);
-                for (String id : _idMap.keySet()) {
-                    idAdapter.add(id);
-                }
-                lv.setAdapter(idAdapter);
-            } else lv.setAdapter(new ArrayAdapter<String>(_ctx, R.layout.row));
-
-        }
     }
 }
