@@ -2,13 +2,13 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <CheckBoxPreference
         android:icon="@drawable/ic_paint"
-        android:key="Color cells"
+        android:key="edu.ksu.wheatgenetics.verify.COLOR_LIST"
         android:title="Color cells"
         android:summary="If active, scanned items in the list will be shaded."
         android:defaultValue="false" />
     <CheckBoxPreference
         android:icon="@drawable/ic_order_list"
-        android:key="Match order"
+        android:key="edu.ksu.wheatgenetics.verify.ORDER_LIST"
         android:title="Match order"
         android:summary="If active, the app will verify scanning order against imported order."
         android:defaultValue="false" />

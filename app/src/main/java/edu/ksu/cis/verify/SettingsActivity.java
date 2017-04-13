@@ -16,6 +16,8 @@ import edu.ksu.cis.mobilevisbarcodechecker.R;
 public class SettingsActivity extends PreferenceActivity {
 
     public static String FILTER_LIST = "edu.ksu.wheatgenetics.verify.FILTER_LIST";
+    public static String COLOR_LIST = "edu.ksu.wheatgenetics.verify.COLOR_LIST";
+    public static String ORDER_LIST = "edu.ksu.wheatgenetics.verify.ORDER_LIST";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.Loader;
@@ -15,6 +16,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.SparseArray;
+import android.util.SparseBooleanArray;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -49,7 +51,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 100);
@@ -63,6 +67,46 @@ public class MainActivity extends AppCompatActivity {
             _cols = new SparseArray<>();
 
         final EditText et = ((EditText) findViewById(R.id.scannerTextView));
+        final ListView lv = ((ListView) findViewById(R.id.idTable));
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(_ctx);
+                boolean colorList = sharedPref.getBoolean(SettingsActivity.COLOR_LIST, false);
+
+                if (!colorList) {
+                    //llv.setChoiceMode(ListView.CHOICE_MODE_NONE);
+                    //lv.clearChoices();
+                } else {
+                    lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+                }
+
+                lv.setItemChecked(position, false);
+
+                           /*final EditText et = ((EditText) findViewById(R.id.scannerTextView));
+                            et.setText(((TextView) view).getText().toString());*/
+                final String key = ((TextView) view).getText().toString();
+                final int size = _ids.size();
+                final TextView tv = (TextView) findViewById(R.id.valueView);
+                for (int i = 0; i < size; i = i + 1) {
+                    if (key.equals(_ids.get(_ids.keyAt(i)))) {
+                        tv.setText(_cols.get(_cols.keyAt(i)));
+                        break;
+                    }
+                }
+                            /*final SparseBooleanArray checkedPositions = ((ListView) parent).getCheckedItemPositions();
+                            if (checkedPositions != null) {
+                                final int checkedSize = checkedPositions.size();
+                                for (int i = 0; i < checkedSize; i = i + 1) {
+                                    lv.setItemChecked(i, checkedPositions.get(checkedPositions.keyAt(i)));
+                                }
+                            }*/
+            }
+        });
+
         final TextWatcher tw = new TextWatcher() {
 
             @Override
@@ -77,8 +121,52 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
+
                 if (s.length() > 0) {
-                    updateColView(s.toString());
+                    //get app settings
+                    final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(_ctx);
+                    boolean filterList = sharedPref.getBoolean(SettingsActivity.FILTER_LIST, false);
+                    boolean colorList = sharedPref.getBoolean(SettingsActivity.COLOR_LIST, false);
+
+                    final int size = _ids.size();
+                    final TextView tv = (TextView) findViewById(R.id.valueView);
+                    final ListView lv = ((ListView) findViewById(R.id.idTable));
+                    int found = -1;
+                    for (int i = 0; i < size; i = i + 1) {
+                        if (s.toString().equals(_ids.get(_ids.keyAt(i)))) {
+                            tv.setText(_cols.get(_cols.keyAt(i)));
+                            found = i;
+                            break;
+                        }
+                    }
+                    if (found == -1) {
+                        tv.setText("");
+                    } else if (filterList) {
+                        final ArrayAdapter<String> oldAdapter = (ArrayAdapter<String>) lv.getAdapter();
+                        final ArrayAdapter<String> updatedAdapter = new ArrayAdapter<String>(_ctx, R.layout.row);
+                        final int oldSize = oldAdapter.getCount();
+                        
+                        for (int i = 0; i < oldSize; i = i + 1) {
+                            if (i != found) {
+                                updatedAdapter.add(oldAdapter.getItem(i));
+                            }
+                        }
+                        lv.setAdapter(updatedAdapter);
+                        final int childCount = lv.getChildCount();
+
+                        for (int i = 0; i < childCount; i = i + 1) {
+                            if (lv.getChildAt(i).isSelected()) {
+                                lv.setItemChecked(i, true);
+                            }
+                        }
+                        _ids.remove(_ids.keyAt(found));
+                        _cols.remove(_cols.keyAt(found));
+                    } else if (colorList) {
+                        lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+                        lv.setItemChecked(found, true);
+                    } else {
+                       // lv.setChoiceMode(ListView.CHOICE_MODE_NONE);
+                    }
                 }
             }
         };
@@ -102,40 +190,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d("directory", dir.getAbsolutePath().toString());
     }
 
-    private void updateColView(String key) {
-        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean filterList = sharedPref.getBoolean(SettingsActivity.FILTER_LIST, false);
-        final int size = _ids.size();
-        final TextView tv = (TextView) findViewById(R.id.valueView);
-        final ListView lv = ((ListView) findViewById(R.id.idTable));
-        int found = -1;
-        for (int i = 0; i < size; i = i + 1) {
-            if (key.equals(_ids.get(_ids.keyAt(i)))) {
-                tv.setText(_cols.get(_cols.keyAt(i)));
-                found = i;
-                break;
-            }
-        }
-        if (found == -1) {
-            tv.setText("");
-            lv.clearChoices();
-        } else if (filterList) {
-            final ArrayAdapter<String> oldAdapter = (ArrayAdapter<String>) lv.getAdapter();
-            final ArrayAdapter<String> updatedAdapter = new ArrayAdapter<String>(_ctx, R.layout.row);
-            final int oldSize = oldAdapter.getCount();
-            for (int i = 0; i < oldSize; i = i + 1) {
-                if (i != found) {
-                    updatedAdapter.add(oldAdapter.getItem(i));
-                }
-            }
-            lv.setAdapter(updatedAdapter);
-            _ids.remove(_ids.keyAt(found));
-            _cols.remove(_cols.keyAt(found));
-        } else {
-            lv.setItemChecked(found, true);
-        }
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu m) {
         final MenuInflater inflater = getMenuInflater();
@@ -145,6 +199,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         switch (item.getItemId()) {
             case R.id.action_open:
                 final Intent i = new Intent(this, LoaderActivity.class);
@@ -193,6 +248,7 @@ public class MainActivity extends AppCompatActivity {
                     _cols.append(j, colMsg.get(j));
 
                 if (_ids != null) {
+
                     final ListView lv = ((ListView) findViewById(R.id.idTable));
                     final ArrayAdapter<String> idAdapter =
                             new ArrayAdapter<String>(_ctx, R.layout.row);
@@ -200,24 +256,6 @@ public class MainActivity extends AppCompatActivity {
                     for (int i = 0; i < size; i = i + 1)
                         idAdapter.add(_ids.get(i));
                     lv.setAdapter(idAdapter);
-                    lv.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-                    lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                        @Override
-                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                           /*final EditText et = ((EditText) findViewById(R.id.scannerTextView));
-                            et.setText(((TextView) view).getText().toString());*/
-                            final String key = ((TextView) view).getText().toString();
-                            final int size = _ids.size();
-                            final TextView tv = (TextView) findViewById(R.id.valueView);
-                            final ListView lv = ((ListView) findViewById(R.id.idTable));
-                            for (int i = 0; i < size; i = i + 1) {
-                                if (key.equals(_ids.get(_ids.keyAt(i)))) {
-                                    tv.setText(_cols.get(_cols.keyAt(i)));
-                                    break;
-                                }
-                            }
-                        }
-                    });
                 }
             }
         } else if (requestCode == CAMERA_SCAN_KEY) {
