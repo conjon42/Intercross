@@ -103,13 +103,19 @@ public class MainActivity extends AppCompatActivity {
     private void updateColView(String key) {
         final int size = _ids.size();
         final TextView tv = (TextView) findViewById(R.id.valueView);
+        final ListView lv = ((ListView) findViewById(R.id.idTable));
+        int found = -1;
         for (int i = 0; i < size; i = i + 1) {
             if (key.equals(_ids.get(_ids.keyAt(i)))) {
                 tv.setText(_cols.get(_cols.keyAt(i)));
-                //_prevIdLookup = i;
+                found = i;
                 break;
-            } else tv.setText("");
+            }
         }
+        if (found == -1) {
+            tv.setText("");
+            lv.clearChoices();
+        } else lv.setItemChecked(found, true);
     }
 
     @Override
@@ -145,10 +151,11 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+
         super.onActivityResult(requestCode, resultCode, intent);
+
         if (requestCode == OPEN_CSV_FILE) {
             if (resultCode == RESULT_OK) {
-                _csvUri = intent.getData();
 
                 //get intent array list messages (columns and keys)
                 final ArrayList<String> colMsg = intent.getStringArrayListExtra(VerifyConstants.COL_ARRAY);
@@ -175,7 +182,8 @@ public class MainActivity extends AppCompatActivity {
                     lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                            updateColView(((TextView) view).getText().toString());
+                            final EditText et = ((EditText) findViewById(R.id.scannerTextView));
+                            et.setText(((TextView) view).getText().toString());
                         }
                     });
                 }
