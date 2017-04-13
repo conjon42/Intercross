@@ -3,9 +3,11 @@ package edu.ksu.cis.verify;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
@@ -101,6 +103,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateColView(String key) {
+        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean filterList = sharedPref.getBoolean(SettingsActivity.FILTER_LIST, false);
         final int size = _ids.size();
         final TextView tv = (TextView) findViewById(R.id.valueView);
         final ListView lv = ((ListView) findViewById(R.id.idTable));
@@ -115,7 +119,21 @@ public class MainActivity extends AppCompatActivity {
         if (found == -1) {
             tv.setText("");
             lv.clearChoices();
-        } else lv.setItemChecked(found, true);
+        } else if (filterList) {
+            final ArrayAdapter<String> oldAdapter = (ArrayAdapter<String>) lv.getAdapter();
+            final ArrayAdapter<String> updatedAdapter = new ArrayAdapter<String>(_ctx, R.layout.row);
+            final int oldSize = oldAdapter.getCount();
+            for (int i = 0; i < oldSize; i = i + 1) {
+                if (i != found) {
+                    updatedAdapter.add(oldAdapter.getItem(i));
+                }
+            }
+            lv.setAdapter(updatedAdapter);
+            _ids.remove(_ids.keyAt(found));
+            _cols.remove(_cols.keyAt(found));
+        } else {
+            lv.setItemChecked(found, true);
+        }
     }
 
     @Override
@@ -143,6 +161,10 @@ public class MainActivity extends AppCompatActivity {
                     cameraIntent.putExtra(KEY_ARRAY, keys);
                 }
                 startActivityForResult(cameraIntent, CAMERA_SCAN_KEY);
+                return true;
+            case R.id.action_settings:
+                final Intent settingsIntent = new Intent(this, SettingsActivity.class);
+                startActivityForResult(settingsIntent, VerifyConstants.SETTINGS_INTENT);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -182,8 +204,18 @@ public class MainActivity extends AppCompatActivity {
                     lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                            final EditText et = ((EditText) findViewById(R.id.scannerTextView));
-                            et.setText(((TextView) view).getText().toString());
+                           /*final EditText et = ((EditText) findViewById(R.id.scannerTextView));
+                            et.setText(((TextView) view).getText().toString());*/
+                            final String key = ((TextView) view).getText().toString();
+                            final int size = _ids.size();
+                            final TextView tv = (TextView) findViewById(R.id.valueView);
+                            final ListView lv = ((ListView) findViewById(R.id.idTable));
+                            for (int i = 0; i < size; i = i + 1) {
+                                if (key.equals(_ids.get(_ids.keyAt(i)))) {
+                                    tv.setText(_cols.get(_cols.keyAt(i)));
+                                    break;
+                                }
+                            }
                         }
                     });
                 }

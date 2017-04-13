@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <CheckBoxPreference
+        android:icon="@drawable/ic_paint"
+        android:key="Color cells"
+        android:title="Color cells"
+        android:summary="If active, scanned items in the list will be shaded."
+        android:defaultValue="false" />
+    <CheckBoxPreference
+        android:icon="@drawable/ic_order_list"
+        android:key="Match order"
+        android:title="Match order"
+        android:summary="If active, the app will verify scanning order against imported order."
+        android:defaultValue="false" />
+    <CheckBoxPreference
+        android:icon="@drawable/ic_filter"
+        android:key="edu.ksu.wheatgenetics.verify.FILTER_LIST"
+        android:title="Remove from list"
+        android:summary="If active, the app will remove the scanned ID from the list."
+        android:defaultValue="false" />
+</PreferenceScreen>

@@ -27,11 +27,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name="edu.ksu.cis.verify.CameraActivity"
+        <activity android:name="edu.ksu.cis.verify.CameraActivity"
             android:configChanges="" />
-        <activity android:name="edu.ksu.cis.verify.LoaderActivity"
-            />
+        <activity android:name="edu.ksu.cis.verify.LoaderActivity" />
+        <activity android:name="edu.ksu.cis.verify.SettingsActivity" />
     </application>
 
 </manifest>

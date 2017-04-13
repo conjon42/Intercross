@@ -13,5 +13,6 @@ class VerifyConstants {
      final static String PREV_ID_LOOKUP = "edu.ksu.cis.wheatgenetics.verify.PREV_ID_LOOKUP";
      final static String ID_ARRAY = "edu.ksu.cis.wheatgenetics.verify.ID_ARRAY";
      final static String COL_ARRAY = "edu.ksu.cis.wheatgenetics.verify.COL_ARRAY";
+     final static int SETTINGS_INTENT = 1;
 
 }
