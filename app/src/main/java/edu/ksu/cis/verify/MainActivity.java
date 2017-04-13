@@ -27,6 +27,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -38,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Context _ctx;
     private SparseArray<String> _ids;
-    private HashMap<String, String> _idMap;
+    private SparseArray<String> _cols;
     private String _prevIdLookup;
     private Uri _csvUri;
 
@@ -51,8 +52,11 @@ public class MainActivity extends AppCompatActivity {
 
         _ctx = this;
 
-        _ids = new SparseArray<String>();
-        _idMap = new HashMap<>();
+        if (_ids == null)
+            _ids = new SparseArray<>();
+
+        if (_cols == null)
+            _cols = new SparseArray<>();
 
         final EditText et = ((EditText) findViewById(R.id.scannerTextView));
         final TextWatcher tw = new TextWatcher() {
@@ -73,10 +77,14 @@ public class MainActivity extends AppCompatActivity {
                     //if (_csvUri != null) {
                         final TextView tv = (TextView) findViewById(R.id.valueView);
                         final String key = s.toString();
-                        if (_idMap.containsKey(key)) {
-                            tv.setText(_idMap.get(key));
-                            _prevIdLookup = key;
-                        } else tv.setText("");
+                        final int size = _ids.size();
+                        for (int i = 0; i < size; i = i + 1) {
+                            if (key.equals(_ids.get(_ids.keyAt(i)))) {
+                                tv.setText(_cols.get(_cols.keyAt(i)));
+                                //_prevIdLookup = i;
+                                break;
+                            } else tv.setText("");
+                        }
                     //}
                 }
 
@@ -118,9 +126,13 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.action_camera:
                 final Intent cameraIntent = new Intent(this, CameraActivity.class);
-                if (_idMap != null && _idMap.size() > 0) {
-                    final Set<String> keys = _idMap.keySet();
-                    cameraIntent.putExtra(KEY_ARRAY, _idMap.keySet().toArray(new String[keys.size()]));
+                if (_ids != null && _ids.size() > 0) {
+                    final ArrayList<String> keys = new ArrayList<>();
+                    final int size = _ids.size();
+                    for (int j = 0; j < size; j = j + 1)
+                        keys.add(j, _ids.get(_ids.keyAt(j)));
+
+                    cameraIntent.putExtra(KEY_ARRAY, keys);
                 }
                 startActivityForResult(cameraIntent, CAMERA_SCAN_KEY);
                 return true;
@@ -135,15 +147,27 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == OPEN_CSV_FILE) {
             if (resultCode == RESULT_OK) {
                 _csvUri = intent.getData();
-                _idMap = (HashMap<String, String>) intent.getSerializableExtra(VerifyConstants.CSV_MAP);
 
-                if (_idMap != null) {
+                //get intent array list messages (columns and keys)
+                final ArrayList<String> colMsg = intent.getStringArrayListExtra(VerifyConstants.COL_ARRAY);
+                final ArrayList<String> keyMsg = intent.getStringArrayListExtra(VerifyConstants.ID_ARRAY);
+
+                //convert messages to global sparse arrays
+                final int kMsgSize = keyMsg.size();
+                for (int j = 0; j < kMsgSize; j = j + 1)
+                    _ids.append(j, keyMsg.get(j));
+
+                final int cMsgSize = colMsg.size();
+                for (int j = 0; j < cMsgSize; j = j + 1)
+                    _cols.append(j, colMsg.get(j));
+
+                if (_ids != null) {
                     final ListView lv = ((ListView) findViewById(R.id.idTable));
                     final ArrayAdapter<String> idAdapter =
                             new ArrayAdapter<String>(_ctx, R.layout.row);
-                    for (String id : _idMap.keySet()) {
-                        idAdapter.add(id);
-                    }
+                    final int size = _ids.size();
+                    for (int i = 0; i < size; i = i + 1)
+                        idAdapter.add(_ids.get(i));
                     lv.setAdapter(idAdapter);
                 }
             }
