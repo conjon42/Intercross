@@ -16,6 +16,8 @@ import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -74,20 +76,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 if (s.length() > 0) {
-                    //if (_csvUri != null) {
-                        final TextView tv = (TextView) findViewById(R.id.valueView);
-                        final String key = s.toString();
-                        final int size = _ids.size();
-                        for (int i = 0; i < size; i = i + 1) {
-                            if (key.equals(_ids.get(_ids.keyAt(i)))) {
-                                tv.setText(_cols.get(_cols.keyAt(i)));
-                                //_prevIdLookup = i;
-                                break;
-                            } else tv.setText("");
-                        }
-                    //}
+                    updateColView(s.toString());
                 }
-
             }
         };
         et.addTextChangedListener(tw);
@@ -108,6 +98,18 @@ public class MainActivity extends AppCompatActivity {
 
         final File dir = _ctx.getDir("Verify", Context.MODE_PRIVATE);
         Log.d("directory", dir.getAbsolutePath().toString());
+    }
+
+    private void updateColView(String key) {
+        final int size = _ids.size();
+        final TextView tv = (TextView) findViewById(R.id.valueView);
+        for (int i = 0; i < size; i = i + 1) {
+            if (key.equals(_ids.get(_ids.keyAt(i)))) {
+                tv.setText(_cols.get(_cols.keyAt(i)));
+                //_prevIdLookup = i;
+                break;
+            } else tv.setText("");
+        }
     }
 
     @Override
@@ -169,6 +171,13 @@ public class MainActivity extends AppCompatActivity {
                     for (int i = 0; i < size; i = i + 1)
                         idAdapter.add(_ids.get(i));
                     lv.setAdapter(idAdapter);
+                    lv.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+                    lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            updateColView(((TextView) view).getText().toString());
+                        }
+                    });
                 }
             }
         } else if (requestCode == CAMERA_SCAN_KEY) {
