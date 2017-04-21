@@ -2,4 +2,8 @@
     <string name="app_name">Verify</string>
     <string name="action_open">Open a new csv file.</string>
     <string name="action_camera">Open camera view.</string>
+    <string name="filter_mode">Filter Mode</string>
+    <string name="color_mode">Color Mode</string>
+    <string name="match_mode">Match Mode</string>
+    <string name="default_mode">Default Mode</string>
 </resources>

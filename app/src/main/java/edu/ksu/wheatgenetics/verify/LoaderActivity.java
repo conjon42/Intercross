@@ -1,6 +1,5 @@
-package edu.ksu.cis.verify;
+package edu.ksu.wheatgenetics.verify;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -8,35 +7,22 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Log;
 import android.util.SparseArray;
-import android.util.SparseIntArray;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Set;
 
-import edu.ksu.cis.mobilevisbarcodechecker.R;
-
-import static edu.ksu.cis.verify.VerifyConstants.*;
+import static edu.ksu.wheatgenetics.verify.VerifyConstants.*;
 
 public class LoaderActivity extends AppCompatActivity {
 
@@ -51,7 +37,7 @@ public class LoaderActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_csv_loader);
 
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 100);
+        ActivityCompat.requestPermissions(this, VerifyConstants.permissions, VerifyConstants.PERM_REQ);
 
         _ctx = this;
 
@@ -67,7 +53,7 @@ public class LoaderActivity extends AppCompatActivity {
             public void onClick(View v) {
                 final Intent i = new Intent(Intent.ACTION_GET_CONTENT);
                 i.setType("text/*");
-                startActivityForResult(Intent.createChooser(i, "Open CSV"), OPEN_CSV_FILE);
+                startActivityForResult(Intent.createChooser(i, "Open CSV"), VerifyConstants.DEFAULT_CONTENT_REQ);
             }
         });
 
@@ -93,8 +79,8 @@ public class LoaderActivity extends AppCompatActivity {
                 }
 
                 //pass array lists into extra, end activity
-                intent.putExtra(VerifyConstants.COL_ARRAY, colArray);
-                intent.putExtra(VerifyConstants.ID_ARRAY, idArray);
+                intent.putExtra(VerifyConstants.COL_ARRAY_EXTRA, colArray);
+                intent.putExtra(VerifyConstants.ID_ARRAY_EXTRA, idArray);
                 setResult(RESULT_OK, intent);
                 finish();
             }
@@ -105,7 +91,7 @@ public class LoaderActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
-        if (requestCode == OPEN_CSV_FILE) {
+        if (requestCode == DEFAULT_CONTENT_REQ) {
             if (resultCode == RESULT_OK) {
                 _csvUri = intent.getData();
                 new AsyncCSVParse().execute(_csvUri);
