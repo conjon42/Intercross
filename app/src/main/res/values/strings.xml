@@ -6,4 +6,5 @@
     <string name="color_mode">Color Mode</string>
     <string name="match_mode">Match Mode</string>
     <string name="default_mode">Default Mode</string>
+    <string name="upload_dialog_tutorial">1. Open a .csv file with the Open button.\n2. Click the barcode header in the list.\n3. Press Finish.</string>
 </resources>

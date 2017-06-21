@@ -21,13 +21,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
+
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static edu.ksu.wheatgenetics.verify.VerifyConstants.*;
 
@@ -40,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private int _matchingOrder;
     private NotificationManager _notificationManager;
     private NotificationCompat.Builder _builder;
+    private Timer mTimer = new Timer("user input for suppressing messages", true);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,7 +101,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
 
-                if (s.length() > 0) {
+                mTimer.purge();
+                mTimer.cancel();
+
+                //check if there are at least 4 digits and an id to check for
+                if (s.length() >= 4 && _ids.size() != 0) {
 
                     final int size = _ids.size();
                     final TextView tv = (TextView) findViewById(R.id.valueView);
@@ -111,9 +122,14 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     if (found == -1) {
-                        Toast.makeText(_ctx, "Scanned id not found: " + s.toString(), Toast.LENGTH_SHORT).show();
-                        tv.setText("");
+                        mTimer.purge();
+                        mTimer.cancel();
+                        mTimer = new Timer("user input for suppressing messages", true);
+                        mTimer.schedule(new SuppressMessageTask(), 3000);
                     } else {
+                        //cancel all invalid messages
+                        mTimer.purge();
+                        mTimer.cancel();
                         updateListView(s.toString(), found);
                     }
                 }
@@ -179,6 +195,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        findViewById(R.id.clearButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                et.setText("");
+            }
+        });
+
         if (savedInstanceState != null) {
 
             buildListViewFromIntent(getIntent());
@@ -188,8 +211,31 @@ public class MainActivity extends AppCompatActivity {
         Log.d("directory", dir.getAbsolutePath().toString());
     }
 
+    private class SuppressMessageTask extends TimerTask {
+
+        @Override
+        public void run() {
+
+            sendIdNotFoundMsg();
+        }
+    }
+
+    void sendIdNotFoundMsg() {
+
+        MainActivity.this.runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+
+                Toast.makeText(_ctx, "Scanned id not found", Toast.LENGTH_SHORT).show();
+                ((TextView) findViewById(R.id.valueView)).setText("");
+            }
+        } );
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu m) {
+
         final MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.action_bar_menu, m);
         return true;
@@ -204,8 +250,11 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(i, VerifyConstants.LOADER_INTENT_REQ);
                 return true;
             case R.id.action_camera:
-                final Intent cameraIntent = new Intent(this, CameraActivity.class);
-                startActivityForResult(cameraIntent, VerifyConstants.CAMERA_INTENT_REQ);
+
+                new IntentIntegrator(this).initiateScan();
+
+                /*final Intent cameraIntent = new Intent(this, CameraActivity.class);
+                startActivityForResult(cameraIntent, VerifyConstants.CAMERA_INTENT_REQ);*/
                 return true;
             case R.id.action_settings:
                 final Intent settingsIntent = new Intent(this, SettingsActivity.class);
@@ -230,6 +279,13 @@ public class MainActivity extends AppCompatActivity {
                 if (intent.hasExtra(VerifyConstants.CAMERA_RETURN_ID)) {
                     ((TextView) findViewById(R.id.scannerTextView))
                             .setText(intent.getStringExtra(VerifyConstants.CAMERA_RETURN_ID));
+                }
+            } else if (requestCode == IntentIntegrator.REQUEST_CODE) {
+                final IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+                final String code = result.getContents();
+                if (code != null && !code.isEmpty()) {
+                    ((TextView) findViewById(R.id.scannerTextView))
+                            .setText(code);
                 }
             }
         }
