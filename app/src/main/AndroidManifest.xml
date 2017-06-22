@@ -24,7 +24,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".CameraActivity"
+        <activity android:name=".CaptureActivity"
             android:configChanges="" />
         <activity android:name=".LoaderActivity" />
         <activity android:name=".SettingsActivity" />

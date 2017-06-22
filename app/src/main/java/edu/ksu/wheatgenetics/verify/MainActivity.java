@@ -27,9 +27,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.zxing.integration.android.IntentIntegrator;
-import com.google.zxing.integration.android.IntentResult;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Timer;
@@ -250,11 +247,8 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(i, VerifyConstants.LOADER_INTENT_REQ);
                 return true;
             case R.id.action_camera:
-
-                new IntentIntegrator(this).initiateScan();
-
-                /*final Intent cameraIntent = new Intent(this, CameraActivity.class);
-                startActivityForResult(cameraIntent, VerifyConstants.CAMERA_INTENT_REQ);*/
+                final Intent cameraIntent = new Intent(this, CaptureActivity.class);
+                startActivityForResult(cameraIntent, VerifyConstants.CAMERA_INTENT_REQ);
                 return true;
             case R.id.action_settings:
                 final Intent settingsIntent = new Intent(this, SettingsActivity.class);
@@ -271,22 +265,16 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, intent);
 
         if (resultCode == RESULT_OK) {
-            if (requestCode == VerifyConstants.LOADER_INTENT_REQ) {
-
-                buildListViewFromIntent(intent);
-
-            } else if (requestCode == CAMERA_INTENT_REQ) {
-                if (intent.hasExtra(VerifyConstants.CAMERA_RETURN_ID)) {
-                    ((TextView) findViewById(R.id.scannerTextView))
-                            .setText(intent.getStringExtra(VerifyConstants.CAMERA_RETURN_ID));
-                }
-            } else if (requestCode == IntentIntegrator.REQUEST_CODE) {
-                final IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
-                final String code = result.getContents();
-                if (code != null && !code.isEmpty()) {
-                    ((TextView) findViewById(R.id.scannerTextView))
-                            .setText(code);
-                }
+            switch(requestCode) {
+                case VerifyConstants.LOADER_INTENT_REQ:
+                    buildListViewFromIntent(intent);
+                    break;
+                case CAMERA_INTENT_REQ:
+                    if (intent.hasExtra(VerifyConstants.CAMERA_RETURN_ID)) {
+                        ((TextView) findViewById(R.id.scannerTextView))
+                                .setText(intent.getStringExtra(VerifyConstants.CAMERA_RETURN_ID));
+                    }
+                    break;
             }
         }
     }
@@ -321,6 +309,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+
         final ArrayList<String> cols, keys;
         cols = new ArrayList<>();
         keys = new ArrayList<>();
