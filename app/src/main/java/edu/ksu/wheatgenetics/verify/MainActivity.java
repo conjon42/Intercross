@@ -13,6 +13,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.Menu;
@@ -44,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
     private NotificationManager _notificationManager;
     private NotificationCompat.Builder _builder;
     private Timer mTimer = new Timer("user input for suppressing messages", true);
+
+    private TextView valueView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +86,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        valueView = (TextView) findViewById(R.id.valueView);
+        valueView.setMovementMethod(new ScrollingMovementMethod());
+
         et.addTextChangedListener(new TextWatcher() {
 
             @Override
@@ -102,10 +108,9 @@ public class MainActivity extends AppCompatActivity {
                 mTimer.cancel();
 
                 //check if there are at least 4 digits and an id to check for
-                if (s.length() >= 4 && _ids.size() != 0) {
+                if (s.length() >= 3 && _ids.size() != 0) {
 
                     final int size = _ids.size();
-                    final TextView tv = (TextView) findViewById(R.id.valueView);
                     /*
                     scan list of ids for updated text id input
                      */
@@ -113,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
                     for (int i = 0; i < size; i = i + 1) {
                         if (s.toString().equals(_ids.get(_ids.keyAt(i)))) {
                             found = i;
-                            tv.setText(_cols.get(_cols.keyAt(i)));
+                            valueView.setText(_cols.get(_cols.keyAt(i)));
                             break;
                         }
                     }
@@ -247,7 +252,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(i, VerifyConstants.LOADER_INTENT_REQ);
                 return true;
             case R.id.action_camera:
-                final Intent cameraIntent = new Intent(this, CaptureActivity.class);
+                final Intent cameraIntent = new Intent(this, ScanActivity.class);
                 startActivityForResult(cameraIntent, VerifyConstants.CAMERA_INTENT_REQ);
                 return true;
             case R.id.action_settings:
@@ -265,16 +270,18 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, intent);
 
         if (resultCode == RESULT_OK) {
-            switch(requestCode) {
-                case VerifyConstants.LOADER_INTENT_REQ:
-                    buildListViewFromIntent(intent);
-                    break;
-                case CAMERA_INTENT_REQ:
-                    if (intent.hasExtra(VerifyConstants.CAMERA_RETURN_ID)) {
-                        ((TextView) findViewById(R.id.scannerTextView))
-                                .setText(intent.getStringExtra(VerifyConstants.CAMERA_RETURN_ID));
-                    }
-                    break;
+
+            if (intent != null) {
+                switch (requestCode) {
+                    case VerifyConstants.LOADER_INTENT_REQ:
+                        buildListViewFromIntent(intent);
+                        break;
+                }
+
+                if (intent.hasExtra(VerifyConstants.CAMERA_RETURN_ID)) {
+                    ((TextView) findViewById(R.id.scannerTextView))
+                            .setText(intent.getStringExtra(VerifyConstants.CAMERA_RETURN_ID));
+                }
             }
         }
     }

@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <ListPreference
-        android:key="edu.ksu.wheatgenetics.verify.SCAN_MODE"
-        android:title="Scan Mode"
-        android:entries="@array/scan_mode_array"
-        android:entryValues="@array/scan_mode_array_values"
-    />
-</PreferenceScreen>

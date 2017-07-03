@@ -10,11 +10,17 @@ class VerifyConstants {
                                                             android.Manifest.permission.READ_EXTERNAL_STORAGE,
                                                             android.Manifest.permission.CAMERA};
 
+     //result
+     final static int CAMERA_RESULT = 400;
+
+     //request
      final static int PERM_REQ = 100;
      final static int LOADER_INTENT_REQ = 101;
      final static int CAMERA_INTENT_REQ = 102;
      final static int SETTINGS_INTENT_REQ = 103;
      final static int DEFAULT_CONTENT_REQ = 104;
+
+     //extras
      final static String CSV_URI = "edu.ksu.wheatgenetics.verify.CSV_URI";
      final static String ID_ARRAY_EXTRA = "edu.ksu.wheatgenetics.verify.ID_ARRAY";
      final static String COL_ARRAY_EXTRA = "edu.ksu.wheatgenetics.verify.COL_ARRAY";
