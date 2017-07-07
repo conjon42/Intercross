@@ -241,9 +241,7 @@ public class LoaderActivity extends AppCompatActivity {
                         return headers;
                     }
                 }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return null;
@@ -261,7 +259,11 @@ public class LoaderActivity extends AppCompatActivity {
                     idAdapter.add(h);
                 }
                 headerList.setAdapter(idAdapter);
-            } else headerList.setAdapter(new ArrayAdapter<String>(_ctx, R.layout.row));
+            } else {
+                headerList.setAdapter(new ArrayAdapter<String>(_ctx, R.layout.row));
+                tutorialText.setText("Error reading file.");
+
+            }
 
             headerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
