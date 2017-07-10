@@ -1,8 +1,23 @@
 # Verify
 
-APPS-169
+Verify is an Android application that imports a list of entries, scans barcodes, and identifies whether it exists in the list of entries along with audio/visual notifications.
 
-Import a list of entries, scan seed packets, verify whether seed packet is in list with audio/visual notifications.
+### Acknowledgements
+## Developers
+Chaney Courtney
 
+Trevor Rife
 
-[Download apk version 1.0.2](https://github.com/chaneylc/Verify/blob/master/verify_1.0.2.apk?raw=true)
+Jesse Poland
+
+## License
+    Licensed under the GNU General Public License version 2 (GPLv2)
+    You may obtain a copy of the License at
+
+       http://www.gnu.org/licenses/gpl-2.0.html
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
