@@ -170,7 +170,14 @@ public class MainActivity extends AppCompatActivity {
 
                 switch(scanMode) {
 
-                    case 0: //matching mode
+                    case 0: //default
+                        _notificationManager.notify(0, _builder.build());
+                        Toast.makeText(_ctx, "Scanned id found: " + id, Toast.LENGTH_SHORT).show();
+                        _matchingOrder = 0;
+                        lv.setChoiceMode(ListView.CHOICE_MODE_NONE);
+                        lv.clearChoices();
+                        break;
+                    case 1: //matching mode
                         lv.setChoiceMode(ListView.CHOICE_MODE_NONE);
                         lv.clearChoices();
                         if (_matchingOrder == found) {
@@ -180,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(_ctx, "Order matches id: " + id + " at index: " + found, Toast.LENGTH_SHORT).show();
                         } else Toast.makeText(_ctx, "Scanning out of order!", Toast.LENGTH_SHORT).show();
                         break;
-                    case 1: //filter mode
+                    case 2: //filter mode
                         _matchingOrder = 0;
                         lv.setChoiceMode(ListView.CHOICE_MODE_NONE);
                         lv.clearChoices();
@@ -202,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(_ctx, "Removing scanned item: " + id, Toast.LENGTH_SHORT).show();
 
                         break;
-                    case 2: //color mode
+                    case 3: //color mode
                         _matchingOrder = 0;
                         lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
                         lv.setItemChecked(found, true);
@@ -210,12 +217,6 @@ public class MainActivity extends AppCompatActivity {
                         _notificationManager.notify(0, _builder.build());
                         Toast.makeText(_ctx, "Coloring scanned item: " + id, Toast.LENGTH_SHORT).show();
                         break;
-                    default:
-                        _notificationManager.notify(0, _builder.build());
-                        Toast.makeText(_ctx, "Scanned id found: " + id, Toast.LENGTH_SHORT).show();
-                        _matchingOrder = 0;
-                        lv.setChoiceMode(ListView.CHOICE_MODE_NONE);
-                        lv.clearChoices();
                 }
             }
         });
