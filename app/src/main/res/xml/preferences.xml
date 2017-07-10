@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <ListPreference
-        android:title="@string/prefs_mode"
-        android:summary="@string/prefs_mode_summary"
-        android:key="edu.ksu.wheatgenetics.verify.SCAN_MODE"
         android:entries="@array/scan_mode_array"
-        android:entryValues="@array/scan_mode_array_values">
-    </ListPreference>
+        android:entryValues="@array/scan_mode_array_values"
+        android:key="edu.ksu.wheatgenetics.verify.SCAN_MODE"
+        android:summary="%s"
+        android:title="@string/prefs_mode" />
     <CheckBoxPreference
-        android:title="@string/prefs_audio"
+        android:defaultValue="true"
         android:icon="@drawable/ic_audio"
         android:key="sound enabled"
         android:summary="Check to disable/enable sound."
-        android:defaultValue="true" >
-    </CheckBoxPreference>
+        android:title="@string/prefs_audio" />
 </PreferenceScreen>

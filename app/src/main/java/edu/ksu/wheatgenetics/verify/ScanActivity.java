@@ -74,21 +74,19 @@ public class ScanActivity extends AppCompatActivity {
         barcodeScannerView.getBarcodeView().getCameraSettings().setContinuousFocusEnabled(true);
         barcodeScannerView.getBarcodeView().getCameraSettings().setBarcodeSceneModeEnabled(true);
         barcodeScannerView.decodeContinuous(callback);
+
+        getSupportActionBar().setTitle(null);
+        getSupportActionBar().getThemedContext();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu m) {
-
-        final MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.action_bar_back_menu, m);
-        return true;
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
-            case R.id.action_home:
+            case android.R.id.home:
                 setResult(RESULT_OK);
                 finish();
                 return true;

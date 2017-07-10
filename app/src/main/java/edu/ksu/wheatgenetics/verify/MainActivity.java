@@ -4,13 +4,16 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.design.widget.NavigationView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
@@ -20,9 +23,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -32,8 +35,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import static edu.ksu.wheatgenetics.verify.VerifyConstants.*;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -45,8 +46,14 @@ public class MainActivity extends AppCompatActivity {
     private NotificationManager _notificationManager;
     private NotificationCompat.Builder _builder;
     private Timer mTimer = new Timer("user input for suppressing messages", true);
-
     private TextView valueView;
+
+
+    private DrawerLayout mDrawer;
+    private ActionBarDrawerToggle mDrawerToggle;
+    private String mActivityTitle;
+    private DrawerLayout mDrawerLayout;
+    NavigationView nvDrawer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +61,22 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+        mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+
+        getSupportActionBar().setTitle(null);
+        getSupportActionBar().getThemedContext();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
+
+        mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
+        mActivityTitle = getTitle().toString();
+
+        nvDrawer = (NavigationView) findViewById(R.id.nvView);
+
+        // Setup drawer view
+        setupDrawerContent(nvDrawer);
+        setupDrawer();
 
         ActivityCompat.requestPermissions(this, VerifyConstants.permissions, VerifyConstants.PERM_REQ);
 
@@ -237,7 +260,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu m) {
-
         final MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.action_bar_menu, m);
         return true;
@@ -247,17 +269,9 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
-            case R.id.action_open:
-                final Intent i = new Intent(this, LoaderActivity.class);
-                startActivityForResult(i, VerifyConstants.LOADER_INTENT_REQ);
-                return true;
             case R.id.action_camera:
                 final Intent cameraIntent = new Intent(this, ScanActivity.class);
                 startActivityForResult(cameraIntent, VerifyConstants.CAMERA_INTENT_REQ);
-                return true;
-            case R.id.action_settings:
-                final Intent settingsIntent = new Intent(this, SettingsActivity.class);
-                startActivityForResult(settingsIntent, VerifyConstants.SETTINGS_INTENT_REQ);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -327,5 +341,71 @@ public class MainActivity extends AppCompatActivity {
         }
         outState.putStringArrayList(VerifyConstants.ID_ARRAY_EXTRA, keys);
         outState.putStringArrayList(VerifyConstants.COL_ARRAY_EXTRA, cols);
+    }
+
+    private void setupDrawer() {
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
+                R.string.drawer_open, R.string.drawer_close) {
+
+            public void onDrawerOpened(View drawerView) {
+                View view = MainActivity.this.getCurrentFocus();
+                if (view != null) {
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                }
+            }
+
+            public void onDrawerClosed(View view) {
+            }
+
+        };
+
+        mDrawerToggle.setDrawerIndicatorEnabled(true);
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
+    }
+
+    private void setupDrawerContent(NavigationView navigationView) {
+        navigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+                        selectDrawerItem(menuItem);
+                        return true;
+                    }
+                });
+    }
+
+    public void selectDrawerItem(MenuItem menuItem) {
+        switch(menuItem.getItemId()) {
+
+            case R.id.nav_import:
+                final Intent i = new Intent(this, LoaderActivity.class);
+                startActivityForResult(i, VerifyConstants.LOADER_INTENT_REQ);
+                break;
+            case R.id.nav_settings:
+                final Intent settingsIntent = new Intent(this, SettingsActivity.class);
+                startActivityForResult(settingsIntent, VerifyConstants.SETTINGS_INTENT_REQ);
+                break;
+            case R.id.nav_export:
+                Toast.makeText(this, "Export", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.nav_about:
+                Toast.makeText(this, "About", Toast.LENGTH_SHORT).show();
+                break;
+        }
+
+        mDrawer.closeDrawers();
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        mDrawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        mDrawerToggle.onConfigurationChanged(newConfig);
     }
 }

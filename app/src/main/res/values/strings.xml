@@ -15,6 +15,9 @@
     <string name="back_button">Back</string>
     <string name="title_activity_preference">Settings</string>
 
+    <string name="drawer_open">Open</string>
+    <string name="drawer_close">Close</string>
+
     <!-- Strings related to Settings -->
 
     <!-- Example General settings -->

@@ -2,8 +2,8 @@
 
 Verify is an Android application that imports a list of entries, scans barcodes, and identifies whether it exists in the list of entries along with audio/visual notifications.
 
-### Acknowledgements
-## Developers
+## Acknowledgements
+### Developers
 Chaney Courtney
 
 Trevor Rife
