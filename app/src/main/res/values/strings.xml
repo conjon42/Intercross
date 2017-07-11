@@ -12,6 +12,7 @@
     <string name="open_file_tutorial">Choose a file with the open button.\nThe file\'s first line must be a header line, one header should correspond to barcode ids.</string>
     <string name="choose_header_tutorial">Click the barcode header in the list.</string>
     <string name="finish_tutorial">Press finish, you\'re done!</string>
+    <string name="import_error">Error reading file.</string>
 
     <!-- Settings Strings -->
     <string name="prefs_mode">Scan Mode</string>

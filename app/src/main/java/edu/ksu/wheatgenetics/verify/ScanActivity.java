@@ -16,10 +16,6 @@ import com.journeyapps.barcodescanner.DecoratedBarcodeView;
 
 import java.util.List;
 
-/**
- * Created by chaneylc on 6/22/2017.
- */
-
 public class ScanActivity extends AppCompatActivity {
 
     private DecoratedBarcodeView barcodeScannerView;
@@ -64,10 +60,12 @@ public class ScanActivity extends AppCompatActivity {
         barcodeScannerView.getBarcodeView().getCameraSettings().setBarcodeSceneModeEnabled(true);
         barcodeScannerView.decodeContinuous(callback);
 
-        getSupportActionBar().setTitle(null);
-        getSupportActionBar().getThemedContext();
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
+        if(getSupportActionBar() != null){
+            getSupportActionBar().setTitle(null);
+            getSupportActionBar().getThemedContext();
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeButtonEnabled(true);
+        }
     }
 
 

@@ -27,7 +27,6 @@ import static edu.ksu.wheatgenetics.verify.VerifyConstants.*;
 public class LoaderActivity extends AppCompatActivity {
 
     private Context _ctx;
-    private String _headerValue;
     private SparseArray<String> _ids;
     private SparseArray<String> _cols;
     private Uri _csvUri;
@@ -43,10 +42,12 @@ public class LoaderActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_load_file);
 
-        getSupportActionBar().setTitle(null);
-        getSupportActionBar().getThemedContext();
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
+        if(getSupportActionBar() != null){
+            getSupportActionBar().setTitle(null);
+            getSupportActionBar().getThemedContext();
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeButtonEnabled(true);
+        }
 
         ActivityCompat.requestPermissions(this, VerifyConstants.permissions, VerifyConstants.PERM_REQ);
 
@@ -211,9 +212,8 @@ public class LoaderActivity extends AppCompatActivity {
                     if (mDelimiter != null) {
                         final BufferedReader br = new BufferedReader(new InputStreamReader(is));
                         final String[] headers = br.readLine().split(mDelimiter);
-                        String temp = null;
+                        String temp;
 
-                        int row_count = 1;
                         while ((temp = br.readLine()) != null) {
                             final String[] id_line = temp.split(mDelimiter);
                             final int size = id_line.length;
@@ -254,7 +254,7 @@ public class LoaderActivity extends AppCompatActivity {
                 headerList.setAdapter(idAdapter);
             } else {
                 headerList.setAdapter(new ArrayAdapter<String>(_ctx, R.layout.row));
-                tutorialText.setText("Error reading file.");
+                tutorialText.setText(getString(R.string.import_error));
 
             }
 
@@ -263,7 +263,6 @@ public class LoaderActivity extends AppCompatActivity {
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                     finishButton.setEnabled(true);
-                    _headerValue = ((TextView) view).getText().toString();
                     tutorialText.setText(R.string.finish_tutorial);
                 }
             });
