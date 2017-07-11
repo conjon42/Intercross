@@ -25,11 +25,11 @@
 
     <!-- Intro Strings -->
     <string name="intro_title_1">Welcome to Verify!</string>
-    <string name="intro_title_2">Many Modes</string>
-    <string name="intro_title_3">Let\'s get started</string>
+    <string name="intro_title_2">Import a File</string>
+    <string name="intro_title_3">Many modes</string>
 
-    <string name="intro_body_1">Verify lets you import a list of entries to visualize details or manipulate.</string>
-    <string name="intro_body_2">Once a list is imported, you can scan entries in to get started. By default, each scanned entry will show the data associated with it. Filter will remove scanned entries. Color will paint entries that have been scanned. Order will ensure the scanned order matches the imported order.</string>
-    <string name="intro_body_3">After you give Verify permission to access files, open the navigation drawer, choose import, select your file, and choose the column that matches your external barcodes.</string>
+    <string name="intro_body_1">Verify lets you import a list of entries to visualize details or manipulate your list.</string>
+    <string name="intro_body_2">After you give Verify permission to access files, open the navigation drawer, choose import, select your file, and choose the column that matches your external barcodes.</string>
+    <string name="intro_body_3">Once a list has been imported, entries can be scanned to A) show accompanying data, B) paint scanned entries, C) remove scanned entries, or D) ensure the scanned order matches the imported order.</string>
 
 </resources>
