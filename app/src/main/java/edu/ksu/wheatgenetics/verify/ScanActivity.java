@@ -5,27 +5,16 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.google.zxing.ResultPoint;
-import com.google.zxing.integration.android.IntentIntegrator;
-import com.google.zxing.integration.android.IntentResult;
 
 import com.journeyapps.barcodescanner.BarcodeCallback;
 import com.journeyapps.barcodescanner.BarcodeResult;
-import com.journeyapps.barcodescanner.CaptureActivity;
-import com.journeyapps.barcodescanner.CaptureManager;
 import com.journeyapps.barcodescanner.DecoratedBarcodeView;
 
 import java.util.List;
-
-import static edu.ksu.wheatgenetics.verify.VerifyConstants.CAMERA_INTENT_REQ;
 
 /**
  * Created by chaneylc on 6/22/2017.
@@ -68,7 +57,7 @@ public class ScanActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.capture_activity);
+        setContentView(R.layout.activity_capture);
         barcodeScannerView = (DecoratedBarcodeView)
                 findViewById(R.id.zxing_barcode_scanner);
         barcodeScannerView.getBarcodeView().getCameraSettings().setContinuousFocusEnabled(true);

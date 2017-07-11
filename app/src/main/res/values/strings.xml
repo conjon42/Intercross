@@ -3,11 +3,11 @@
     <string name="action_open">Open a new csv file.</string>
     <string name="action_camera">Open camera view.</string>
     <string name="col_separator">Column separator</string>
-    <string name="action_home">Go to home.</string>
-    <string name="filter_mode">Filter Mode</string>
-    <string name="color_mode">Color Mode</string>
-    <string name="match_mode">Match Mode</string>
-    <string name="default_mode">Default Mode</string>
+    <string name="action_home">Home</string>
+    <string name="filter_mode">Filter - Remove scanned items</string>
+    <string name="color_mode">Color - Paint scanned items</string>
+    <string name="match_mode">Order - Verify order of items</string>
+    <string name="default_mode">Default - View item details</string>
     <string name="choose_separator_tutorial">Input a separator character.\nThis character should separate the headers and columns in the uploaded file.\nThen press Done.</string>
     <string name="open_file_tutorial">Choose a file with the open button.\nThe file\'s first line must be a header line, one header should correspond to barcode ids.</string>
     <string name="choose_header_tutorial">Click the barcode header in the list.</string>

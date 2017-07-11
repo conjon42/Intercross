@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -41,17 +42,12 @@ public class MainActivity extends AppCompatActivity {
     private Context _ctx;
     private SparseArray<String> _ids;
     private SparseArray<String> _cols;
-    private String _prevIdLookup;
     private int _matchingOrder;
     private NotificationManager _notificationManager;
     private NotificationCompat.Builder _builder;
     private Timer mTimer = new Timer("user input for suppressing messages", true);
     private TextView valueView;
-
-
-    private DrawerLayout mDrawer;
     private ActionBarDrawerToggle mDrawerToggle;
-    private String mActivityTitle;
     private DrawerLayout mDrawerLayout;
     NavigationView nvDrawer;
 
@@ -62,15 +58,13 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
         getSupportActionBar().setTitle(null);
         getSupportActionBar().getThemedContext();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
-        mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
-        mActivityTitle = getTitle().toString();
 
         nvDrawer = (NavigationView) findViewById(R.id.nvView);
 
@@ -168,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
                 final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
                 final ListView lv = ((ListView) findViewById(R.id.idTable));
 
-                switch(scanMode) {
+                switch (scanMode) {
 
                     case 0: //default
                         _notificationManager.notify(0, _builder.build());
@@ -185,14 +179,15 @@ public class MainActivity extends AppCompatActivity {
                             _matchingOrder++;
                             _notificationManager.notify(0, _builder.build());
                             Toast.makeText(_ctx, "Order matches id: " + id + " at index: " + found, Toast.LENGTH_SHORT).show();
-                        } else Toast.makeText(_ctx, "Scanning out of order!", Toast.LENGTH_SHORT).show();
+                        } else
+                            Toast.makeText(_ctx, "Scanning out of order!", Toast.LENGTH_SHORT).show();
                         break;
                     case 2: //filter mode
                         _matchingOrder = 0;
                         lv.setChoiceMode(ListView.CHOICE_MODE_NONE);
                         lv.clearChoices();
                         final ArrayAdapter<String> oldAdapter = (ArrayAdapter<String>) lv.getAdapter();
-                        final ArrayAdapter<String> updatedAdapter = new ArrayAdapter<String>(_ctx, R.layout.row);
+                        final ArrayAdapter<String> updatedAdapter = new ArrayAdapter<>(_ctx, R.layout.row);
                         final int oldSize = oldAdapter.getCount();
 
                         for (int i = 0; i < oldSize; i = i + 1) {
@@ -234,14 +229,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
         final File dir = _ctx.getDir("Verify", Context.MODE_PRIVATE);
-        Log.d("directory", dir.getAbsolutePath().toString());
+        Log.d("directory", dir.getAbsolutePath());
     }
 
     private class SuppressMessageTask extends TimerTask {
 
         @Override
         public void run() {
-
             sendIdNotFoundMsg();
         }
     }
@@ -252,17 +246,16 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void run() {
-
                 Toast.makeText(_ctx, "Scanned id not found", Toast.LENGTH_SHORT).show();
                 ((TextView) findViewById(R.id.valueView)).setText("");
             }
-        } );
+        });
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu m) {
         final MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.action_bar_menu, m);
+        inflater.inflate(R.menu.activity_main_toolbar, m);
         return true;
     }
 
@@ -270,6 +263,9 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
+            case android.R.id.home:
+                mDrawerLayout.openDrawer(GravityCompat.START);
+                return true;
             case R.id.action_camera:
                 final Intent cameraIntent = new Intent(this, ScanActivity.class);
                 startActivityForResult(cameraIntent, VerifyConstants.CAMERA_INTENT_REQ);
@@ -320,7 +316,7 @@ public class MainActivity extends AppCompatActivity {
 
             final ListView lv = ((ListView) findViewById(R.id.idTable));
             final ArrayAdapter<String> idAdapter =
-                    new ArrayAdapter<String>(_ctx, R.layout.row);
+                    new ArrayAdapter<>(_ctx, R.layout.row);
             final int size = _ids.size();
             for (int i = 0; i < size; i = i + 1)
                 idAdapter.add(_ids.get(i));
@@ -351,7 +347,7 @@ public class MainActivity extends AppCompatActivity {
             public void onDrawerOpened(View drawerView) {
                 View view = MainActivity.this.getCurrentFocus();
                 if (view != null) {
-                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
                 }
             }
@@ -377,7 +373,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void selectDrawerItem(MenuItem menuItem) {
-        switch(menuItem.getItemId()) {
+        switch (menuItem.getItemId()) {
 
             case R.id.nav_import:
                 final Intent i = new Intent(this, LoaderActivity.class);
@@ -395,7 +391,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
-        mDrawer.closeDrawers();
+        mDrawerLayout.closeDrawers();
     }
 
     @Override

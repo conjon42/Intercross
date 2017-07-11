@@ -4,9 +4,11 @@
         android:defaultValue="0"
         android:entries="@array/scan_mode_array"
         android:entryValues="@array/scan_mode_array_values"
+        android:icon="@drawable/ic_scanning"
         android:key="edu.ksu.wheatgenetics.verify.SCAN_MODE"
         android:summary="%s"
         android:title="@string/prefs_mode" />
+
     <CheckBoxPreference
         android:defaultValue="true"
         android:icon="@drawable/ic_audio"
