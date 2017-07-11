@@ -16,6 +16,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize|keyboard"
@@ -25,12 +26,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".ScanActivity"
             android:configChanges="" />
+
         <activity android:name=".LoaderActivity"
             android:configChanges="orientation|keyboardHidden|screenSize|keyboard"/>
+
         <activity android:name=".SettingsActivity" />
+
+        <activity android:name=".IntroActivity"
+            android:theme = "@style/AppThemeNoActionBar"/>
     </application>
 
 </manifest>
