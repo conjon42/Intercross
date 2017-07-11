@@ -72,9 +72,7 @@ public class MainActivity extends AppCompatActivity {
         setupDrawerContent(nvDrawer);
         setupDrawer();
 
-        //launchIntro();
-        final Intent i = new Intent(MainActivity.this, IntroActivity.class);
-        startActivity(i);
+        launchIntro();
 
         ActivityCompat.requestPermissions(this, VerifyConstants.permissions, VerifyConstants.PERM_REQ);
 
