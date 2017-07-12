@@ -1,6 +1,5 @@
 package edu.ksu.wheatgenetics.verify;
 
-
 import android.Manifest;
 
 class VerifyConstants {

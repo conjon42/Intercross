@@ -7,6 +7,7 @@ import android.view.MenuItem;
 public class SettingsActivity extends AppCompatActivity {
 
     public static String SCAN_MODE_LIST = "edu.ksu.wheatgenetics.verify.SCAN_MODE";
+    public static String AUDIO_ENABLED = "edu.ksu.wheatgenetics.verify.AUDIO_ENABLED";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

@@ -12,7 +12,7 @@
     <CheckBoxPreference
         android:defaultValue="true"
         android:icon="@drawable/ic_audio"
-        android:key="sound enabled"
+        android:key="edu.ksu.wheatgenetics.verify.AUDIO_ENABLED"
         android:summary="Check to disable/enable sound."
         android:title="@string/prefs_audio" />
 </PreferenceScreen>

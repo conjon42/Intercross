@@ -9,7 +9,7 @@
 
     <!-- Import Strings -->
     <string name="choose_separator_tutorial">Input a separator character.\nThis character should separate the headers and columns in the uploaded file.\nThen press Done.</string>
-    <string name="open_file_tutorial">Choose a file with the open button.\nThe file\'s first line must be a header line, one header should correspond to barcode ids.</string>
+    <string name="open_file_tutorial">Choose a file with the open button.</string>
     <string name="choose_header_tutorial">Click the barcode header in the list.</string>
     <string name="finish_tutorial">Press finish, you\'re done!</string>
     <string name="import_error">Error reading file.</string>
@@ -32,5 +32,6 @@
     <string name="intro_body_1">Verify lets you import a list of entries to visualize details or manipulate your list.</string>
     <string name="intro_body_2">After you give Verify permission to access files, open the navigation drawer, choose import, select your file, and choose the column that matches your external barcodes.</string>
     <string name="intro_body_3">Once a list has been imported, entries can be scanned to A) show accompanying data, B) paint scanned entries, C) remove scanned entries, or D) ensure the scanned order matches the imported order.</string>
+    <string name="action_home">Home</string>
 
 </resources>

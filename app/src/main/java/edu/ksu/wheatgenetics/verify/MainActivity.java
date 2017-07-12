@@ -1,26 +1,25 @@
 package edu.ksu.wheatgenetics.verify;
 
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.media.Ringtone;
 import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.design.widget.NavigationView;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -40,16 +39,19 @@ import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Context _ctx;
     private SparseArray<String> _ids;
     private SparseArray<String> _cols;
+    private SparseArray<String> _checkedIds;
+
     private int _matchingOrder;
-    private NotificationManager _notificationManager;
-    private NotificationCompat.Builder _builder;
     private Timer mTimer = new Timer("user input for suppressing messages", true);
     private TextView valueView;
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
+    private Ringtone mRingtoneNoti;
+    private Uri mRingtoneUri;
+    private EditText mScannerTextView;
+    private ListView mIdTable;
     NavigationView nvDrawer;
 
     @Override
@@ -58,6 +60,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+        mRingtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        mRingtoneNoti = RingtoneManager.getRingtone(this, mRingtoneUri);
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
@@ -78,162 +83,179 @@ public class MainActivity extends AppCompatActivity {
 
         ActivityCompat.requestPermissions(this, VerifyConstants.permissions, VerifyConstants.PERM_REQ);
 
-        _ctx = this;
-
         _matchingOrder = 0;
+        _ids = new SparseArray<>();
+        _cols = new SparseArray<>();
+        _checkedIds = new SparseArray<>();
 
-        if (_ids == null)
-            _ids = new SparseArray<>();
-
-        if (_cols == null)
-            _cols = new SparseArray<>();
-
-        _notificationManager = (NotificationManager) _ctx.getSystemService(NOTIFICATION_SERVICE);
-        _builder = new NotificationCompat.Builder(_ctx.getApplicationContext())
-                .setSmallIcon(R.drawable.ic_action_camera)
-                .setAutoCancel(true)
-                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
-
-        final EditText et = ((EditText) findViewById(R.id.scannerTextView));
-        final ListView lv = ((ListView) findViewById(R.id.idTable));
-
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mIdTable = ((ListView) findViewById(R.id.idTable));
+        mIdTable.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+        mIdTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                lv.setItemChecked(position, false);
-                et.setText(((TextView) view).getText().toString());
+                //get app settings
+                final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
+
+                switch (scanMode) {
+
+                    case 0: //default
+
+                    case 1: //matching mode
+
+                    case 2: //filter mode
+                        mIdTable.setItemChecked(position, !mIdTable.isItemChecked(position));
+                        break;
+                    case 3: //color mode
+                        _checkedIds.append(_checkedIds.size(), ((TextView) view).getText().toString());
+                        mIdTable.setItemChecked(position, true);
+                        break;
+                }
+                mScannerTextView.setText(((TextView) view).getText().toString());
+                checkScannedItem();
             }
         });
 
         valueView = (TextView) findViewById(R.id.valueView);
         valueView.setMovementMethod(new ScrollingMovementMethod());
 
-        et.addTextChangedListener(new TextWatcher() {
-
+        mScannerTextView = ((EditText) findViewById(R.id.scannerTextView));
+        mScannerTextView.setOnKeyListener(new View.OnKeyListener() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
 
-            }
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    if (keyCode == KeyEvent.KEYCODE_ENTER) {
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-                mTimer.purge();
-                mTimer.cancel();
-
-                //check if there are at least 4 digits and an id to check for
-                if (s.length() >= 3 && _ids.size() != 0) {
-
-                    final int size = _ids.size();
-                    /*
-                    scan list of ids for updated text id input
-                     */
-                    int found = -1;
-                    for (int i = 0; i < size; i = i + 1) {
-                        if (s.toString().equals(_ids.get(_ids.keyAt(i)))) {
-                            found = i;
-                            valueView.setText(_cols.get(_cols.keyAt(i)));
-                            break;
-                        }
-                    }
-
-                    if (found == -1) {
-                        mTimer.purge();
-                        mTimer.cancel();
-                        mTimer = new Timer("user input for suppressing messages", true);
-                        mTimer.schedule(new SuppressMessageTask(), 3000);
-                    } else {
-                        //cancel all invalid messages
-                        mTimer.purge();
-                        mTimer.cancel();
-                        updateListView(s.toString(), found);
+                        checkScannedItem();
                     }
                 }
-            }
-
-            /* DFA for scan state */
-            private void updateListView(String id, int found) {
-
-                //get app settings
-                final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(_ctx);
-                final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
-                final ListView lv = ((ListView) findViewById(R.id.idTable));
-
-                switch (scanMode) {
-
-                    case 0: //default
-                        _notificationManager.notify(0, _builder.build());
-                        Toast.makeText(_ctx, "Scanned id found: " + id, Toast.LENGTH_SHORT).show();
-                        _matchingOrder = 0;
-                        lv.setChoiceMode(ListView.CHOICE_MODE_NONE);
-                        lv.clearChoices();
-                        break;
-                    case 1: //matching mode
-                        lv.setChoiceMode(ListView.CHOICE_MODE_NONE);
-                        lv.clearChoices();
-                        if (_matchingOrder == found) {
-                            _notificationManager.notify(0, _builder.build());
-                            _matchingOrder++;
-                            _notificationManager.notify(0, _builder.build());
-                            Toast.makeText(_ctx, "Order matches id: " + id + " at index: " + found, Toast.LENGTH_SHORT).show();
-                        } else
-                            Toast.makeText(_ctx, "Scanning out of order!", Toast.LENGTH_SHORT).show();
-                        break;
-                    case 2: //filter mode
-                        _matchingOrder = 0;
-                        lv.setChoiceMode(ListView.CHOICE_MODE_NONE);
-                        lv.clearChoices();
-                        final ArrayAdapter<String> oldAdapter = (ArrayAdapter<String>) lv.getAdapter();
-                        final ArrayAdapter<String> updatedAdapter = new ArrayAdapter<>(_ctx, R.layout.row);
-                        final int oldSize = oldAdapter.getCount();
-
-                        for (int i = 0; i < oldSize; i = i + 1) {
-                            if (i != found) {
-                                updatedAdapter.add(oldAdapter.getItem(i));
-                            }
-                        }
-                        lv.setAdapter(updatedAdapter);
-
-                        _ids.remove(_ids.keyAt(found));
-                        _cols.remove(_cols.keyAt(found));
-
-                        _notificationManager.notify(0, _builder.build());
-                        Toast.makeText(_ctx, "Removing scanned item: " + id, Toast.LENGTH_SHORT).show();
-
-                        break;
-                    case 3: //color mode
-                        _matchingOrder = 0;
-                        lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-                        lv.setItemChecked(found, true);
-
-                        _notificationManager.notify(0, _builder.build());
-                        Toast.makeText(_ctx, "Coloring scanned item: " + id, Toast.LENGTH_SHORT).show();
-                        break;
-                }
+                return false;
             }
         });
 
         findViewById(R.id.clearButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                et.setText("");
+
+                mScannerTextView.setText("");
+                checkScannedItem();
             }
         });
 
-        if (savedInstanceState != null) {
+        final File dir = this.getDir("Verify", Context.MODE_PRIVATE);
+        Log.d("directory", dir.getAbsolutePath());
+    }
 
-            buildListViewFromIntent(getIntent());
+    private void checkScannedItem() {
+
+        final String scannedId = mScannerTextView.getText().toString();
+        mTimer.purge();
+        mTimer.cancel();
+
+        final int size = _ids.size();
+                /*
+                scan list of ids for updated text id input
+                 */
+        int found = -1;
+        for (int i = 0; i < size; i = i + 1) {
+            if (scannedId.equals(_ids.get(_ids.keyAt(i)))) {
+                found = i;
+                valueView.setText(_cols.get(_cols.keyAt(i)));
+                break;
+            }
         }
 
-        final File dir = _ctx.getDir("Verify", Context.MODE_PRIVATE);
-        Log.d("directory", dir.getAbsolutePath());
+        if (found == -1) {
+            mTimer.purge();
+            mTimer.cancel();
+            mTimer = new Timer("user input for suppressing messages", true);
+            mTimer.schedule(new SuppressMessageTask(), 0);
+        } else {
+            //cancel all invalid messages
+            mTimer.purge();
+            mTimer.cancel();
+            updateListView(scannedId, found);
+        }
+    }
+
+    /* DFA for scan state */
+    private void updateListView(String id, int found) {
+
+        //get app settings
+        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
+
+        switch (scanMode) {
+
+            case 0: //default
+                ringNotification();
+                Toast.makeText(this, "Scanned id found: " + id, Toast.LENGTH_SHORT).show();
+                _matchingOrder = 0;
+                break;
+            case 1: //matching mode
+                if (_matchingOrder == found) {
+                    ringNotification();
+                    _matchingOrder++;
+                    Toast.makeText(this, "Order matches id: " + id + " at index: " + found, Toast.LENGTH_SHORT).show();
+                } else
+                    Toast.makeText(this, "Scanning out of order!", Toast.LENGTH_SHORT).show();
+                break;
+            case 2: //filter mode
+                _matchingOrder = 0;
+
+                final ArrayAdapter<String> oldAdapter = (ArrayAdapter<String>) mIdTable.getAdapter();
+                final ArrayAdapter<String> updatedAdapter = new ArrayAdapter<>(this, R.layout.row);
+                final int oldSize = oldAdapter.getCount();
+
+                for (int i = 0; i < oldSize; i = i + 1) {
+                    if (i != found) {
+                        updatedAdapter.add(oldAdapter.getItem(i));
+                    }
+                }
+                mIdTable.setAdapter(updatedAdapter);
+
+                for (int i = 0; i < mIdTable.getCount(); i = i + 1) {
+                    for (int j = 0; j < _checkedIds.size(); j = j + 1) {
+                        final String checkedJ = _checkedIds.get(_checkedIds.keyAt(j));
+                        final String checkedI = ((TextView) mIdTable.getAdapter().getView(i, null, null)).getText().toString();
+                        if (checkedI.equals(checkedJ)) {
+                            mIdTable.setItemChecked(i, true);
+                        }
+                    }
+                }
+                _ids.remove(_ids.keyAt(found));
+                _cols.remove(_cols.keyAt(found));
+
+                ringNotification();
+                Toast.makeText(this, "Removing scanned item: " + id, Toast.LENGTH_SHORT).show();
+
+                break;
+            case 3: //color mode
+                _matchingOrder = 0;
+                ringNotification();
+                Toast.makeText(this, "Coloring scanned item: " + id, Toast.LENGTH_SHORT).show();
+                break;
+        }
+    }
+
+    private void ringNotification() {
+
+        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        final boolean audioEnabled = sharedPref.getBoolean(SettingsActivity.AUDIO_ENABLED, true);
+
+        if (audioEnabled) {
+            try {
+                mRingtoneNoti.play();
+            } catch (Exception e) {
+                e.printStackTrace();
+                mRingtoneNoti.stop();
+                mRingtoneNoti = RingtoneManager.getRingtone(this, mRingtoneUri);
+
+            }
+        }
     }
 
     private class SuppressMessageTask extends TimerTask {
@@ -250,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void run() {
-                Toast.makeText(_ctx, "Scanned id not found", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Scanned id not found", Toast.LENGTH_SHORT).show();
                 ((TextView) findViewById(R.id.valueView)).setText("");
             }
         });
@@ -258,6 +280,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu m) {
+
         final MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.activity_main_toolbar, m);
         return true;
@@ -294,8 +317,8 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 if (intent.hasExtra(VerifyConstants.CAMERA_RETURN_ID)) {
-                    ((TextView) findViewById(R.id.scannerTextView))
-                            .setText(intent.getStringExtra(VerifyConstants.CAMERA_RETURN_ID));
+                    mScannerTextView.setText(intent.getStringExtra(VerifyConstants.CAMERA_RETURN_ID));
+                    checkScannedItem();
                 }
             }
         }
@@ -307,6 +330,11 @@ public class MainActivity extends AppCompatActivity {
         final ArrayList<String> colMsg = intent.getStringArrayListExtra(VerifyConstants.COL_ARRAY_EXTRA);
         final ArrayList<String> keyMsg = intent.getStringArrayListExtra(VerifyConstants.ID_ARRAY_EXTRA);
 
+        buildListView(colMsg, keyMsg);
+    }
+
+    private void buildListView(ArrayList<String> colMsg, ArrayList<String> keyMsg) {
+
         //convert messages to global sparse arrays
         final int kMsgSize = keyMsg.size();
         for (int j = 0; j < kMsgSize; j = j + 1)
@@ -316,16 +344,14 @@ public class MainActivity extends AppCompatActivity {
         for (int j = 0; j < cMsgSize; j = j + 1)
             _cols.append(j, colMsg.get(j));
 
-        if (_ids != null) {
 
-            final ListView lv = ((ListView) findViewById(R.id.idTable));
-            final ArrayAdapter<String> idAdapter =
-                    new ArrayAdapter<>(_ctx, R.layout.row);
-            final int size = _ids.size();
-            for (int i = 0; i < size; i = i + 1)
-                idAdapter.add(_ids.get(i));
-            lv.setAdapter(idAdapter);
-        }
+        final ArrayAdapter<String> idAdapter =
+                new ArrayAdapter<>(this, R.layout.row);
+        final int size = _ids.size();
+        for (int i = 0; i < size; i = i + 1)
+            idAdapter.add(_ids.get(i));
+        mIdTable.setAdapter(idAdapter);
+
     }
 
     @Override
@@ -342,6 +368,15 @@ public class MainActivity extends AppCompatActivity {
         }
         outState.putStringArrayList(VerifyConstants.ID_ARRAY_EXTRA, keys);
         outState.putStringArrayList(VerifyConstants.COL_ARRAY_EXTRA, cols);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        final ArrayList<String> colMsg = savedInstanceState.getStringArrayList(VerifyConstants.COL_ARRAY_EXTRA);
+        final ArrayList<String> keyMsg = savedInstanceState.getStringArrayList(VerifyConstants.ID_ARRAY_EXTRA);
+        buildListView(colMsg, keyMsg);
     }
 
     private void setupDrawer() {
@@ -411,41 +446,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void launchIntro() {
-        Thread t = new Thread(new Runnable() {
+
+        new Thread(new Runnable() {
             @Override
             public void run() {
-                //  Initialize SharedPreferences
-                SharedPreferences getPrefs = PreferenceManager
-                        .getDefaultSharedPreferences(getBaseContext());
+            //  Initialize SharedPreferences
+            SharedPreferences getPrefs = PreferenceManager
+                    .getDefaultSharedPreferences(getBaseContext());
 
-                //  Create a new boolean and preference and set it to true
-                boolean isFirstStart = getPrefs.getBoolean("firstStart", true);
+            //  Create a new boolean and preference and set it to true
+            boolean isFirstStart = getPrefs.getBoolean("firstStart", true);
 
-                //  If the activity has never started before...
-                if (isFirstStart) {
+            //  If the activity has never started before...
+            if (isFirstStart) {
 
-                    //  Launch app intro
-                    final Intent i = new Intent(MainActivity.this, IntroActivity.class);
+                //  Launch app intro
+                final Intent i = new Intent(MainActivity.this, IntroActivity.class);
 
-                    runOnUiThread(new Runnable() {
-                        @Override public void run() {
-                            startActivity(i);
-                        }
-                    });
+                runOnUiThread(new Runnable() {
+                    @Override public void run() {
+                        startActivity(i);
+                    }
+                });
 
-                    //  Make a new preferences editor
-                    SharedPreferences.Editor e = getPrefs.edit();
+                //  Make a new preferences editor
+                SharedPreferences.Editor e = getPrefs.edit();
 
-                    //  Edit preference to make it false because we don't want this to run again
-                    e.putBoolean("firstStart", false);
+                //  Edit preference to make it false because we don't want this to run again
+                e.putBoolean("firstStart", false);
 
-                    //  Apply changes
-                    e.apply();
-                }
+                //  Apply changes
+                e.apply();
             }
-        });
-
-        // Start the thread
-        t.start();
+            }
+        }).start();
     }
 }
