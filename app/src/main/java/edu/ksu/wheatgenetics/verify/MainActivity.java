@@ -87,7 +87,11 @@ public class MainActivity extends AppCompatActivity {
         setupDrawerContent(nvDrawer);
         setupDrawer();
 
-        launchIntro();
+        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        final boolean tutorialMode = sharedPref.getBoolean(SettingsActivity.TUTORIAL_MODE, true);
+
+        if (tutorialMode)
+            launchIntro();
 
         ActivityCompat.requestPermissions(this, VerifyConstants.permissions, VerifyConstants.PERM_REQ);
 
@@ -103,24 +107,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                //get app settings
-                final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-                final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
-
-                switch (scanMode) {
-
-                    case 0: //default
-
-                    case 1: //matching mode
-
-                    case 2: //filter mode
-                        mIdTable.setItemChecked(position, !mIdTable.isItemChecked(position));
-                        break;
-                    case 3: //color mode
-                        _checkedIds.append(_checkedIds.size(), ((TextView) view).getText().toString());
-                        mIdTable.setItemChecked(position, true);
-                        break;
-                }
                 mScannerTextView.setText(((TextView) view).getText().toString());
                 checkScannedItem();
             }
@@ -178,6 +164,31 @@ public class MainActivity extends AppCompatActivity {
                 found = i;
                 valueView.setText(_cols.get(_cols.keyAt(i)));
                 break;
+            }
+        }
+
+        //get app settings
+        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
+
+        for (int position = 0; position < mIdTable.getCount(); position++) {
+
+            final String id = (mIdTable.getItemAtPosition(position)).toString();
+            if (id.equals(scannedId)) {
+                switch (scanMode) {
+
+                    case 0: //default
+
+                    case 1: //matching mode
+
+                    case 2: //filter mode
+                        mIdTable.setItemChecked(position, !mIdTable.isItemChecked(position));
+                        break;
+                    case 3: //color mode
+                        _checkedIds.append(_checkedIds.size(), scannedId);
+                        mIdTable.setItemChecked(position, true);
+                        break;
+                }
             }
         }
 
@@ -527,34 +538,17 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-            //  Initialize SharedPreferences
-            SharedPreferences getPrefs = PreferenceManager
-                    .getDefaultSharedPreferences(getBaseContext());
 
-            //  Create a new boolean and preference and set it to true
-            boolean isFirstStart = getPrefs.getBoolean("firstStart", true);
+            //  Launch app intro
+            final Intent i = new Intent(MainActivity.this, IntroActivity.class);
 
-            //  If the activity has never started before...
-            if (isFirstStart) {
+            runOnUiThread(new Runnable() {
+                @Override public void run() {
+                    startActivity(i);
+                }
+            });
+                
 
-                //  Launch app intro
-                final Intent i = new Intent(MainActivity.this, IntroActivity.class);
-
-                runOnUiThread(new Runnable() {
-                    @Override public void run() {
-                        startActivity(i);
-                    }
-                });
-
-                //  Make a new preferences editor
-                SharedPreferences.Editor e = getPrefs.edit();
-
-                //  Edit preference to make it false because we don't want this to run again
-                e.putBoolean("firstStart", false);
-
-                //  Apply changes
-                e.apply();
-            }
             }
         }).start();
     }

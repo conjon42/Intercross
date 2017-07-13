@@ -15,4 +15,11 @@
         android:key="edu.ksu.wheatgenetics.verify.AUDIO_ENABLED"
         android:summary="Check to disable/enable sound."
         android:title="@string/prefs_audio" />
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:icon="@drawable/ic_tutorial"
+        android:key="edu.ksu.wheatgenetics.verify.TUTORIAL_MODE"
+        android:summary="Enable tutorial mode."
+        android:title="Tutorial" />
 </PreferenceScreen>
