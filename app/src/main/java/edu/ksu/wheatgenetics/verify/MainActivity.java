@@ -289,6 +289,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+
         switch (item.getItemId()) {
             case android.R.id.home:
                 mDrawerLayout.openDrawer(GravityCompat.START);
@@ -427,6 +431,14 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.nav_about:
                 Toast.makeText(this, "About", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.nav_intro:
+                final Intent intro_intent = new Intent(MainActivity.this, IntroActivity.class);
+                runOnUiThread(new Runnable() {
+                    @Override public void run() {
+                        startActivity(intro_intent);
+                    }
+                });
                 break;
         }
 

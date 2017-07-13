@@ -52,6 +52,13 @@ public class LoaderActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_load_file);
 
+        if(getSupportActionBar() != null){
+            getSupportActionBar().setTitle(null);
+            getSupportActionBar().getThemedContext();
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeButtonEnabled(true);
+        }
+
         ActivityCompat.requestPermissions(this, VerifyConstants.permissions, VerifyConstants.PERM_REQ);
 
         _ids = new SparseArray<>();
@@ -201,18 +208,10 @@ public class LoaderActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu m) {
-
-        final MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.action_bar_back_menu, m);
-        return true;
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
-            case R.id.action_home:
+            case android.R.id.home:
                 setResult(RESULT_OK);
                 finish();
                 return true;
