@@ -95,6 +95,7 @@ public class LoaderActivity extends AppCompatActivity {
                 doneButton.setVisibility(View.GONE);
                 separatorText.setVisibility(View.GONE);
                 mDelimiter = separatorText.getText().toString();
+                if (mDelimiter.isEmpty()) mDelimiter = ",";
                 displayHeaderList();
             }
         });
@@ -183,12 +184,20 @@ public class LoaderActivity extends AppCompatActivity {
 
                         mHeader = header;
 
+                        if (header == null) {
+
+                        }
                         //if unsupported file type, start delimiter tutorial
                         if (mDelimiter == null) {
-                            separatorText.setVisibility(View.VISIBLE);
-                            doneButton.setVisibility(View.VISIBLE);
-                            tutorialText.setText(R.string.choose_separator_tutorial);
-                            tutorialText.append(header);
+                            if (header == null) {
+                                tutorialText.setText("Error reading file.");
+                            } else {
+                                separatorText.setVisibility(View.VISIBLE);
+                                doneButton.setVisibility(View.VISIBLE);
+                                tutorialText.setText(R.string.choose_separator_tutorial);
+                                tutorialText.append(header);
+                            }
+
                         } else { //display header list
                             displayHeaderList();
                         }
