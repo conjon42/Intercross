@@ -1,6 +1,7 @@
 package edu.ksu.wheatgenetics.verify;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -8,6 +9,7 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -15,7 +17,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.util.SparseArray;
@@ -33,6 +37,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOError;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -43,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private SparseArray<String> _cols;
     private SparseArray<String> _checkedIds;
 
+    private File mVerifyDirectory;
     private int _matchingOrder;
     private Timer mTimer = new Timer("user input for suppressing messages", true);
     private TextView valueView;
@@ -145,8 +153,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        final File dir = this.getDir("Verify", Context.MODE_PRIVATE);
-        Log.d("directory", dir.getAbsolutePath());
+        if (isExternalStorageWritable()) {
+            mVerifyDirectory = new File(Environment.getExternalStorageDirectory().getPath() + "/Verify");
+            if (!mVerifyDirectory.isDirectory()) mVerifyDirectory.mkdirs();
+        }
+
+        //final File dir = this.getDir("Verify", Context.MODE_PRIVATE);
+        //Log.d("directory", dir.getAbsolutePath());
     }
 
     private void checkScannedItem() {
@@ -427,7 +440,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(settingsIntent, VerifyConstants.SETTINGS_INTENT_REQ);
                 break;
             case R.id.nav_export:
-                Toast.makeText(this, "Export", Toast.LENGTH_SHORT).show();
+                askUserExportFileName();
                 break;
             case R.id.nav_about:
                 Toast.makeText(this, "About", Toast.LENGTH_SHORT).show();
@@ -443,6 +456,58 @@ public class MainActivity extends AppCompatActivity {
         }
 
         mDrawerLayout.closeDrawers();
+    }
+
+    private void askUserExportFileName() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Choose name for exported file.");
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        builder.setPositiveButton("Export", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String value = input.getText().toString();
+                if (!value.isEmpty()) {
+                    if (isExternalStorageWritable()) {
+                        try {
+                            final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                            final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
+                            final File output = new File(mVerifyDirectory, value);
+                            final FileOutputStream fstream = new FileOutputStream(output);
+
+                            if (_ids != null && _ids.size() > 0) {
+                                //write header line
+                                fstream.write("id".getBytes());
+                                if (scanMode == 3) fstream.write(",checked\n".getBytes());
+                                for (int i = 0; i < mIdTable.getCount(); i = i + 1) {
+                                    final String id = ((TextView) mIdTable.getAdapter().getView(i, null, null)).getText().toString();
+                                    fstream.write(id.getBytes());
+                                    if (scanMode == 3) {
+                                        for (int j = 0; j < _checkedIds.size(); j = j + 1) {
+                                            final String checked = _checkedIds.get(_checkedIds.keyAt(j));
+                                            if (id.equals(checked)) {
+                                                fstream.write(",checked".getBytes());
+                                            }
+                                        }
+                                    }
+                                    fstream.write("\n".getBytes());
+                                }
+                                fstream.flush();
+                                fstream.close();
+                            }
+                        } catch (IOException io) {
+                            io.printStackTrace();
+                        }
+                    } //error toast
+                } //use default name
+            }
+        });
+
+        builder.show();
+
     }
 
     @Override
@@ -492,5 +557,24 @@ public class MainActivity extends AppCompatActivity {
             }
             }
         }).start();
+    }
+
+    /* Checks if external storage is available for read and write */
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
+        }
+        return false;
+    }
+
+    /* Checks if external storage is available to at least read */
+    public boolean isExternalStorageReadable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state) ||
+                Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+            return true;
+        }
+        return false;
     }
 }
