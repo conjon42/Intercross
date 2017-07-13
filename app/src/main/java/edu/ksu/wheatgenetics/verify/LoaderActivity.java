@@ -305,6 +305,7 @@ public class LoaderActivity extends AppCompatActivity {
     public String getPath(Uri uri) {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+
             if (DocumentsContract.isDocumentUri(LoaderActivity.this, uri)) {
 
                 if ("com.android.externalstorage.documents".equals(uri.getAuthority())) {
@@ -322,6 +323,8 @@ public class LoaderActivity extends AppCompatActivity {
                 }
             }
             else if ("file".equalsIgnoreCase(uri.getScheme())) {
+                return uri.getPath();
+            } else if ("com.estrongs.files".equals(uri.getAuthority())) {
                 return uri.getPath();
             }
         }
