@@ -1,10 +1,13 @@
 package edu.ksu.wheatgenetics.verify;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -40,6 +43,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOError;
 import java.io.IOException;
+import java.net.IDN;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -49,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
     private SparseArray<String> _ids;
     private SparseArray<String> _cols;
     private SparseArray<String> _checkedIds;
+
+    private IdEntryDbHelper mDbHelper;
 
     private File mVerifyDirectory;
     private int _matchingOrder;
@@ -144,6 +150,9 @@ public class MainActivity extends AppCompatActivity {
             if (!mVerifyDirectory.isDirectory()) mVerifyDirectory.mkdirs();
         }
 
+        mDbHelper = new IdEntryDbHelper(this);
+
+        loadSQLToLocal();
         //final File dir = this.getDir("Verify", Context.MODE_PRIVATE);
         //Log.d("directory", dir.getAbsolutePath());
     }
@@ -340,7 +349,17 @@ public class MainActivity extends AppCompatActivity {
             if (intent != null) {
                 switch (requestCode) {
                     case VerifyConstants.LOADER_INTENT_REQ:
-                        buildListViewFromIntent(intent);
+                        mDbHelper.onUpgrade(mDbHelper.getWritableDatabase(), 1, 1);
+
+                        //get intent array list messages (columns and keys)
+                        final ArrayList<String> colMsg = intent.getStringArrayListExtra(VerifyConstants.COL_ARRAY_EXTRA);
+                        final ArrayList<String> keyMsg = intent.getStringArrayListExtra(VerifyConstants.ID_ARRAY_EXTRA);
+
+                        _checkedIds = new SparseArray<>();
+                        _ids = new SparseArray<>();
+                        _cols = new SparseArray<>();
+                        
+                        buildListView(colMsg, keyMsg);
                         break;
                 }
 
@@ -350,15 +369,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-    }
-
-    private void buildListViewFromIntent(Intent intent) {
-
-        //get intent array list messages (columns and keys)
-        final ArrayList<String> colMsg = intent.getStringArrayListExtra(VerifyConstants.COL_ARRAY_EXTRA);
-        final ArrayList<String> keyMsg = intent.getStringArrayListExtra(VerifyConstants.ID_ARRAY_EXTRA);
-
-        buildListView(colMsg, keyMsg);
     }
 
     private void buildListView(ArrayList<String> colMsg, ArrayList<String> keyMsg) {
@@ -380,6 +390,15 @@ public class MainActivity extends AppCompatActivity {
             idAdapter.add(_ids.get(i));
         mIdTable.setAdapter(idAdapter);
 
+        for (int i = 0; i < mIdTable.getCount(); i = i + 1) {
+            for (int j = 0; j < _checkedIds.size(); j = j + 1) {
+                final String checkedJ = _checkedIds.get(_checkedIds.keyAt(j));
+                final String checkedI = ((TextView) mIdTable.getAdapter().getView(i, null, null)).getText().toString();
+                if (checkedI.equals(checkedJ)) {
+                    mIdTable.setItemChecked(i, true);
+                }
+            }
+        }
     }
 
     @Override
@@ -570,5 +589,79 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return false;
+    }
+
+    void persistLocalToSQL() {
+
+        final SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        final int size = _ids.size();
+        for (int i = 0; i < size; i = i + 1) {
+            final ContentValues entry = new ContentValues();
+            final String id = _ids.get(_ids.keyAt(i));
+            entry.put(IdEntryContract.IdEntry.COLUMN_NAME_ID, id);
+            entry.put(IdEntryContract.IdEntry.COLUMN_NAME_VALS, _cols.get(_cols.keyAt(i)));
+            entry.put(IdEntryContract.IdEntry.COLUMN_NAME_CHECKED, 0);
+            for (int j = 0; j < _checkedIds.size(); j = j + 1) {
+                if (_checkedIds.get(_checkedIds.keyAt(j)).equals(id)) {
+                    entry.put(IdEntryContract.IdEntry.COLUMN_NAME_CHECKED, 1);
+                }
+            }
+            final long newRowId = db.insert(IdEntryContract.IdEntry.TABLE_NAME, null, entry);
+        }
+
+    }
+
+    void loadSQLToLocal() {
+
+        final SQLiteDatabase db = mDbHelper.getReadableDatabase();
+
+        final Cursor cursor = db.rawQuery("select * from " + IdEntryContract.IdEntry.TABLE_NAME, null);
+
+        ArrayList<String> ids = new ArrayList<>();
+        ArrayList<String> cols = new ArrayList<>();
+        while(cursor.moveToNext()) {
+            String id = cursor.getString(
+                    cursor.getColumnIndexOrThrow(IdEntryContract.IdEntry.COLUMN_NAME_ID)
+            );
+            String col = cursor.getString(
+                    cursor.getColumnIndexOrThrow(IdEntryContract.IdEntry.COLUMN_NAME_VALS)
+            );
+            boolean checked = cursor.getInt(
+                    cursor.getColumnIndexOrThrow(IdEntryContract.IdEntry.COLUMN_NAME_CHECKED)
+            ) > 0;
+            if (checked) {
+                _checkedIds.append(_checkedIds.size(), id);
+            }
+            ids.add(id);
+            cols.add(col);
+        }
+        cursor.close();
+        buildListView(cols, ids);
+    }
+
+    @Override
+    public void onDestroy() {
+        mDbHelper.close();
+        super.onDestroy();
+    }
+
+    @Override
+    public void onStop() {
+        mDbHelper.onUpgrade(mDbHelper.getWritableDatabase(), 1, 1);
+        persistLocalToSQL();
+        super.onStop();
+    }
+
+    @Override
+    public void onPause() {
+       // persistLocalToSQL();
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        //loadSQLToLocal();
+        super.onResume();
     }
 }
