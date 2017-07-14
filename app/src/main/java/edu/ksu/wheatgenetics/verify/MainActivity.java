@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
         setupDrawer();
 
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-        final boolean tutorialMode = sharedPref.getBoolean(SettingsActivity.TUTORIAL_MODE, true);
+        final boolean tutorialMode = sharedPref.getBoolean(SettingsActivity.TUTORIAL_MODE, false);
 
         if (tutorialMode)
             launchIntro();
