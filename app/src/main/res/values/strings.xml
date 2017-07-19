@@ -13,7 +13,8 @@
     <string name="choose_header_tutorial">Click the barcode header in the list.</string>
     <string name="finish_tutorial">Press finish, you\'re done!</string>
     <string name="import_error">Error reading file.</string>
-
+    <string name="choose_header_button_tutorial">Click continue.</string>
+    <string name="columns_tutorial">Click all columns to display.</string>
     <!-- Settings Strings -->
     <string name="prefs_mode">Scan Mode</string>
     <string name="prefs_audio">Audio</string>

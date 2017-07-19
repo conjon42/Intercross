@@ -93,8 +93,8 @@ public class MainActivity extends AppCompatActivity {
         setupDrawerContent(nvDrawer);
         setupDrawer();
 
-        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-        final boolean tutorialMode = sharedPref.getBoolean(SettingsActivity.TUTORIAL_MODE, false);
+        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        final boolean tutorialMode = sharedPref.getBoolean(SettingsActivity.TUTORIAL_MODE, true);
 
         if (tutorialMode)
             launchIntro();
@@ -358,7 +358,7 @@ public class MainActivity extends AppCompatActivity {
                         _checkedIds = new SparseArray<>();
                         _ids = new SparseArray<>();
                         _cols = new SparseArray<>();
-                        
+
                         buildListView(colMsg, keyMsg);
                         break;
                 }

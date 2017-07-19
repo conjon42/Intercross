@@ -28,6 +28,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import static edu.ksu.wheatgenetics.verify.VerifyConstants.CSV_URI;
 import static edu.ksu.wheatgenetics.verify.VerifyConstants.DEFAULT_CONTENT_REQ;
@@ -36,10 +37,12 @@ public class LoaderActivity extends AppCompatActivity {
 
     private SparseArray<String> _ids;
     private SparseArray<String> _cols;
+    private HashSet<String> displayCols;
+
     private Uri _csvUri;
     private String mDelimiter;
 
-    private Button finishButton, doneButton;
+    private Button finishButton, doneButton, chooseHeaderButton;
     private ListView headerList;
     private TextView tutorialText;
     private EditText separatorText;
@@ -62,24 +65,26 @@ public class LoaderActivity extends AppCompatActivity {
         ActivityCompat.requestPermissions(this, VerifyConstants.permissions, VerifyConstants.PERM_REQ);
 
         _ids = new SparseArray<>();
-
         _cols = new SparseArray<>();
+        displayCols = new HashSet<>();
 
         headerList = ((ListView) findViewById(R.id.headerList));
 
+        headerList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         headerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                finishButton.setEnabled(true);
+                chooseHeaderButton.setEnabled(true);
                 mIdHeaderIndex = position;
-                tutorialText.setText(R.string.finish_tutorial);
+                tutorialText.setText(R.string.choose_header_button_tutorial);
             }
         });
 
         tutorialText = (TextView) findViewById(R.id.tutorialTextView);
         separatorText = (EditText) findViewById(R.id.separatorTextView);
 
+        chooseHeaderButton = (Button) findViewById(R.id.chooseHeaderButton);
         doneButton = ((Button) findViewById(R.id.doneButton));
         finishButton = ((Button) findViewById(R.id.finishButton));
 
@@ -100,9 +105,21 @@ public class LoaderActivity extends AppCompatActivity {
             }
         });
 
+        chooseHeaderButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                chooseHeaderButton.setVisibility(View.GONE);
+                displayColsList();
+
+            }
+        });
+
         finishButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                tutorialText.setText(R.string.finish_tutorial);
 
                 new AsyncCSVParse().execute(_csvUri);
 
@@ -111,11 +128,38 @@ public class LoaderActivity extends AppCompatActivity {
 
     }
 
+    private void displayColsList() {
+
+        tutorialText.setText(R.string.columns_tutorial);
+        finishButton.setVisibility(View.VISIBLE);
+        finishButton.setEnabled(false);
+
+        final String[] headers = mHeader.split(mDelimiter);
+        if (headers.length > 0 && headers[0] != null) {
+            final ArrayAdapter<String> idAdapter =
+                    new ArrayAdapter<>(this, R.layout.row);
+            for (String h : headers) {
+                if (!h.equals(headers[mIdHeaderIndex])) idAdapter.add(h);
+            }
+            headerList.setAdapter(idAdapter);
+        }
+
+        headerList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+        headerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                finishButton.setEnabled(true);
+                displayCols.add(((TextView) view).getText().toString());
+            }
+        });
+
+    }
+
     private void displayHeaderList() {
 
         tutorialText.setText(R.string.choose_header_tutorial);
-        finishButton.setVisibility(View.VISIBLE);
-        finishButton.setEnabled(false);
+        chooseHeaderButton.setVisibility(View.VISIBLE);
+        chooseHeaderButton.setEnabled(false);
         headerList.setVisibility(View.VISIBLE);
 
         if (mHeader == null) {
@@ -264,10 +308,12 @@ public class LoaderActivity extends AppCompatActivity {
                                 final String id = id_line[mIdHeaderIndex];
                                 final StringBuilder sb = new StringBuilder();
                                 for (int i = 0; i < size; i = i + 1) {
-                                    sb.append(headers[i]);
-                                    sb.append(": ");
-                                    sb.append(id_line[i]);
-                                    sb.append("\n");
+                                    if (displayCols.contains(headers[i])) {
+                                        sb.append(headers[i]);
+                                        sb.append(": ");
+                                        sb.append(id_line[i]);
+                                        sb.append("\n");
+                                    }
                                 }
                                 final int next = _ids.size();
                                 _ids.append(next, id);
