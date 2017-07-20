@@ -13,7 +13,8 @@
     <string name="choose_header_tutorial">Click the barcode header in the list.</string>
     <string name="finish_tutorial">Press finish, you\'re done!</string>
     <string name="import_error">Error reading file.</string>
-    <string name="choose_header_button_tutorial">Click continue.</string>
+    <string name="press_continue_tutorial">Click continue.</string>
+    <string name="choose_pair_button_tutorial">Choose column with pair id.</string>
     <string name="columns_tutorial">Click all columns to display.</string>
     <!-- Settings Strings -->
     <string name="prefs_mode">Scan Mode</string>
@@ -24,6 +25,7 @@
     <string name="filter_mode">Filter - Remove scanned items</string>
     <string name="color_mode">Color - Paint scanned items</string>
     <string name="match_mode">Order - Verify order of items</string>
+    <string name="pair_mode">Pairing - seed fillings and track crosses</string>
 
     <!-- Intro Strings -->
     <string name="intro_title_1">Welcome to Verify!</string>

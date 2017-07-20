@@ -11,7 +11,7 @@
 
         <ListView
             android:id="@+id/idTable"
-            android:layout_width="fill_parent"
+            android:layout_width="0dp"
             android:layout_height="200dp"
             android:visibility="visible"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -21,7 +21,7 @@
         <EditText
             android:id="@+id/scannerTextView"
             style="@style/Base.TextAppearance.AppCompat.Headline"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="60dp"
             android:layout_margin="8dp"
             android:focusable="true"
@@ -35,8 +35,8 @@
 
         <Button
             android:id="@+id/clearButton"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:layout_margin="8dp"

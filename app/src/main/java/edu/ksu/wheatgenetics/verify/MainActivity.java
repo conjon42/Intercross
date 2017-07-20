@@ -8,9 +8,11 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -25,6 +27,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.util.Pair;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -34,6 +37,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -43,8 +47,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOError;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.IDN;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -53,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
     private SparseArray<String> _ids;
     private SparseArray<String> _cols;
     private SparseArray<String> _checkedIds;
+
+    private HashSet<String> disabledViews;
 
     private IdEntryDbHelper mDbHelper;
 
@@ -66,6 +74,11 @@ public class MainActivity extends AppCompatActivity {
     private Uri mRingtoneUri;
     private EditText mScannerTextView;
     private ListView mIdTable;
+
+    //pair mode vars
+    private String mPairCol;
+    private String mNextPairVal;
+
     NavigationView nvDrawer;
 
     @Override
@@ -105,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
         _ids = new SparseArray<>();
         _cols = new SparseArray<>();
         _checkedIds = new SparseArray<>();
+        disabledViews = new HashSet<>();
 
         mIdTable = ((ListView) findViewById(R.id.idTable));
         mIdTable.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
@@ -115,6 +129,20 @@ public class MainActivity extends AppCompatActivity {
 
                 mScannerTextView.setText(((TextView) view).getText().toString());
                 checkScannedItem();
+            }
+        });
+        mIdTable.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+
+                //get app settings
+                final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
+
+                if (scanMode == 1) { // order mode
+                    disabledViews.add(((TextView) view).getText().toString());
+                }
+                return true;
             }
         });
 
@@ -151,6 +179,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         mDbHelper = new IdEntryDbHelper(this);
+
+        mPairCol = null;
 
         loadSQLToLocal();
         //final File dir = this.getDir("Verify", Context.MODE_PRIVATE);
@@ -189,13 +219,14 @@ public class MainActivity extends AppCompatActivity {
                     case 0: //default
 
                     case 1: //matching mode
-
+                    case 4: //pair mode
                     case 2: //filter mode
                         mIdTable.setItemChecked(position, !mIdTable.isItemChecked(position));
                         break;
                     case 3: //color mode
                         _checkedIds.append(_checkedIds.size(), scannedId);
                         mIdTable.setItemChecked(position, true);
+                        persistLocalToSQL();
                         break;
                 }
             }
@@ -229,6 +260,11 @@ public class MainActivity extends AppCompatActivity {
                 _matchingOrder = 0;
                 break;
             case 1: //matching mode
+                View v = mIdTable.getAdapter().getView(_matchingOrder, null, null);
+                while (disabledViews.contains(((TextView) v).getText().toString())) {
+                    _matchingOrder++;
+                    v = mIdTable.getAdapter().getView(_matchingOrder, null, null);
+                }
                 if (_matchingOrder == found) {
                     ringNotification();
                     _matchingOrder++;
@@ -261,6 +297,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 _ids.remove(_ids.keyAt(found));
                 _cols.remove(_cols.keyAt(found));
+                persistLocalToSQL();
 
                 ringNotification();
                 Toast.makeText(this, "Removing scanned item: " + id, Toast.LENGTH_SHORT).show();
@@ -271,6 +308,35 @@ public class MainActivity extends AppCompatActivity {
                 ringNotification();
                 Toast.makeText(this, "Coloring scanned item: " + id, Toast.LENGTH_SHORT).show();
                 break;
+            case 4: //pair mode
+                _matchingOrder = 0;
+                if (mNextPairVal == null) {
+                    //first scan set next pair val to user chosen pair col value
+                    int idIndex = 0;
+                    for (int i = 0; i < _ids.size(); i = i + 1) {
+                        if (_ids.get(_ids.keyAt(i)).equals(id)) {
+                            idIndex = i;
+                        }
+                    }
+
+                    String colVal = _cols.get(_cols.keyAt(idIndex));
+                    String[] vals = colVal.split("\n");
+                    for (String headerVal : vals) {
+                        final String[] tokens = headerVal.split(":");
+                        if (tokens.length == 2) {
+                            if (tokens[0].equals(mPairCol)) {
+                                mNextPairVal = tokens[1].trim();
+                            }
+                        }
+                    }
+                } else {
+                    if (mNextPairVal.equals(id)) {
+                        ringNotification();
+                        Toast.makeText(this, "Scanned paired item: " + id, Toast.LENGTH_SHORT).show();
+                    }
+                    mNextPairVal = null;
+                }
+
         }
     }
 
@@ -349,11 +415,13 @@ public class MainActivity extends AppCompatActivity {
             if (intent != null) {
                 switch (requestCode) {
                     case VerifyConstants.LOADER_INTENT_REQ:
-                        mDbHelper.onUpgrade(mDbHelper.getWritableDatabase(), 1, 1);
 
                         //get intent array list messages (columns and keys)
                         final ArrayList<String> colMsg = intent.getStringArrayListExtra(VerifyConstants.COL_ARRAY_EXTRA);
                         final ArrayList<String> keyMsg = intent.getStringArrayListExtra(VerifyConstants.ID_ARRAY_EXTRA);
+
+                        if (intent.hasExtra(VerifyConstants.PAIR_COL))
+                            mPairCol = intent.getStringExtra(VerifyConstants.PAIR_COL);
 
                         _checkedIds = new SparseArray<>();
                         _ids = new SparseArray<>();
@@ -383,11 +451,14 @@ public class MainActivity extends AppCompatActivity {
             _cols.append(j, colMsg.get(j));
 
 
+        persistLocalToSQL();
+
+
         final ArrayAdapter<String> idAdapter =
                 new ArrayAdapter<>(this, R.layout.row);
         final int size = _ids.size();
         for (int i = 0; i < size; i = i + 1)
-            idAdapter.add(_ids.get(i));
+            idAdapter.add(_ids.get(_ids.keyAt(i)));
         mIdTable.setAdapter(idAdapter);
 
         for (int i = 0; i < mIdTable.getCount(); i = i + 1) {
@@ -462,7 +533,11 @@ public class MainActivity extends AppCompatActivity {
         switch (menuItem.getItemId()) {
 
             case R.id.nav_import:
+                final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
                 final Intent i = new Intent(this, LoaderActivity.class);
+                if (scanMode == 4) //pair mode
+                    i.putExtra(VerifyConstants.PAIR_MODE_LOADER, "");
                 startActivityForResult(i, VerifyConstants.LOADER_INTENT_REQ);
                 break;
             case R.id.nav_settings:
@@ -486,6 +561,22 @@ public class MainActivity extends AppCompatActivity {
         }
 
         mDrawerLayout.closeDrawers();
+    }
+
+    private void askToSkipOrder() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Skip ordered item?");
+
+        builder.setPositiveButton("Skip", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                _matchingOrder++;
+            }
+        });
+
+        builder.show();
+
     }
 
     private void askUserExportFileName() {
@@ -593,51 +684,91 @@ public class MainActivity extends AppCompatActivity {
 
     void persistLocalToSQL() {
 
-        final SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        new AsyncTask<Uri, Void, String>() {
 
-        final int size = _ids.size();
-        for (int i = 0; i < size; i = i + 1) {
-            final ContentValues entry = new ContentValues();
-            final String id = _ids.get(_ids.keyAt(i));
-            entry.put(IdEntryContract.IdEntry.COLUMN_NAME_ID, id);
-            entry.put(IdEntryContract.IdEntry.COLUMN_NAME_VALS, _cols.get(_cols.keyAt(i)));
-            entry.put(IdEntryContract.IdEntry.COLUMN_NAME_CHECKED, 0);
-            for (int j = 0; j < _checkedIds.size(); j = j + 1) {
-                if (_checkedIds.get(_checkedIds.keyAt(j)).equals(id)) {
-                    entry.put(IdEntryContract.IdEntry.COLUMN_NAME_CHECKED, 1);
+            @Override
+            protected String doInBackground(Uri[] params) {
+
+                mDbHelper.onUpgrade(mDbHelper.getWritableDatabase(), 1, 1);
+
+                final SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+                synchronized (db) {
+                    final int size = _ids.size();
+                    for (int i = 0; i < size; i = i + 1) {
+                        final ContentValues entry = new ContentValues();
+                        final String id = _ids.get(_ids.keyAt(i));
+                        entry.put(IdEntryContract.IdEntry.COLUMN_NAME_ID, id);
+                        entry.put(IdEntryContract.IdEntry.COLUMN_NAME_VALS, _cols.get(_cols.keyAt(i)));
+                        entry.put(IdEntryContract.IdEntry.COLUMN_NAME_CHECKED, 0);
+                        entry.put(IdEntryContract.IdEntry.COLUMN_NAME_PAIR, "");
+                        if (mPairCol != null) {
+                            entry.put(IdEntryContract.IdEntry.COLUMN_NAME_PAIR, mPairCol);
+                        }
+                        for (int j = 0; j < _checkedIds.size(); j = j + 1) {
+                            if (_checkedIds.get(_checkedIds.keyAt(j)).equals(id)) {
+                                entry.put(IdEntryContract.IdEntry.COLUMN_NAME_CHECKED, 1);
+                            }
+                        }
+
+                        final long newRowId = db.insert(IdEntryContract.IdEntry.TABLE_NAME, null, entry);
+                    }
                 }
+                return null;
             }
-            final long newRowId = db.insert(IdEntryContract.IdEntry.TABLE_NAME, null, entry);
-        }
-
+        }.execute();
     }
 
     void loadSQLToLocal() {
 
-        final SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        new AsyncTask<Uri, Void, Pair<ArrayList<String>, ArrayList<String>>>() {
 
-        final Cursor cursor = db.rawQuery("select * from " + IdEntryContract.IdEntry.TABLE_NAME, null);
+            @Override
+            protected Pair<ArrayList<String>, ArrayList<String>> doInBackground(Uri[] params) {
 
-        ArrayList<String> ids = new ArrayList<>();
-        ArrayList<String> cols = new ArrayList<>();
-        while(cursor.moveToNext()) {
-            String id = cursor.getString(
-                    cursor.getColumnIndexOrThrow(IdEntryContract.IdEntry.COLUMN_NAME_ID)
-            );
-            String col = cursor.getString(
-                    cursor.getColumnIndexOrThrow(IdEntryContract.IdEntry.COLUMN_NAME_VALS)
-            );
-            boolean checked = cursor.getInt(
-                    cursor.getColumnIndexOrThrow(IdEntryContract.IdEntry.COLUMN_NAME_CHECKED)
-            ) > 0;
-            if (checked) {
-                _checkedIds.append(_checkedIds.size(), id);
+                SQLiteDatabase db = mDbHelper.getReadableDatabase();
+
+                synchronized (db) {
+                    Cursor cursor = db.rawQuery("select * from " + IdEntryContract.IdEntry.TABLE_NAME, null);
+
+                    ArrayList<String> ids = new ArrayList<>();
+                    ArrayList<String> cols = new ArrayList<>();
+
+                    if (cursor.moveToFirst()) {
+                        do {
+                            String id = cursor.getString(
+                                    cursor.getColumnIndexOrThrow(IdEntryContract.IdEntry.COLUMN_NAME_ID)
+                            );
+                            String col = cursor.getString(
+                                    cursor.getColumnIndexOrThrow(IdEntryContract.IdEntry.COLUMN_NAME_VALS)
+                            );
+                            String pair = cursor.getString(
+                                    cursor.getColumnIndexOrThrow(IdEntryContract.IdEntry.COLUMN_NAME_PAIR)
+                            );
+                            boolean checked = cursor.getInt(
+                                    cursor.getColumnIndexOrThrow(IdEntryContract.IdEntry.COLUMN_NAME_CHECKED)
+                            ) > 0;
+                            if (checked) {
+                                _checkedIds.append(_checkedIds.size(), id);
+                            }
+                            ids.add(id);
+                            cols.add(col);
+                            mPairCol = pair;
+                        } while (cursor.moveToNext());
+                    }
+                    cursor.close();
+
+                    return new Pair<ArrayList<String>, ArrayList<String>>(cols, ids);
+                }
             }
-            ids.add(id);
-            cols.add(col);
-        }
-        cursor.close();
-        buildListView(cols, ids);
+
+            @Override
+            protected void onPostExecute(Pair<ArrayList<String>, ArrayList<String>> idCols) {
+                buildListView(idCols.first, idCols.second);
+
+            }
+        }.execute();
+
     }
 
     @Override
@@ -647,15 +778,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onStop() {
-        mDbHelper.onUpgrade(mDbHelper.getWritableDatabase(), 1, 1);
-        persistLocalToSQL();
-        super.onStop();
-    }
-
-    @Override
     public void onPause() {
-       // persistLocalToSQL();
         super.onPause();
     }
 

@@ -3,12 +3,14 @@ package edu.ksu.wheatgenetics.verify;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.provider.DocumentsContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -24,6 +26,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -35,6 +39,8 @@ import static edu.ksu.wheatgenetics.verify.VerifyConstants.DEFAULT_CONTENT_REQ;
 
 public class LoaderActivity extends AppCompatActivity {
 
+    private boolean pairMode = false;
+
     private SparseArray<String> _ids;
     private SparseArray<String> _cols;
     private HashSet<String> displayCols;
@@ -42,11 +48,12 @@ public class LoaderActivity extends AppCompatActivity {
     private Uri _csvUri;
     private String mDelimiter;
 
-    private Button finishButton, doneButton, chooseHeaderButton;
+    private Button finishButton, doneButton, chooseHeaderButton, choosePairButton;
     private ListView headerList;
     private TextView tutorialText;
     private EditText separatorText;
     private String mHeader;
+    private String mPairCol;
     private int mIdHeaderIndex;
 
     @Override
@@ -77,13 +84,14 @@ public class LoaderActivity extends AppCompatActivity {
 
                 chooseHeaderButton.setEnabled(true);
                 mIdHeaderIndex = position;
-                tutorialText.setText(R.string.choose_header_button_tutorial);
+                tutorialText.setText(R.string.press_continue_tutorial);
             }
         });
 
         tutorialText = (TextView) findViewById(R.id.tutorialTextView);
         separatorText = (EditText) findViewById(R.id.separatorTextView);
 
+        choosePairButton = (Button) findViewById(R.id.choosePairButton);
         chooseHeaderButton = (Button) findViewById(R.id.chooseHeaderButton);
         doneButton = ((Button) findViewById(R.id.doneButton));
         finishButton = ((Button) findViewById(R.id.finishButton));
@@ -110,8 +118,39 @@ public class LoaderActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 chooseHeaderButton.setVisibility(View.GONE);
+
+                if (pairMode) {
+                    tutorialText.setText(R.string.choose_pair_button_tutorial);
+                    choosePairButton.setVisibility(View.VISIBLE);
+                    choosePairButton.setEnabled(false);
+                    headerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                            tutorialText.setText(R.string.press_continue_tutorial);
+                            choosePairButton.setEnabled(true);
+                            mPairCol = ((TextView) view).getText().toString();
+                        }
+                    });
+                } else {
+                    tutorialText.setText(R.string.columns_tutorial);
+                    finishButton.setVisibility(View.VISIBLE);
+                    finishButton.setEnabled(false);
+                }
                 displayColsList();
 
+            }
+        });
+
+        choosePairButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                choosePairButton.setVisibility(View.GONE);
+                tutorialText.setText(R.string.columns_tutorial);
+                finishButton.setVisibility(View.VISIBLE);
+                finishButton.setEnabled(false);
+                displayColsList();
             }
         });
 
@@ -126,32 +165,47 @@ public class LoaderActivity extends AppCompatActivity {
             }
         });
 
+        final Intent sentIntent = getIntent();
+        if (sentIntent.hasExtra(VerifyConstants.PAIR_MODE_LOADER)) {
+            pairMode = true;
+        }
     }
 
     private void displayColsList() {
 
-        tutorialText.setText(R.string.columns_tutorial);
-        finishButton.setVisibility(View.VISIBLE);
-        finishButton.setEnabled(false);
+        headerList.setVisibility(View.VISIBLE);
 
         final String[] headers = mHeader.split(mDelimiter);
         if (headers.length > 0 && headers[0] != null) {
             final ArrayAdapter<String> idAdapter =
                     new ArrayAdapter<>(this, R.layout.row);
             for (String h : headers) {
-                if (!h.equals(headers[mIdHeaderIndex])) idAdapter.add(h);
+                if (!h.equals(headers[mIdHeaderIndex])) {
+                    idAdapter.add(h);
+                }
             }
             headerList.setAdapter(idAdapter);
         }
 
-        headerList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-        headerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                finishButton.setEnabled(true);
-                displayCols.add(((TextView) view).getText().toString());
-            }
-        });
+        if (pairMode && mPairCol == null) {
+            headerList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+            headerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    choosePairButton.setEnabled(true);
+                    mPairCol = ((TextView) view).getText().toString();
+                }
+            });
+        } else {
+            headerList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+            headerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    finishButton.setEnabled(true);
+                    displayCols.add(((TextView) view).getText().toString());
+                }
+            });
+        }
 
     }
 
@@ -308,7 +362,8 @@ public class LoaderActivity extends AppCompatActivity {
                                 final String id = id_line[mIdHeaderIndex];
                                 final StringBuilder sb = new StringBuilder();
                                 for (int i = 0; i < size; i = i + 1) {
-                                    if (displayCols.contains(headers[i])) {
+                                    if (displayCols.contains(headers[i]) ||
+                                            headers[i].equals(mPairCol)) {
                                         sb.append(headers[i]);
                                         sb.append(": ");
                                         sb.append(id_line[i]);
@@ -350,6 +405,8 @@ public class LoaderActivity extends AppCompatActivity {
             //pass array lists into extra, end activity
             intent.putExtra(VerifyConstants.COL_ARRAY_EXTRA, colArray);
             intent.putExtra(VerifyConstants.ID_ARRAY_EXTRA, idArray);
+            if (pairMode)
+                intent.putExtra(VerifyConstants.PAIR_COL, mPairCol);
             setResult(RESULT_OK, intent);
             finish();
         }

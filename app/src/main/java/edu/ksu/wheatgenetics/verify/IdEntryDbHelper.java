@@ -13,7 +13,7 @@ import static edu.ksu.wheatgenetics.verify.IdEntryContract.SQL_DELETE_ENTRIES;
 
 public class IdEntryDbHelper extends SQLiteOpenHelper {
 
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "IdEntryReader.db";
 
     public IdEntryDbHelper(Context context) {

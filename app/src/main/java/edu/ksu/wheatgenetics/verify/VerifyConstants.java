@@ -21,5 +21,7 @@ class VerifyConstants {
     final static String ID_ARRAY_EXTRA = "edu.ksu.wheatgenetics.verify.ID_ARRAY";
     final static String COL_ARRAY_EXTRA = "edu.ksu.wheatgenetics.verify.COL_ARRAY";
     final static String CAMERA_RETURN_ID = "edu.ksu.wheatgenetics.verify.CAMERA_RETURN_ID";
+    final static String PAIR_COL = "edu.ksu.wheatgenetics.verify.PAIR_COL";
+    final static String PAIR_MODE_LOADER = "edu.ksu.wheatgenetics.verify.PAIR_MODE_LOADER";
 
 }
