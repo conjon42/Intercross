@@ -548,7 +548,7 @@ public class MainActivity extends AppCompatActivity {
                 askUserExportFileName();
                 break;
             case R.id.nav_about:
-                Toast.makeText(this, "About", Toast.LENGTH_SHORT).show();
+                showAboutDialog();
                 break;
             case R.id.nav_intro:
                 final Intent intro_intent = new Intent(MainActivity.this, IntroActivity.class);
@@ -561,6 +561,61 @@ public class MainActivity extends AppCompatActivity {
         }
 
         mDrawerLayout.closeDrawers();
+    }
+
+    private void showAboutDialog()
+    {
+        final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        {
+            final android.view.View personView = this.getLayoutInflater().inflate(
+                    R.layout.about, new android.widget.LinearLayout(this),
+                    false);
+
+            {
+                assert personView != null;
+                final android.widget.TextView versionTextView = (android.widget.TextView)
+                        personView.findViewById(R.id.tvVersion);
+                try
+                {
+                    final android.content.pm.PackageInfo packageInfo =
+                            this.getPackageManager().getPackageInfo(this.getPackageName(), 0);
+                    assert packageInfo     != null;
+                    assert versionTextView != null;
+                    versionTextView.setText(this.getResources().getString(
+                            R.string.versiontitle) +
+                            " " + packageInfo.versionName);
+                }
+                catch (final android.content.pm.PackageManager.NameNotFoundException e)
+                { }
+                versionTextView.setOnClickListener(new android.view.View.OnClickListener()
+                {
+                    @java.lang.Override
+                    public void onClick(final android.view.View v)
+                    { MainActivity.this.showChangeLog(); }
+                });
+            }
+
+            builder.setCancelable(true);
+            builder.setTitle     (this.getResources().getString(
+                    R.string.about));
+            builder.setView(personView);
+        }
+        builder.setNegativeButton(
+                this.getResources().getString(R.string.ok),
+                new android.content.DialogInterface.OnClickListener()
+                {
+                    @java.lang.Override
+                    public void onClick(final android.content.DialogInterface dialog, final int which)
+                    {
+                        assert dialog != null;
+                        dialog.dismiss();
+                    }
+                });
+        builder.show();
+    }
+
+    private void showChangeLog() {
+
     }
 
     private void askToSkipOrder() {
