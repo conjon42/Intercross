@@ -19,6 +19,7 @@ public class IdEntryDbHelper extends SQLiteOpenHelper {
     public IdEntryDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
+
     /**
      * Called when the database is created for the first time. This is where the
      * creation of tables and the initial population of the tables should happen.
@@ -27,7 +28,7 @@ public class IdEntryDbHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(SQL_CREATE_ENTRIES);
+        //db.execSQL(SQL_CREATE_ENTRIES);
     }
 
     /**

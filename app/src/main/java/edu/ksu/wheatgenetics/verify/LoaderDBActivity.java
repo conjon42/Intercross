@@ -1,23 +1,22 @@
 package edu.ksu.wheatgenetics.verify;
 
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.provider.DocumentsContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -27,21 +26,17 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 
 import static edu.ksu.wheatgenetics.verify.VerifyConstants.CSV_URI;
 import static edu.ksu.wheatgenetics.verify.VerifyConstants.DEFAULT_CONTENT_REQ;
 
-public class LoaderActivity extends AppCompatActivity {
-
-    private boolean pairMode = false;
+public class LoaderDBActivity extends AppCompatActivity {
 
     private SparseArray<String> _ids, _cols, _checkedIds, _dateIds, _userIds;
     private SparseIntArray _scannedIds;
@@ -51,6 +46,8 @@ public class LoaderActivity extends AppCompatActivity {
     private Uri _csvUri;
     private String mDelimiter;
 
+    private String mIdHeader;
+
     private Button finishButton, doneButton, chooseHeaderButton, choosePairButton;
     private ListView headerList;
     private TextView tutorialText;
@@ -58,6 +55,9 @@ public class LoaderActivity extends AppCompatActivity {
     private String mHeader;
     private String mPairCol;
     private int mIdHeaderIndex;
+    private int mPairColIndex;
+
+    private IdEntryDbHelper mDbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,12 +74,7 @@ public class LoaderActivity extends AppCompatActivity {
 
         ActivityCompat.requestPermissions(this, VerifyConstants.permissions, VerifyConstants.PERM_REQ);
 
-        _ids = new SparseArray<>();
-        _cols = new SparseArray<>();
-        _dateIds = new SparseArray<>();
-        _userIds = new SparseArray<>();
-        _scannedIds = new SparseIntArray();
-        _checkedIds = new SparseArray<>();
+        mDbHelper = new IdEntryDbHelper(this);
 
         displayCols = new HashSet<>();
 
@@ -92,6 +87,7 @@ public class LoaderActivity extends AppCompatActivity {
 
                 chooseHeaderButton.setEnabled(true);
                 mIdHeaderIndex = position;
+                mIdHeader = ((TextView) view).getText().toString();
                 tutorialText.setText(R.string.press_continue_tutorial);
             }
         });
@@ -127,25 +123,21 @@ public class LoaderActivity extends AppCompatActivity {
 
                 chooseHeaderButton.setVisibility(View.GONE);
 
-                if (pairMode) {
-                    tutorialText.setText(R.string.choose_pair_button_tutorial);
-                    choosePairButton.setVisibility(View.VISIBLE);
-                    choosePairButton.setEnabled(false);
-                    headerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                        @Override
-                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                tutorialText.setText(R.string.choose_pair_button_tutorial);
+                choosePairButton.setVisibility(View.VISIBLE);
+                choosePairButton.setEnabled(false);
+                headerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                            tutorialText.setText(R.string.press_continue_tutorial);
-                            choosePairButton.setEnabled(true);
-                            mPairCol = ((TextView) view).getText().toString();
-                        }
-                    });
-                } else {
-                    tutorialText.setText(R.string.columns_tutorial);
-                    finishButton.setVisibility(View.VISIBLE);
-                    finishButton.setEnabled(false);
-                }
-                displayColsList();
+                        tutorialText.setText(R.string.press_continue_tutorial);
+                        choosePairButton.setEnabled(true);
+                        mPairCol = ((TextView) view).getText().toString();
+                        mPairColIndex = position;
+                    }
+                });
+
+                displayColsList(true);
 
             }
         });
@@ -158,7 +150,7 @@ public class LoaderActivity extends AppCompatActivity {
                 tutorialText.setText(R.string.columns_tutorial);
                 finishButton.setVisibility(View.VISIBLE);
                 finishButton.setEnabled(false);
-                displayColsList();
+                displayColsList(false);
             }
         });
 
@@ -168,18 +160,94 @@ public class LoaderActivity extends AppCompatActivity {
 
                 tutorialText.setText(R.string.finish_tutorial);
 
-                new AsyncCSVParse().execute(_csvUri);
+                //create database
+                insertColumns();
 
+                //send relative information to main activity
+                final String[] displayHeaders = displayCols.toArray(new String[] {});
+
+                if (displayHeaders.length > 0) {
+                    String headers = mIdHeader;
+
+                    for (int i = 0; i < displayHeaders.length; i = i + 1) {
+                        headers += ",";
+                        headers += displayHeaders[i];
+                    }
+                    //initialize intent
+                    final Intent intent = new Intent();
+                    intent.putExtra(VerifyConstants.HEADER_LIST_EXTRA, headers);
+                    intent.putExtra(VerifyConstants.HEADER_DELIMETER_EXTRA, mDelimiter);
+                    intent.putExtra(VerifyConstants.LIST_ID_EXTRA, mIdHeader);
+                    intent.putExtra(VerifyConstants.PAIR_COL_EXTRA, mPairCol);
+
+                    setResult(RESULT_OK, intent);
+                    finish();
+                }
             }
         });
-
-        final Intent sentIntent = getIntent();
-        if (sentIntent.hasExtra(VerifyConstants.PAIR_MODE_LOADER)) {
-            pairMode = true;
-        }
     }
 
-    private void displayColsList() {
+    private synchronized void insertColumns() {
+
+        final SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        db.execSQL("DROP TABLE IF EXISTS VERIFY");
+
+        final StringBuilder dbExecCreate = new StringBuilder();
+
+        dbExecCreate.append("CREATE TABLE VERIFY(" + mIdHeader + " TEXT PRIMARY KEY");
+
+        dbExecCreate.append(", " + mPairCol + " TEXT");
+        dbExecCreate.append(", d DATE");
+        dbExecCreate.append(", user TEXT");
+        dbExecCreate.append(", note TEXT");
+        dbExecCreate.append(", s INT DEFAULT 0");
+        dbExecCreate.append(", c INT");
+
+        final String[] cols = displayCols.toArray(new String[] {});
+        final int colSize = cols.length;
+        for (int i = 0; i < colSize; i++) {
+            dbExecCreate.append(",");
+            dbExecCreate.append(cols[i] + " TEXT");
+        }
+        dbExecCreate.append(");");
+
+        db.execSQL(dbExecCreate.toString());
+
+        try {
+            final InputStream is = getContentResolver().openInputStream(_csvUri);
+            if (is != null) {
+
+                if (mDelimiter != null) {
+                    final BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                    final String[] headers = br.readLine().split(mDelimiter);
+
+                    String temp;
+                    while ((temp = br.readLine()) != null) {
+                        final ContentValues entry = new ContentValues();
+                        final String[] id_line = temp.split(mDelimiter);
+                        final int size = id_line.length;
+                        if (size != 0 && size <= headers.length) {
+
+                            entry.put(headers[mIdHeaderIndex], id_line[mIdHeaderIndex]);
+
+                            for (int i = 0; i < size; i = i + 1) {
+
+                                if (displayCols.contains(headers[i]) || headers[i].equals(mPairCol)) {
+                                    entry.put(headers[i], id_line[i]);
+                                }
+                            }
+                            final long newRowId = db.insert("VERIFY", null, entry);
+                        } else Log.d("ROW ERROR", temp);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+    private void displayColsList(boolean pairMode) {
 
         headerList.setVisibility(View.VISIBLE);
 
@@ -278,8 +346,6 @@ public class LoaderActivity extends AppCompatActivity {
                                 br.close();
                                 return header;
                             }
-
-
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -335,121 +401,12 @@ public class LoaderActivity extends AppCompatActivity {
         }
     }
 
-    private class AsyncCSVParse extends AsyncTask<Uri, Void, String[]> {
-
-        @Override
-        protected String[] doInBackground(Uri[] params) {
-
-            if (params.length > 0 && params[0] != null) try {
-                final InputStream is = getContentResolver().openInputStream(params[0]);
-                if (is != null) {
-
-                    if (mDelimiter != null) {
-                        final BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                        final String[] headers = br.readLine().split(mDelimiter);
-
-                        String temp = null;
-                        while ((temp = br.readLine()) != null) {
-                            final String[] id_line = temp.split(mDelimiter);
-                            final int size = id_line.length;
-                            if (size != 0) {
-                                final String id = id_line[mIdHeaderIndex];
-                                final StringBuilder sb = new StringBuilder();
-                                for (int i = 0; i < size; i = i + 1) {
-
-                                    if (headers[i].equals("user"))
-                                        _userIds.append(_userIds.size(), id_line[i]);
-                                    else if (headers[i].equals("scanned"))
-                                        _scannedIds.append(_scannedIds.size(), Integer.valueOf(id_line[i]));
-                                    else if (headers[i].equals("checked")) {
-                                        if(id_line[i].equals("checked"))
-                                            _checkedIds.append(_checkedIds.size(), id);
-                                    }
-                                    else if (headers[i].equals("date"))
-                                        _dateIds.append(_dateIds.size(), id_line[i]);
-
-                                    if (displayCols.contains(headers[i]) ||
-                                            headers[i].equals(mPairCol)) {
-                                        sb.append(headers[i]);
-                                        sb.append(": ");
-                                        sb.append(id_line[i]);
-                                        sb.append("\n");
-                                    }
-                                }
-                                final int next = _ids.size();
-                                _ids.append(next, id);
-                                _cols.append(next, sb.toString());
-                            }
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String[] data) {
-
-            //initialize intent
-            final Intent intent = new Intent();
-
-            //convert global sparse arrays to arraylists to pass as extra
-            final int idSize = _ids.size();
-            final ArrayList<String> idArray = new ArrayList<>();
-            final ArrayList<String> colArray = new ArrayList<>();
-            final ArrayList<Integer> scanArray = new ArrayList<>();
-            final ArrayList<String> dateArray = new ArrayList<>();
-            final ArrayList<String> checkedArray = new ArrayList<>();
-            final ArrayList<String> userArray = new ArrayList<>();
-            for (int i = 0; i < idSize; i = i + 1) {
-                final String id = _ids.get(_ids.keyAt(i));
-                idArray.add(i, id);
-                colArray.add(i, _cols.get(_cols.keyAt(i)));
-
-                if (_scannedIds.indexOfKey(i) > -1)
-                    scanArray.add(i, _scannedIds.get(_scannedIds.keyAt(i), 0));
-                else scanArray.add(i, 0);
-
-                if (_dateIds.indexOfKey(i) > -1)
-                    dateArray.add(i, _dateIds.get(_dateIds.keyAt(i), "None"));
-                else dateArray.add(i, "None");
-
-                if (_userIds.indexOfKey(i) > -1)
-                    userArray.add(i, _userIds.get(_userIds.keyAt(i), "None"));
-                else userArray.add(i, "None");
-
-                final int checkedSize = _checkedIds.size();
-                for (int j = 0; j < checkedSize; j = j + 1) {
-                    final String checkedId = _checkedIds.get(_checkedIds.keyAt(j));
-                    if (checkedId.equals(id)) {
-                        checkedArray.add(checkedArray.size(), checkedId);
-                        break;
-                    }
-                }
-            }
-
-            //pass array lists into extra, end activity
-            intent.putExtra(VerifyConstants.COL_ARRAY_EXTRA, colArray);
-            intent.putExtra(VerifyConstants.ID_ARRAY_EXTRA, idArray);
-            intent.putExtra(VerifyConstants.CHECKED_ARRAY_EXTRA, checkedArray);
-            intent.putExtra(VerifyConstants.SCAN_ARRAY_EXTRA, scanArray);
-            intent.putExtra(VerifyConstants.USER_ARRAY_EXTRA, userArray);
-            intent.putExtra(VerifyConstants.DATE_ARRAY_EXTRA, dateArray);
-
-            setResult(RESULT_OK, intent);
-            finish();
-        }
-    }
-
-
     //based on https://github.com/iPaulPro/aFileChooser/blob/master/aFileChooser/src/com/ipaulpro/afilechooser/utils/FileUtils.java
     public String getPath(Uri uri) {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 
-            if (DocumentsContract.isDocumentUri(LoaderActivity.this, uri)) {
+            if (DocumentsContract.isDocumentUri(LoaderDBActivity.this, uri)) {
 
                 if ("com.android.externalstorage.documents".equals(uri.getAuthority())) {
                     final String[] doc =  DocumentsContract.getDocumentId(uri).split(":");
@@ -462,7 +419,7 @@ public class LoaderActivity extends AppCompatActivity {
                 else if ("com.android.providers.downloads.documents".equals(uri.getAuthority())) {
                     final String id = DocumentsContract.getDocumentId(uri);
                     final Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
-                    return getDataColumn(LoaderActivity.this, contentUri, null, null);
+                    return getDataColumn(LoaderDBActivity.this, contentUri, null, null);
                 }
             }
             else if ("file".equalsIgnoreCase(uri.getScheme())) {

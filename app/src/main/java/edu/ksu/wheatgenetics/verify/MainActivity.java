@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -16,6 +15,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -26,9 +26,9 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.util.Pair;
 import android.util.SparseArray;
+import android.util.SparseIntArray;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -37,35 +37,34 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.w3c.dom.Text;
+
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOError;
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.net.IDN;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
-    private SparseArray<String> _ids;
-    private SparseArray<String> _cols;
-    private SparseArray<String> _checkedIds;
-
-    private HashSet<String> disabledViews;
-
     private IdEntryDbHelper mDbHelper;
 
+    private SparseArray<String> _ids;
+
     private File mVerifyDirectory;
-    private int _matchingOrder;
+    private int mMatchingOrder;
     private Timer mTimer = new Timer("user input for suppressing messages", true);
     private TextView valueView;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -74,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
     private Uri mRingtoneUri;
     private EditText mScannerTextView;
     private ListView mIdTable;
+
+    private String mListId;
 
     //pair mode vars
     private String mPairCol;
@@ -87,6 +88,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+        _ids = new SparseArray<>();
 
         mRingtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         mRingtoneNoti = RingtoneManager.getRingtone(this, mRingtoneUri);
@@ -114,11 +117,9 @@ public class MainActivity extends AppCompatActivity {
 
         ActivityCompat.requestPermissions(this, VerifyConstants.permissions, VerifyConstants.PERM_REQ);
 
-        _matchingOrder = 0;
-        _ids = new SparseArray<>();
-        _cols = new SparseArray<>();
-        _checkedIds = new SparseArray<>();
-        disabledViews = new HashSet<>();
+        mNextPairVal = null;
+        mMatchingOrder = 0;
+        mPairCol = null;
 
         mIdTable = ((ListView) findViewById(R.id.idTable));
         mIdTable.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
@@ -136,12 +137,7 @@ public class MainActivity extends AppCompatActivity {
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 
                 //get app settings
-                final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-                final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
-
-                if (scanMode == 1) { // order mode
-                    disabledViews.add(((TextView) view).getText().toString());
-                }
+                insertNoteIntoDb(((TextView) view).getText().toString());
                 return true;
             }
         });
@@ -180,164 +176,306 @@ public class MainActivity extends AppCompatActivity {
 
         mDbHelper = new IdEntryDbHelper(this);
 
-        mPairCol = null;
-
         loadSQLToLocal();
-        //final File dir = this.getDir("Verify", Context.MODE_PRIVATE);
-        //Log.d("directory", dir.getAbsolutePath());
+        buildListView();
+        updateCheckedItems();
     }
 
-    private void checkScannedItem() {
+    private synchronized void checkScannedItem() {
 
         final String scannedId = mScannerTextView.getText().toString();
         mTimer.purge();
         mTimer.cancel();
 
-        final int size = _ids.size();
-                /*
-                scan list of ids for updated text id input
-                 */
-        int found = -1;
-        for (int i = 0; i < size; i = i + 1) {
-            if (scannedId.equals(_ids.get(_ids.keyAt(i)))) {
-                found = i;
-                valueView.setText(_cols.get(_cols.keyAt(i)));
-                break;
+        //update database
+        exertModeFunction(scannedId);
+
+        //view updated database
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("select * from VERIFY WHERE " + mListId + "='" + scannedId + "'", null);
+
+        final String[] headerTokens = cursor.getColumnNames();
+        final StringBuilder values = new StringBuilder();
+        if (cursor.moveToFirst()) {
+            for (String header : headerTokens) {
+
+                final String val = cursor.getString(
+                        cursor.getColumnIndexOrThrow(header)
+                );
+                values.append(header + " : " + val + "\n");
             }
-        }
+            cursor.close();
+            valueView.setText(values.toString());
+        } else resetTimer();
+    }
+
+    private synchronized void insertNoteIntoDb(final String id) {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Enter a note for the given item.");
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String value = input.getText().toString();
+                if (!value.isEmpty()) {
+
+                    final SQLiteDatabase db = mDbHelper.getWritableDatabase();
+                    final String updateNoteQuery = "UPDATE VERIFY SET note = '" + value + "'"
+                            + " WHERE " + mListId + " = '" + id + "'";
+                    db.execSQL(updateNoteQuery);
+
+                }
+            }
+        });
+
+        builder.show();
+    }
+
+    private synchronized void exertModeFunction(String id) {
+
+        mTimer.purge();
+        mTimer.cancel();
 
         //get app settings
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
 
-        for (int position = 0; position < mIdTable.getCount(); position++) {
+        final SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
-            final String id = (mIdTable.getItemAtPosition(position)).toString();
-            if (id.equals(scannedId)) {
-                switch (scanMode) {
+        if (scanMode == 0 ) { //default mode ring a notification
 
-                    case 0: //default
+            mMatchingOrder = 0;
+            ringNotification();
+            Toast.makeText(this, "Scanned id found: " + id, Toast.LENGTH_SHORT).show();
+        } else if (scanMode == 1) { //order mode
 
-                    case 1: //matching mode
-                    case 4: //pair mode
-                    case 2: //filter mode
-                        mIdTable.setItemChecked(position, !mIdTable.isItemChecked(position));
-                        break;
-                    case 3: //color mode
-                        _checkedIds.append(_checkedIds.size(), scannedId);
-                        mIdTable.setItemChecked(position, true);
-                        persistLocalToSQL();
-                        break;
-                }
-            }
-        }
+            final int tableIndex = getTableIndexById(id);
 
-        if (found == -1) {
-            mTimer.purge();
-            mTimer.cancel();
-            mTimer = new Timer("user input for suppressing messages", true);
-            mTimer.schedule(new SuppressMessageTask(), 0);
-        } else {
-            //cancel all invalid messages
-            mTimer.purge();
-            mTimer.cancel();
-            updateListView(scannedId, found);
-        }
-    }
-
-    /* DFA for scan state */
-    private void updateListView(String id, int found) {
-
-        //get app settings
-        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
-
-        switch (scanMode) {
-
-            case 0: //default
-                ringNotification();
-                Toast.makeText(this, "Scanned id found: " + id, Toast.LENGTH_SHORT).show();
-                _matchingOrder = 0;
-                break;
-            case 1: //matching mode
-                View v = mIdTable.getAdapter().getView(_matchingOrder, null, null);
-                while (disabledViews.contains(((TextView) v).getText().toString())) {
-                    _matchingOrder++;
-                    v = mIdTable.getAdapter().getView(_matchingOrder, null, null);
-                }
-                if (_matchingOrder == found) {
+            if (tableIndex != -1) {
+                if (mMatchingOrder == tableIndex) {
                     ringNotification();
-                    _matchingOrder++;
-                    Toast.makeText(this, "Order matches id: " + id + " at index: " + found, Toast.LENGTH_SHORT).show();
+                    mMatchingOrder++;
+                    Toast.makeText(this, "Order matches id: " + id + " at index: " + tableIndex, Toast.LENGTH_SHORT).show();
                 } else
                     Toast.makeText(this, "Scanning out of order!", Toast.LENGTH_SHORT).show();
-                break;
-            case 2: //filter mode
-                _matchingOrder = 0;
+            }
 
-                final ArrayAdapter<String> oldAdapter = (ArrayAdapter<String>) mIdTable.getAdapter();
-                final ArrayAdapter<String> updatedAdapter = new ArrayAdapter<>(this, R.layout.row);
-                final int oldSize = oldAdapter.getCount();
+        } else if (scanMode == 2) { //filter mode, delete rows with given id
 
-                for (int i = 0; i < oldSize; i = i + 1) {
-                    if (i != found) {
-                        updatedAdapter.add(oldAdapter.getItem(i));
-                    }
-                }
-                mIdTable.setAdapter(updatedAdapter);
+            mMatchingOrder = 0;
+            final String deleteIdQuery =
+                    "DELETE FROM VERIFY WHERE " + mListId + " = '" + id + "'";
+            db.execSQL(deleteIdQuery);
 
-                for (int i = 0; i < mIdTable.getCount(); i = i + 1) {
-                    for (int j = 0; j < _checkedIds.size(); j = j + 1) {
-                        final String checkedJ = _checkedIds.get(_checkedIds.keyAt(j));
-                        final String checkedI = ((TextView) mIdTable.getAdapter().getView(i, null, null)).getText().toString();
-                        if (checkedI.equals(checkedJ)) {
-                            mIdTable.setItemChecked(i, true);
-                        }
-                    }
-                }
-                _ids.remove(_ids.keyAt(found));
-                _cols.remove(_cols.keyAt(found));
-                persistLocalToSQL();
+            updateFilteredArrayAdapter(id);
 
-                ringNotification();
-                Toast.makeText(this, "Removing scanned item: " + id, Toast.LENGTH_SHORT).show();
+        } else if (scanMode == 3) { //if color mode, update the db to highlight the item
 
-                break;
-            case 3: //color mode
-                _matchingOrder = 0;
-                ringNotification();
-                Toast.makeText(this, "Coloring scanned item: " + id, Toast.LENGTH_SHORT).show();
-                break;
-            case 4: //pair mode
-                _matchingOrder = 0;
-                if (mNextPairVal == null) {
-                    //first scan set next pair val to user chosen pair col value
-                    int idIndex = 0;
-                    for (int i = 0; i < _ids.size(); i = i + 1) {
-                        if (_ids.get(_ids.keyAt(i)).equals(id)) {
-                            idIndex = i;
-                        }
-                    }
+            mMatchingOrder = 0;
+            final String updateCheckedQuery =
+                    "UPDATE VERIFY SET c = 1 WHERE " + mListId + " = '" + id + "'";
+            db.execSQL(updateCheckedQuery);
+        } else if (scanMode == 4) { //pair mode
 
-                    String colVal = _cols.get(_cols.keyAt(idIndex));
-                    String[] vals = colVal.split("\n");
-                    for (String headerVal : vals) {
-                        final String[] tokens = headerVal.split(":");
-                        if (tokens.length == 2) {
-                            if (tokens[0].equals(mPairCol)) {
-                                mNextPairVal = tokens[1].trim();
-                            }
-                        }
-                    }
-                } else {
+            mMatchingOrder = 0;
+
+            if (mPairCol != null) {
+
+                //if next pair id is waiting, check if it matches scanned id and reset mode
+                if (mNextPairVal != null) {
                     if (mNextPairVal.equals(id)) {
                         ringNotification();
                         Toast.makeText(this, "Scanned paired item: " + id, Toast.LENGTH_SHORT).show();
                     }
                     mNextPairVal = null;
+                } else { //otherwise query for the current id's pair
+                    final String getNextPairQuery =
+                            "SELECT " + mPairCol + " FROM VERIFY WHERE " + mListId + " = '" + id + "'";
+                    final Cursor cursor = db.rawQuery(getNextPairQuery, null);
+                    if (cursor.moveToFirst()) {
+                        mNextPairVal = cursor.getString(
+                                cursor.getColumnIndexOrThrow(mPairCol)
+                        );
+                    } else mNextPairVal = null;
+                    cursor.close();
                 }
-
+            }
         }
+        //always update user and datetime
+        final Calendar c = Calendar.getInstance();
+        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd hh-mm-ss", Locale.getDefault());
+        final String updateUserAndDateQuery =
+                "UPDATE VERIFY SET user = " + "'" + sharedPref.getString(SettingsActivity.USER_NAME, "Default") + "'"
+                        +             ", d = " + "'" + sdf.format(c.getTime()) + "'"
+                        +             ", s = s + 1 WHERE " + mListId + " = '" + id + "'";
+        db.execSQL(updateUserAndDateQuery);
+
+
+        updateCheckedItems();
+
+    }
+
+    private synchronized void updateCheckedItems() {
+
+        final SQLiteDatabase db = mDbHelper.getReadableDatabase();
+
+        //list of ideas to populate and update the view with
+        final HashSet<String> ids = new HashSet<>();
+
+        final String getCheckedItemsQuery =
+                "SELECT " + mListId + " FROM VERIFY WHERE c = 1";
+
+        Cursor cursor = db.rawQuery(getCheckedItemsQuery, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                String id = cursor.getString(
+                        cursor.getColumnIndexOrThrow(mListId)
+                );
+
+                ids.add(id);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        for (int position = 0; position < mIdTable.getCount(); position++) {
+
+            final String id = (mIdTable.getItemAtPosition(position)).toString();
+
+            if (ids.contains(id)) {
+                mIdTable.setItemChecked(position, true);
+            } else mIdTable.setItemChecked(position, false);
+        }
+    }
+
+    private synchronized void loadSQLToLocal() {
+
+        _ids = new SparseArray<>();
+
+        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        mListId = sharedPref.getString(SettingsActivity.LIST_KEY_NAME, null);
+
+        if (mListId != null) {
+            SQLiteDatabase db = mDbHelper.getReadableDatabase();
+
+            Cursor cursor = db.rawQuery("select * from VERIFY", null);
+
+            if (cursor.moveToFirst()) {
+                do {
+                    final String[] headers = cursor.getColumnNames();
+                    for (String header : headers) {
+
+                        final String val = cursor.getString(
+                                cursor.getColumnIndexOrThrow(header)
+                        );
+
+                        if (header.equals(mListId)) {
+                            _ids.append(_ids.size(), val);
+                        }
+                    }
+                } while (cursor.moveToNext());
+            }
+
+            cursor.close();
+        }
+    }
+
+    private synchronized void askUserExportFileName() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Choose name for exported file.");
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        builder.setPositiveButton("Export", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String value = input.getText().toString();
+                if (!value.isEmpty()) {
+                    if (isExternalStorageWritable()) {
+                        try {
+                            final File output = new File(mVerifyDirectory, value);
+                            final FileOutputStream fstream = new FileOutputStream(output);
+                            final SQLiteDatabase db = mDbHelper.getReadableDatabase();
+                            final Cursor cursor = db.rawQuery("SElECT * FROM VERIFY", null);
+
+                            //first write header line
+                            final String[] headers = cursor.getColumnNames();
+                            for (int i = 0; i < headers.length; i++) {
+                                if (i != 0) fstream.write(",".getBytes());
+                                fstream.write(headers[i].getBytes());
+                            }
+                            fstream.write("\n".getBytes());
+                            //populate text file with current database values
+                            if (cursor.moveToFirst()) {
+                                do {
+                                    for (int i = 0; i < headers.length; i++) {
+                                        if (i != 0) fstream.write(",".getBytes());
+                                        final String val = cursor.getString(
+                                                cursor.getColumnIndexOrThrow(headers[i])
+                                        );
+                                        if (val == null) fstream.write("null".getBytes());
+                                        else fstream.write(val.getBytes());
+                                    }
+                                    fstream.write("\n".getBytes());
+                                } while (cursor.moveToNext());
+                            }
+
+                            fstream.flush();
+                            fstream.close();
+
+                        } catch (IOException io) {
+                            io.printStackTrace();
+                        }
+                    } //error toast
+                } //use default name
+            }
+        });
+
+        builder.show();
+
+    }
+
+    private void resetTimer() {
+
+        mTimer.purge();
+        mTimer.cancel();
+        mTimer = new Timer("user input for suppressing messages", true);
+        mTimer.schedule(new SuppressMessageTask(), 0);
+    }
+
+    //returns index of table with identifier = id, returns -1 if not found
+    private int getTableIndexById(String id) {
+
+        final ArrayAdapter<String> adapter = (ArrayAdapter<String>) mIdTable.getAdapter();
+        final int size = adapter.getCount();
+
+        for (int i = 0; i < size; i = i + 1) {
+            final String temp = adapter.getItem(i);
+            if (temp.equals(id)) return i;
+        }
+
+        return -1;
+    }
+
+    private void updateFilteredArrayAdapter(String id) {
+
+        //update id table array adapter
+        final ArrayAdapter<String> oldAdapter = (ArrayAdapter<String>) mIdTable.getAdapter();
+        final ArrayAdapter<String> updatedAdapter = new ArrayAdapter<>(this, R.layout.row);
+        final int oldSize = oldAdapter.getCount();
+
+        for (int i = 0; i < oldSize; i = i + 1) {
+            final String temp = oldAdapter.getItem(i);
+            if (!temp.equals(id)) updatedAdapter.add(temp);
+        }
+        mIdTable.setAdapter(updatedAdapter);
     }
 
     private void ringNotification() {
@@ -416,18 +554,20 @@ public class MainActivity extends AppCompatActivity {
                 switch (requestCode) {
                     case VerifyConstants.LOADER_INTENT_REQ:
 
-                        //get intent array list messages (columns and keys)
-                        final ArrayList<String> colMsg = intent.getStringArrayListExtra(VerifyConstants.COL_ARRAY_EXTRA);
-                        final ArrayList<String> keyMsg = intent.getStringArrayListExtra(VerifyConstants.ID_ARRAY_EXTRA);
+                        if (intent.hasExtra(VerifyConstants.LIST_ID_EXTRA))
+                            mListId = intent.getStringExtra(VerifyConstants.LIST_ID_EXTRA);
+                        if (intent.hasExtra(VerifyConstants.PAIR_COL_EXTRA))
+                            mPairCol = intent.getStringExtra(VerifyConstants.PAIR_COL_EXTRA);
 
-                        if (intent.hasExtra(VerifyConstants.PAIR_COL))
-                            mPairCol = intent.getStringExtra(VerifyConstants.PAIR_COL);
+                        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                        final SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putString(SettingsActivity.LIST_KEY_NAME, mListId);
+                        editor.commit();
 
-                        _checkedIds = new SparseArray<>();
-                        _ids = new SparseArray<>();
-                        _cols = new SparseArray<>();
-
-                        buildListView(colMsg, keyMsg);
+                        clearListView();
+                        loadSQLToLocal();
+                        buildListView();
+                        updateCheckedItems();
                         break;
                 }
 
@@ -439,20 +579,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void buildListView(ArrayList<String> colMsg, ArrayList<String> keyMsg) {
-
-        //convert messages to global sparse arrays
-        final int kMsgSize = keyMsg.size();
-        for (int j = 0; j < kMsgSize; j = j + 1)
-            _ids.append(j, keyMsg.get(j));
-
-        final int cMsgSize = colMsg.size();
-        for (int j = 0; j < cMsgSize; j = j + 1)
-            _cols.append(j, colMsg.get(j));
-
-
-        persistLocalToSQL();
-
+    private void buildListView() {
 
         final ArrayAdapter<String> idAdapter =
                 new ArrayAdapter<>(this, R.layout.row);
@@ -460,41 +587,23 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < size; i = i + 1)
             idAdapter.add(_ids.get(_ids.keyAt(i)));
         mIdTable.setAdapter(idAdapter);
-
-        for (int i = 0; i < mIdTable.getCount(); i = i + 1) {
-            for (int j = 0; j < _checkedIds.size(); j = j + 1) {
-                final String checkedJ = _checkedIds.get(_checkedIds.keyAt(j));
-                final String checkedI = ((TextView) mIdTable.getAdapter().getView(i, null, null)).getText().toString();
-                if (checkedI.equals(checkedJ)) {
-                    mIdTable.setItemChecked(i, true);
-                }
-            }
-        }
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
+    private void clearListView() {
 
-        final ArrayList<String> cols, keys;
-        cols = new ArrayList<>();
-        keys = new ArrayList<>();
-        final int size = _ids.size();
-        for (int i = 0; i < size; i = i + 1) {
-            keys.add(i, _ids.get(_ids.keyAt(i)));
-            cols.add(i, _cols.get(_cols.keyAt(i)));
-        }
-        outState.putStringArrayList(VerifyConstants.ID_ARRAY_EXTRA, keys);
-        outState.putStringArrayList(VerifyConstants.COL_ARRAY_EXTRA, cols);
+        final ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(this, R.layout.row);
+
+        mIdTable.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-
-        final ArrayList<String> colMsg = savedInstanceState.getStringArrayList(VerifyConstants.COL_ARRAY_EXTRA);
-        final ArrayList<String> keyMsg = savedInstanceState.getStringArrayList(VerifyConstants.ID_ARRAY_EXTRA);
-        buildListView(colMsg, keyMsg);
+       // loadSQLToLocal();
+       // buildListView();
+       // updateCheckedItems();
     }
 
     private void setupDrawer() {
@@ -535,7 +644,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.nav_import:
                 final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
                 final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
-                final Intent i = new Intent(this, LoaderActivity.class);
+                final Intent i = new Intent(this, LoaderDBActivity.class);
                 if (scanMode == 4) //pair mode
                     i.putExtra(VerifyConstants.PAIR_MODE_LOADER, "");
                 startActivityForResult(i, VerifyConstants.LOADER_INTENT_REQ);
@@ -571,59 +680,7 @@ public class MainActivity extends AppCompatActivity {
         builder.setPositiveButton("Skip", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                _matchingOrder++;
-            }
-        });
-
-        builder.show();
-
-    }
-
-    private void askUserExportFileName() {
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Choose name for exported file.");
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        builder.setView(input);
-
-        builder.setPositiveButton("Export", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String value = input.getText().toString();
-                if (!value.isEmpty()) {
-                    if (isExternalStorageWritable()) {
-                        try {
-                            final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-                            final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
-                            final File output = new File(mVerifyDirectory, value);
-                            final FileOutputStream fstream = new FileOutputStream(output);
-
-                            if (_ids != null && _ids.size() > 0) {
-                                //write header line
-                                fstream.write("id".getBytes());
-                                if (scanMode == 3) fstream.write(",checked\n".getBytes());
-                                for (int i = 0; i < mIdTable.getCount(); i = i + 1) {
-                                    final String id = ((TextView) mIdTable.getAdapter().getView(i, null, null)).getText().toString();
-                                    fstream.write(id.getBytes());
-                                    if (scanMode == 3) {
-                                        for (int j = 0; j < _checkedIds.size(); j = j + 1) {
-                                            final String checked = _checkedIds.get(_checkedIds.keyAt(j));
-                                            if (id.equals(checked)) {
-                                                fstream.write(",checked".getBytes());
-                                            }
-                                        }
-                                    }
-                                    fstream.write("\n".getBytes());
-                                }
-                                fstream.flush();
-                                fstream.close();
-                            }
-                        } catch (IOException io) {
-                            io.printStackTrace();
-                        }
-                    } //error toast
-                } //use default name
+                mMatchingOrder++;
             }
         });
 
@@ -672,105 +729,6 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
-    /* Checks if external storage is available to at least read */
-    public boolean isExternalStorageReadable() {
-        String state = Environment.getExternalStorageState();
-        if (Environment.MEDIA_MOUNTED.equals(state) ||
-                Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-            return true;
-        }
-        return false;
-    }
-
-    void persistLocalToSQL() {
-
-        new AsyncTask<Uri, Void, String>() {
-
-            @Override
-            protected String doInBackground(Uri[] params) {
-
-                mDbHelper.onUpgrade(mDbHelper.getWritableDatabase(), 1, 1);
-
-                final SQLiteDatabase db = mDbHelper.getWritableDatabase();
-
-                synchronized (db) {
-                    final int size = _ids.size();
-                    for (int i = 0; i < size; i = i + 1) {
-                        final ContentValues entry = new ContentValues();
-                        final String id = _ids.get(_ids.keyAt(i));
-                        entry.put(IdEntryContract.IdEntry.COLUMN_NAME_ID, id);
-                        entry.put(IdEntryContract.IdEntry.COLUMN_NAME_VALS, _cols.get(_cols.keyAt(i)));
-                        entry.put(IdEntryContract.IdEntry.COLUMN_NAME_CHECKED, 0);
-                        entry.put(IdEntryContract.IdEntry.COLUMN_NAME_PAIR, "");
-                        if (mPairCol != null) {
-                            entry.put(IdEntryContract.IdEntry.COLUMN_NAME_PAIR, mPairCol);
-                        }
-                        for (int j = 0; j < _checkedIds.size(); j = j + 1) {
-                            if (_checkedIds.get(_checkedIds.keyAt(j)).equals(id)) {
-                                entry.put(IdEntryContract.IdEntry.COLUMN_NAME_CHECKED, 1);
-                            }
-                        }
-
-                        final long newRowId = db.insert(IdEntryContract.IdEntry.TABLE_NAME, null, entry);
-                    }
-                }
-                return null;
-            }
-        }.execute();
-    }
-
-    void loadSQLToLocal() {
-
-        new AsyncTask<Uri, Void, Pair<ArrayList<String>, ArrayList<String>>>() {
-
-            @Override
-            protected Pair<ArrayList<String>, ArrayList<String>> doInBackground(Uri[] params) {
-
-                SQLiteDatabase db = mDbHelper.getReadableDatabase();
-
-                synchronized (db) {
-                    Cursor cursor = db.rawQuery("select * from " + IdEntryContract.IdEntry.TABLE_NAME, null);
-
-                    ArrayList<String> ids = new ArrayList<>();
-                    ArrayList<String> cols = new ArrayList<>();
-
-                    if (cursor.moveToFirst()) {
-                        do {
-                            String id = cursor.getString(
-                                    cursor.getColumnIndexOrThrow(IdEntryContract.IdEntry.COLUMN_NAME_ID)
-                            );
-                            String col = cursor.getString(
-                                    cursor.getColumnIndexOrThrow(IdEntryContract.IdEntry.COLUMN_NAME_VALS)
-                            );
-                            String pair = cursor.getString(
-                                    cursor.getColumnIndexOrThrow(IdEntryContract.IdEntry.COLUMN_NAME_PAIR)
-                            );
-                            boolean checked = cursor.getInt(
-                                    cursor.getColumnIndexOrThrow(IdEntryContract.IdEntry.COLUMN_NAME_CHECKED)
-                            ) > 0;
-                            if (checked) {
-                                _checkedIds.append(_checkedIds.size(), id);
-                            }
-                            ids.add(id);
-                            cols.add(col);
-                            mPairCol = pair;
-                        } while (cursor.moveToNext());
-                    }
-                    cursor.close();
-
-                    return new Pair<ArrayList<String>, ArrayList<String>>(cols, ids);
-                }
-            }
-
-            @Override
-            protected void onPostExecute(Pair<ArrayList<String>, ArrayList<String>> idCols) {
-                buildListView(idCols.first, idCols.second);
-
-            }
-        }.execute();
-
-    }
-
     @Override
     public void onDestroy() {
         mDbHelper.close();
@@ -782,9 +740,4 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
     }
 
-    @Override
-    public void onResume() {
-        //loadSQLToLocal();
-        super.onResume();
-    }
 }

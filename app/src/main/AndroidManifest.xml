@@ -30,7 +30,7 @@
         <activity
             android:name=".ScanActivity" />
 
-        <activity android:name=".LoaderActivity"
+        <activity android:name=".LoaderDBActivity"
             android:configChanges="orientation|keyboardHidden|screenSize|keyboard"/>
 
         <activity android:name=".SettingsActivity" />

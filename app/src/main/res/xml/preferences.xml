@@ -8,7 +8,11 @@
         android:key="edu.ksu.wheatgenetics.verify.SCAN_MODE"
         android:summary="%s"
         android:title="@string/prefs_mode" />
-
+    <EditTextPreference
+        android:icon="@drawable/ic_about"
+        android:key="edu.ksu.wheatgenetics.verify.USER_NAME"
+        android:summary="Logged user for scanned items"
+        android:title="Username" />
     <CheckBoxPreference
         android:defaultValue="true"
         android:icon="@drawable/ic_audio"
