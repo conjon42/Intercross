@@ -56,6 +56,7 @@ public class LoaderDBActivity extends AppCompatActivity {
     private String mPairCol;
     private int mIdHeaderIndex;
     private int mPairColIndex;
+    private HashSet<String> mDefaultCols;
 
     private IdEntryDbHelper mDbHelper;
 
@@ -77,6 +78,14 @@ public class LoaderDBActivity extends AppCompatActivity {
         mDbHelper = new IdEntryDbHelper(this);
 
         displayCols = new HashSet<>();
+
+        //default column names
+        mDefaultCols = new HashSet<>();
+        mDefaultCols.add("d");
+        mDefaultCols.add("c");
+        mDefaultCols.add("s");
+        mDefaultCols.add("user");
+        mDefaultCols.add("note");
 
         headerList = ((ListView) findViewById(R.id.headerList));
 
@@ -167,16 +176,8 @@ public class LoaderDBActivity extends AppCompatActivity {
                 final String[] displayHeaders = displayCols.toArray(new String[] {});
 
                 if (displayHeaders.length > 0) {
-                    String headers = mIdHeader;
-
-                    for (int i = 0; i < displayHeaders.length; i = i + 1) {
-                        headers += ",";
-                        headers += displayHeaders[i];
-                    }
                     //initialize intent
                     final Intent intent = new Intent();
-                    intent.putExtra(VerifyConstants.HEADER_LIST_EXTRA, headers);
-                    intent.putExtra(VerifyConstants.HEADER_DELIMETER_EXTRA, mDelimiter);
                     intent.putExtra(VerifyConstants.LIST_ID_EXTRA, mIdHeader);
                     intent.putExtra(VerifyConstants.PAIR_COL_EXTRA, mPairCol);
 
@@ -233,7 +234,8 @@ public class LoaderDBActivity extends AppCompatActivity {
 
                             for (int i = 0; i < size; i = i + 1) {
 
-                                if (displayCols.contains(headers[i]) || headers[i].equals(mPairCol)) {
+                                if (displayCols.contains(headers[i]) || mDefaultCols.contains(headers[i]) ||
+                                        headers[i].equals(mPairCol)) {
                                     entry.put(headers[i], id_line[i]);
                                 }
                             }
@@ -256,7 +258,8 @@ public class LoaderDBActivity extends AppCompatActivity {
             final ArrayAdapter<String> idAdapter =
                     new ArrayAdapter<>(this, R.layout.row);
             for (String h : headers) {
-                if (!h.equals(headers[mIdHeaderIndex])) {
+                if (!h.equals(headers[mIdHeaderIndex]) && !mDefaultCols.contains(h) &&
+                        !h.equals(mPairCol)) {
                     idAdapter.add(h);
                 }
             }
@@ -278,7 +281,9 @@ public class LoaderDBActivity extends AppCompatActivity {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     finishButton.setEnabled(true);
-                    displayCols.add(((TextView) view).getText().toString());
+                    final String newCol = ((TextView) view).getText().toString();
+                    if (displayCols.contains(newCol)) displayCols.remove(newCol);
+                    displayCols.add(newCol);
                 }
             });
         }
@@ -303,7 +308,7 @@ public class LoaderDBActivity extends AppCompatActivity {
             final ArrayAdapter<String> idAdapter =
                     new ArrayAdapter<>(this, R.layout.row);
             for (String h : headers) {
-                idAdapter.add(h);
+                if (!mDefaultCols.contains(h)) idAdapter.add(h);
             }
             headerList.setAdapter(idAdapter);
         } else {

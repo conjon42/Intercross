@@ -177,8 +177,9 @@ public class MainActivity extends AppCompatActivity {
         mDbHelper = new IdEntryDbHelper(this);
 
         loadSQLToLocal();
-        buildListView();
-        updateCheckedItems();
+
+        if (mListId != null)
+            updateCheckedItems();
     }
 
     private synchronized void checkScannedItem() {
@@ -382,6 +383,8 @@ public class MainActivity extends AppCompatActivity {
             }
 
             cursor.close();
+            buildListView();
+
         }
     }
 
@@ -554,6 +557,9 @@ public class MainActivity extends AppCompatActivity {
                 switch (requestCode) {
                     case VerifyConstants.LOADER_INTENT_REQ:
 
+                        mListId = null;
+                        mPairCol = null;
+
                         if (intent.hasExtra(VerifyConstants.LIST_ID_EXTRA))
                             mListId = intent.getStringExtra(VerifyConstants.LIST_ID_EXTRA);
                         if (intent.hasExtra(VerifyConstants.PAIR_COL_EXTRA))
@@ -566,7 +572,6 @@ public class MainActivity extends AppCompatActivity {
 
                         clearListView();
                         loadSQLToLocal();
-                        buildListView();
                         updateCheckedItems();
                         break;
                 }
