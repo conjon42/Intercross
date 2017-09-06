@@ -358,6 +358,8 @@ public class MainActivity extends AppCompatActivity {
 
         _ids = new SparseArray<>();
 
+        mDbHelper = new IdEntryDbHelper(this);
+
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         mListId = sharedPref.getString(SettingsActivity.LIST_KEY_NAME, null);
 

@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -15,8 +14,6 @@ import android.provider.DocumentsContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.util.SparseArray;
-import android.util.SparseIntArray;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -26,25 +23,37 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 
 import static edu.ksu.wheatgenetics.verify.VerifyConstants.CSV_URI;
 import static edu.ksu.wheatgenetics.verify.VerifyConstants.DEFAULT_CONTENT_REQ;
 
 public class LoaderDBActivity extends AppCompatActivity {
 
-    private SparseArray<String> _ids, _cols, _checkedIds, _dateIds, _userIds;
-    private SparseIntArray _scannedIds;
-
     private HashSet<String> displayCols;
 
     private Uri _csvUri;
     private String mDelimiter;
+    private String mFileExtension;
+    private String mFilePath;
+
+    private Workbook mCurrentWorkbook;
 
     private String mIdHeader;
 
@@ -134,7 +143,6 @@ public class LoaderDBActivity extends AppCompatActivity {
 
                 tutorialText.setText(R.string.choose_pair_button_tutorial);
                 choosePairButton.setVisibility(View.VISIBLE);
-                choosePairButton.setEnabled(false);
                 headerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -172,18 +180,14 @@ public class LoaderDBActivity extends AppCompatActivity {
                 //create database
                 insertColumns();
 
-                //send relative information to main activity
-                final String[] displayHeaders = displayCols.toArray(new String[] {});
+                //initialize intent
+                final Intent intent = new Intent();
+                intent.putExtra(VerifyConstants.LIST_ID_EXTRA, mIdHeader);
+                intent.putExtra(VerifyConstants.PAIR_COL_EXTRA, mPairCol);
 
-                if (displayHeaders.length > 0) {
-                    //initialize intent
-                    final Intent intent = new Intent();
-                    intent.putExtra(VerifyConstants.LIST_ID_EXTRA, mIdHeader);
-                    intent.putExtra(VerifyConstants.PAIR_COL_EXTRA, mPairCol);
+                setResult(RESULT_OK, intent);
+                finish();
 
-                    setResult(RESULT_OK, intent);
-                    finish();
-                }
             }
         });
     }
@@ -198,7 +202,7 @@ public class LoaderDBActivity extends AppCompatActivity {
 
         dbExecCreate.append("CREATE TABLE VERIFY(" + mIdHeader + " TEXT PRIMARY KEY");
 
-        dbExecCreate.append(", " + mPairCol + " TEXT");
+        if (mPairCol != null) dbExecCreate.append(", " + mPairCol + " TEXT");
         dbExecCreate.append(", d DATE");
         dbExecCreate.append(", user TEXT");
         dbExecCreate.append(", note TEXT");
@@ -215,40 +219,93 @@ public class LoaderDBActivity extends AppCompatActivity {
 
         db.execSQL(dbExecCreate.toString());
 
-        try {
-            final InputStream is = getContentResolver().openInputStream(_csvUri);
-            if (is != null) {
-
-                if (mDelimiter != null) {
-                    final BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                    final String[] headers = br.readLine().split(mDelimiter);
-
-                    String temp;
-                    while ((temp = br.readLine()) != null) {
-                        final ContentValues entry = new ContentValues();
-                        final String[] id_line = temp.split(mDelimiter);
-                        final int size = id_line.length;
-                        if (size != 0 && size <= headers.length) {
-
-                            entry.put(headers[mIdHeaderIndex], id_line[mIdHeaderIndex]);
-
-                            for (int i = 0; i < size; i = i + 1) {
-
-                                if (displayCols.contains(headers[i]) || mDefaultCols.contains(headers[i]) ||
-                                        headers[i].equals(mPairCol)) {
-                                    entry.put(headers[i], id_line[i]);
-                                }
-                            }
-                            final long newRowId = db.insert("VERIFY", null, entry);
-                        } else Log.d("ROW ERROR", temp);
+        if (mFileExtension.equals("xls")) {
+            final int numSheets = mCurrentWorkbook.getNumberOfSheets();
+            if (numSheets > 0) {
+                final Sheet s = mCurrentWorkbook.getSheetAt(0);
+                final Iterator rowIterator = s.rowIterator();
+                final HSSFRow headerRow = (HSSFRow) rowIterator.next(); //skip first header line
+                final String[] headers = new String[headerRow.getLastCellNum()];
+                final Iterator headerIterator = headerRow.cellIterator();
+                int count = 0;
+                while (headerIterator.hasNext())
+                    headers[count++] = ((HSSFCell) headerIterator.next()).getStringCellValue();
+                while (rowIterator.hasNext()) {
+                    final ContentValues entry = new ContentValues();
+                    final Iterator cellIterator =
+                            ((HSSFRow) rowIterator.next()).cellIterator();
+                    count = 0;
+                    while (cellIterator.hasNext()) {
+                        if (displayCols.contains(headers[count]) || mDefaultCols.contains(headers[count])
+                                || headers[count].equals(mPairCol) || headers[count].equals(mIdHeader))
+                            entry.put(headers[count], ((HSSFCell) cellIterator.next()).toString());
+                        count++;
                     }
+                    final long rowId = db.insert("VERIFY", null, entry);
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } else if (mFileExtension.equals("xlsx")) {
+            final int numSheets = mCurrentWorkbook.getNumberOfSheets();
+            if (numSheets > 0) {
+                final Sheet s = mCurrentWorkbook.getSheetAt(0);
+                final Iterator rowIterator = s.rowIterator();
+                final XSSFRow headerRow = (XSSFRow) rowIterator.next(); //skip first header line
+                final String[] headers = new String[headerRow.getLastCellNum()];
+                final Iterator headerIterator = headerRow.cellIterator();
+                int count = 0;
+                while (headerIterator.hasNext())
+                    headers[count++] = ((XSSFCell) headerIterator.next()).getStringCellValue();
+                while (rowIterator.hasNext()) {
+                    final ContentValues entry = new ContentValues();
+                    final Iterator cellIterator =
+                            ((XSSFRow) rowIterator.next()).cellIterator();
+                    count = 0;
+                    while (cellIterator.hasNext()) {
+                        if (displayCols.contains(headers[count]) || mDefaultCols.contains(headers[count])
+                                || headers[count].equals(mPairCol) || headers[count].equals(mIdHeader))
+                            entry.put(headers[count], ((XSSFCell) cellIterator.next()).toString());
+                        count++;
+                    }
+                    final long rowId = db.insert("VERIFY", null, entry);
+                }
+            }
 
+        } else {
+            try {
+                final InputStream is = getContentResolver().openInputStream(_csvUri);
+                if (is != null) {
+
+                    if (mDelimiter != null) {
+                        final BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                        final String[] headers = br.readLine().split(mDelimiter);
+
+                        String temp;
+                        while ((temp = br.readLine()) != null) {
+                            final ContentValues entry = new ContentValues();
+                            final String[] id_line = temp.split(mDelimiter);
+                            final int size = id_line.length;
+                            if (size != 0 && size <= headers.length) {
+
+                                entry.put(headers[mIdHeaderIndex], id_line[mIdHeaderIndex]);
+
+                                for (int i = 0; i < size; i = i + 1) {
+
+                                    if (displayCols.contains(headers[i]) || mDefaultCols.contains(headers[i]) ||
+                                            headers[i].equals(mPairCol)) {
+                                        entry.put(headers[i], id_line[i]);
+                                    }
+                                }
+                                final long newRowId = db.insert("VERIFY", null, entry);
+                            } else Log.d("ROW ERROR", temp);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
+
     private void displayColsList(boolean pairMode) {
 
         headerList.setVisibility(View.VISIBLE);
@@ -325,62 +382,88 @@ public class LoaderDBActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 _csvUri = intent.getData();
 
-                //inner async class to get header line
-                new AsyncTask<Uri, Void, String>() {
+                try {
+                    //query file path type
+                    mFilePath = getPath(_csvUri);
+                    final String[] pathSplit = mFilePath.split("\\.");
+                    mFileExtension = pathSplit[pathSplit.length - 1];
 
-                    @Override
-                    protected String doInBackground(Uri[] params) {
+                    String header = "";
 
-                        if (params.length > 0 && params[0] != null) try {
-
-                            //query file path type
-                            String fileType = getPath(params[0]);
-                            final String[] pathSplit = fileType.split("\\.");
-                            final String fileExtension = pathSplit[pathSplit.length - 1];
-
-                            if (fileExtension.equals("csv")) { //files ending in .csv
-                                mDelimiter = ",";
-                            } else if (fileExtension.equals("tsv") || fileExtension.equals("txt")) { //fiels ending in .txt
-                                mDelimiter = "\t";
-                            } else mDelimiter = null; //non-supported file type, display header for user to choose delimiter
-
-                            final InputStream is = getContentResolver().openInputStream(params[0]);
-                            if (is != null) {
-                                final BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                                final String header = br.readLine();
-                                br.close();
-                                return header;
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        return null;
-                    }
-
-                    protected void onPostExecute(String header) {
-
-                        mHeader = header;
-
-                        if (header == null) {
-
-                        }
-                        //if unsupported file type, start delimiter tutorial
-                        if (mDelimiter == null) {
-                            if (header == null) {
-                                tutorialText.setText("Error reading file.");
-                            } else {
-                                separatorText.setVisibility(View.VISIBLE);
-                                doneButton.setVisibility(View.VISIBLE);
-                                tutorialText.setText(R.string.choose_separator_tutorial);
-                                tutorialText.append(header);
+                    if (mFileExtension.equals("xls")) {
+                        //xls library support
+                        if (mCurrentWorkbook != null) mCurrentWorkbook.close();
+                        mCurrentWorkbook = new HSSFWorkbook(new FileInputStream(new File(mFilePath)));
+                        final int numSheets = mCurrentWorkbook.getNumberOfSheets();
+                        if (numSheets > 0) {
+                            final Sheet s = mCurrentWorkbook.getSheetAt(0);
+                            final Iterator rows = s.rowIterator();
+                            final HSSFRow row = (HSSFRow) rows.next();
+                            final Iterator cells = row.cellIterator();
+                            while (cells.hasNext()) {
+                                final HSSFCell cell = (HSSFCell) cells.next();
+                                header += cell.toString();
+                                if (cells.hasNext()) header += ",";
                             }
 
-                        } else { //display header list
-                            displayHeaderList();
+                            mDelimiter = ",";
+                            mHeader = header;
+                        }
+                    } else if (mFileExtension.equals("xlsx")) {
+
+                        //xlxs library support
+                        if (mCurrentWorkbook != null) mCurrentWorkbook.close();
+                        mCurrentWorkbook = new XSSFWorkbook(new FileInputStream(new File(mFilePath)));
+                        final int numSheets = mCurrentWorkbook.getNumberOfSheets();
+                        if (numSheets > 0) {
+                            final Sheet s = mCurrentWorkbook.getSheetAt(0);
+                            final Iterator rows = s.rowIterator();
+                            final XSSFRow row = (XSSFRow) rows.next();
+                            final Iterator cells = row.cellIterator();
+                            while (cells.hasNext()) {
+                                final XSSFCell cell = (XSSFCell) cells.next();
+                                header += cell.toString();
+                                if (cells.hasNext()) header += ",";
+                            }
+
+                            mDelimiter = ",";
+                            mHeader = header;
+                        }
+
+                    } else {
+                        //plain text file support
+                        if (mFileExtension.equals("csv")) { //files ending in .csv
+                            mDelimiter = ",";
+                        } else if (mFileExtension.equals("tsv") || mFileExtension.equals("txt")) { //fiels ending in .txt
+                            mDelimiter = "\t";
+                        } else
+                            mDelimiter = null; //non-supported file type, display header for user to choose delimiter
+
+                        final InputStream is = getContentResolver().openInputStream(_csvUri);
+                        if (is != null) {
+                            final BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                            mHeader = br.readLine();
+                            br.close();
                         }
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
-                }.execute(_csvUri);
+                //if unsupported file type, start delimiter tutorial
+                if (mDelimiter == null) {
+                    if (mHeader == null) {
+                        tutorialText.setText("Error reading file.");
+                    } else {
+                        separatorText.setVisibility(View.VISIBLE);
+                        doneButton.setVisibility(View.VISIBLE);
+                        tutorialText.setText(R.string.choose_separator_tutorial);
+                        tutorialText.append(mHeader);
+                    }
+
+                } else { //display header list
+                    displayHeaderList();
+                }
             } else finish();
         }
     }
