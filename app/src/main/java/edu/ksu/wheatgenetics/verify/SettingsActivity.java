@@ -11,6 +11,7 @@ public class SettingsActivity extends AppCompatActivity {
     public static String TUTORIAL_MODE = "edu.ksu.wheatgenetics.verify.TUTORIAL_MODE";
     public static String USER_NAME = "edu.ksu.wheatgenetics.verify.USER_NAME";
     public static String LIST_KEY_NAME = "edu.ksu.wheatgenetics.verify.LIST_KEY_NAME";
+    public static String PAIR_NAME = "edu.ksu.wheatgenetics.verify.PAIR_NAME";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

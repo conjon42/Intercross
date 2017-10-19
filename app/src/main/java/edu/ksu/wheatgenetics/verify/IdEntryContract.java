@@ -11,7 +11,7 @@ final class IdEntryContract {
     private IdEntryContract() {}
 
     static class IdEntry implements BaseColumns {
-        static final String TABLE_NAME = "id_entry";
+        static final String TABLE_NAME = "VERIFY";
         static final String COLUMN_NAME_ID = "id";
         static final String COLUMN_NAME_CHECKED = "checked";
         static final String COLUMN_NAME_SCANNED = "scanned";
@@ -20,17 +20,6 @@ final class IdEntryContract {
         static final String COLUMN_NAME_VALS = "vals";
         static final String COLUMN_NAME_PAIR = "pair";
     }
-
-    static final String SQL_CREATE_ENTRIES =
-            "CREATE TABLE " + IdEntry.TABLE_NAME + " (" +
-                    IdEntry._ID + " INTEGER PRIMARY KEY," +
-                    IdEntry.COLUMN_NAME_CHECKED + " TEXT," +
-                    IdEntry.COLUMN_NAME_ID + " TEXT," +
-                    IdEntry.COLUMN_NAME_VALS + " TEXT," +
-                    IdEntry.COLUMN_NAME_SCANNED + " INTEGER," +
-                    IdEntry.COLUMN_NAME_USER + " TEXT," +
-                    IdEntry.COLUMN_NAME_DATE + " DATE," +
-                    IdEntry.COLUMN_NAME_PAIR + " TEXT);";
 
     static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS " + IdEntry.TABLE_NAME;

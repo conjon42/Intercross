@@ -4,19 +4,18 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import static edu.ksu.wheatgenetics.verify.IdEntryContract.SQL_CREATE_ENTRIES;
 import static edu.ksu.wheatgenetics.verify.IdEntryContract.SQL_DELETE_ENTRIES;
 
 /**
  * Created by Chaney on 7/13/2017.
  */
 
-public class IdEntryDbHelper extends SQLiteOpenHelper {
+class IdEntryDbHelper extends SQLiteOpenHelper {
 
-    public static final int DATABASE_VERSION = 2;
-    public static final String DATABASE_NAME = "IdEntryReader.db";
+    private static final int DATABASE_VERSION = 2;
+    private static final String DATABASE_NAME = "IdEntryReader.db";
 
-    public IdEntryDbHelper(Context context) {
+    IdEntryDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 

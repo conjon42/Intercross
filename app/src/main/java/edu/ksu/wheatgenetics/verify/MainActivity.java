@@ -1,6 +1,5 @@
 package edu.ksu.wheatgenetics.verify;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -8,14 +7,13 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -26,9 +24,8 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Pair;
+import android.util.Log;
 import android.util.SparseArray;
-import android.util.SparseIntArray;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -42,14 +39,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Locale;
@@ -61,11 +54,23 @@ public class MainActivity extends AppCompatActivity {
 
     private IdEntryDbHelper mDbHelper;
 
-    private SparseArray<String> _ids;
+    //database prepared statements
+    private SQLiteStatement sqlUpdateNote;
+    private SQLiteStatement sqlDeleteId;
+    private SQLiteStatement sqlUpdateChecked;
+    private SQLiteStatement sqlUpdateUserAndDate;
 
+    private SparseArray<String> mIds;
+
+    //directory to store verify files
     private File mVerifyDirectory;
+
+    //global variable to track matching order
     private int mMatchingOrder;
+
     private Timer mTimer = new Timer("user input for suppressing messages", true);
+
+    //Verify UI variables
     private TextView valueView;
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
@@ -80,8 +85,6 @@ public class MainActivity extends AppCompatActivity {
     private String mPairCol;
     private String mNextPairVal;
 
-    NavigationView nvDrawer;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -89,25 +92,10 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        _ids = new SparseArray<>();
+        mIds = new SparseArray<>();
 
         mRingtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         mRingtoneNoti = RingtoneManager.getRingtone(this, mRingtoneUri);
-
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-
-        if(getSupportActionBar() != null){
-            getSupportActionBar().setTitle(null);
-            getSupportActionBar().getThemedContext();
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setHomeButtonEnabled(true);
-        }
-
-        nvDrawer = (NavigationView) findViewById(R.id.nvView);
-
-        // Setup drawer view
-        setupDrawerContent(nvDrawer);
-        setupDrawer();
 
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         final boolean tutorialMode = sharedPref.getBoolean(SettingsActivity.TUTORIAL_MODE, true);
@@ -121,6 +109,59 @@ public class MainActivity extends AppCompatActivity {
         mMatchingOrder = 0;
         mPairCol = null;
 
+        initializeUIVariables();
+
+        if (isExternalStorageWritable()) {
+            mVerifyDirectory = new File(Environment.getExternalStorageDirectory().getPath() + "/Verify");
+            if (!mVerifyDirectory.isDirectory()) {
+                final boolean makeDirsSuccess = mVerifyDirectory.mkdirs();
+                if (!makeDirsSuccess) Log.d("Verify Make Directory", "failed");
+            }
+        }
+
+        mDbHelper = new IdEntryDbHelper(this);
+
+        loadSQLToLocal();
+
+        if (mListId != null)
+            updateCheckedItems();
+    }
+
+    private void prepareStatements() {
+
+        final SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        String updateNoteQuery = "UPDATE VERIFY SET note = ? WHERE " + mListId + " = ?";
+        sqlUpdateNote = db.compileStatement(updateNoteQuery);
+
+        String deleteIdQuery = "DELETE FROM VERIFY WHERE " + mListId + " = ?";
+        sqlDeleteId = db.compileStatement(deleteIdQuery);
+
+        String updateCheckedQuery = "UPDATE VERIFY SET c = 1 WHERE " + mListId + " = ?";
+        sqlUpdateChecked = db.compileStatement(updateCheckedQuery);
+
+        String updateUserAndDateQuery =
+                "UPDATE VERIFY SET user = ?, d = ?, s = s + 1 WHERE " + mListId + " = ?";
+        sqlUpdateUserAndDate = db.compileStatement(updateUserAndDateQuery);
+    }
+
+    private void initializeUIVariables() {
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+
+        if(getSupportActionBar() != null){
+            getSupportActionBar().setTitle(null);
+            getSupportActionBar().getThemedContext();
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeButtonEnabled(true);
+        }
+
+        final NavigationView nvDrawer = (NavigationView) findViewById(R.id.nvView);
+
+        // Setup drawer view
+        setupDrawerContent(nvDrawer);
+        setupDrawer();
+
         mIdTable = ((ListView) findViewById(R.id.idTable));
         mIdTable.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
         mIdTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -132,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
                 checkScannedItem();
             }
         });
+
         mIdTable.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -168,21 +210,12 @@ public class MainActivity extends AppCompatActivity {
                 checkScannedItem();
             }
         });
-
-        if (isExternalStorageWritable()) {
-            mVerifyDirectory = new File(Environment.getExternalStorageDirectory().getPath() + "/Verify");
-            if (!mVerifyDirectory.isDirectory()) mVerifyDirectory.mkdirs();
-        }
-
-        mDbHelper = new IdEntryDbHelper(this);
-
-        loadSQLToLocal();
-
-        if (mListId != null)
-            updateCheckedItems();
     }
 
     private synchronized void checkScannedItem() {
+
+        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
 
         final String scannedId = mScannerTextView.getText().toString();
         mTimer.purge();
@@ -194,7 +227,10 @@ public class MainActivity extends AppCompatActivity {
         //view updated database
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
-        Cursor cursor = db.rawQuery("select * from VERIFY WHERE " + mListId + "='" + scannedId + "'", null);
+        final String table = IdEntryContract.IdEntry.TABLE_NAME;
+        final String[] selectionArgs = new String[] { scannedId };
+        final Cursor cursor = db.query(table, null, mListId + "=?", selectionArgs, null, null, null);
+        //Cursor cursor = db.rawQuery("select * from VERIFY WHERE " + mListId + "='" + scannedId + "'", null);
 
         final String[] headerTokens = cursor.getColumnNames();
         final StringBuilder values = new StringBuilder();
@@ -204,14 +240,17 @@ public class MainActivity extends AppCompatActivity {
                 final String val = cursor.getString(
                         cursor.getColumnIndexOrThrow(header)
                 );
-                values.append(header + " : " + val + "\n");
+                values.append(header);
+                values.append(" : ");
+                values.append(val);
+                values.append("\n");
             }
             cursor.close();
             valueView.setText(values.toString());
-        } else resetTimer();
+        } else if (scanMode != 2) resetTimer();
     }
 
-    private synchronized void insertNoteIntoDb(final String id) {
+    private synchronized void insertNoteIntoDb(@NonNull final String id) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Enter a note for the given item.");
@@ -226,10 +265,13 @@ public class MainActivity extends AppCompatActivity {
                 if (!value.isEmpty()) {
 
                     final SQLiteDatabase db = mDbHelper.getWritableDatabase();
-                    final String updateNoteQuery = "UPDATE VERIFY SET note = '" + value + "'"
-                            + " WHERE " + mListId + " = '" + id + "'";
-                    db.execSQL(updateNoteQuery);
-
+                    //final String updateNoteQuery = "UPDATE VERIFY SET note = '" + value + "'"
+                      //      + " WHERE " + mListId + " = '" + id + "'";
+                    //db.execSQL(updateNoteQuery);
+                    sqlUpdateNote.bindAllArgsAsStrings(new String[] {
+                            value, id
+                    });
+                    sqlUpdateNote.executeUpdateDelete();
                 }
             }
         });
@@ -237,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
         builder.show();
     }
 
-    private synchronized void exertModeFunction(String id) {
+    private synchronized void exertModeFunction(@NonNull String id) {
 
         mTimer.purge();
         mTimer.cancel();
@@ -269,18 +311,21 @@ public class MainActivity extends AppCompatActivity {
         } else if (scanMode == 2) { //filter mode, delete rows with given id
 
             mMatchingOrder = 0;
-            final String deleteIdQuery =
-                    "DELETE FROM VERIFY WHERE " + mListId + " = '" + id + "'";
-            db.execSQL(deleteIdQuery);
-
+            //final String deleteIdQuery =
+              //      "DELETE FROM VERIFY WHERE " + mListId + " = '" + id + "'";
+            //db.execSQL(deleteIdQuery);
+            sqlDeleteId.bindAllArgsAsStrings(new String[] { id });
+            sqlDeleteId.executeUpdateDelete();
             updateFilteredArrayAdapter(id);
 
         } else if (scanMode == 3) { //if color mode, update the db to highlight the item
 
             mMatchingOrder = 0;
-            final String updateCheckedQuery =
-                    "UPDATE VERIFY SET c = 1 WHERE " + mListId + " = '" + id + "'";
-            db.execSQL(updateCheckedQuery);
+           // final String updateCheckedQuery =
+            //        "UPDATE VERIFY SET c = 1 WHERE " + mListId + " = '" + id + "'";
+            //db.execSQL(updateCheckedQuery);
+            sqlUpdateChecked.bindAllArgsAsStrings(new String[] { id });
+            sqlUpdateChecked.executeUpdateDelete();
         } else if (scanMode == 4) { //pair mode
 
             mMatchingOrder = 0;
@@ -295,9 +340,14 @@ public class MainActivity extends AppCompatActivity {
                     }
                     mNextPairVal = null;
                 } else { //otherwise query for the current id's pair
-                    final String getNextPairQuery =
-                            "SELECT " + mPairCol + " FROM VERIFY WHERE " + mListId + " = '" + id + "'";
-                    final Cursor cursor = db.rawQuery(getNextPairQuery, null);
+                    final String table = IdEntryContract.IdEntry.TABLE_NAME;
+                    final String[] columnsNames = new String[] { mPairCol };
+                    final String selection = mListId + "=?";
+                    final String[] selectionArgs = { id };
+                    final Cursor cursor = db.query(table, columnsNames, selection, selectionArgs, null, null, null);
+                    //final String getNextPairQuery =
+                      //      "SELECT " + mPairCol + " FROM VERIFY WHERE " + mListId + " = '" + id + "'";
+                    //final Cursor cursor = db.rawQuery(getNextPairQuery, null);
                     if (cursor.moveToFirst()) {
                         mNextPairVal = cursor.getString(
                                 cursor.getColumnIndexOrThrow(mPairCol)
@@ -310,12 +360,18 @@ public class MainActivity extends AppCompatActivity {
         //always update user and datetime
         final Calendar c = Calendar.getInstance();
         final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd hh-mm-ss", Locale.getDefault());
-        final String updateUserAndDateQuery =
+        /*final String updateUserAndDateQuery =
                 "UPDATE VERIFY SET user = " + "'" + sharedPref.getString(SettingsActivity.USER_NAME, "Default") + "'"
                         +             ", d = " + "'" + sdf.format(c.getTime()) + "'"
                         +             ", s = s + 1 WHERE " + mListId + " = '" + id + "'";
-        db.execSQL(updateUserAndDateQuery);
+        db.execSQL(updateUserAndDateQuery);*/
 
+        sqlUpdateUserAndDate.bindAllArgsAsStrings(new String[] {
+                sharedPref.getString(SettingsActivity.USER_NAME, "Default"),
+                sdf.format(c.getTime()),
+                id
+        });
+        sqlUpdateUserAndDate.executeUpdateDelete();
 
         updateCheckedItems();
 
@@ -328,11 +384,14 @@ public class MainActivity extends AppCompatActivity {
         //list of ideas to populate and update the view with
         final HashSet<String> ids = new HashSet<>();
 
-        final String getCheckedItemsQuery =
-                "SELECT " + mListId + " FROM VERIFY WHERE c = 1";
+        final String table = IdEntryContract.IdEntry.TABLE_NAME;
+        final String[] columns = new String[] { mListId };
+        final String selection = "c = 1";
+        //final String getCheckedItemsQuery =
+          //      "SELECT " + mListId + " FROM VERIFY WHERE c = 1";
 
-        Cursor cursor = db.rawQuery(getCheckedItemsQuery, null);
-
+        //Cursor cursor = db.rawQuery(getCheckedItemsQuery, null);
+        final Cursor cursor = db.query(table, columns, selection, null, null, null, null);
         if (cursor.moveToFirst()) {
             do {
                 String id = cursor.getString(
@@ -356,17 +415,22 @@ public class MainActivity extends AppCompatActivity {
 
     private synchronized void loadSQLToLocal() {
 
-        _ids = new SparseArray<>();
+        mIds = new SparseArray<>();
 
         mDbHelper = new IdEntryDbHelper(this);
 
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         mListId = sharedPref.getString(SettingsActivity.LIST_KEY_NAME, null);
+        mPairCol = sharedPref.getString(SettingsActivity.PAIR_NAME, null);
+
+        prepareStatements();
 
         if (mListId != null) {
             SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
-            Cursor cursor = db.rawQuery("select * from VERIFY", null);
+            final String table = IdEntryContract.IdEntry.TABLE_NAME;
+            final Cursor cursor = db.query(table, null, null, null, null, null, null);
+            //Cursor cursor = db.rawQuery("select * from VERIFY", null);
 
             if (cursor.moveToFirst()) {
                 do {
@@ -378,7 +442,7 @@ public class MainActivity extends AppCompatActivity {
                         );
 
                         if (header.equals(mListId)) {
-                            _ids.append(_ids.size(), val);
+                            mIds.append(mIds.size(), val);
                         }
                     }
                 } while (cursor.moveToNext());
@@ -408,7 +472,9 @@ public class MainActivity extends AppCompatActivity {
                             final File output = new File(mVerifyDirectory, value);
                             final FileOutputStream fstream = new FileOutputStream(output);
                             final SQLiteDatabase db = mDbHelper.getReadableDatabase();
-                            final Cursor cursor = db.rawQuery("SElECT * FROM VERIFY", null);
+                            final String table = IdEntryContract.IdEntry.TABLE_NAME;
+                            final Cursor cursor = db.query(table, null, null, null, null, null, null);
+                            //final Cursor cursor = db.rawQuery("SElECT * FROM VERIFY", null);
 
                             //first write header line
                             final String[] headers = cursor.getColumnNames();
@@ -432,6 +498,7 @@ public class MainActivity extends AppCompatActivity {
                                 } while (cursor.moveToNext());
                             }
 
+                            cursor.close();
                             fstream.flush();
                             fstream.close();
 
@@ -458,11 +525,10 @@ public class MainActivity extends AppCompatActivity {
     //returns index of table with identifier = id, returns -1 if not found
     private int getTableIndexById(String id) {
 
-        final ArrayAdapter<String> adapter = (ArrayAdapter<String>) mIdTable.getAdapter();
-        final int size = adapter.getCount();
+        final int size = mIdTable.getAdapter().getCount();
 
         for (int i = 0; i < size; i = i + 1) {
-            final String temp = adapter.getItem(i);
+            final String temp = (String) mIdTable.getAdapter().getItem(i);
             if (temp.equals(id)) return i;
         }
 
@@ -472,12 +538,11 @@ public class MainActivity extends AppCompatActivity {
     private void updateFilteredArrayAdapter(String id) {
 
         //update id table array adapter
-        final ArrayAdapter<String> oldAdapter = (ArrayAdapter<String>) mIdTable.getAdapter();
         final ArrayAdapter<String> updatedAdapter = new ArrayAdapter<>(this, R.layout.row);
-        final int oldSize = oldAdapter.getCount();
+        final int oldSize = mIdTable.getAdapter().getCount();
 
         for (int i = 0; i < oldSize; i = i + 1) {
-            final String temp = oldAdapter.getItem(i);
+            final String temp = (String) mIdTable.getAdapter().getItem(i);
             if (!temp.equals(id)) updatedAdapter.add(temp);
         }
         mIdTable.setAdapter(updatedAdapter);
@@ -508,7 +573,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    void sendIdNotFoundMsg() {
+    private void sendIdNotFoundMsg() {
 
         MainActivity.this.runOnUiThread(new Runnable() {
 
@@ -569,8 +634,9 @@ public class MainActivity extends AppCompatActivity {
 
                         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
                         final SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putString(SettingsActivity.PAIR_NAME, mPairCol);
                         editor.putString(SettingsActivity.LIST_KEY_NAME, mListId);
-                        editor.commit();
+                        editor.apply();
 
                         clearListView();
                         loadSQLToLocal();
@@ -588,11 +654,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void buildListView() {
 
-        final ArrayAdapter<String> idAdapter =
+        ArrayAdapter<String> idAdapter =
                 new ArrayAdapter<>(this, R.layout.row);
-        final int size = _ids.size();
-        for (int i = 0; i < size; i = i + 1)
-            idAdapter.add(_ids.get(_ids.keyAt(i)));
+        int size = mIds.size();
+        for (int i = 0; i < size; i++) {
+            idAdapter.add(this.mIds.get(this.mIds.keyAt(i)));
+        }
         mIdTable.setAdapter(idAdapter);
     }
 
@@ -605,13 +672,13 @@ public class MainActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
     }
 
-    @Override
+   /* @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
        // loadSQLToLocal();
        // buildListView();
        // updateCheckedItems();
-    }
+    }*/
 
     private void setupDrawer() {
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
@@ -645,7 +712,7 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    public void selectDrawerItem(MenuItem menuItem) {
+    private void selectDrawerItem(MenuItem menuItem) {
         switch (menuItem.getItemId()) {
 
             case R.id.nav_import:
@@ -702,7 +769,7 @@ public class MainActivity extends AppCompatActivity {
                             " " + packageInfo.versionName);
                 }
                 catch (final android.content.pm.PackageManager.NameNotFoundException e)
-                { }
+                { e.printStackTrace(); }
                 versionTextView.setOnClickListener(new android.view.View.OnClickListener()
                 {
                     @java.lang.Override
@@ -734,7 +801,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void askToSkipOrder() {
+    /*private void askToSkipOrder() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Skip ordered item?");
@@ -748,7 +815,7 @@ public class MainActivity extends AppCompatActivity {
 
         builder.show();
 
-    }
+    }*/
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -762,7 +829,7 @@ public class MainActivity extends AppCompatActivity {
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
-    public void launchIntro() {
+    private void launchIntro() {
 
         new Thread(new Runnable() {
             @Override
@@ -783,12 +850,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /* Checks if external storage is available for read and write */
-    public boolean isExternalStorageWritable() {
-        String state = Environment.getExternalStorageState();
-        if (Environment.MEDIA_MOUNTED.equals(state)) {
-            return true;
-        }
-        return false;
+    private boolean isExternalStorageWritable() {
+        return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
     }
 
     @Override
