@@ -230,19 +230,24 @@ public class LoaderDBActivity extends AppCompatActivity {
                 int count = 0;
                 while (headerIterator.hasNext())
                     headers[count++] = ((HSSFCell) headerIterator.next()).getStringCellValue();
+
+                db.beginTransaction();
                 while (rowIterator.hasNext()) {
                     final ContentValues entry = new ContentValues();
                     final Iterator cellIterator =
                             ((HSSFRow) rowIterator.next()).cellIterator();
                     count = 0;
                     while (cellIterator.hasNext()) {
+                        String val = ((HSSFCell) cellIterator.next()).toString();
                         if (displayCols.contains(headers[count]) || mDefaultCols.contains(headers[count])
                                 || headers[count].equals(mPairCol) || headers[count].equals(mIdHeader))
-                            entry.put(headers[count], ((HSSFCell) cellIterator.next()).toString());
+                            entry.put(headers[count], val);
                         count++;
                     }
                     final long rowId = db.insert("VERIFY", null, entry);
                 }
+                db.setTransactionSuccessful();
+                db.endTransaction();
             }
         } else if (mFileExtension.equals("xlsx")) {
             final int numSheets = mCurrentWorkbook.getNumberOfSheets();
@@ -255,19 +260,24 @@ public class LoaderDBActivity extends AppCompatActivity {
                 int count = 0;
                 while (headerIterator.hasNext())
                     headers[count++] = ((XSSFCell) headerIterator.next()).getStringCellValue();
+
+                db.beginTransaction();
                 while (rowIterator.hasNext()) {
                     final ContentValues entry = new ContentValues();
                     final Iterator cellIterator =
                             ((XSSFRow) rowIterator.next()).cellIterator();
                     count = 0;
                     while (cellIterator.hasNext()) {
+                        String val = ((XSSFCell) cellIterator.next()).toString();
                         if (displayCols.contains(headers[count]) || mDefaultCols.contains(headers[count])
                                 || headers[count].equals(mPairCol) || headers[count].equals(mIdHeader))
-                            entry.put(headers[count], ((XSSFCell) cellIterator.next()).toString());
+                            entry.put(headers[count], val);
                         count++;
                     }
                     final long rowId = db.insert("VERIFY", null, entry);
                 }
+                db.setTransactionSuccessful();
+                db.endTransaction();
             }
 
         } else {
@@ -280,6 +290,7 @@ public class LoaderDBActivity extends AppCompatActivity {
                         final String[] headers = br.readLine().split(mDelimiter);
 
                         String temp;
+                        db.beginTransaction();
                         while ((temp = br.readLine()) != null) {
                             final ContentValues entry = new ContentValues();
                             final String[] id_line = temp.split(mDelimiter);
@@ -298,6 +309,8 @@ public class LoaderDBActivity extends AppCompatActivity {
                                 final long newRowId = db.insert("VERIFY", null, entry);
                             } else Log.d("ROW ERROR", temp);
                         }
+                        db.setTransactionSuccessful();
+                        db.endTransaction();
                     }
                 }
             } catch (Exception e) {
@@ -489,6 +502,7 @@ public class LoaderDBActivity extends AppCompatActivity {
         }
     }
 
+
     //based on https://github.com/iPaulPro/aFileChooser/blob/master/aFileChooser/src/com/ipaulpro/afilechooser/utils/FileUtils.java
     public String getPath(Uri uri) {
 
@@ -506,7 +520,13 @@ public class LoaderDBActivity extends AppCompatActivity {
                 }
                 else if ("com.android.providers.downloads.documents".equals(uri.getAuthority())) {
                     final String id = DocumentsContract.getDocumentId(uri);
-                    final Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+                    if (!id.isEmpty()) {
+                        if (id.startsWith("raw:")) {
+                            return id.replaceFirst("raw:", "");
+                        }
+                    }
+                    final Uri contentUri = ContentUris.withAppendedId(
+                            Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
                     return getDataColumn(LoaderDBActivity.this, contentUri, null, null);
                 }
             }
