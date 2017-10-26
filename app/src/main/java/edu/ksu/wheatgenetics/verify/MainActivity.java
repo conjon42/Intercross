@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -130,19 +131,22 @@ public class MainActivity extends AppCompatActivity {
     private void prepareStatements() {
 
         final SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        try {
+            String updateNoteQuery = "UPDATE VERIFY SET note = ? WHERE " + mListId + " = ?";
+            sqlUpdateNote = db.compileStatement(updateNoteQuery);
 
-        String updateNoteQuery = "UPDATE VERIFY SET note = ? WHERE " + mListId + " = ?";
-        sqlUpdateNote = db.compileStatement(updateNoteQuery);
+            String deleteIdQuery = "DELETE FROM VERIFY WHERE " + mListId + " = ?";
+            sqlDeleteId = db.compileStatement(deleteIdQuery);
 
-        String deleteIdQuery = "DELETE FROM VERIFY WHERE " + mListId + " = ?";
-        sqlDeleteId = db.compileStatement(deleteIdQuery);
+            String updateCheckedQuery = "UPDATE VERIFY SET c = 1 WHERE " + mListId + " = ?";
+            sqlUpdateChecked = db.compileStatement(updateCheckedQuery);
 
-        String updateCheckedQuery = "UPDATE VERIFY SET c = 1 WHERE " + mListId + " = ?";
-        sqlUpdateChecked = db.compileStatement(updateCheckedQuery);
-
-        String updateUserAndDateQuery =
-                "UPDATE VERIFY SET user = ?, d = ?, s = s + 1 WHERE " + mListId + " = ?";
-        sqlUpdateUserAndDate = db.compileStatement(updateUserAndDateQuery);
+            String updateUserAndDateQuery =
+                    "UPDATE VERIFY SET user = ?, d = ?, s = s + 1 WHERE " + mListId + " = ?";
+            sqlUpdateUserAndDate = db.compileStatement(updateUserAndDateQuery);
+        } catch(SQLiteException e) {
+            e.printStackTrace();
+        }
     }
 
     private void initializeUIVariables() {
@@ -391,18 +395,21 @@ public class MainActivity extends AppCompatActivity {
           //      "SELECT " + mListId + " FROM VERIFY WHERE c = 1";
 
         //Cursor cursor = db.rawQuery(getCheckedItemsQuery, null);
-        final Cursor cursor = db.query(table, columns, selection, null, null, null, null);
-        if (cursor.moveToFirst()) {
-            do {
-                String id = cursor.getString(
-                        cursor.getColumnIndexOrThrow(mListId)
-                );
+        try {
+            final Cursor cursor = db.query(table, columns, selection, null, null, null, null);
+            if (cursor.moveToFirst()) {
+                do {
+                    String id = cursor.getString(
+                            cursor.getColumnIndexOrThrow(mListId)
+                    );
 
-                ids.add(id);
-            } while (cursor.moveToNext());
+                    ids.add(id);
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        } catch (SQLiteException e) {
+            e.printStackTrace();
         }
-        cursor.close();
-
         for (int position = 0; position < mIdTable.getCount(); position++) {
 
             final String id = (mIdTable.getItemAtPosition(position)).toString();
@@ -429,27 +436,31 @@ public class MainActivity extends AppCompatActivity {
 
             SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
-            final String table = IdEntryContract.IdEntry.TABLE_NAME;
-            final Cursor cursor = db.query(table, null, null, null, null, null, null);
-            //Cursor cursor = db.rawQuery("select * from VERIFY", null);
+            try {
+                final String table = IdEntryContract.IdEntry.TABLE_NAME;
+                final Cursor cursor = db.query(table, null, null, null, null, null, null);
+                //Cursor cursor = db.rawQuery("select * from VERIFY", null);
 
-            if (cursor.moveToFirst()) {
-                do {
-                    final String[] headers = cursor.getColumnNames();
-                    for (String header : headers) {
+                if (cursor.moveToFirst()) {
+                    do {
+                        final String[] headers = cursor.getColumnNames();
+                        for (String header : headers) {
 
-                        final String val = cursor.getString(
-                                cursor.getColumnIndexOrThrow(header)
-                        );
+                            final String val = cursor.getString(
+                                    cursor.getColumnIndexOrThrow(header)
+                            );
 
-                        if (header.equals(mListId)) {
-                            mIds.append(mIds.size(), val);
+                            if (header.equals(mListId)) {
+                                mIds.append(mIds.size(), val);
+                            }
                         }
-                    }
-                } while (cursor.moveToNext());
-            }
+                    } while (cursor.moveToNext());
+                }
+                cursor.close();
 
-            cursor.close();
+            } catch (SQLiteException e) {
+                e.printStackTrace();
+            }
             buildListView();
 
         }

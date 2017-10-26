@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -27,6 +29,8 @@ import android.widget.TextView;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFCell;
@@ -36,11 +40,13 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.regex.Pattern;
 
 import static edu.ksu.wheatgenetics.verify.VerifyConstants.CSV_URI;
 import static edu.ksu.wheatgenetics.verify.VerifyConstants.DEFAULT_CONTENT_REQ;
@@ -87,10 +93,10 @@ public class LoaderDBActivity extends AppCompatActivity {
 
         mDbHelper = new IdEntryDbHelper(this);
 
-        displayCols = new HashSet<>();
+        displayCols = new HashSet<>(10);
 
         //default column names
-        mDefaultCols = new HashSet<>();
+        mDefaultCols = new HashSet<>(5);
         mDefaultCols.add("d");
         mDefaultCols.add("c");
         mDefaultCols.add("s");
@@ -99,7 +105,7 @@ public class LoaderDBActivity extends AppCompatActivity {
 
         headerList = ((ListView) findViewById(R.id.headerList));
 
-        headerList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        headerList.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
         headerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -199,11 +205,17 @@ public class LoaderDBActivity extends AppCompatActivity {
 
         db.execSQL("DROP TABLE IF EXISTS VERIFY");
 
-        final StringBuilder dbExecCreate = new StringBuilder();
+        final StringBuilder dbExecCreate = new StringBuilder(32);
 
-        dbExecCreate.append("CREATE TABLE VERIFY(" + mIdHeader + " TEXT PRIMARY KEY");
+        dbExecCreate.append("CREATE TABLE VERIFY(");
+        dbExecCreate.append(mIdHeader);
+        dbExecCreate.append(" TEXT PRIMARY KEY");
 
-        if (mPairCol != null) dbExecCreate.append(", " + mPairCol + " TEXT");
+        if (mPairCol != null) {
+            dbExecCreate.append(", ");
+            dbExecCreate.append(mPairCol);
+            dbExecCreate.append(" TEXT");
+        }
         dbExecCreate.append(", d DATE");
         dbExecCreate.append(", user TEXT");
         dbExecCreate.append(", note TEXT");
@@ -213,110 +225,114 @@ public class LoaderDBActivity extends AppCompatActivity {
         final String[] cols = displayCols.toArray(new String[] {});
         final int colSize = cols.length;
         for (int i = 0; i < colSize; i++) {
-            dbExecCreate.append(",");
-            dbExecCreate.append(cols[i] + " TEXT");
+            if (!cols[i].matches("[0-9]+")) {
+                dbExecCreate.append(',');
+                dbExecCreate.append(cols[i]);
+                dbExecCreate.append(" TEXT");
+            }
         }
         dbExecCreate.append(");");
 
-        db.execSQL(dbExecCreate.toString());
+        try {
+            db.execSQL(dbExecCreate.toString());
+
+        } catch (SQLiteException e) {
+            e.printStackTrace();
+        }
+        db.close();
 
         if (mFileExtension.equals("xls")) {
-            final int numSheets = mCurrentWorkbook.getNumberOfSheets();
-            if (numSheets > 0) {
-                final Sheet s = mCurrentWorkbook.getSheetAt(0);
-                final Iterator rowIterator = s.rowIterator();
-                final HSSFRow headerRow = (HSSFRow) rowIterator.next(); //skip first header line
-                final String[] headers = new String[headerRow.getLastCellNum()];
-                final Iterator headerIterator = headerRow.cellIterator();
-                int count = 0;
-                while (headerIterator.hasNext())
-                    headers[count++] = ((HSSFCell) headerIterator.next()).getStringCellValue();
-
-                db.beginTransaction();
-                while (rowIterator.hasNext()) {
-                    final ContentValues entry = new ContentValues();
-                    final Iterator cellIterator =
-                            ((HSSFRow) rowIterator.next()).cellIterator();
-                    count = 0;
-                    while (cellIterator.hasNext()) {
-                        String val = ((HSSFCell) cellIterator.next()).toString();
-                        if (displayCols.contains(headers[count]) || mDefaultCols.contains(headers[count])
-                                || headers[count].equals(mPairCol) || headers[count].equals(mIdHeader))
-                            entry.put(headers[count], val);
-                        count++;
-                    }
-                    final long rowId = db.insert("VERIFY", null, entry);
-                }
-                db.setTransactionSuccessful();
-                db.endTransaction();
-            }
+            parseAndInsertXLS();
         } else if (mFileExtension.equals("xlsx")) {
+            parseAndInsertXLS();
+        } else {
+            parseAndInsertCSV();
+        }
+    }
+
+    private void parseAndInsertCSV() {
+
+        final SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        try {
+            final InputStream is = getContentResolver().openInputStream(_csvUri);
+            if (is != null) {
+
+                if (mDelimiter != null) {
+                    final BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                    final String[] headers = br.readLine().split(mDelimiter);
+
+                    String temp;
+                    ContentValues entry = new ContentValues();
+                    db.beginTransaction();
+                    while ((temp = br.readLine()) != null) {
+                        String[] id_line = temp.split(mDelimiter);
+                        int size = id_line.length;
+                        if (size != 0 && size <= headers.length) {
+
+                            entry.put(headers[mIdHeaderIndex], id_line[mIdHeaderIndex]);
+
+                            for (int i = 0; i < size; i++) {
+
+                                if (displayCols.contains(headers[i]) || mDefaultCols.contains(headers[i]) ||
+                                        headers[i].equals(mPairCol)) {
+                                    entry.put(headers[i], id_line[i]);
+                                }
+                            }
+                            long newRowId = db.insert("VERIFY", null, entry);
+                            entry.clear();
+                        } else Log.d("ROW ERROR", temp);
+                    }
+                    db.setTransactionSuccessful();
+                    db.endTransaction();
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void parseAndInsertXLS() {
+
+        try {
+            final SQLiteDatabase db = mDbHelper.getWritableDatabase();
             final int numSheets = mCurrentWorkbook.getNumberOfSheets();
             if (numSheets > 0) {
                 final Sheet s = mCurrentWorkbook.getSheetAt(0);
                 final Iterator rowIterator = s.rowIterator();
-                final XSSFRow headerRow = (XSSFRow) rowIterator.next(); //skip first header line
-                final String[] headers = new String[headerRow.getLastCellNum()];
+                final Row headerRow = (Row) rowIterator.next(); //skip first header line
+                final String[] headers = new String[(int) headerRow.getLastCellNum()];
                 final Iterator headerIterator = headerRow.cellIterator();
                 int count = 0;
-                while (headerIterator.hasNext())
-                    headers[count++] = ((XSSFCell) headerIterator.next()).getStringCellValue();
+                while (headerIterator.hasNext()) {
+                    headers[count] = ((Cell) headerIterator.next()).getStringCellValue();
+                    count++;
+                }
 
                 db.beginTransaction();
+
+                ContentValues entry = new ContentValues();
                 while (rowIterator.hasNext()) {
-                    final ContentValues entry = new ContentValues();
-                    final Iterator cellIterator =
-                            ((XSSFRow) rowIterator.next()).cellIterator();
+                    Iterator cellIterator =
+                            ((Row) rowIterator.next()).cellIterator();
                     count = 0;
                     while (cellIterator.hasNext()) {
-                        String val = ((XSSFCell) cellIterator.next()).toString();
+                        String val = ((Cell) cellIterator.next()).toString();
                         if (displayCols.contains(headers[count]) || mDefaultCols.contains(headers[count])
                                 || headers[count].equals(mPairCol) || headers[count].equals(mIdHeader))
                             entry.put(headers[count], val);
                         count++;
                     }
-                    final long rowId = db.insert("VERIFY", null, entry);
+                    long rowId = db.insert("VERIFY", null, entry);
+                    entry.clear();
                 }
                 db.setTransactionSuccessful();
                 db.endTransaction();
             }
-
-        } else {
-            try {
-                final InputStream is = getContentResolver().openInputStream(_csvUri);
-                if (is != null) {
-
-                    if (mDelimiter != null) {
-                        final BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                        final String[] headers = br.readLine().split(mDelimiter);
-
-                        String temp;
-                        db.beginTransaction();
-                        while ((temp = br.readLine()) != null) {
-                            final ContentValues entry = new ContentValues();
-                            final String[] id_line = temp.split(mDelimiter);
-                            final int size = id_line.length;
-                            if (size != 0 && size <= headers.length) {
-
-                                entry.put(headers[mIdHeaderIndex], id_line[mIdHeaderIndex]);
-
-                                for (int i = 0; i < size; i = i + 1) {
-
-                                    if (displayCols.contains(headers[i]) || mDefaultCols.contains(headers[i]) ||
-                                            headers[i].equals(mPairCol)) {
-                                        entry.put(headers[i], id_line[i]);
-                                    }
-                                }
-                                final long newRowId = db.insert("VERIFY", null, entry);
-                            } else Log.d("ROW ERROR", temp);
-                        }
-                        db.setTransactionSuccessful();
-                        db.endTransaction();
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        } catch(IllegalStateException e) {
+            e.printStackTrace();
+            //probably from importing improper SQLite column name
         }
     }
 
@@ -338,7 +354,7 @@ public class LoaderDBActivity extends AppCompatActivity {
         }
 
         if (pairMode && mPairCol == null) {
-            headerList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+            headerList.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
             headerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -347,7 +363,7 @@ public class LoaderDBActivity extends AppCompatActivity {
                 }
             });
         } else {
-            headerList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+            headerList.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
             headerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
