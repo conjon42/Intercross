@@ -18,6 +18,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -33,6 +34,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -41,6 +43,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -53,6 +56,8 @@ import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
+    final static private String line_separator = System.getProperty("line.separator");
+
     private IdEntryDbHelper mDbHelper;
 
     //database prepared statements
@@ -63,22 +68,13 @@ public class MainActivity extends AppCompatActivity {
 
     private SparseArray<String> mIds;
 
-    //directory to store verify files
-    private File mVerifyDirectory;
-
-    //global variable to track matching order
-    private int mMatchingOrder;
-
     private Timer mTimer = new Timer("user input for suppressing messages", true);
 
     //Verify UI variables
-    private TextView valueView;
     private ActionBarDrawerToggle mDrawerToggle;
-    private DrawerLayout mDrawerLayout;
-    private Ringtone mRingtoneNoti;
-    private Uri mRingtoneUri;
-    private EditText mScannerTextView;
-    private ListView mIdTable;
+
+    //global variable to track matching order
+    private int mMatchingOrder;
 
     private String mListId;
 
@@ -95,9 +91,6 @@ public class MainActivity extends AppCompatActivity {
 
         mIds = new SparseArray<>();
 
-        mRingtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        mRingtoneNoti = RingtoneManager.getRingtone(this, mRingtoneUri);
-
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         final boolean tutorialMode = sharedPref.getBoolean(SettingsActivity.TUTORIAL_MODE, true);
 
@@ -113,9 +106,9 @@ public class MainActivity extends AppCompatActivity {
         initializeUIVariables();
 
         if (isExternalStorageWritable()) {
-            mVerifyDirectory = new File(Environment.getExternalStorageDirectory().getPath() + "/Verify");
-            if (!mVerifyDirectory.isDirectory()) {
-                final boolean makeDirsSuccess = mVerifyDirectory.mkdirs();
+            File verifyDirectory = new File(Environment.getExternalStorageDirectory().getPath() + "/Verify");
+            if (!verifyDirectory.isDirectory()) {
+                final boolean makeDirsSuccess = verifyDirectory.mkdirs();
                 if (!makeDirsSuccess) Log.d("Verify Make Directory", "failed");
             }
         }
@@ -151,8 +144,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void initializeUIVariables() {
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-
         if(getSupportActionBar() != null){
             getSupportActionBar().setTitle(null);
             getSupportActionBar().getThemedContext();
@@ -166,19 +157,20 @@ public class MainActivity extends AppCompatActivity {
         setupDrawerContent(nvDrawer);
         setupDrawer();
 
-        mIdTable = ((ListView) findViewById(R.id.idTable));
-        mIdTable.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-        mIdTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        ListView idTable = ((ListView) findViewById(R.id.idTable));
+        idTable.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
+        idTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                mScannerTextView.setText(((TextView) view).getText().toString());
+                ((EditText) findViewById(R.id.scannerTextView))
+                        .setText(((TextView) view).getText().toString());
                 checkScannedItem();
             }
         });
 
-        mIdTable.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+        idTable.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 
@@ -188,11 +180,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        valueView = (TextView) findViewById(R.id.valueView);
+        TextView valueView = (TextView) findViewById(R.id.valueView);
         valueView.setMovementMethod(new ScrollingMovementMethod());
 
-        mScannerTextView = ((EditText) findViewById(R.id.scannerTextView));
-        mScannerTextView.setOnKeyListener(new View.OnKeyListener() {
+        final EditText scannerTextView = ((EditText) findViewById(R.id.scannerTextView));
+        scannerTextView.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
 
@@ -210,8 +202,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                mScannerTextView.setText("");
-                checkScannedItem();
+                scannerTextView.setText("");
+                //checkScannedItem();
             }
         });
     }
@@ -221,7 +213,8 @@ public class MainActivity extends AppCompatActivity {
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
 
-        final String scannedId = mScannerTextView.getText().toString();
+        final String scannedId = ((TextView) findViewById(R.id.scannerTextView))
+                .getText().toString();
         mTimer.purge();
         mTimer.cancel();
 
@@ -247,10 +240,10 @@ public class MainActivity extends AppCompatActivity {
                 values.append(header);
                 values.append(" : ");
                 values.append(val);
-                values.append("\n");
+                values.append(line_separator);
             }
             cursor.close();
-            valueView.setText(values.toString());
+            ((TextView) findViewById(R.id.valueView)).setText(values.toString());
         } else if (scanMode != 2) resetTimer();
     }
 
@@ -410,13 +403,14 @@ public class MainActivity extends AppCompatActivity {
         } catch (SQLiteException e) {
             e.printStackTrace();
         }
-        for (int position = 0; position < mIdTable.getCount(); position++) {
+        ListView idTable = (ListView) findViewById(R.id.idTable);
+        for (int position = 0; position < idTable.getCount(); position++) {
 
-            final String id = (mIdTable.getItemAtPosition(position)).toString();
+            final String id = (idTable.getItemAtPosition(position)).toString();
 
             if (ids.contains(id)) {
-                mIdTable.setItemChecked(position, true);
-            } else mIdTable.setItemChecked(position, false);
+                idTable.setItemChecked(position, true);
+            } else idTable.setItemChecked(position, false);
         }
     }
 
@@ -434,35 +428,40 @@ public class MainActivity extends AppCompatActivity {
 
             prepareStatements();
 
-            SQLiteDatabase db = mDbHelper.getReadableDatabase();
+            loadBarcodes();
 
-            try {
-                final String table = IdEntryContract.IdEntry.TABLE_NAME;
-                final Cursor cursor = db.query(table, null, null, null, null, null, null);
-                //Cursor cursor = db.rawQuery("select * from VERIFY", null);
-
-                if (cursor.moveToFirst()) {
-                    do {
-                        final String[] headers = cursor.getColumnNames();
-                        for (String header : headers) {
-
-                            final String val = cursor.getString(
-                                    cursor.getColumnIndexOrThrow(header)
-                            );
-
-                            if (header.equals(mListId)) {
-                                mIds.append(mIds.size(), val);
-                            }
-                        }
-                    } while (cursor.moveToNext());
-                }
-                cursor.close();
-
-            } catch (SQLiteException e) {
-                e.printStackTrace();
-            }
             buildListView();
 
+        }
+    }
+
+    private void loadBarcodes() {
+
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        try {
+            final String table = IdEntryContract.IdEntry.TABLE_NAME;
+            final Cursor cursor = db.query(table, null, null, null, null, null, null);
+            //Cursor cursor = db.rawQuery("select * from VERIFY", null);
+
+            if (cursor.moveToFirst()) {
+                do {
+                    final String[] headers = cursor.getColumnNames();
+                    for (String header : headers) {
+
+                        final String val = cursor.getString(
+                                cursor.getColumnIndexOrThrow(header)
+                        );
+
+                        if (header.equals(mListId)) {
+                            mIds.append(mIds.size(), val);
+                        }
+                    }
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+
+        } catch (SQLiteException e) {
+            e.printStackTrace();
         }
     }
 
@@ -481,7 +480,8 @@ public class MainActivity extends AppCompatActivity {
                 if (!value.isEmpty()) {
                     if (isExternalStorageWritable()) {
                         try {
-                            final File output = new File(mVerifyDirectory, value);
+                            File verifyDirectory = new File(Environment.getExternalStorageDirectory().getPath() + "/Verify");
+                            final File output = new File(verifyDirectory, value);
                             final FileOutputStream fstream = new FileOutputStream(output);
                             final SQLiteDatabase db = mDbHelper.getReadableDatabase();
                             final String table = IdEntryContract.IdEntry.TABLE_NAME;
@@ -494,7 +494,7 @@ public class MainActivity extends AppCompatActivity {
                                 if (i != 0) fstream.write(",".getBytes());
                                 fstream.write(headers[i].getBytes());
                             }
-                            fstream.write("\n".getBytes());
+                            fstream.write(line_separator.getBytes());
                             //populate text file with current database values
                             if (cursor.moveToFirst()) {
                                 do {
@@ -506,7 +506,7 @@ public class MainActivity extends AppCompatActivity {
                                         if (val == null) fstream.write("null".getBytes());
                                         else fstream.write(val.getBytes());
                                     }
-                                    fstream.write("\n".getBytes());
+                                    fstream.write(line_separator.getBytes());
                                 } while (cursor.moveToNext());
                             }
 
@@ -514,11 +514,19 @@ public class MainActivity extends AppCompatActivity {
                             fstream.flush();
                             fstream.close();
 
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
                         } catch (IOException io) {
                             io.printStackTrace();
                         }
-                    } //error toast
-                } //use default name
+                    } else {
+                        Toast.makeText(MainActivity.this,
+                                "External storage not writable.", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(MainActivity.this,
+                            "Must enter a file name.", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -537,41 +545,48 @@ public class MainActivity extends AppCompatActivity {
     //returns index of table with identifier = id, returns -1 if not found
     private int getTableIndexById(String id) {
 
-        final int size = mIdTable.getAdapter().getCount();
-
-        for (int i = 0; i < size; i = i + 1) {
-            final String temp = (String) mIdTable.getAdapter().getItem(i);
-            if (temp.equals(id)) return i;
+        ListView idTable = (ListView) findViewById(R.id.idTable);
+        final int size = idTable.getAdapter().getCount();
+        int ret = -1;
+        for (int i = 0; i < size; i++) {
+            final String temp = (String) idTable.getAdapter().getItem(i);
+            if (temp.equals(id)) {
+                ret = i;
+                break; //break out of for-loop early
+            }
         }
 
-        return -1;
+        return ret;
     }
 
     private void updateFilteredArrayAdapter(String id) {
 
+        ListView idTable = (ListView) findViewById(R.id.idTable);
         //update id table array adapter
         final ArrayAdapter<String> updatedAdapter = new ArrayAdapter<>(this, R.layout.row);
-        final int oldSize = mIdTable.getAdapter().getCount();
+        final int oldSize = idTable.getAdapter().getCount();
 
-        for (int i = 0; i < oldSize; i = i + 1) {
-            final String temp = (String) mIdTable.getAdapter().getItem(i);
+        for (int i = 0; i < oldSize; i++) {
+            final String temp = (String) idTable.getAdapter().getItem(i);
             if (!temp.equals(id)) updatedAdapter.add(temp);
         }
-        mIdTable.setAdapter(updatedAdapter);
+        idTable.setAdapter(updatedAdapter);
     }
 
     private void ringNotification() {
 
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         final boolean audioEnabled = sharedPref.getBoolean(SettingsActivity.AUDIO_ENABLED, true);
-
+        Ringtone ringtoneNoti = RingtoneManager.getRingtone(this,
+                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
         if (audioEnabled) {
             try {
-                mRingtoneNoti.play();
+                ringtoneNoti.play();
             } catch (Exception e) {
                 e.printStackTrace();
-                mRingtoneNoti.stop();
-                mRingtoneNoti = RingtoneManager.getRingtone(this, mRingtoneUri);
+                ringtoneNoti.stop();
+                ringtoneNoti = RingtoneManager.getRingtone(this,
+                        RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
 
             }
         }
@@ -598,7 +613,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu m) {
+    final public boolean onCreateOptionsMenu(Menu m) {
 
         final MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.activity_main_toolbar, m);
@@ -606,27 +621,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    final public boolean onOptionsItemSelected(MenuItem item) {
 
+        DrawerLayout dl = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
 
         switch (item.getItemId()) {
             case android.R.id.home:
-                mDrawerLayout.openDrawer(GravityCompat.START);
-                return true;
+                dl.openDrawer(GravityCompat.START);
+                break;
             case R.id.action_camera:
                 final Intent cameraIntent = new Intent(this, ScanActivity.class);
                 startActivityForResult(cameraIntent, VerifyConstants.CAMERA_INTENT_REQ);
-                return true;
+                break;
             default:
                 return super.onOptionsItemSelected(item);
         }
+        return true;
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+    final protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
 
         super.onActivityResult(requestCode, resultCode, intent);
 
@@ -657,7 +674,8 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 if (intent.hasExtra(VerifyConstants.CAMERA_RETURN_ID)) {
-                    mScannerTextView.setText(intent.getStringExtra(VerifyConstants.CAMERA_RETURN_ID));
+                    ((EditText) findViewById(R.id.scannerTextView))
+                            .setText(intent.getStringExtra(VerifyConstants.CAMERA_RETURN_ID));
                     checkScannedItem();
                 }
             }
@@ -666,21 +684,23 @@ public class MainActivity extends AppCompatActivity {
 
     private void buildListView() {
 
+        ListView idTable = (ListView) findViewById(R.id.idTable);
         ArrayAdapter<String> idAdapter =
                 new ArrayAdapter<>(this, R.layout.row);
         int size = mIds.size();
         for (int i = 0; i < size; i++) {
             idAdapter.add(this.mIds.get(this.mIds.keyAt(i)));
         }
-        mIdTable.setAdapter(idAdapter);
+        idTable.setAdapter(idAdapter);
     }
 
     private void clearListView() {
 
+        ListView idTable = (ListView) findViewById(R.id.idTable);
         final ArrayAdapter<String> adapter =
                 new ArrayAdapter<>(this, R.layout.row);
 
-        mIdTable.setAdapter(adapter);
+        idTable.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }
 
@@ -693,7 +713,9 @@ public class MainActivity extends AppCompatActivity {
     }*/
 
     private void setupDrawer() {
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
+
+        DrawerLayout dl = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerToggle = new ActionBarDrawerToggle(this, dl,
                 R.string.drawer_open, R.string.drawer_close) {
 
             public void onDrawerOpened(View drawerView) {
@@ -710,7 +732,7 @@ public class MainActivity extends AppCompatActivity {
         };
 
         mDrawerToggle.setDrawerIndicatorEnabled(true);
-        mDrawerLayout.addDrawerListener(mDrawerToggle);
+        dl.addDrawerListener(mDrawerToggle);
     }
 
     private void setupDrawerContent(NavigationView navigationView) {
@@ -755,7 +777,8 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
-        mDrawerLayout.closeDrawers();
+        DrawerLayout dl = (DrawerLayout) findViewById(R.id.drawer_layout);
+        dl.closeDrawers();
     }
 
     private void showAboutDialog()
@@ -778,7 +801,7 @@ public class MainActivity extends AppCompatActivity {
                     assert versionTextView != null;
                     versionTextView.setText(this.getResources().getString(
                             R.string.versiontitle) +
-                            " " + packageInfo.versionName);
+                            ' ' + packageInfo.versionName);
                 }
                 catch (final android.content.pm.PackageManager.NameNotFoundException e)
                 { e.printStackTrace(); }
@@ -830,13 +853,13 @@ public class MainActivity extends AppCompatActivity {
     }*/
 
     @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
+    final protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         mDrawerToggle.syncState();
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    final public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
@@ -862,18 +885,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /* Checks if external storage is available for read and write */
-    private boolean isExternalStorageWritable() {
+    static private boolean isExternalStorageWritable() {
         return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
     }
 
     @Override
-    public void onDestroy() {
+    final public void onDestroy() {
         mDbHelper.close();
         super.onDestroy();
     }
 
     @Override
-    public void onPause() {
+    final public void onPause() {
         super.onPause();
     }
 
