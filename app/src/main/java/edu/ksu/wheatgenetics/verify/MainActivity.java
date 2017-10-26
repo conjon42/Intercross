@@ -423,9 +423,10 @@ public class MainActivity extends AppCompatActivity {
         mListId = sharedPref.getString(SettingsActivity.LIST_KEY_NAME, null);
         mPairCol = sharedPref.getString(SettingsActivity.PAIR_NAME, null);
 
-        prepareStatements();
-
         if (mListId != null) {
+
+            prepareStatements();
+
             SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
             final String table = IdEntryContract.IdEntry.TABLE_NAME;
