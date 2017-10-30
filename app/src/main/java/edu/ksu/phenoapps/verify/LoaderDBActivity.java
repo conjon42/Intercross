@@ -1,4 +1,4 @@
-package edu.ksu.wheatgenetics.verify;
+package edu.ksu.phenoapps.verify;
 
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -10,7 +10,6 @@ import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.CancellationSignal;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.support.v4.app.ActivityCompat;
@@ -33,6 +32,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -46,16 +46,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.regex.Pattern;
-
-import static edu.ksu.wheatgenetics.verify.VerifyConstants.CSV_URI;
-import static edu.ksu.wheatgenetics.verify.VerifyConstants.DEFAULT_CONTENT_REQ;
 
 public class LoaderDBActivity extends AppCompatActivity {
 
     private HashSet<String> displayCols;
 
-    private Uri _csvUri;
+    private Uri mFileUri;
     private String mDelimiter;
     private String mFileExtension;
     private String mFilePath;
@@ -103,7 +99,87 @@ public class LoaderDBActivity extends AppCompatActivity {
         mDefaultCols.add("user");
         mDefaultCols.add("note");
 
-        headerList = ((ListView) findViewById(R.id.headerList));
+        initializeUI();
+
+        mFileUri = getIntent().getData();
+
+        parseHeaders(mFileUri);
+
+        //if unsupported file type, start delimiter tutorial
+        if (mDelimiter == null) {
+            if (mHeader == null) {
+                tutorialText.setText("Error reading file.");
+            } else {
+                separatorText.setVisibility(View.VISIBLE);
+                doneButton.setVisibility(View.VISIBLE);
+                tutorialText.setText(edu.ksu.phenoapps.verify.R.string.choose_separator_tutorial);
+                tutorialText.append(mHeader);
+            }
+
+        } else { //display header list
+            displayHeaderList();
+        }
+    }
+
+    private void parseHeaders(Uri data) {
+
+        try {
+            //query file path type
+            mFilePath = getPath(mFileUri);
+            final String[] pathSplit = mFilePath.split("\\.");
+            mFileExtension = pathSplit[pathSplit.length - 1];
+
+            String header = "";
+
+
+            //xls library support
+            if (mCurrentWorkbook != null) mCurrentWorkbook.close();
+            mCurrentWorkbook = WorkbookFactory.create(new File(mFilePath));
+          /*  if (mFileExtension.equals("xls"))
+                mCurrentWorkbook = new HSSFWorkbook(new FileInputStream(new File(mFilePath)));
+            else if(mFileExtension.equals("xlsx"))
+                mCurrentWorkbook = new XSSFWorkbook(new FileInputStream(new File(mFilePath)));*/
+
+            if (mFileExtension.equals("xlsx") || mFileExtension.equals("xls")) {
+                final int numSheets = mCurrentWorkbook.getNumberOfSheets();
+                if (numSheets > 0) {
+                    final Sheet s = mCurrentWorkbook.getSheetAt(0);
+                    final Iterator rows = s.rowIterator();
+                    final Row row = (Row) rows.next();
+                    final Iterator cells = row.cellIterator();
+                    while (cells.hasNext()) {
+                        final Cell cell = (Cell) cells.next();
+                        header += cell.toString();
+                        if (cells.hasNext()) header += ",";
+                    }
+
+                    mDelimiter = ",";
+                    mHeader = header;
+                }
+            } else {
+                //plain text file support
+                if (mFileExtension.equals("csv")) { //files ending in .csv
+                    mDelimiter = ",";
+                } else if (mFileExtension.equals("tsv") || mFileExtension.equals("txt")) { //fiels ending in .txt
+                    mDelimiter = "\t";
+                } else
+                    mDelimiter = null; //non-supported file type, display header for user to choose delimiter
+
+                final InputStream is = getContentResolver().openInputStream(mFileUri);
+                if (is != null) {
+                    final BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                    mHeader = br.readLine();
+                    br.close();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void initializeUI() {
+
+        headerList = ((ListView) findViewById(edu.ksu.phenoapps.verify.R.id.headerList));
 
         headerList.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
         headerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -113,22 +189,17 @@ public class LoaderDBActivity extends AppCompatActivity {
                 chooseHeaderButton.setEnabled(true);
                 mIdHeaderIndex = position;
                 mIdHeader = ((TextView) view).getText().toString();
-                tutorialText.setText(R.string.press_continue_tutorial);
+                tutorialText.setText(edu.ksu.phenoapps.verify.R.string.press_continue_tutorial);
             }
         });
 
         tutorialText = (TextView) findViewById(R.id.tutorialTextView);
-        separatorText = (EditText) findViewById(R.id.separatorTextView);
+        separatorText = (EditText) findViewById(edu.ksu.phenoapps.verify.R.id.separatorTextView);
 
-        choosePairButton = (Button) findViewById(R.id.choosePairButton);
-        chooseHeaderButton = (Button) findViewById(R.id.chooseHeaderButton);
-        doneButton = ((Button) findViewById(R.id.doneButton));
-        finishButton = ((Button) findViewById(R.id.finishButton));
-
-        final Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-        i.setType("*/*");
-        startActivityForResult(Intent.createChooser(i, "Choose file to import."), VerifyConstants.DEFAULT_CONTENT_REQ);
-
+        choosePairButton = (Button) findViewById(edu.ksu.phenoapps.verify.R.id.choosePairButton);
+        chooseHeaderButton = (Button) findViewById(edu.ksu.phenoapps.verify.R.id.chooseHeaderButton);
+        doneButton = ((Button) findViewById(edu.ksu.phenoapps.verify.R.id.doneButton));
+        finishButton = ((Button) findViewById(edu.ksu.phenoapps.verify.R.id.finishButton));
 
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -148,13 +219,13 @@ public class LoaderDBActivity extends AppCompatActivity {
 
                 chooseHeaderButton.setVisibility(View.GONE);
 
-                tutorialText.setText(R.string.choose_pair_button_tutorial);
+                tutorialText.setText(edu.ksu.phenoapps.verify.R.string.choose_pair_button_tutorial);
                 choosePairButton.setVisibility(View.VISIBLE);
                 headerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                        tutorialText.setText(R.string.press_continue_tutorial);
+                        tutorialText.setText(edu.ksu.phenoapps.verify.R.string.press_continue_tutorial);
                         choosePairButton.setEnabled(true);
                         mPairCol = ((TextView) view).getText().toString();
                         mPairColIndex = position;
@@ -171,7 +242,7 @@ public class LoaderDBActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 choosePairButton.setVisibility(View.GONE);
-                tutorialText.setText(R.string.columns_tutorial);
+                tutorialText.setText(edu.ksu.phenoapps.verify.R.string.columns_tutorial);
                 finishButton.setVisibility(View.VISIBLE);
                 finishButton.setEnabled(false);
                 displayColsList(false);
@@ -182,7 +253,7 @@ public class LoaderDBActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                tutorialText.setText(R.string.finish_tutorial);
+                tutorialText.setText(edu.ksu.phenoapps.verify.R.string.finish_tutorial);
 
                 //create database
                 insertColumns();
@@ -254,7 +325,7 @@ public class LoaderDBActivity extends AppCompatActivity {
 
         final SQLiteDatabase db = mDbHelper.getWritableDatabase();
         try {
-            final InputStream is = getContentResolver().openInputStream(_csvUri);
+            final InputStream is = getContentResolver().openInputStream(mFileUri);
             if (is != null) {
 
                 if (mDelimiter != null) {
@@ -343,7 +414,7 @@ public class LoaderDBActivity extends AppCompatActivity {
         final String[] headers = mHeader.split(mDelimiter);
         if (headers.length > 0 && headers[0] != null) {
             final ArrayAdapter<String> idAdapter =
-                    new ArrayAdapter<>(this, R.layout.row);
+                    new ArrayAdapter<>(this, edu.ksu.phenoapps.verify.R.layout.row);
             for (String h : headers) {
                 if (!h.equals(headers[mIdHeaderIndex]) && !mDefaultCols.contains(h) &&
                         !h.equals(mPairCol)) {
@@ -379,13 +450,13 @@ public class LoaderDBActivity extends AppCompatActivity {
 
     private void displayHeaderList() {
 
-        tutorialText.setText(R.string.choose_header_tutorial);
+        tutorialText.setText(edu.ksu.phenoapps.verify.R.string.choose_header_tutorial);
         chooseHeaderButton.setVisibility(View.VISIBLE);
         chooseHeaderButton.setEnabled(false);
         headerList.setVisibility(View.VISIBLE);
 
         if (mHeader == null) {
-            headerList.setAdapter(new ArrayAdapter<String>(this, R.layout.row));
+            headerList.setAdapter(new ArrayAdapter<String>(this, edu.ksu.phenoapps.verify.R.layout.row));
             tutorialText.setText("Error reading file.");
             return;
         }
@@ -393,108 +464,14 @@ public class LoaderDBActivity extends AppCompatActivity {
         final String[] headers = mHeader.split(mDelimiter);
         if (headers.length > 0 && headers[0] != null) {
             final ArrayAdapter<String> idAdapter =
-                    new ArrayAdapter<>(this, R.layout.row);
+                    new ArrayAdapter<>(this, edu.ksu.phenoapps.verify.R.layout.row);
             for (String h : headers) {
                 if (!mDefaultCols.contains(h)) idAdapter.add(h);
             }
             headerList.setAdapter(idAdapter);
         } else {
-            headerList.setAdapter(new ArrayAdapter<String>(this, R.layout.row));
+            headerList.setAdapter(new ArrayAdapter<String>(this, edu.ksu.phenoapps.verify.R.layout.row));
             tutorialText.setText("Error reading file.");
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        super.onActivityResult(requestCode, resultCode, intent);
-
-        if (requestCode == DEFAULT_CONTENT_REQ) {
-            if (resultCode == RESULT_OK) {
-                _csvUri = intent.getData();
-
-                try {
-                    //query file path type
-                    mFilePath = getPath(_csvUri);
-                    final String[] pathSplit = mFilePath.split("\\.");
-                    mFileExtension = pathSplit[pathSplit.length - 1];
-
-                    String header = "";
-
-                    if (mFileExtension.equals("xls")) {
-                        //xls library support
-                        if (mCurrentWorkbook != null) mCurrentWorkbook.close();
-                        mCurrentWorkbook = new HSSFWorkbook(new FileInputStream(new File(mFilePath)));
-                        final int numSheets = mCurrentWorkbook.getNumberOfSheets();
-                        if (numSheets > 0) {
-                            final Sheet s = mCurrentWorkbook.getSheetAt(0);
-                            final Iterator rows = s.rowIterator();
-                            final HSSFRow row = (HSSFRow) rows.next();
-                            final Iterator cells = row.cellIterator();
-                            while (cells.hasNext()) {
-                                final HSSFCell cell = (HSSFCell) cells.next();
-                                header += cell.toString();
-                                if (cells.hasNext()) header += ",";
-                            }
-
-                            mDelimiter = ",";
-                            mHeader = header;
-                        }
-                    } else if (mFileExtension.equals("xlsx")) {
-
-                        //xlxs library support
-                        if (mCurrentWorkbook != null) mCurrentWorkbook.close();
-                        mCurrentWorkbook = new XSSFWorkbook(new FileInputStream(new File(mFilePath)));
-                        final int numSheets = mCurrentWorkbook.getNumberOfSheets();
-                        if (numSheets > 0) {
-                            final Sheet s = mCurrentWorkbook.getSheetAt(0);
-                            final Iterator rows = s.rowIterator();
-                            final XSSFRow row = (XSSFRow) rows.next();
-                            final Iterator cells = row.cellIterator();
-                            while (cells.hasNext()) {
-                                final XSSFCell cell = (XSSFCell) cells.next();
-                                header += cell.toString();
-                                if (cells.hasNext()) header += ",";
-                            }
-
-                            mDelimiter = ",";
-                            mHeader = header;
-                        }
-
-                    } else {
-                        //plain text file support
-                        if (mFileExtension.equals("csv")) { //files ending in .csv
-                            mDelimiter = ",";
-                        } else if (mFileExtension.equals("tsv") || mFileExtension.equals("txt")) { //fiels ending in .txt
-                            mDelimiter = "\t";
-                        } else
-                            mDelimiter = null; //non-supported file type, display header for user to choose delimiter
-
-                        final InputStream is = getContentResolver().openInputStream(_csvUri);
-                        if (is != null) {
-                            final BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                            mHeader = br.readLine();
-                            br.close();
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                //if unsupported file type, start delimiter tutorial
-                if (mDelimiter == null) {
-                    if (mHeader == null) {
-                        tutorialText.setText("Error reading file.");
-                    } else {
-                        separatorText.setVisibility(View.VISIBLE);
-                        doneButton.setVisibility(View.VISIBLE);
-                        tutorialText.setText(R.string.choose_separator_tutorial);
-                        tutorialText.append(mHeader);
-                    }
-
-                } else { //display header list
-                    displayHeaderList();
-                }
-            } else finish();
         }
     }
 
@@ -502,8 +479,8 @@ public class LoaderDBActivity extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        if (_csvUri != null)
-            outState.putString(CSV_URI, _csvUri.toString());
+        if (mFileUri != null)
+            outState.putString(VerifyConstants.CSV_URI, mFileUri.toString());
     }
 
     @Override

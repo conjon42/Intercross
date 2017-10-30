@@ -1,10 +1,8 @@
-package edu.ksu.wheatgenetics.verify;
+package edu.ksu.phenoapps.verify;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-
-import static edu.ksu.wheatgenetics.verify.IdEntryContract.SQL_DELETE_ENTRIES;
 
 /**
  * Created by Chaney on 7/13/2017.
@@ -52,7 +50,7 @@ class IdEntryDbHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL(SQL_DELETE_ENTRIES);
+        db.execSQL(IdEntryContract.SQL_DELETE_ENTRIES);
         onCreate(db);
     }
 

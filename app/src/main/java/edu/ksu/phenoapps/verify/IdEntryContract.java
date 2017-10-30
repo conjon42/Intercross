@@ -1,4 +1,4 @@
-package edu.ksu.wheatgenetics.verify;
+package edu.ksu.phenoapps.verify;
 
 import android.provider.BaseColumns;
 

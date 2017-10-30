@@ -1,4 +1,4 @@
-package edu.ksu.wheatgenetics.verify;
+package edu.ksu.phenoapps.verify;
 
 import android.graphics.Color;
 import android.os.Bundle;
@@ -18,9 +18,9 @@ public class IntroActivity extends AppIntro2 {
         showStatusBar(false);
 
         // Add slides
-        addSlide(AppIntroFragment.newInstance(getString(R.string.intro_title_1), getString(R.string.intro_body_1), R.drawable.intro_launcher, Color.parseColor("#A84937")));
-        addSlide(AppIntroFragment.newInstance(getString(R.string.intro_title_2), getString(R.string.intro_body_2), R.drawable.intro_folder, Color.parseColor("#285E3D")));
-        addSlide(AppIntroFragment.newInstance(getString(R.string.intro_title_3), getString(R.string.intro_body_3), R.drawable.intro_list, Color.parseColor("#0C6291")));
+        addSlide(AppIntroFragment.newInstance(getString(edu.ksu.phenoapps.verify.R.string.intro_title_1), getString(edu.ksu.phenoapps.verify.R.string.intro_body_1), edu.ksu.phenoapps.verify.R.drawable.intro_launcher, Color.parseColor("#A84937")));
+        addSlide(AppIntroFragment.newInstance(getString(edu.ksu.phenoapps.verify.R.string.intro_title_2), getString(edu.ksu.phenoapps.verify.R.string.intro_body_2), edu.ksu.phenoapps.verify.R.drawable.intro_folder, Color.parseColor("#285E3D")));
+        addSlide(AppIntroFragment.newInstance(getString(edu.ksu.phenoapps.verify.R.string.intro_title_3), getString(edu.ksu.phenoapps.verify.R.string.intro_body_3), edu.ksu.phenoapps.verify.R.drawable.intro_list, Color.parseColor("#0C6291")));
 
         // Hide Skip/Done button.
         showSkipButton(false);

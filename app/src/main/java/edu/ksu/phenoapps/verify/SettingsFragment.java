@@ -1,4 +1,4 @@
-package edu.ksu.wheatgenetics.verify;
+package edu.ksu.phenoapps.verify;
 
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
@@ -9,6 +9,6 @@ public class SettingsFragment extends PreferenceFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        addPreferencesFromResource(R.xml.preferences);
+        addPreferencesFromResource(edu.ksu.phenoapps.verify.R.xml.preferences);
     }
 }
