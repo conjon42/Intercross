@@ -156,33 +156,8 @@ public class MainActivity extends AppCompatActivity {
         setupDrawerContent(nvDrawer);
         setupDrawer();
 
-        ListView idTable = ((ListView) findViewById(R.id.idTable));
-        idTable.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
-        idTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                ((EditText) findViewById(R.id.scannerTextView))
-                        .setText(((TextView) view).getText().toString());
-                checkScannedItem();
-            }
-        });
-
-        idTable.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-
-                //get app settings
-                insertNoteIntoDb(((TextView) view).getText().toString());
-                return true;
-            }
-        });
-
-        TextView valueView = (TextView) findViewById(R.id.valueView);
-        valueView.setMovementMethod(new ScrollingMovementMethod());
-
         final EditText scannerTextView = ((EditText) findViewById(R.id.scannerTextView));
+        scannerTextView.setSelectAllOnFocus(true);
         scannerTextView.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
@@ -196,6 +171,32 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+        ListView idTable = ((ListView) findViewById(R.id.idTable));
+        idTable.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
+        idTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                scannerTextView.setText(((TextView) view).getText().toString());
+                scannerTextView.setSelection(scannerTextView.getText().length());
+                scannerTextView.requestFocus();
+                scannerTextView.selectAll();
+                checkScannedItem();
+            }
+        });
+
+        idTable.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                //get app settings
+                insertNoteIntoDb(((TextView) view).getText().toString());
+                return true;
+            }
+        });
+
+        TextView valueView = (TextView) findViewById(R.id.valueView);
+        valueView.setMovementMethod(new ScrollingMovementMethod());
 
         findViewById(org.phenoapps.verify.R.id.clearButton).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -545,39 +546,47 @@ public class MainActivity extends AppCompatActivity {
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         final boolean audioEnabled = sharedPref.getBoolean(SettingsActivity.AUDIO_ENABLED, true);
 
-        if (audioEnabled) {
-            if (success) {
-                try {
-                    int resID = getResources().getIdentifier("plonk", "raw", getPackageName());
-                    MediaPlayer chimePlayer = MediaPlayer.create(MainActivity.this, resID);
-                    chimePlayer.start();
+        if(success) { //ID found
+            if(audioEnabled) {
+                if (success) {
+                    try {
+                        int resID = getResources().getIdentifier("plonk", "raw", getPackageName());
+                        MediaPlayer chimePlayer = MediaPlayer.create(MainActivity.this, resID);
+                        chimePlayer.start();
 
-                    chimePlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                        public void onCompletion(MediaPlayer mp) {
-                            mp.release();
-                        }
-                    });
-                } catch (Exception ignore) {
+                        chimePlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                            public void onCompletion(MediaPlayer mp) {
+                                mp.release();
+                            }
+                        });
+                    } catch (Exception ignore) {
+                    }
                 }
             }
+        }
 
-            if(!success) {
-                try {
-                    int resID = getResources().getIdentifier("error", "raw", getPackageName());
-                    MediaPlayer chimePlayer = MediaPlayer.create(MainActivity.this, resID);
-                    chimePlayer.start();
+        if(!success) { //ID not found
+            ((TextView) findViewById(org.phenoapps.verify.R.id.valueView)).setText("");
 
-                    chimePlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                        public void onCompletion(MediaPlayer mp) {
-                            mp.release();
-                        }
-                    });
-                } catch (Exception ignore) {
+            if (audioEnabled) {
+                if(!success) {
+                    try {
+                        int resID = getResources().getIdentifier("error", "raw", getPackageName());
+                        MediaPlayer chimePlayer = MediaPlayer.create(MainActivity.this, resID);
+                        chimePlayer.start();
+
+                        chimePlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                            public void onCompletion(MediaPlayer mp) {
+                                mp.release();
+                            }
+                        });
+                    } catch (Exception ignore) {
+                    }
                 }
-            }
-        } else {
-            if (!success) {
-                Toast.makeText(this, "Scanned ID not found", Toast.LENGTH_SHORT).show();
+            } else {
+                if (!success) {
+                    Toast.makeText(this, "Scanned ID not found", Toast.LENGTH_SHORT).show();
+                }
             }
         }
     }
