@@ -131,16 +131,12 @@ public class LoaderDBActivity extends AppCompatActivity {
 
             String header = "";
 
-
             //xls library support
             if (mCurrentWorkbook != null) mCurrentWorkbook.close();
-            mCurrentWorkbook = WorkbookFactory.create(new File(mFilePath));
-          /*  if (mFileExtension.equals("xls"))
-                mCurrentWorkbook = new HSSFWorkbook(new FileInputStream(new File(mFilePath)));
-            else if(mFileExtension.equals("xlsx"))
-                mCurrentWorkbook = new XSSFWorkbook(new FileInputStream(new File(mFilePath)));*/
 
             if (mFileExtension.equals("xlsx") || mFileExtension.equals("xls")) {
+                mCurrentWorkbook = WorkbookFactory.create(new File(mFilePath));
+
                 final int numSheets = mCurrentWorkbook.getNumberOfSheets();
                 if (numSheets > 0) {
                     final Sheet s = mCurrentWorkbook.getSheetAt(0);
