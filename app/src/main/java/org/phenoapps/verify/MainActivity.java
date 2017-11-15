@@ -1,4 +1,4 @@
-package edu.ksu.phenoapps.verify;
+package org.phenoapps.verify;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
+import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.os.Bundle;
@@ -52,6 +53,8 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.phenoapps.verify.R;
+
 public class MainActivity extends AppCompatActivity {
 
     final static private String line_separator = System.getProperty("line.separator");
@@ -65,8 +68,6 @@ public class MainActivity extends AppCompatActivity {
     private SQLiteStatement sqlUpdateUserAndDate;
 
     private SparseArray<String> mIds;
-
-    private Timer mTimer = new Timer("user input for suppressing messages", true);
 
     //Verify UI variables
     private ActionBarDrawerToggle mDrawerToggle;
@@ -85,12 +86,12 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
 
-        setContentView(edu.ksu.phenoapps.verify.R.layout.activity_main);
+        setContentView(org.phenoapps.verify.R.layout.activity_main);
 
         mIds = new SparseArray<>();
 
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        final boolean tutorialMode = sharedPref.getBoolean(SettingsActivity.TUTORIAL_MODE, true);
+        final boolean tutorialMode = sharedPref.getBoolean(SettingsActivity.TUTORIAL_MODE, false);
 
         if (tutorialMode)
             launchIntro();
@@ -196,27 +197,23 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        findViewById(edu.ksu.phenoapps.verify.R.id.clearButton).setOnClickListener(new View.OnClickListener() {
+        findViewById(org.phenoapps.verify.R.id.clearButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 scannerTextView.setText("");
-                //checkScannedItem();
             }
         });
     }
 
     private synchronized void checkScannedItem() {
 
-        Parcelable listState = ((ListView) findViewById(edu.ksu.phenoapps.verify.R.id.idTable)).onSaveInstanceState();
+        Parcelable listState = ((ListView) findViewById(org.phenoapps.verify.R.id.idTable)).onSaveInstanceState();
 
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
 
-        final String scannedId = ((TextView) findViewById(edu.ksu.phenoapps.verify.R.id.scannerTextView))
+        final String scannedId = ((TextView) findViewById(org.phenoapps.verify.R.id.scannerTextView))
                 .getText().toString();
-        mTimer.purge();
-        mTimer.cancel();
 
         //update database
         exertModeFunction(scannedId);
@@ -227,7 +224,6 @@ public class MainActivity extends AppCompatActivity {
         final String table = IdEntryContract.IdEntry.TABLE_NAME;
         final String[] selectionArgs = new String[] { scannedId };
         final Cursor cursor = db.query(table, null, mListId + "=?", selectionArgs, null, null, null);
-        //Cursor cursor = db.rawQuery("select * from VERIFY WHERE " + mListId + "='" + scannedId + "'", null);
 
         final String[] headerTokens = cursor.getColumnNames();
         final StringBuilder values = new StringBuilder();
@@ -244,13 +240,12 @@ public class MainActivity extends AppCompatActivity {
                 values.append(line_separator);
             }
             cursor.close();
-            ((TextView) findViewById(edu.ksu.phenoapps.verify.R.id.valueView)).setText(values.toString());
+            ((TextView) findViewById(org.phenoapps.verify.R.id.valueView)).setText(values.toString());
+            ringNotification(true);
         } else {
-            if (scanMode != 2) resetTimer();
-          /*  else {
-                ((ListView) findViewById(R.id.idTable)).setChoiceMode(AbsListView.CHOICE_MODE_NONE);
-                ((ListView) findViewById(R.id.idTable)).onRestoreInstanceState(listState);
-            }*/
+            if (scanMode != 2) {
+                ringNotification(false);
+            }
         }
     }
 
@@ -269,9 +264,6 @@ public class MainActivity extends AppCompatActivity {
                 if (!value.isEmpty()) {
 
                     final SQLiteDatabase db = mDbHelper.getWritableDatabase();
-                    //final String updateNoteQuery = "UPDATE VERIFY SET note = '" + value + "'"
-                      //      + " WHERE " + mListId + " = '" + id + "'";
-                    //db.execSQL(updateNoteQuery);
 
                     if (sqlUpdateNote != null) {
                         sqlUpdateNote.bindAllArgsAsStrings(new String[]{
@@ -288,9 +280,6 @@ public class MainActivity extends AppCompatActivity {
 
     private synchronized void exertModeFunction(@NonNull String id) {
 
-        mTimer.purge();
-        mTimer.cancel();
-
         //get app settings
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
@@ -298,29 +287,20 @@ public class MainActivity extends AppCompatActivity {
         final SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         if (scanMode == 0 ) { //default mode ring a notification
-
             mMatchingOrder = 0;
-            ringNotification();
-            Toast.makeText(this, "Scanned id found: " + id, Toast.LENGTH_SHORT).show();
         } else if (scanMode == 1) { //order mode
-
             final int tableIndex = getTableIndexById(id);
 
             if (tableIndex != -1) {
                 if (mMatchingOrder == tableIndex) {
-                    ringNotification();
                     mMatchingOrder++;
                     Toast.makeText(this, "Order matches id: " + id + " at index: " + tableIndex, Toast.LENGTH_SHORT).show();
                 } else
                     Toast.makeText(this, "Scanning out of order!", Toast.LENGTH_SHORT).show();
             }
-
         } else if (scanMode == 2) { //filter mode, delete rows with given id
 
             mMatchingOrder = 0;
-            //final String deleteIdQuery =
-              //      "DELETE FROM VERIFY WHERE " + mListId + " = '" + id + "'";
-            //db.execSQL(deleteIdQuery);
             if (sqlDeleteId != null) {
                 sqlDeleteId.bindAllArgsAsStrings(new String[]{id});
                 sqlDeleteId.executeUpdateDelete();
@@ -330,9 +310,6 @@ public class MainActivity extends AppCompatActivity {
         } else if (scanMode == 3) { //if color mode, update the db to highlight the item
 
             mMatchingOrder = 0;
-           // final String updateCheckedQuery =
-            //        "UPDATE VERIFY SET c = 1 WHERE " + mListId + " = '" + id + "'";
-            //db.execSQL(updateCheckedQuery);
             if (sqlUpdateChecked != null) {
                 sqlUpdateChecked.bindAllArgsAsStrings(new String[]{id});
                 sqlUpdateChecked.executeUpdateDelete();
@@ -346,7 +323,6 @@ public class MainActivity extends AppCompatActivity {
                 //if next pair id is waiting, check if it matches scanned id and reset mode
                 if (mNextPairVal != null) {
                     if (mNextPairVal.equals(id)) {
-                        ringNotification();
                         Toast.makeText(this, "Scanned paired item: " + id, Toast.LENGTH_SHORT).show();
                     }
                     mNextPairVal = null;
@@ -356,9 +332,6 @@ public class MainActivity extends AppCompatActivity {
                     final String selection = mListId + "=?";
                     final String[] selectionArgs = { id };
                     final Cursor cursor = db.query(table, columnsNames, selection, selectionArgs, null, null, null);
-                    //final String getNextPairQuery =
-                      //      "SELECT " + mPairCol + " FROM VERIFY WHERE " + mListId + " = '" + id + "'";
-                    //final Cursor cursor = db.rawQuery(getNextPairQuery, null);
                     if (cursor.moveToFirst()) {
                         mNextPairVal = cursor.getString(
                                 cursor.getColumnIndexOrThrow(mPairCol)
@@ -371,11 +344,6 @@ public class MainActivity extends AppCompatActivity {
         //always update user and datetime
         final Calendar c = Calendar.getInstance();
         final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd hh-mm-ss", Locale.getDefault());
-        /*final String updateUserAndDateQuery =
-                "UPDATE VERIFY SET user = " + "'" + sharedPref.getString(SettingsActivity.USER_NAME, "Default") + "'"
-                        +             ", d = " + "'" + sdf.format(c.getTime()) + "'"
-                        +             ", s = s + 1 WHERE " + mListId + " = '" + id + "'";
-        db.execSQL(updateUserAndDateQuery);*/
 
         if (sqlUpdateUserAndDate != null) { //no db yet
             sqlUpdateUserAndDate.bindAllArgsAsStrings(new String[]{
@@ -385,8 +353,8 @@ public class MainActivity extends AppCompatActivity {
             });
             sqlUpdateUserAndDate.executeUpdateDelete();
         }
-        updateCheckedItems();
 
+        updateCheckedItems();
     }
 
     private synchronized void updateCheckedItems() {
@@ -399,10 +367,7 @@ public class MainActivity extends AppCompatActivity {
         final String table = IdEntryContract.IdEntry.TABLE_NAME;
         final String[] columns = new String[] { mListId };
         final String selection = "c = 1";
-        //final String getCheckedItemsQuery =
-          //      "SELECT " + mListId + " FROM VERIFY WHERE c = 1";
 
-        //Cursor cursor = db.rawQuery(getCheckedItemsQuery, null);
         try {
             final Cursor cursor = db.query(table, columns, selection, null, null, null, null);
             if (cursor.moveToFirst()) {
@@ -418,7 +383,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (SQLiteException e) {
             e.printStackTrace();
         }
-        ListView idTable = (ListView) findViewById(edu.ksu.phenoapps.verify.R.id.idTable);
+        ListView idTable = (ListView) findViewById(org.phenoapps.verify.R.id.idTable);
         for (int position = 0; position < idTable.getCount(); position++) {
 
             final String id = (idTable.getItemAtPosition(position)).toString();
@@ -440,13 +405,9 @@ public class MainActivity extends AppCompatActivity {
         mPairCol = sharedPref.getString(SettingsActivity.PAIR_NAME, null);
 
         if (mListId != null) {
-
             prepareStatements();
-
             loadBarcodes();
-
             buildListView();
-
         }
     }
 
@@ -456,7 +417,6 @@ public class MainActivity extends AppCompatActivity {
         try {
             final String table = IdEntryContract.IdEntry.TABLE_NAME;
             final Cursor cursor = db.query(table, null, null, null, null, null, null);
-            //Cursor cursor = db.rawQuery("select * from VERIFY", null);
 
             if (cursor.moveToFirst()) {
                 do {
@@ -549,18 +509,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void resetTimer() {
-
-        mTimer.purge();
-        mTimer.cancel();
-        mTimer = new Timer("user input for suppressing messages", true);
-        mTimer.schedule(new SuppressMessageTask(), 0);
-    }
-
     //returns index of table with identifier = id, returns -1 if not found
     private int getTableIndexById(String id) {
 
-        ListView idTable = (ListView) findViewById(edu.ksu.phenoapps.verify.R.id.idTable);
+        ListView idTable = (ListView) findViewById(org.phenoapps.verify.R.id.idTable);
         final int size = idTable.getAdapter().getCount();
         int ret = -1;
         for (int i = 0; i < size; i++) {
@@ -576,9 +528,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateFilteredArrayAdapter(String id) {
 
-        ListView idTable = (ListView) findViewById(edu.ksu.phenoapps.verify.R.id.idTable);
+        ListView idTable = (ListView) findViewById(org.phenoapps.verify.R.id.idTable);
         //update id table array adapter
-        final ArrayAdapter<String> updatedAdapter = new ArrayAdapter<>(this, edu.ksu.phenoapps.verify.R.layout.row);
+        final ArrayAdapter<String> updatedAdapter = new ArrayAdapter<>(this, org.phenoapps.verify.R.layout.row);
         final int oldSize = idTable.getAdapter().getCount();
 
         for (int i = 0; i < oldSize; i++) {
@@ -588,57 +540,60 @@ public class MainActivity extends AppCompatActivity {
         idTable.setAdapter(updatedAdapter);
     }
 
-    private void ringNotification() {
+    private void ringNotification(boolean success) {
 
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         final boolean audioEnabled = sharedPref.getBoolean(SettingsActivity.AUDIO_ENABLED, true);
-        Ringtone ringtoneNoti = RingtoneManager.getRingtone(this,
-                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+
         if (audioEnabled) {
-            try {
-                ringtoneNoti.play();
-            } catch (Exception e) {
-                e.printStackTrace();
-                ringtoneNoti.stop();
-                ringtoneNoti = RingtoneManager.getRingtone(this,
-                        RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+            if (success) {
+                try {
+                    int resID = getResources().getIdentifier("plonk", "raw", getPackageName());
+                    MediaPlayer chimePlayer = MediaPlayer.create(MainActivity.this, resID);
+                    chimePlayer.start();
 
+                    chimePlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                        public void onCompletion(MediaPlayer mp) {
+                            mp.release();
+                        }
+                    });
+                } catch (Exception ignore) {
+                }
+            }
+
+            if(!success) {
+                try {
+                    int resID = getResources().getIdentifier("error", "raw", getPackageName());
+                    MediaPlayer chimePlayer = MediaPlayer.create(MainActivity.this, resID);
+                    chimePlayer.start();
+
+                    chimePlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                        public void onCompletion(MediaPlayer mp) {
+                            mp.release();
+                        }
+                    });
+                } catch (Exception ignore) {
+                }
+            }
+        } else {
+            if (!success) {
+                Toast.makeText(this, "Scanned ID not found", Toast.LENGTH_SHORT).show();
             }
         }
-    }
-
-    private class SuppressMessageTask extends TimerTask {
-
-        @Override
-        public void run() {
-            sendIdNotFoundMsg();
-        }
-    }
-
-    private void sendIdNotFoundMsg() {
-
-        MainActivity.this.runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-                Toast.makeText(MainActivity.this, "Scanned id not found", Toast.LENGTH_SHORT).show();
-                ((TextView) findViewById(edu.ksu.phenoapps.verify.R.id.valueView)).setText("");
-            }
-        });
     }
 
     @Override
     final public boolean onCreateOptionsMenu(Menu m) {
 
         final MenuInflater inflater = getMenuInflater();
-        inflater.inflate(edu.ksu.phenoapps.verify.R.menu.activity_main_toolbar, m);
+        inflater.inflate(org.phenoapps.verify.R.menu.activity_main_toolbar, m);
         return true;
     }
 
     @Override
     final public boolean onOptionsItemSelected(MenuItem item) {
 
-        DrawerLayout dl = (DrawerLayout) findViewById(edu.ksu.phenoapps.verify.R.id.drawer_layout);
+        DrawerLayout dl = (DrawerLayout) findViewById(org.phenoapps.verify.R.id.drawer_layout);
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
@@ -647,7 +602,7 @@ public class MainActivity extends AppCompatActivity {
             case android.R.id.home:
                 dl.openDrawer(GravityCompat.START);
                 break;
-            case edu.ksu.phenoapps.verify.R.id.action_camera:
+            case org.phenoapps.verify.R.id.action_camera:
                 final Intent cameraIntent = new Intent(this, ScanActivity.class);
                 startActivityForResult(cameraIntent, VerifyConstants.CAMERA_INTENT_REQ);
                 break;
@@ -694,7 +649,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 if (intent.hasExtra(VerifyConstants.CAMERA_RETURN_ID)) {
-                    ((EditText) findViewById(edu.ksu.phenoapps.verify.R.id.scannerTextView))
+                    ((EditText) findViewById(org.phenoapps.verify.R.id.scannerTextView))
                             .setText(intent.getStringExtra(VerifyConstants.CAMERA_RETURN_ID));
                     checkScannedItem();
                 }
@@ -704,9 +659,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void buildListView() {
 
-        ListView idTable = (ListView) findViewById(edu.ksu.phenoapps.verify.R.id.idTable);
+        ListView idTable = (ListView) findViewById(org.phenoapps.verify.R.id.idTable);
         ArrayAdapter<String> idAdapter =
-                new ArrayAdapter<>(this, edu.ksu.phenoapps.verify.R.layout.row);
+                new ArrayAdapter<>(this, org.phenoapps.verify.R.layout.row);
         int size = mIds.size();
         for (int i = 0; i < size; i++) {
             idAdapter.add(this.mIds.get(this.mIds.keyAt(i)));
@@ -716,27 +671,19 @@ public class MainActivity extends AppCompatActivity {
 
     private void clearListView() {
 
-        ListView idTable = (ListView) findViewById(edu.ksu.phenoapps.verify.R.id.idTable);
+        ListView idTable = (ListView) findViewById(org.phenoapps.verify.R.id.idTable);
         final ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(this, edu.ksu.phenoapps.verify.R.layout.row);
+                new ArrayAdapter<>(this, org.phenoapps.verify.R.layout.row);
 
         idTable.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }
 
-   /* @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-       // loadSQLToLocal();
-       // buildListView();
-       // updateCheckedItems();
-    }*/
-
     private void setupDrawer() {
 
-        DrawerLayout dl = (DrawerLayout) findViewById(edu.ksu.phenoapps.verify.R.id.drawer_layout);
+        DrawerLayout dl = (DrawerLayout) findViewById(org.phenoapps.verify.R.id.drawer_layout);
         mDrawerToggle = new ActionBarDrawerToggle(this, dl,
-                edu.ksu.phenoapps.verify.R.string.drawer_open, edu.ksu.phenoapps.verify.R.string.drawer_close) {
+                org.phenoapps.verify.R.string.drawer_open, org.phenoapps.verify.R.string.drawer_close) {
 
             public void onDrawerOpened(View drawerView) {
                 View view = MainActivity.this.getCurrentFocus();
@@ -769,7 +716,7 @@ public class MainActivity extends AppCompatActivity {
     private void selectDrawerItem(MenuItem menuItem) {
         switch (menuItem.getItemId()) {
 
-            case edu.ksu.phenoapps.verify.R.id.nav_import:
+            case org.phenoapps.verify.R.id.nav_import:
                 final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
                 final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
 
@@ -778,17 +725,17 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(Intent.createChooser(i, "Choose file to import."), VerifyConstants.DEFAULT_CONTENT_REQ);
 
                 break;
-            case edu.ksu.phenoapps.verify.R.id.nav_settings:
+            case org.phenoapps.verify.R.id.nav_settings:
                 final Intent settingsIntent = new Intent(this, SettingsActivity.class);
                 startActivityForResult(settingsIntent, VerifyConstants.SETTINGS_INTENT_REQ);
                 break;
-            case edu.ksu.phenoapps.verify.R.id.nav_export:
+            case org.phenoapps.verify.R.id.nav_export:
                 askUserExportFileName();
                 break;
-            case edu.ksu.phenoapps.verify.R.id.nav_about:
+            case org.phenoapps.verify.R.id.nav_about:
                 showAboutDialog();
                 break;
-            case edu.ksu.phenoapps.verify.R.id.nav_intro:
+            case org.phenoapps.verify.R.id.nav_intro:
                 final Intent intro_intent = new Intent(MainActivity.this, IntroActivity.class);
                 runOnUiThread(new Runnable() {
                     @Override public void run() {
@@ -798,7 +745,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
-        DrawerLayout dl = (DrawerLayout) findViewById(edu.ksu.phenoapps.verify.R.id.drawer_layout);
+        DrawerLayout dl = (DrawerLayout) findViewById(org.phenoapps.verify.R.id.drawer_layout);
         dl.closeDrawers();
     }
 
@@ -807,13 +754,13 @@ public class MainActivity extends AppCompatActivity {
         final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
         {
             final android.view.View personView = this.getLayoutInflater().inflate(
-                    edu.ksu.phenoapps.verify.R.layout.about, new android.widget.LinearLayout(this),
+                    org.phenoapps.verify.R.layout.about, new android.widget.LinearLayout(this),
                     false);
 
             {
                 assert personView != null;
                 final android.widget.TextView versionTextView = (android.widget.TextView)
-                        personView.findViewById(edu.ksu.phenoapps.verify.R.id.tvVersion);
+                        personView.findViewById(org.phenoapps.verify.R.id.tvVersion);
                 try
                 {
                     final android.content.pm.PackageInfo packageInfo =
@@ -821,7 +768,7 @@ public class MainActivity extends AppCompatActivity {
                     assert packageInfo     != null;
                     assert versionTextView != null;
                     versionTextView.setText(this.getResources().getString(
-                            edu.ksu.phenoapps.verify.R.string.versiontitle) +
+                            org.phenoapps.verify.R.string.versiontitle) +
                             ' ' + packageInfo.versionName);
                 }
                 catch (final android.content.pm.PackageManager.NameNotFoundException e)
@@ -836,11 +783,11 @@ public class MainActivity extends AppCompatActivity {
 
             builder.setCancelable(true);
             builder.setTitle     (this.getResources().getString(
-                    edu.ksu.phenoapps.verify.R.string.about));
+                    org.phenoapps.verify.R.string.about));
             builder.setView(personView);
         }
         builder.setNegativeButton(
-                this.getResources().getString(edu.ksu.phenoapps.verify.R.string.ok),
+                this.getResources().getString(org.phenoapps.verify.R.string.ok),
                 new android.content.DialogInterface.OnClickListener()
                 {
                     @java.lang.Override
@@ -856,22 +803,6 @@ public class MainActivity extends AppCompatActivity {
     private void showChangeLog() {
 
     }
-
-    /*private void askToSkipOrder() {
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Skip ordered item?");
-
-        builder.setPositiveButton("Skip", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                mMatchingOrder++;
-            }
-        });
-
-        builder.show();
-
-    }*/
 
     @Override
     final protected void onPostCreate(Bundle savedInstanceState) {

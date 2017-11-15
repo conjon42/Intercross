@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="edu.ksu.phenoapps.verify">
+    package="org.phenoapps.verify">
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -14,7 +14,7 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".MainActivity"
+            android:name="org.phenoapps.verify.MainActivity"
             android:configChanges="keyboardHidden|screenSize|keyboard"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -24,14 +24,14 @@
         </activity>
 
         <activity
-            android:name=".ScanActivity" />
+            android:name="org.phenoapps.verify.ScanActivity" />
 
-        <activity android:name=".LoaderDBActivity"
+        <activity android:name="org.phenoapps.verify.LoaderDBActivity"
             android:configChanges="orientation|keyboardHidden|screenSize|keyboard"/>
 
-        <activity android:name=".SettingsActivity" />
+        <activity android:name="org.phenoapps.verify.SettingsActivity" />
 
-        <activity android:name=".IntroActivity"
+        <activity android:name="org.phenoapps.verify.IntroActivity"
             android:theme = "@style/AppThemeNoActionBar"/>
     </application>
 

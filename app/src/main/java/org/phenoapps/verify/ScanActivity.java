@@ -1,4 +1,4 @@
-package edu.ksu.phenoapps.verify;
+package org.phenoapps.verify;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -31,7 +31,7 @@ public class ScanActivity extends AppCompatActivity {
             lastText = result.getText();
             barcodeScannerView.setStatusText(result.getText());
 
-            ImageView imageView = (ImageView) findViewById(edu.ksu.phenoapps.verify.R.id.barcodePreview);
+            ImageView imageView = (ImageView) findViewById(org.phenoapps.verify.R.id.barcodePreview);
             imageView.setImageBitmap(result.getBitmapWithResultPoints(Color.GREEN));
 
             final Intent i = new Intent();
@@ -53,9 +53,9 @@ public class ScanActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
 
-        setContentView(edu.ksu.phenoapps.verify.R.layout.activity_capture);
+        setContentView(org.phenoapps.verify.R.layout.activity_capture);
         barcodeScannerView = (DecoratedBarcodeView)
-                findViewById(edu.ksu.phenoapps.verify.R.id.zxing_barcode_scanner);
+                findViewById(org.phenoapps.verify.R.id.zxing_barcode_scanner);
         barcodeScannerView.getBarcodeView().getCameraSettings().setContinuousFocusEnabled(true);
         barcodeScannerView.getBarcodeView().getCameraSettings().setBarcodeSceneModeEnabled(true);
         barcodeScannerView.decodeContinuous(callback);

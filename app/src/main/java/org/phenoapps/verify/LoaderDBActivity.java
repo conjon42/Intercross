@@ -1,4 +1,4 @@
-package edu.ksu.phenoapps.verify;
+package org.phenoapps.verify;
 
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -25,27 +25,22 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.apache.poi.xssf.usermodel.XSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Iterator;
+
+import org.phenoapps.verify.R;
 
 public class LoaderDBActivity extends AppCompatActivity {
 
@@ -112,7 +107,7 @@ public class LoaderDBActivity extends AppCompatActivity {
             } else {
                 separatorText.setVisibility(View.VISIBLE);
                 doneButton.setVisibility(View.VISIBLE);
-                tutorialText.setText(edu.ksu.phenoapps.verify.R.string.choose_separator_tutorial);
+                tutorialText.setText(org.phenoapps.verify.R.string.choose_separator_tutorial);
                 tutorialText.append(mHeader);
             }
 
@@ -175,7 +170,7 @@ public class LoaderDBActivity extends AppCompatActivity {
 
     private void initializeUI() {
 
-        headerList = ((ListView) findViewById(edu.ksu.phenoapps.verify.R.id.headerList));
+        headerList = ((ListView) findViewById(org.phenoapps.verify.R.id.headerList));
 
         headerList.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
         headerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -185,17 +180,17 @@ public class LoaderDBActivity extends AppCompatActivity {
                 chooseHeaderButton.setEnabled(true);
                 mIdHeaderIndex = position;
                 mIdHeader = ((TextView) view).getText().toString();
-                tutorialText.setText(edu.ksu.phenoapps.verify.R.string.press_continue_tutorial);
+                tutorialText.setText(org.phenoapps.verify.R.string.press_continue_tutorial);
             }
         });
 
         tutorialText = (TextView) findViewById(R.id.tutorialTextView);
-        separatorText = (EditText) findViewById(edu.ksu.phenoapps.verify.R.id.separatorTextView);
+        separatorText = (EditText) findViewById(org.phenoapps.verify.R.id.separatorTextView);
 
-        choosePairButton = (Button) findViewById(edu.ksu.phenoapps.verify.R.id.choosePairButton);
-        chooseHeaderButton = (Button) findViewById(edu.ksu.phenoapps.verify.R.id.chooseHeaderButton);
-        doneButton = ((Button) findViewById(edu.ksu.phenoapps.verify.R.id.doneButton));
-        finishButton = ((Button) findViewById(edu.ksu.phenoapps.verify.R.id.finishButton));
+        choosePairButton = (Button) findViewById(org.phenoapps.verify.R.id.choosePairButton);
+        chooseHeaderButton = (Button) findViewById(org.phenoapps.verify.R.id.chooseHeaderButton);
+        doneButton = ((Button) findViewById(org.phenoapps.verify.R.id.doneButton));
+        finishButton = ((Button) findViewById(org.phenoapps.verify.R.id.finishButton));
 
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -215,13 +210,13 @@ public class LoaderDBActivity extends AppCompatActivity {
 
                 chooseHeaderButton.setVisibility(View.GONE);
 
-                tutorialText.setText(edu.ksu.phenoapps.verify.R.string.choose_pair_button_tutorial);
+                tutorialText.setText(org.phenoapps.verify.R.string.choose_pair_button_tutorial);
                 choosePairButton.setVisibility(View.VISIBLE);
                 headerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                        tutorialText.setText(edu.ksu.phenoapps.verify.R.string.press_continue_tutorial);
+                        tutorialText.setText(org.phenoapps.verify.R.string.press_continue_tutorial);
                         choosePairButton.setEnabled(true);
                         mPairCol = ((TextView) view).getText().toString();
                         mPairColIndex = position;
@@ -238,7 +233,7 @@ public class LoaderDBActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 choosePairButton.setVisibility(View.GONE);
-                tutorialText.setText(edu.ksu.phenoapps.verify.R.string.columns_tutorial);
+                tutorialText.setText(org.phenoapps.verify.R.string.columns_tutorial);
                 finishButton.setVisibility(View.VISIBLE);
                 finishButton.setEnabled(false);
                 displayColsList(false);
@@ -249,7 +244,7 @@ public class LoaderDBActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                tutorialText.setText(edu.ksu.phenoapps.verify.R.string.finish_tutorial);
+                tutorialText.setText(org.phenoapps.verify.R.string.finish_tutorial);
 
                 //create database
                 insertColumns();
@@ -410,7 +405,7 @@ public class LoaderDBActivity extends AppCompatActivity {
         final String[] headers = mHeader.split(mDelimiter);
         if (headers.length > 0 && headers[0] != null) {
             final ArrayAdapter<String> idAdapter =
-                    new ArrayAdapter<>(this, edu.ksu.phenoapps.verify.R.layout.row);
+                    new ArrayAdapter<>(this, org.phenoapps.verify.R.layout.row);
             for (String h : headers) {
                 if (!h.equals(headers[mIdHeaderIndex]) && !mDefaultCols.contains(h) &&
                         !h.equals(mPairCol)) {
@@ -446,13 +441,13 @@ public class LoaderDBActivity extends AppCompatActivity {
 
     private void displayHeaderList() {
 
-        tutorialText.setText(edu.ksu.phenoapps.verify.R.string.choose_header_tutorial);
+        tutorialText.setText(org.phenoapps.verify.R.string.choose_header_tutorial);
         chooseHeaderButton.setVisibility(View.VISIBLE);
         chooseHeaderButton.setEnabled(false);
         headerList.setVisibility(View.VISIBLE);
 
         if (mHeader == null) {
-            headerList.setAdapter(new ArrayAdapter<String>(this, edu.ksu.phenoapps.verify.R.layout.row));
+            headerList.setAdapter(new ArrayAdapter<String>(this, org.phenoapps.verify.R.layout.row));
             tutorialText.setText("Error reading file.");
             return;
         }
@@ -460,13 +455,13 @@ public class LoaderDBActivity extends AppCompatActivity {
         final String[] headers = mHeader.split(mDelimiter);
         if (headers.length > 0 && headers[0] != null) {
             final ArrayAdapter<String> idAdapter =
-                    new ArrayAdapter<>(this, edu.ksu.phenoapps.verify.R.layout.row);
+                    new ArrayAdapter<>(this, org.phenoapps.verify.R.layout.row);
             for (String h : headers) {
                 if (!mDefaultCols.contains(h)) idAdapter.add(h);
             }
             headerList.setAdapter(idAdapter);
         } else {
-            headerList.setAdapter(new ArrayAdapter<String>(this, edu.ksu.phenoapps.verify.R.layout.row));
+            headerList.setAdapter(new ArrayAdapter<String>(this, org.phenoapps.verify.R.layout.row));
             tutorialText.setText("Error reading file.");
         }
     }

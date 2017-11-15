@@ -5,25 +5,25 @@
         android:entries="@array/scan_mode_array"
         android:entryValues="@array/scan_mode_array_values"
         android:icon="@drawable/ic_scanning"
-        android:key="edu.ksu.phenoapps.verify.SCAN_MODE"
+        android:key="org.phenoapps.verify.SCAN_MODE"
         android:summary="%s"
         android:title="@string/prefs_mode" />
     <EditTextPreference
         android:icon="@drawable/ic_about"
-        android:key="edu.ksu.phenoapps.verify.USER_NAME"
+        android:key="org.phenoapps.verify.USER_NAME"
         android:summary="Logged user for scanned items"
         android:title="Username" />
     <CheckBoxPreference
         android:defaultValue="true"
         android:icon="@drawable/ic_audio"
-        android:key="edu.ksu.phenoapps.verify.AUDIO_ENABLED"
+        android:key="org.phenoapps.verify.AUDIO_ENABLED"
         android:summary="Check to disable/enable sound."
         android:title="@string/prefs_audio" />
 
     <CheckBoxPreference
-        android:defaultValue="true"
+        android:defaultValue="false"
         android:icon="@drawable/ic_tutorial"
-        android:key="edu.ksu.phenoapps.verify.TUTORIAL_MODE"
+        android:key="org.phenoapps.verify.TUTORIAL_MODE"
         android:summary="Enable tutorial mode."
         android:title="Tutorial" />
 </PreferenceScreen>

@@ -1,4 +1,4 @@
-package edu.ksu.phenoapps.verify;
+package org.phenoapps.verify;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

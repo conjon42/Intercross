@@ -4,7 +4,7 @@ android {
     compileSdkVersion 25
     buildToolsVersion '26.0.2'
     defaultConfig {
-        applicationId "edu.ksu.phenoapps.verify"
+        applicationId "org.phenoapps.verify"
         minSdkVersion 14
         targetSdkVersion 25
         versionCode 1
