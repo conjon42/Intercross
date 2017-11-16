@@ -11,8 +11,8 @@
     <EditTextPreference
         android:icon="@drawable/ic_about"
         android:key="org.phenoapps.verify.USER_NAME"
-        android:summary="Logged user for scanned items"
-        android:title="Username" />
+        android:summary="Name of person scanning items"
+        android:title="Person" />
     <CheckBoxPreference
         android:defaultValue="true"
         android:icon="@drawable/ic_audio"

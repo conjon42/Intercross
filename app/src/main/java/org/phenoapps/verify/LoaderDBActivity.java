@@ -426,17 +426,23 @@ public class LoaderDBActivity extends AppCompatActivity {
             });
         } else {
             headerList.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
+
+            //Select all by default
+            boolean check = headerList.isItemChecked(0);
+            for(int i = 0; i <= headerList.getCount(); i++) {
+                headerList.setItemChecked(i, !check);
+            }
+            finishButton.setEnabled(true);
+
             headerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    finishButton.setEnabled(true);
                     final String newCol = ((TextView) view).getText().toString();
                     if (displayCols.contains(newCol)) displayCols.remove(newCol);
                     displayCols.add(newCol);
                 }
             });
         }
-
     }
 
     private void displayHeaderList() {

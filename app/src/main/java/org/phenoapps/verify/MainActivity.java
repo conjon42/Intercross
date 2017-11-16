@@ -164,7 +164,6 @@ public class MainActivity extends AppCompatActivity {
 
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
                     if (keyCode == KeyEvent.KEYCODE_ENTER) {
-
                         checkScannedItem();
                     }
                 }
@@ -242,11 +241,26 @@ public class MainActivity extends AppCompatActivity {
             }
             cursor.close();
             ((TextView) findViewById(org.phenoapps.verify.R.id.valueView)).setText(values.toString());
-            ringNotification(true);
         } else {
             if (scanMode != 2) {
                 ringNotification(false);
             }
+        }
+    }
+
+    private Boolean checkIdExists(String id) {
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+
+        final String table = IdEntryContract.IdEntry.TABLE_NAME;
+        final String[] selectionArgs = new String[] { id };
+        final Cursor cursor = db.query(table, null, mListId + "=?", selectionArgs, null, null, null);
+
+        if (cursor.moveToFirst()) {
+            cursor.close();
+            return true;
+        } else {
+            cursor.close();
+            return false;
         }
     }
 
@@ -287,8 +301,10 @@ public class MainActivity extends AppCompatActivity {
 
         final SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
-        if (scanMode == 0 ) { //default mode ring a notification
+        if (scanMode == 0 ) { //default mode
             mMatchingOrder = 0;
+            ringNotification(checkIdExists(id));
+
         } else if (scanMode == 1) { //order mode
             final int tableIndex = getTableIndexById(id);
 
@@ -296,8 +312,11 @@ public class MainActivity extends AppCompatActivity {
                 if (mMatchingOrder == tableIndex) {
                     mMatchingOrder++;
                     Toast.makeText(this, "Order matches id: " + id + " at index: " + tableIndex, Toast.LENGTH_SHORT).show();
-                } else
+                    ringNotification(true);
+                } else {
                     Toast.makeText(this, "Scanning out of order!", Toast.LENGTH_SHORT).show();
+                    ringNotification(false);
+                }
             }
         } else if (scanMode == 2) { //filter mode, delete rows with given id
 
@@ -324,6 +343,7 @@ public class MainActivity extends AppCompatActivity {
                 //if next pair id is waiting, check if it matches scanned id and reset mode
                 if (mNextPairVal != null) {
                     if (mNextPairVal.equals(id)) {
+                        ringNotification(true);
                         Toast.makeText(this, "Scanned paired item: " + id, Toast.LENGTH_SHORT).show();
                     }
                     mNextPairVal = null;
