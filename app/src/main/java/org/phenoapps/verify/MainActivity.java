@@ -207,43 +207,43 @@ public class MainActivity extends AppCompatActivity {
 
     private synchronized void checkScannedItem() {
 
-        Parcelable listState = ((ListView) findViewById(org.phenoapps.verify.R.id.idTable)).onSaveInstanceState();
-
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
 
         final String scannedId = ((TextView) findViewById(org.phenoapps.verify.R.id.scannerTextView))
                 .getText().toString();
 
-        //update database
-        exertModeFunction(scannedId);
+        if (mIds != null && mIds.size() > 0) {
+            //update database
+            exertModeFunction(scannedId);
 
-        //view updated database
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+            //view updated database
+            SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
-        final String table = IdEntryContract.IdEntry.TABLE_NAME;
-        final String[] selectionArgs = new String[] { scannedId };
-        final Cursor cursor = db.query(table, null, mListId + "=?", selectionArgs, null, null, null);
+            final String table = IdEntryContract.IdEntry.TABLE_NAME;
+            final String[] selectionArgs = new String[]{scannedId};
+            final Cursor cursor = db.query(table, null, mListId + "=?", selectionArgs, null, null, null);
 
-        final String[] headerTokens = cursor.getColumnNames();
-        final StringBuilder values = new StringBuilder();
-        if (cursor.moveToFirst()) {
-            for (String header : headerTokens) {
+            final String[] headerTokens = cursor.getColumnNames();
+            final StringBuilder values = new StringBuilder();
+            if (cursor.moveToFirst()) {
+                for (String header : headerTokens) {
 
-                final String val = cursor.getString(
-                        cursor.getColumnIndexOrThrow(header)
-                );
-                values.append(header);
-                values.append(" : ");
-                if (val == null) values.append("None");
-                else values.append(val);
-                values.append(line_separator);
-            }
-            cursor.close();
-            ((TextView) findViewById(org.phenoapps.verify.R.id.valueView)).setText(values.toString());
-        } else {
-            if (scanMode != 2) {
-                ringNotification(false);
+                    final String val = cursor.getString(
+                            cursor.getColumnIndexOrThrow(header)
+                    );
+                    values.append(header);
+                    values.append(" : ");
+                    if (val == null) values.append("None");
+                    else values.append(val);
+                    values.append(line_separator);
+                }
+                cursor.close();
+                ((TextView) findViewById(org.phenoapps.verify.R.id.valueView)).setText(values.toString());
+            } else {
+                if (scanMode != 2) {
+                    ringNotification(false);
+                }
             }
         }
     }
@@ -509,7 +509,9 @@ public class MainActivity extends AppCompatActivity {
                             cursor.close();
                             fstream.flush();
                             fstream.close();
-
+                        } catch (SQLiteException e) {
+                            e.printStackTrace();
+                            Toast.makeText(MainActivity.this, "Error exporting file, is your table empty?", Toast.LENGTH_SHORT).show();
                         } catch (FileNotFoundException e) {
                             e.printStackTrace();
                         } catch (IOException io) {
