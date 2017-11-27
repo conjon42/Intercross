@@ -4,7 +4,7 @@ Verify is an Android application that imports a list of entries, scans barcodes,
 
 [Download Verify](https://github.com/PhenoApps/Verify/raw/master/verify.apk)
 
-[Download Verify Workshop Data]( https://github.com/PhenoApps/Verify/verify_pair_sample.csv )
+[Download Verify Workshop Data](https://github.com/PhenoApps/Verify/raw/master/verify_pair_sample.csv)
 
 ## Acknowledgements
 ### Developers
