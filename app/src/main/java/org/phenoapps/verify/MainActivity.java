@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import android.media.MediaPlayer;
+import android.media.MediaScannerConnection;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.os.Bundle;
@@ -46,7 +47,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Locale;
@@ -90,11 +93,20 @@ public class MainActivity extends AppCompatActivity {
 
         mIds = new SparseArray<>();
 
-        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        final boolean tutorialMode = sharedPref.getBoolean(SettingsActivity.TUTORIAL_MODE, false);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
-        if (tutorialMode)
+        if (!sharedPref.getBoolean("onlyLoadTutorialOnce", false)) {
             launchIntro();
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putBoolean("onlyLoadTutorialOnce", true);
+            editor.apply();
+        } else {
+            boolean tutorialMode = sharedPref.getBoolean(SettingsActivity.TUTORIAL_MODE, false);
+
+            if (tutorialMode)
+                launchIntro();
+        }
+
 
         ActivityCompat.requestPermissions(this, VerifyConstants.permissions, VerifyConstants.PERM_REQ);
 
@@ -110,6 +122,8 @@ public class MainActivity extends AppCompatActivity {
                 final boolean makeDirsSuccess = verifyDirectory.mkdirs();
                 if (!makeDirsSuccess) Log.d("Verify Make Directory", "failed");
             }
+            copyRawToVerify(verifyDirectory, "field_sample.csv", R.raw.field_sample);
+            copyRawToVerify(verifyDirectory, "verify_pair_sample.csv", R.raw.verify_pair_sample);
         }
 
         mDbHelper = new IdEntryDbHelper(this);
@@ -118,6 +132,35 @@ public class MainActivity extends AppCompatActivity {
 
         if (mListId != null)
             updateCheckedItems();
+    }
+
+    private void copyRawToVerify(File verifyDirectory, String fileName, int rawId) {
+        
+        String fieldSampleName = verifyDirectory.getAbsolutePath() + "/" + fileName;
+        File fieldSampleFile = new File(fieldSampleName);
+        if (!Arrays.asList(verifyDirectory.listFiles()).contains(fieldSampleFile)) {
+            try {
+                InputStream inputStream = getResources().openRawResource(rawId);
+                FileOutputStream foStream =  new FileOutputStream(fieldSampleName);
+                byte[] buff = new byte[1024];
+                int read = 0;
+                try {
+                    while ((read = inputStream.read(buff)) > 0) {
+                        foStream.write(buff, 0, read);
+                    }
+                    scanFile(this, fieldSampleFile);
+                } finally {
+                    inputStream.close();
+                    foStream.close();
+                }
+            } catch (IOException io) {
+                io.printStackTrace();
+            }
+        }
+    }
+
+    public static void scanFile(Context ctx, File filePath) {
+        MediaScannerConnection.scanFile(ctx, new String[] { filePath.getAbsolutePath()}, null, null);
     }
 
     private void prepareStatements() {

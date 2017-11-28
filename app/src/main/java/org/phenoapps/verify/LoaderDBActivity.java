@@ -428,9 +428,12 @@ public class LoaderDBActivity extends AppCompatActivity {
             headerList.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
 
             //Select all by default
-            boolean check = headerList.isItemChecked(0);
-            for(int i = 0; i <= headerList.getCount(); i++) {
-                headerList.setItemChecked(i, !check);
+            for(int i = 0; i < headerList.getCount(); i++) {
+                headerList.setItemChecked(i, !headerList.isItemChecked(i));
+                final String newCol = headerList.getAdapter().getItem(i).toString();
+                        //.getText().toString();
+                if (displayCols.contains(newCol)) displayCols.remove(newCol);
+                displayCols.add(newCol);
             }
             finishButton.setEnabled(true);
 
@@ -439,7 +442,7 @@ public class LoaderDBActivity extends AppCompatActivity {
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     final String newCol = ((TextView) view).getText().toString();
                     if (displayCols.contains(newCol)) displayCols.remove(newCol);
-                    displayCols.add(newCol);
+                    else displayCols.add(newCol);
                 }
             });
         }
