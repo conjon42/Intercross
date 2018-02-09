@@ -116,16 +116,6 @@ public class MainActivity extends AppCompatActivity {
 
         initializeUIVariables();
 
-        if (isExternalStorageWritable()) {
-            File verifyDirectory = new File(Environment.getExternalStorageDirectory().getPath() + "/Verify");
-            if (!verifyDirectory.isDirectory()) {
-                final boolean makeDirsSuccess = verifyDirectory.mkdirs();
-                if (!makeDirsSuccess) Log.d("Verify Make Directory", "failed");
-            }
-            copyRawToVerify(verifyDirectory, "field_sample.csv", R.raw.field_sample);
-            copyRawToVerify(verifyDirectory, "verify_pair_sample.csv", R.raw.verify_pair_sample);
-        }
-
         mDbHelper = new IdEntryDbHelper(this);
 
         loadSQLToLocal();
@@ -919,6 +909,28 @@ public class MainActivity extends AppCompatActivity {
     final public void onDestroy() {
         mDbHelper.close();
         super.onDestroy();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int resultCode, String[] permissions, int[] granted) {
+
+        boolean externalWriteAccept = false;
+        if (resultCode == VerifyConstants.PERM_REQ) {
+            for (int i = 0; i < permissions.length; i++) {
+                if (permissions[i] == "android.permission.WRITE_EXTERNAL_STORAGE") {
+                    externalWriteAccept = true;
+                }
+            }
+        }
+        if (externalWriteAccept && isExternalStorageWritable()) {
+            File verifyDirectory = new File(Environment.getExternalStorageDirectory().getPath() + "/Verify");
+            if (!verifyDirectory.isDirectory()) {
+                final boolean makeDirsSuccess = verifyDirectory.mkdirs();
+                if (!makeDirsSuccess) Log.d("Verify Make Directory", "failed");
+            }
+            copyRawToVerify(verifyDirectory, "field_sample.csv", R.raw.field_sample);
+            copyRawToVerify(verifyDirectory, "verify_pair_sample.csv", R.raw.verify_pair_sample);
+        }
     }
 
     @Override
