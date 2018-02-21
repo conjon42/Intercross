@@ -9,12 +9,11 @@
 
     <!-- Import Strings -->
     <string name="choose_separator_tutorial">Input a separator character.\nThis character should separate the headers and columns in the uploaded file.\nThen press Done.</string>
-    <string name="choose_header_tutorial">Choose the column corresponding to your barcodes:</string>
+    <string name="choose_header_tutorial">Choose your barcode column.</string>
     <string name="finish_tutorial">Press finish, you\'re done!</string>
-    <string name="press_continue_tutorial">Click continue.</string>
     <string name="open_file_tutorial">Choose a file with the open button.</string>
-    <string name="choose_pair_button_tutorial">Choose the column with the pair id:</string>
-    <string name="columns_tutorial">Choose columns to display:</string>
+    <string name="choose_pair_button_tutorial">Choose your pair ID column.</string>
+    <string name="columns_tutorial">Choose display columns.</string>
 
     <!-- Settings Strings -->
     <string name="prefs_mode">Scan Mode</string>

@@ -16,7 +16,7 @@
         <activity
             android:name="org.phenoapps.verify.MainActivity"
             android:configChanges="keyboardHidden|screenSize|keyboard"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

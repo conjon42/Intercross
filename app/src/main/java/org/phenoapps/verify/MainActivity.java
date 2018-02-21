@@ -40,6 +40,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -94,6 +95,16 @@ public class MainActivity extends AppCompatActivity {
         mIds = new SparseArray<>();
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+
+        sharedPref.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+                View auxInfo = findViewById(R.id.auxValueView);
+                if (sharedPreferences.getBoolean(SettingsActivity.AUX_INFO, false)) {
+                    auxInfo.setVisibility(View.VISIBLE);
+                } else auxInfo.setVisibility(View.GONE);
+            }
+        });
 
         if (!sharedPref.getBoolean("onlyLoadTutorialOnce", false)) {
             launchIntro();
@@ -240,10 +251,11 @@ public class MainActivity extends AppCompatActivity {
 
     private synchronized void checkScannedItem() {
 
-        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-        final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
+        boolean displayAux = sharedPref.getBoolean(SettingsActivity.AUX_INFO, true);
 
-        final String scannedId = ((TextView) findViewById(org.phenoapps.verify.R.id.scannerTextView))
+        String scannedId = ((TextView) findViewById(org.phenoapps.verify.R.id.scannerTextView))
                 .getText().toString();
 
         if (mIds != null && mIds.size() > 0) {
@@ -253,26 +265,42 @@ public class MainActivity extends AppCompatActivity {
             //view updated database
             SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
-            final String table = IdEntryContract.IdEntry.TABLE_NAME;
-            final String[] selectionArgs = new String[]{scannedId};
-            final Cursor cursor = db.query(table, null, mListId + "=?", selectionArgs, null, null, null);
+            String table = IdEntryContract.IdEntry.TABLE_NAME;
+            String[] selectionArgs = new String[]{scannedId};
+            Cursor cursor = db.query(table, null, mListId + "=?", selectionArgs, null, null, null);
 
-            final String[] headerTokens = cursor.getColumnNames();
-            final StringBuilder values = new StringBuilder();
+            String[] headerTokens = cursor.getColumnNames();
+            StringBuilder values = new StringBuilder();
+            StringBuilder auxValues = new StringBuilder();
             if (cursor.moveToFirst()) {
                 for (String header : headerTokens) {
 
-                    final String val = cursor.getString(
-                            cursor.getColumnIndexOrThrow(header)
-                    );
-                    values.append(header);
-                    values.append(" : ");
-                    if (val == null) values.append("None");
-                    else values.append(val);
-                    values.append(line_separator);
+                    if (!header.equals(mListId)) {
+
+                        final String val = cursor.getString(
+                                cursor.getColumnIndexOrThrow(header)
+                        );
+
+                        if (header.equals("c") || header.equals("s") || header.equals("d")
+                                || header.equals("user") || header.equals("note")) {
+                            if (header.equals("c")) continue;
+                            else if (header.equals("s")) auxValues.append("Number of scans");
+                            else if (header.equals("d")) auxValues.append("Date");
+                            else auxValues.append(header);
+                            auxValues.append(" : ");
+                            if (val != null) auxValues.append(val);
+                            auxValues.append(line_separator);
+                        } else {
+                            values.append(header);
+                            values.append(" : ");
+                            if (val != null) values.append(val);
+                            values.append(line_separator);
+                        }
+                    }
                 }
                 cursor.close();
                 ((TextView) findViewById(org.phenoapps.verify.R.id.valueView)).setText(values.toString());
+                ((TextView) findViewById(R.id.auxValueView)).setText(auxValues.toString());
             } else {
                 if (scanMode != 2) {
                     ringNotification(false);
@@ -329,10 +357,10 @@ public class MainActivity extends AppCompatActivity {
     private synchronized void exertModeFunction(@NonNull String id) {
 
         //get app settings
-        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-        final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
 
-        final SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         if (scanMode == 0 ) { //default mode
             mMatchingOrder = 0;
@@ -381,11 +409,11 @@ public class MainActivity extends AppCompatActivity {
                     }
                     mNextPairVal = null;
                 } else { //otherwise query for the current id's pair
-                    final String table = IdEntryContract.IdEntry.TABLE_NAME;
-                    final String[] columnsNames = new String[] { mPairCol };
-                    final String selection = mListId + "=?";
-                    final String[] selectionArgs = { id };
-                    final Cursor cursor = db.query(table, columnsNames, selection, selectionArgs, null, null, null);
+                    String table = IdEntryContract.IdEntry.TABLE_NAME;
+                    String[] columnsNames = new String[] { mPairCol };
+                    String selection = mListId + "=?";
+                    String[] selectionArgs = { id };
+                    Cursor cursor = db.query(table, columnsNames, selection, selectionArgs, null, null, null);
                     if (cursor.moveToFirst()) {
                         mNextPairVal = cursor.getString(
                                 cursor.getColumnIndexOrThrow(mPairCol)
@@ -397,11 +425,13 @@ public class MainActivity extends AppCompatActivity {
         }
         //always update user and datetime
         final Calendar c = Calendar.getInstance();
-        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd hh-mm-ss", Locale.getDefault());
+        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault());
 
         if (sqlUpdateUserAndDate != null) { //no db yet
+            String firstName = sharedPref.getString(SettingsActivity.FIRST_NAME, "");
+            String lastName = sharedPref.getString(SettingsActivity.LAST_NAME, "");
             sqlUpdateUserAndDate.bindAllArgsAsStrings(new String[]{
-                    sharedPref.getString(SettingsActivity.USER_NAME, "Default"),
+                    firstName + " " + lastName,
                     sdf.format(c.getTime()),
                     id
             });
@@ -686,7 +716,7 @@ public class MainActivity extends AppCompatActivity {
             if (intent != null) {
                 switch (requestCode) {
                     case VerifyConstants.DEFAULT_CONTENT_REQ:
-                        final Intent i = new Intent(this, LoaderDBActivity.class);
+                        Intent i = new Intent(this, LoaderDBActivity.class);
                         i.setData(intent.getData());
                         startActivityForResult(i, VerifyConstants.LOADER_INTENT_REQ);
                         break;
@@ -700,8 +730,24 @@ public class MainActivity extends AppCompatActivity {
                         if (intent.hasExtra(VerifyConstants.PAIR_COL_EXTRA))
                             mPairCol = intent.getStringExtra(VerifyConstants.PAIR_COL_EXTRA);
 
-                        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
                         final SharedPreferences.Editor editor = sharedPref.edit();
+
+                        int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
+
+                        if (mPairCol != null) {
+                            editor.putBoolean(SettingsActivity.DISABLE_PAIR, false);
+                            if (scanMode != 4) showPairDialog();
+                        } else {
+                            editor.putBoolean(SettingsActivity.DISABLE_PAIR, true);
+                        }
+
+                        if (mPairCol == null && scanMode == 4) {
+                            editor.putString(SettingsActivity.SCAN_MODE_LIST, "0");
+                            Toast.makeText(this,
+                                    "Switching to default mode, no pair ID found.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
                         editor.putString(SettingsActivity.PAIR_NAME, mPairCol);
                         editor.putString(SettingsActivity.LIST_KEY_NAME, mListId);
                         editor.apply();
@@ -813,21 +859,47 @@ public class MainActivity extends AppCompatActivity {
         dl.closeDrawers();
     }
 
+    private void showPairDialog() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Pair column selected, would you like to switch to Pair mode?");
+
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString(SettingsActivity.SCAN_MODE_LIST, "4");
+                editor.apply();
+            }
+        });
+
+        builder.setNegativeButton("No thanks", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+
+        builder.show();
+    }
+
     private void showAboutDialog()
     {
-        final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
         {
-            final android.view.View personView = this.getLayoutInflater().inflate(
+            android.view.View personView = this.getLayoutInflater().inflate(
                     org.phenoapps.verify.R.layout.about, new android.widget.LinearLayout(this),
                     false);
 
             {
                 assert personView != null;
-                final android.widget.TextView versionTextView = (android.widget.TextView)
+                android.widget.TextView versionTextView = (android.widget.TextView)
                         personView.findViewById(org.phenoapps.verify.R.id.tvVersion);
                 try
                 {
-                    final android.content.pm.PackageInfo packageInfo =
+                    android.content.pm.PackageInfo packageInfo =
                             this.getPackageManager().getPackageInfo(this.getPackageName(), 0);
                     assert packageInfo     != null;
                     assert versionTextView != null;
@@ -835,12 +907,12 @@ public class MainActivity extends AppCompatActivity {
                             org.phenoapps.verify.R.string.versiontitle) +
                             ' ' + packageInfo.versionName);
                 }
-                catch (final android.content.pm.PackageManager.NameNotFoundException e)
+                catch (android.content.pm.PackageManager.NameNotFoundException e)
                 { e.printStackTrace(); }
                 versionTextView.setOnClickListener(new android.view.View.OnClickListener()
                 {
                     @java.lang.Override
-                    public void onClick(final android.view.View v)
+                    public void onClick(android.view.View v)
                     { MainActivity.this.showChangeLog(); }
                 });
             }
@@ -850,17 +922,19 @@ public class MainActivity extends AppCompatActivity {
                     org.phenoapps.verify.R.string.about));
             builder.setView(personView);
         }
+
         builder.setNegativeButton(
                 this.getResources().getString(org.phenoapps.verify.R.string.ok),
                 new android.content.DialogInterface.OnClickListener()
                 {
                     @java.lang.Override
-                    public void onClick(final android.content.DialogInterface dialog, final int which)
+                    public void onClick(android.content.DialogInterface dialog, int which)
                     {
                         assert dialog != null;
                         dialog.dismiss();
                     }
                 });
+
         builder.show();
     }
 

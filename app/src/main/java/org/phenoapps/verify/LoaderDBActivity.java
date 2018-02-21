@@ -22,6 +22,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -55,8 +56,10 @@ public class LoaderDBActivity extends AppCompatActivity {
 
     private String mIdHeader;
 
-    private Button finishButton, doneButton, chooseHeaderButton, choosePairButton;
+    private Button finishButton, doneButton,
+            chooseHeaderButton, choosePairButton, skipButton;
     private ListView headerList;
+    private LinearLayout pairLayout;
     private TextView tutorialText;
     private EditText separatorText;
     private String mHeader;
@@ -124,7 +127,7 @@ public class LoaderDBActivity extends AppCompatActivity {
             final String[] pathSplit = mFilePath.split("\\.");
             mFileExtension = pathSplit[pathSplit.length - 1];
 
-            String header = "";
+            StringBuilder header = new StringBuilder();
 
             //xls library support
             if (mCurrentWorkbook != null) mCurrentWorkbook.close();
@@ -140,18 +143,18 @@ public class LoaderDBActivity extends AppCompatActivity {
                     final Iterator cells = row.cellIterator();
                     while (cells.hasNext()) {
                         final Cell cell = (Cell) cells.next();
-                        header += cell.toString();
-                        if (cells.hasNext()) header += ",";
+                        header.append(cell.toString());
+                        if (cells.hasNext()) header.append(",");
                     }
 
                     mDelimiter = ",";
-                    mHeader = header;
+                    mHeader = header.toString();
                 }
             } else {
                 //plain text file support
                 if (mFileExtension.equals("csv")) { //files ending in .csv
                     mDelimiter = ",";
-                } else if (mFileExtension.equals("tsv") || mFileExtension.equals("txt")) { //fiels ending in .txt
+                } else if (mFileExtension.equals("tsv") || mFileExtension.equals("txt")) { //files ending in .txt
                     mDelimiter = "\t";
                 } else
                     mDelimiter = null; //non-supported file type, display header for user to choose delimiter
@@ -180,17 +183,18 @@ public class LoaderDBActivity extends AppCompatActivity {
                 chooseHeaderButton.setEnabled(true);
                 mIdHeaderIndex = position;
                 mIdHeader = ((TextView) view).getText().toString();
-                tutorialText.setText(org.phenoapps.verify.R.string.press_continue_tutorial);
             }
         });
 
         tutorialText = (TextView) findViewById(R.id.tutorialTextView);
         separatorText = (EditText) findViewById(org.phenoapps.verify.R.id.separatorTextView);
 
+        pairLayout = (LinearLayout) findViewById(R.id.pairLayout);
         choosePairButton = (Button) findViewById(org.phenoapps.verify.R.id.choosePairButton);
         chooseHeaderButton = (Button) findViewById(org.phenoapps.verify.R.id.chooseHeaderButton);
         doneButton = ((Button) findViewById(org.phenoapps.verify.R.id.doneButton));
         finishButton = ((Button) findViewById(org.phenoapps.verify.R.id.finishButton));
+        skipButton = ((Button) findViewById(R.id.skipButton));
 
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -211,12 +215,13 @@ public class LoaderDBActivity extends AppCompatActivity {
                 chooseHeaderButton.setVisibility(View.GONE);
 
                 tutorialText.setText(org.phenoapps.verify.R.string.choose_pair_button_tutorial);
-                choosePairButton.setVisibility(View.VISIBLE);
+                pairLayout.setVisibility(View.VISIBLE);
+                choosePairButton.setEnabled(false);
+
                 headerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                        tutorialText.setText(org.phenoapps.verify.R.string.press_continue_tutorial);
                         choosePairButton.setEnabled(true);
                         mPairCol = ((TextView) view).getText().toString();
                         mPairColIndex = position;
@@ -232,7 +237,7 @@ public class LoaderDBActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                choosePairButton.setVisibility(View.GONE);
+                pairLayout.setVisibility(View.GONE);
                 tutorialText.setText(org.phenoapps.verify.R.string.columns_tutorial);
                 finishButton.setVisibility(View.VISIBLE);
                 finishButton.setEnabled(false);
@@ -243,8 +248,6 @@ public class LoaderDBActivity extends AppCompatActivity {
         finishButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                tutorialText.setText(org.phenoapps.verify.R.string.finish_tutorial);
 
                 //create database
                 insertColumns();
@@ -257,6 +260,22 @@ public class LoaderDBActivity extends AppCompatActivity {
                 setResult(RESULT_OK, intent);
                 finish();
 
+            }
+        });
+
+        skipButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+
+                mPairCol = null;
+                mPairColIndex = -1;
+                choosePairButton.setVisibility(View.GONE);
+                skipButton.setVisibility(View.GONE);
+                tutorialText.setText(org.phenoapps.verify.R.string.columns_tutorial);
+                finishButton.setVisibility(View.VISIBLE);
+                finishButton.setEnabled(false);
+                displayColsList(false);
             }
         });
     }
@@ -431,7 +450,6 @@ public class LoaderDBActivity extends AppCompatActivity {
             for(int i = 0; i < headerList.getCount(); i++) {
                 headerList.setItemChecked(i, !headerList.isItemChecked(i));
                 final String newCol = headerList.getAdapter().getItem(i).toString();
-                        //.getText().toString();
                 if (displayCols.contains(newCol)) displayCols.remove(newCol);
                 displayCols.add(newCol);
             }

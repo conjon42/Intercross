@@ -10,20 +10,30 @@
         android:title="@string/prefs_mode" />
     <EditTextPreference
         android:icon="@drawable/ic_about"
-        android:key="org.phenoapps.verify.USER_NAME"
-        android:summary="Name of person scanning items"
-        android:title="Person" />
+        android:key="org.phenoapps.verify.FIRST_NAME"
+        android:summary="First name of person scanning items"
+        android:title="First Name" />
+    <EditTextPreference
+        android:icon="@drawable/ic_about"
+        android:key="org.phenoapps.verify.LAST_NAME"
+        android:summary="Last name of person scanning items"
+        android:title="Last Name" />
     <CheckBoxPreference
         android:defaultValue="true"
         android:icon="@drawable/ic_audio"
         android:key="org.phenoapps.verify.AUDIO_ENABLED"
-        android:summary="Check to disable/enable sound."
+        android:summary="Chime when an entry is selected."
         android:title="@string/prefs_audio" />
-
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:icon="@drawable/ic_list"
+        android:key="org.phenoapps.verify.AUX_INFO"
+        android:summary="Display additional entry information."
+        android:title="Additional Info" />
     <CheckBoxPreference
         android:defaultValue="false"
         android:icon="@drawable/ic_tutorial"
         android:key="org.phenoapps.verify.TUTORIAL_MODE"
-        android:summary="Enable tutorial mode."
+        android:summary="Always display the tutorial when Verify is opened."
         android:title="Tutorial" />
 </PreferenceScreen>
