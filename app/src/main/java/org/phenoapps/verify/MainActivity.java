@@ -991,7 +991,7 @@ public class MainActivity extends AppCompatActivity {
         boolean externalWriteAccept = false;
         if (resultCode == VerifyConstants.PERM_REQ) {
             for (int i = 0; i < permissions.length; i++) {
-                if (permissions[i] == "android.permission.WRITE_EXTERNAL_STORAGE") {
+                if (permissions[i].equals("android.permission.WRITE_EXTERNAL_STORAGE")) {
                     externalWriteAccept = true;
                 }
             }
