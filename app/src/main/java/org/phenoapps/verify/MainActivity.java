@@ -65,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
 
     private IdEntryDbHelper mDbHelper;
 
+    private SharedPreferences.OnSharedPreferenceChangeListener mPrefListener;
+
     //database prepared statements
     private SQLiteStatement sqlUpdateNote;
     private SQLiteStatement sqlDeleteId;
@@ -95,16 +97,34 @@ public class MainActivity extends AppCompatActivity {
         mIds = new SparseArray<>();
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        
+        final View auxInfo = findViewById(R.id.auxScrollView);
+        final View auxValue = findViewById(R.id.auxValueView);
 
-        sharedPref.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+        if (sharedPref.getBoolean(SettingsActivity.AUX_INFO, false)) {
+            auxInfo.setVisibility(View.VISIBLE);
+            auxValue.setVisibility(View.VISIBLE);
+
+        } else {
+            auxInfo.setVisibility(View.GONE);
+            auxValue.setVisibility(View.GONE);
+        }
+
+        mPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-                View auxInfo = findViewById(R.id.auxValueView);
+
                 if (sharedPreferences.getBoolean(SettingsActivity.AUX_INFO, false)) {
                     auxInfo.setVisibility(View.VISIBLE);
-                } else auxInfo.setVisibility(View.GONE);
+                    auxValue.setVisibility(View.VISIBLE);
+                } else {
+                    auxInfo.setVisibility(View.GONE);
+                    auxValue.setVisibility(View.GONE);
+                }
             }
-        });
+        };
+
+        sharedPref.registerOnSharedPreferenceChangeListener(mPrefListener);
 
         if (!sharedPref.getBoolean("onlyLoadTutorialOnce", false)) {
             launchIntro();
