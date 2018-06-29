@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.phenoapps.verify">
+    package="org.phenoapps.intercross">
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -14,7 +14,7 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name="org.phenoapps.verify.MainActivity"
+            android:name="org.phenoapps.intercross.MainActivity"
             android:configChanges="keyboardHidden|screenSize|keyboard"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
@@ -24,14 +24,14 @@
         </activity>
 
         <activity
-            android:name="org.phenoapps.verify.ScanActivity" />
+            android:name="org.phenoapps.intercross.ScanActivity" />
 
-        <activity android:name="org.phenoapps.verify.LoaderDBActivity"
+        <activity android:name="org.phenoapps.intercross.LoaderDBActivity"
             android:configChanges="orientation|keyboardHidden|screenSize|keyboard"/>
 
-        <activity android:name="org.phenoapps.verify.SettingsActivity" />
+        <activity android:name="org.phenoapps.intercross.SettingsActivity" />
 
-        <activity android:name="org.phenoapps.verify.IntroActivity"
+        <activity android:name="org.phenoapps.intercross.IntroActivity"
             android:theme = "@style/AppThemeNoActionBar"/>
     </application>
 

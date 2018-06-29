@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Main Strings -->
-    <string name="app_name">Verify</string>
+    <string name="app_name">Intercross</string>
     <string name="title_activity_preference">Settings</string>
     <string name="drawer_open">Open</string>
     <string name="drawer_close">Close</string>

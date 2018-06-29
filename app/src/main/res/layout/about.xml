@@ -84,7 +84,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:autoLink="web"
-        android:text="\nVerify is an Android application that imports a list of entries, scans barcodes, and identifies whether it exists in the list of entries along with audio/visual notifications.\n"
+        android:text="Intercross description."
         android:textSize="15dp" />
 
 </LinearLayout>
