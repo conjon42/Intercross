@@ -38,6 +38,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
@@ -203,6 +204,17 @@ public class MainActivity extends AppCompatActivity {
         femaleEditText.addTextChangedListener(emptyGuard);
         crossEditText.addTextChangedListener(emptyGuard);
 
+        crossEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                if (i == EditorInfo.IME_ACTION_DONE) {
+                    saveToDB();
+                    return true;
+                }
+                return false;
+            }
+        });
+
         maleEditText.setOnFocusChangeListener(focusChanged);
         femaleEditText.setOnFocusChangeListener(focusChanged);
         crossEditText.setOnFocusChangeListener(focusChanged);
@@ -211,35 +223,48 @@ public class MainActivity extends AppCompatActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                //database update
-                final SQLiteDatabase db = mDbHelper.getWritableDatabase();
-
-                ContentValues entry = new ContentValues();
-
-                entry.put("male", String.valueOf(maleEditText.getText()));
-                entry.put("female", String.valueOf(femaleEditText.getText()));
-                entry.put("cross_id", String.valueOf(crossEditText.getText()));
-
-                final Calendar c = Calendar.getInstance();
-                final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault());
-
-                //String firstName = sharedPref.getString(SettingsActivity.FIRST_NAME, "");
-
-                entry.put("timestamp", String.valueOf(sdf.format(c.getTime())));
-
-                entry.put("person", "not implemented.");
-
-                db.insert("INTERCROSS", null, entry);
-
-                //clear fields
-                maleEditText.getText().clear();
-                femaleEditText.getText().clear();
-                crossEditText.getText().clear();
-
-                loadSQLToLocal();
+                saveToDB();
             }
         });
+    }
+
+    private void saveToDB() {
+
+        EditText maleEditText = ((EditText) findViewById(R.id.editTextMale));
+        EditText femaleEditText = ((EditText) findViewById(R.id.editTextFemale));
+        EditText crossEditText = ((EditText) findViewById(R.id.editTextCross));
+
+        if (maleEditText.getText().length() != 0
+                && femaleEditText.getText().length() != 0
+                && crossEditText.getText().length() != 0) {
+
+            //database update
+            final SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+            ContentValues entry = new ContentValues();
+
+            entry.put("male", String.valueOf(maleEditText.getText()));
+            entry.put("female", String.valueOf(femaleEditText.getText()));
+            entry.put("cross_id", String.valueOf(crossEditText.getText()));
+
+            final Calendar c = Calendar.getInstance();
+            final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault());
+
+            //String firstName = sharedPref.getString(SettingsActivity.FIRST_NAME, "");
+
+            entry.put("timestamp", String.valueOf(sdf.format(c.getTime())));
+
+            entry.put("person", "not implemented.");
+
+            db.insert("INTERCROSS", null, entry);
+
+            //clear fields
+            maleEditText.getText().clear();
+            femaleEditText.getText().clear();
+            crossEditText.getText().clear();
+
+            loadSQLToLocal();
+        }
     }
 
     //reads the SQLite database and displays cross ids and their total counts / timestamps
@@ -324,8 +349,8 @@ public class MainActivity extends AppCompatActivity {
                 if (!value.isEmpty()) {
                     if (isExternalStorageWritable()) {
                         try {
-                            File verifyDirectory = new File(Environment.getExternalStorageDirectory().getPath() + "/Intercross");
-                            final File output = new File(verifyDirectory, value + ".csv");
+                            File dir = new File(Environment.getExternalStorageDirectory().getPath() + "/Intercross");
+                            final File output = new File(dir, value + ".csv");
                             final FileOutputStream fstream = new FileOutputStream(output);
                             final SQLiteDatabase db = mDbHelper.getReadableDatabase();
                             final String table = IdEntryContract.IdEntry.TABLE_NAME;
@@ -354,6 +379,8 @@ public class MainActivity extends AppCompatActivity {
                                 } while (cursor.moveToNext());
                             }
 
+                            scanFile(MainActivity.this, output);
+
                             cursor.close();
                             fstream.flush();
                             fstream.close();
@@ -369,6 +396,7 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this,
                                 "External storage not writable.", Toast.LENGTH_SHORT).show();
                     }
+
                 } else {
                     Toast.makeText(MainActivity.this,
                             "Must enter a file name.", Toast.LENGTH_SHORT).show();
@@ -449,6 +477,11 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 dl.openDrawer(GravityCompat.START);
+                break;
+            case R.id.action_clear:
+                ((EditText) findViewById(R.id.editTextCross)).setText("");
+                ((EditText) findViewById(R.id.editTextMale)).setText("");
+                ((EditText) findViewById(R.id.editTextFemale)).setText("");
                 break;
             case org.phenoapps.intercross.R.id.action_camera:
                 final Intent cameraIntent = new Intent(this, ScanActivity.class);
@@ -594,15 +627,6 @@ public class MainActivity extends AppCompatActivity {
     private void selectDrawerItem(MenuItem menuItem) {
         switch (menuItem.getItemId()) {
 
-            case org.phenoapps.intercross.R.id.nav_import:
-                final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-                final int scanMode = Integer.valueOf(sharedPref.getString(SettingsActivity.SCAN_MODE_LIST, "-1"));
-
-                final Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-                i.setType("*/*");
-                startActivityForResult(Intent.createChooser(i, "Choose file to import."), IntercrossConstants.DEFAULT_CONTENT_REQ);
-
-                break;
             case org.phenoapps.intercross.R.id.nav_settings:
                 final Intent settingsIntent = new Intent(this, SettingsActivity.class);
                 startActivityForResult(settingsIntent, IntercrossConstants.SETTINGS_INTENT_REQ);

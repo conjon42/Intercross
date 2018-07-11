@@ -26,9 +26,6 @@
         <activity
             android:name="org.phenoapps.intercross.ScanActivity" />
 
-        <activity android:name="org.phenoapps.intercross.LoaderDBActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize|keyboard"/>
-
         <activity android:name="org.phenoapps.intercross.SettingsActivity" />
 
         <activity android:name="org.phenoapps.intercross.IntroActivity"

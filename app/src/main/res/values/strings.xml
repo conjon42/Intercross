@@ -6,7 +6,8 @@
     <string name="drawer_open">Open</string>
     <string name="drawer_close">Close</string>
     <string name="action_camera">Barcode Scanner</string>
-
+    <string name="save">Save</string>
+    <string name="next">Next</string>
     <!-- Import Strings -->
     <string name="choose_separator_tutorial">Input a separator character.\nThis character should separate the headers and columns in the uploaded file.\nThen press Done.</string>
     <string name="choose_header_tutorial">Choose your barcode column.</string>
@@ -45,5 +46,6 @@
     <string name="dev_jesse">Jesse Poland</string>
     <string name="dev_jesse_email">jpoland@ksu.edu</string>
     <string name="wg_site">http://wheatgenetics.org\n</string>
+    <string name="action_clear">Clear</string>
 
 </resources>
