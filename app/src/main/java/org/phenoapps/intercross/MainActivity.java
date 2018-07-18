@@ -496,6 +496,10 @@ public class MainActivity extends AppCompatActivity {
                 final Intent cameraIntent = new Intent(this, ScanActivity.class);
                 startActivityForResult(cameraIntent, IntercrossConstants.CAMERA_INTENT_REQ);
                 break;
+            case R.id.action_count:
+                final Intent countIntent = new Intent(this, CountActivity.class);
+                startActivity(countIntent);
+                break;
             default:
                 return super.onOptionsItemSelected(item);
         }

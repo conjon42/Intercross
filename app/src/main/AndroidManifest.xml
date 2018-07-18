@@ -28,7 +28,8 @@
         <activity
             android:name=".IntroActivity"
             android:theme="@style/AppThemeNoActionBar" />
-        <activity android:name=".ManageHeadersActivity"></activity>
+        <activity android:name=".ManageHeadersActivity" />
+        <activity android:name=".CountActivity"></activity>
     </application>
 
 </manifest>

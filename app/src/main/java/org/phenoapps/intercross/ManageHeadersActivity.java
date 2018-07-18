@@ -144,7 +144,7 @@ public class ManageHeadersActivity extends AppCompatActivity implements HeaderRe
 
         editor.putStringSet(SettingsActivity.HEADER_SET, headerSet);
 
-        editor.clear();
+        //editor.clear();
 
         editor.apply();
 
