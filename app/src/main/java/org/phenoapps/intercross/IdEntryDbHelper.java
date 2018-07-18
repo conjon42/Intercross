@@ -1,8 +1,14 @@
 package org.phenoapps.intercross;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.phenoapps.intercross.IdEntryContract.SQL_CREATE_ENTRIES;
 
@@ -50,6 +56,35 @@ class IdEntryDbHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL(IdEntryContract.SQL_DELETE_ENTRIES);
         onCreate(db);
+    }
+
+    public void onUpdateColumns(SQLiteDatabase db, String[] cols) {
+
+        List<String> headerNames = null;
+
+        try {
+            String table = IdEntryContract.IdEntry.TABLE_NAME;
+            Cursor cursor = db.query(table, null, null, null, null, null, null);
+
+            if (cursor.moveToFirst()) {
+                do {
+                    headerNames = Arrays.asList(cursor.getColumnNames());
+
+                } while (cursor.moveToNext());
+
+            }
+            cursor.close();
+
+        } catch (SQLiteException e) {
+            e.printStackTrace();
+        }
+
+        for (String newCol : cols) {
+
+            if (headerNames != null && !headerNames.contains(newCol)) {
+                db.execSQL("ALTER TABLE INTERCROSS ADD COLUMN " + newCol + " TEXT DEFAULT ''");
+            }
+        }
     }
 
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {

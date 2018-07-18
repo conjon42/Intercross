@@ -645,6 +645,15 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 break;
+            case org.phenoapps.intercross.R.id.nav_manage_headers:
+                Intent nav_manage_headers = new Intent(MainActivity.this, ManageHeadersActivity.class);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        startActivity(nav_manage_headers);
+                    }
+                });
+                break;
         }
 
         DrawerLayout dl = (DrawerLayout) findViewById(org.phenoapps.intercross.R.id.drawer_layout);

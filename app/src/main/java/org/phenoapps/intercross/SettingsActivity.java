@@ -15,6 +15,7 @@ public class SettingsActivity extends AppCompatActivity {
     public static String PAIR_NAME = "org.phenoapps.verify.PAIR_NAME";
     public static String DISABLE_PAIR = "org.phenoapps.verify.DISABLE_PAIR";
     public static String AUX_INFO = "org.phenoapps.verify.AUX_INFO";
+    public static String HEADER_SET = "org.phenoapps.intercross.HEADER_SET";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
