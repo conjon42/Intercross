@@ -6,9 +6,4 @@
         android:icon="@drawable/ic_barcode_scan"
         android:title="@string/action_camera"
         app:showAsAction="ifRoom"/>
-    <item
-        android:id="@+id/action_clear"
-        android:icon="@drawable/ic_clear"
-        android:title="@string/action_clear"
-        app:showAsAction="ifRoom"/>
 </menu>

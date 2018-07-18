@@ -12,6 +12,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -60,7 +61,6 @@ public class CrossRecyclerViewAdapter extends RecyclerView.Adapter<CrossRecycler
         AdapterEntry entry = mData.get(position);
         holder.crossView.setText(entry.crossId);
         holder.timestampView.setText(entry.timestamp);
-        holder.countView.setText(entry.count);
     }
 
     @Override
@@ -72,15 +72,16 @@ public class CrossRecyclerViewAdapter extends RecyclerView.Adapter<CrossRecycler
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView crossView;
         TextView timestampView;
-        TextView countView;
         String crossName;
         ViewHolder(View itemView) {
             super(itemView);
             int childCount = ((LinearLayout) itemView).getChildCount();
             crossName = ((TextView) ((LinearLayout) itemView).getChildAt(0)).getText().toString();
             crossView = (TextView) itemView.findViewById(R.id.crossEntryId);
+            crossView.setSingleLine();
+            crossView.setEllipsize(TextUtils.TruncateAt.END);
             timestampView = (TextView) itemView.findViewById(R.id.timestamp);
-            countView = (TextView) itemView.findViewById(R.id.count);
+            timestampView.setSingleLine();
             itemView.setOnClickListener(this);
         }
 

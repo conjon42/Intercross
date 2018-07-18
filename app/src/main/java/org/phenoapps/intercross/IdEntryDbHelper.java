@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,7 +83,9 @@ class IdEntryDbHelper extends SQLiteOpenHelper {
         for (String newCol : cols) {
 
             if (headerNames != null && !headerNames.contains(newCol)) {
-                db.execSQL("ALTER TABLE INTERCROSS ADD COLUMN " + newCol + " TEXT DEFAULT ''");
+                String newColAlter = "ALTER TABLE INTERCROSS ADD COLUMN " + newCol + " TEXT DEFAULT ''";
+                db.execSQL("ALTER TABLE INTERCROSS ADD COLUMN " + newCol + " TEXT DEFAULT '';");
+                Log.d("ALTER", newColAlter);
             }
         }
     }

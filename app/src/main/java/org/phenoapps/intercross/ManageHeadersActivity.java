@@ -67,12 +67,16 @@ public class ManageHeadersActivity extends AppCompatActivity implements HeaderRe
                     mHeaderIds.add(newHeaderName);
 
                     SharedPreferences.Editor editor = sharedPref.edit();
-                    editor.putStringSet(SettingsActivity.HEADER_SET, new HashSet<String>(mHeaderIds));
+
+                    editor.putStringSet(SettingsActivity.HEADER_SET, new HashSet<>(mHeaderIds));
+
                     editor.apply();
 
                     buildListView();
 
                     SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+                    db.execSQL("ALTER TABLE INTERCROSS ADD COLUMN " + newHeaderName + " TEXT DEFAULT '';");
 
                     mDbHelper.onUpdateColumns(db, mHeaderIds.toArray(new String[] {}));
 

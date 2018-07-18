@@ -209,6 +209,8 @@ public class MainActivity extends AppCompatActivity {
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 if (i == EditorInfo.IME_ACTION_DONE) {
                     saveToDB();
+                    focusedTextView = femaleEditText;
+                    focusedTextView.requestFocus();
                     return true;
                 }
                 return false;
@@ -224,6 +226,19 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 saveToDB();
+                focusedTextView = femaleEditText;
+                focusedTextView.requestFocus();
+            }
+        });
+
+        ((Button) findViewById(R.id.clearButton)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((EditText) findViewById(R.id.editTextCross)).setText("");
+                ((EditText) findViewById(R.id.editTextMale)).setText("");
+                ((EditText) findViewById(R.id.editTextFemale)).setText("");
+                focusedTextView = femaleEditText;
+                focusedTextView.requestFocus();
             }
         });
     }
@@ -304,7 +319,7 @@ public class MainActivity extends AppCompatActivity {
 
                         if (header.equals("cross_id")) crossId = val;
 
-                        if (header.equals("timestamp")) timestamp = val;
+                        if (header.equals("timestamp")) timestamp = val.split(" ")[0];
 
                     }
 
@@ -314,8 +329,7 @@ public class MainActivity extends AppCompatActivity {
                                         "male=? and female=?",
                                         new String[]{male, female}, null, null, null);
 
-                        AdapterEntry entry = new AdapterEntry(crossId, timestamp,
-                                String.valueOf(countCursor.getCount()));
+                        AdapterEntry entry = new AdapterEntry(crossId, timestamp);
 
                         mCrossIds.add(entry);
 
@@ -477,11 +491,6 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 dl.openDrawer(GravityCompat.START);
-                break;
-            case R.id.action_clear:
-                ((EditText) findViewById(R.id.editTextCross)).setText("");
-                ((EditText) findViewById(R.id.editTextMale)).setText("");
-                ((EditText) findViewById(R.id.editTextFemale)).setText("");
                 break;
             case org.phenoapps.intercross.R.id.action_camera:
                 final Intent cameraIntent = new Intent(this, ScanActivity.class);
