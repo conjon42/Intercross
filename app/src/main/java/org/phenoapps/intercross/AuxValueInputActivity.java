@@ -166,6 +166,9 @@ public class AuxValueInputActivity extends AppCompatActivity {
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ECLAIR) {
                     mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
                     Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+
+                    //TODO allow multiple pairs
+                    //TODO wrap in async task
                     if (pairedDevices.size() == 1) {
                         BluetoothDevice bd = pairedDevices.toArray(new BluetoothDevice[] {})[0];
                         Log.d("BT", "PAIRED");
@@ -193,7 +196,7 @@ public class AuxValueInputActivity extends AppCompatActivity {
                                         + "^FWR"
                                         + "^FO100,75^A0,25,20^FD" + mCrossId + "^FS"
                                         + "^FO200,75^A0N,25,20"
-                                        + "^BQN,2,10^FD" + mCrossId + "^FS"
+                                        + "^BQN,2,10^FDMA" + mCrossId + "^FS"
                                         + "^FO450,75^A0,25,20^FD" + mTimestamp + "^FS^XZ");
                                 /*printer.printImage(new ZebraImageAndroid(BitmapFactory.decodeResource(getApplicationContext().getResources(),
                                         R.drawable.intercross_small)), 75,500,-1,-1,false);*/

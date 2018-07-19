@@ -9,10 +9,14 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CountActivity extends AppCompatActivity {
 
     private ArrayList<AdapterEntry> mCrossIds;
+
+    private Map<String, String> mNameMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,6 +25,17 @@ public class CountActivity extends AppCompatActivity {
 
 
         IdEntryDbHelper mDbHelper = new IdEntryDbHelper(this);
+
+        mNameMap = new HashMap<>();
+
+        String[] keys = getIntent().getStringArrayExtra("NameMapKey");
+        String[] values = getIntent().getStringArrayExtra("NameMapValue");
+
+        if (keys.length == values.length) {
+            for (int i = 0; i < keys.length; i++) {
+                mNameMap.put(keys[i], values[i]);
+            }
+        }
 
         mCrossIds = new ArrayList<>();
 
@@ -66,7 +81,8 @@ public class CountActivity extends AppCompatActivity {
                                         new String[]{male, female}, null, null, null);
 
 
-                        AdapterEntry entry = new AdapterEntry(crossId, String.valueOf(countCursor.getCount()));
+                        AdapterEntry entry = new AdapterEntry(crossId,
+                                String.valueOf(countCursor.getCount()), mNameMap.get(crossId));
 
                         mCrossIds.add(entry);
 

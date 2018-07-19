@@ -38,16 +38,12 @@ public class CrossRecyclerViewAdapter extends RecyclerView.Adapter<CrossRecycler
 
     private List<AdapterEntry> mData;
     private LayoutInflater mInflater;
-    private ItemClickListener mClickListener;
     private Context mContext;
-    private IdEntryDbHelper mDbHelper;
 
     CrossRecyclerViewAdapter(Context context, List<AdapterEntry> data) {
         this.mContext = context;
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
-        mDbHelper = new IdEntryDbHelper(context);
-
     }
 
     @Override
@@ -59,7 +55,9 @@ public class CrossRecyclerViewAdapter extends RecyclerView.Adapter<CrossRecycler
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         AdapterEntry entry = mData.get(position);
-        holder.crossView.setText(entry.crossId);
+        if (entry.crossName == null || entry.crossName.length() == 0)
+            holder.crossView.setText(entry.crossId);
+        else holder.crossView.setText(entry.crossName);
         holder.timestampView.setText(entry.timestamp);
     }
 
@@ -102,95 +100,6 @@ public class CrossRecyclerViewAdapter extends RecyclerView.Adapter<CrossRecycler
 
             mContext.startActivity(i);
 
-            /*
-            if (mClickListener != null) mClickListener.onItemClick(view, getAdapterPosition());
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-            builder.setTitle("Manage headers");
-
-
-
-            RecyclerView recyclerView = new RecyclerView(mContext);
-
-            recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
-
-            SQLiteDatabase db = mDbHelper.getReadableDatabase();
-            HashMap<String, String> colMap = new HashMap<>();
-
-            try {
-                String table = IdEntryContract.IdEntry.TABLE_NAME;
-                Cursor cursor = db.query(table, headerSet.toArray(new String[] {}), "cross_id=?", new String[] {((TextView) ((LinearLayout) view).getChildAt(0)).getText().toString()}, null, null, null);
-
-                if (cursor.moveToFirst()) {
-                    do {
-                        final String[] headers = cursor.getColumnNames();
-
-                        for (String header : headers) {
-
-                            final String val = cursor.getString(
-                                    cursor.getColumnIndexOrThrow(header)
-                            );
-
-                            colMap.put(header, val);
-
-                        }
-
-                    } while (cursor.moveToNext());
-
-                }
-                cursor.close();
-
-            } catch (SQLiteException e) {
-                e.printStackTrace();
-            }
-
-            List<EditTextAdapterEntry> entries = new ArrayList<>();
-            for (String header : headerSet) {
-                EditText editText = new EditText(mContext);
-                editText.setText(colMap.get(header));
-                entries.add(new EditTextAdapterEntry(editText, header, cross_id));
-            }
-
-            EditTextRecyclerViewAdapter adapter = new EditTextRecyclerViewAdapter(mContext, entries);
-            recyclerView.setAdapter(adapter);
-            builder.setView(recyclerView);
-
-
-            builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-
-                    SQLiteDatabase db = mDbHelper.getWritableDatabase();
-
-                    for (EditTextAdapterEntry e : entries) {
-                        String value = e.editText.getText().toString();
-
-                    }
-
-                }
-            });
-
-            AlertDialog dialog = builder.create();
-
-            dialog.show();
-
-            dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                    | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);*/
         }
-    }
-
-    // convenience method for getting data at click position
-    AdapterEntry getItem(int id) {
-        return mData.get(id);
-    }
-
-    // allows clicks events to be caught
-    void setClickListener(ItemClickListener itemClickListener) {
-        this.mClickListener = itemClickListener;
-    }
-
-    // parent activity will implement this method to respond to click events
-    public interface ItemClickListener {
-        void onItemClick(View view, int position);
     }
 }

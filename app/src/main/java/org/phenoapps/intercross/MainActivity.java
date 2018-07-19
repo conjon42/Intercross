@@ -72,7 +72,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
@@ -89,6 +92,8 @@ public class MainActivity extends AppCompatActivity {
 
     private View focusedTextView;
 
+    private Map<String, String> mNameMap;
+
     @RequiresApi(api = Build.VERSION_CODES.CUPCAKE)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,7 +104,22 @@ public class MainActivity extends AppCompatActivity {
 
         mCrossIds = new ArrayList<>();
 
+        mNameMap = new HashMap<>();
+
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+
+        SharedPreferences namePrefs = getSharedPreferences("Names", MODE_PRIVATE);
+        Set<String> encodedNames = namePrefs.getStringSet("EncodedNames", new HashSet<>());
+        if (encodedNames.size() > 0) {
+            String[] encodings = encodedNames.toArray(new String[] {});
+            int size = encodedNames.size();
+            for (int i =0; i < size; i++) {
+                String[] keyVal = encodings[i].split(":");
+                String key = keyVal[0];
+                String val = keyVal[1];
+                mNameMap.put(key, val);
+            }
+        }
 
         mPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
@@ -324,7 +344,7 @@ public class MainActivity extends AppCompatActivity {
                                         "male=? and female=?",
                                         new String[]{male, female}, null, null, null);
 
-                        AdapterEntry entry = new AdapterEntry(crossId, timestamp);
+                        AdapterEntry entry = new AdapterEntry(crossId, timestamp, mNameMap.get(crossId));
 
                         mCrossIds.add(entry);
 
@@ -445,84 +465,14 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.action_count:
                 final Intent countIntent = new Intent(this, CountActivity.class);
+                countIntent.putExtra("NameMapKey", mNameMap.keySet().toArray(new String[] {}));
+                countIntent.putExtra("NameMapValue", mNameMap.values().toArray(new String[] {}));
                 startActivity(countIntent);
-                break;
-            case R.id.action_print:
-                BluetoothAdapter mBluetoothAdapter = null;
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ECLAIR) {
-                    mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-                    Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-                    if (pairedDevices.size() == 1) {
-                        BluetoothDevice bd = pairedDevices.toArray(new BluetoothDevice[] {})[0];
-                        Log.d("BT", "PAIRED");
-                        BluetoothConnection bc = new BluetoothConnection(bd.getAddress());
-                        try {
-                            bc.open();
-                            final ZebraPrinter printer = ZebraPrinterFactory.getInstance(bc);
-                            ZebraPrinterLinkOs linkOsPrinter = ZebraPrinterFactory.createLinkOsPrinter(printer);
-                            PrinterStatus printerStatus = (linkOsPrinter != null) ? linkOsPrinter.getCurrentStatus() : printer.getCurrentStatus();
-                            getPrinterStatus(bc);
-                            if (printerStatus.isReadyToPrint) {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-
-                                        Toast.makeText(MainActivity.this, "Printer Ready", Toast.LENGTH_LONG).show();
-
-                                    }
-                                });
-
-                                //printer.sendCommand("! DF RUN.BAT ! UTILITIES JOURNAL SETFF 50 5 PRINT");
-                                //printer.printConfigurationLabel();
-                                //printer.sendCommand("^XA^FO0,0^ADN,36,20^FDCHANEY^FS^XZ");
-                                printer.sendCommand("^XA^FWR^FO150,90^A0N,25,20^FD" + "^FS^FO115,75^A0,25,20^FD0123456789^FS^FO150,115^A0N,25,20^FD333PhenoAppsHackathon^FS^FO400,75^A0,25,20^FDIntercross^FS^XZ");
-                                printer.printImage(new ZebraImageAndroid(BitmapFactory.decodeResource(getApplicationContext().getResources(),
-                                        R.drawable.intercross_small)), 50,50,-1,-1,false);
-
-                            } else if (printerStatus.isHeadOpen) {
-                                //helper.showErrorMessage("Error: Head Open \nPlease Close Printer Head to Print");
-                            } else if (printerStatus.isPaused) {
-                                //helper.showErrorMessage("Error: Printer Paused");
-                            } else if (printerStatus.isPaperOut) {
-                                //helper.showErrorMessage("Error: Media Out \nPlease Load Media to Print");
-                            } else {
-                                //helper.showErrorMessage("Error: Please check the Connection of the Printer");
-                            }
-
-                            bc.close();
-
-                        } catch (ConnectionException e) {
-                            e.printStackTrace();
-                        } catch (ZebraPrinterLanguageUnknownException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
                 break;
             default:
                 return super.onOptionsItemSelected(item);
         }
         return true;
-    }
-
-    private void getPrinterStatus(BluetoothConnection connection) throws ConnectionException{
-
-
-        final String printerLanguage = SGD.GET("device.languages", connection); //This command is used to get the language of the printer.
-
-        final String displayPrinterLanguage = "Printer Language is " + printerLanguage;
-
-        SGD.SET("device.languages", "zpl", connection); //This command set the language of the printer to ZPL
-
-        MainActivity.this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-
-                Toast.makeText(MainActivity.this, displayPrinterLanguage + "\n" + "Language set to ZPL", Toast.LENGTH_LONG).show();
-
-            }
-        });
-
     }
 
     @Override
@@ -540,6 +490,9 @@ public class MainActivity extends AppCompatActivity {
                         Intent i = new Intent(this, LoaderDBActivity.class);
                         loadFileToSQL(intent.getData());
                         loadSQLToLocal();
+                        break;
+                    case 100:
+                        importListOfReadableNames(intent.getData());
                         break;
                 }
 
@@ -562,6 +515,53 @@ public class MainActivity extends AppCompatActivity {
                     focusedTextView.requestFocus();
                 }
             }
+        }
+    }
+
+    private void importListOfReadableNames(Uri data) {
+
+        mNameMap = new HashMap<>();
+        InputStream is;
+        try {
+            is = getContentResolver().openInputStream(data);
+            if (is != null) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                String header = br.readLine();
+                String temp;
+                while ((temp = br.readLine()) != null) {
+                    String[] map = temp.split(",");
+                    if (map.length == 2) {
+                        mNameMap.put(map[0], map[1]);
+                    }
+                }
+                br.close();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (mNameMap.size() > 0) {
+            SharedPreferences pref = getSharedPreferences("Names", MODE_PRIVATE);
+            SharedPreferences.Editor edit = pref.edit();
+            String[] keys = mNameMap.keySet().toArray(new String[] {});
+            String[] values = mNameMap.values().toArray(new String[] {});
+            String[] keyVals = new String[keys.length];
+            if (keys.length == values.length) {
+                for (int i =0; i<keys.length; i++) {
+                    String k = keys[i].replaceAll(":", "");
+                    String v = values[i].replaceAll(":", "");
+                    keyVals[i] = k + ":" + v;
+                    for (AdapterEntry e : mCrossIds) {
+                        if (e.crossId.equals(k)) e.crossName = v;
+                    }
+                }
+            }
+            edit.putStringSet("EncodedNames", new HashSet<>(Arrays.asList(keyVals)));
+            edit.apply();
+
+            buildListView();
         }
     }
 
@@ -688,6 +688,10 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 break;
+            case R.id.nav_import_readable_names:
+                Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+                i.setType("*/*");
+                startActivityForResult(i, 100);
         }
 
         DrawerLayout dl = (DrawerLayout) findViewById(org.phenoapps.intercross.R.id.drawer_layout);

@@ -15,7 +15,6 @@ public class CountRecyclerViewAdapter extends RecyclerView.Adapter<CountRecycler
 
     private List<AdapterEntry> mData;
     private LayoutInflater mInflater;
-    private org.phenoapps.intercross.CrossRecyclerViewAdapter.ItemClickListener mClickListener;
     private Context mContext;
     private IdEntryDbHelper mDbHelper;
 
@@ -36,7 +35,9 @@ public class CountRecyclerViewAdapter extends RecyclerView.Adapter<CountRecycler
     @Override
     public void onBindViewHolder(CountRecyclerViewAdapter.ViewHolder holder, int position) {
         AdapterEntry entry = mData.get(position);
-        holder.crossView.setText(entry.crossId);
+        if (entry.crossName == null || entry.crossName.length() == 0)
+            holder.crossView.setText(entry.crossId);
+        else holder.crossView.setText(entry.crossName);
         holder.countView.setText(entry.timestamp);
     }
 
