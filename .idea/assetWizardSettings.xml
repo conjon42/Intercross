@@ -19,8 +19,8 @@
                                   <option name="values">
                                     <map>
                                       <entry key="assetType" value="IMAGE" />
-                                      <entry key="imageAsset" value="$USER_HOME$/Workspace/2x/baseline_track_changes_black_18dp.png" />
-                                      <entry key="outputName" value="ic_action_count" />
+                                      <entry key="imageAsset" value="$USER_HOME$/Workspace/2x/baseline_print_black_18dp.png" />
+                                      <entry key="outputName" value="ic_action_print" />
                                     </map>
                                   </option>
                                 </PersistentState>

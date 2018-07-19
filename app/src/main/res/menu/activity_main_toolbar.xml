@@ -5,7 +5,7 @@
         android:id="@+id/action_camera"
         android:icon="@drawable/ic_barcode_scan"
         android:title="@string/action_camera"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_count"
         android:icon="@drawable/ic_action_count"

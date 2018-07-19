@@ -1,5 +1,7 @@
 package org.phenoapps.intercross;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -10,14 +12,17 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
-import android.database.sqlite.SQLiteStatement;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
@@ -30,9 +35,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
-import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -40,14 +43,23 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.zebra.sdk.comm.BluetoothConnection;
+import com.zebra.sdk.comm.Connection;
+import com.zebra.sdk.comm.ConnectionException;
+import com.zebra.sdk.graphics.internal.ZebraImageAndroid;
+import com.zebra.sdk.printer.PrinterStatus;
+import com.zebra.sdk.printer.SGD;
+import com.zebra.sdk.printer.ZebraPrinter;
+import com.zebra.sdk.printer.ZebraPrinterFactory;
+import com.zebra.sdk.printer.ZebraPrinterLanguageUnknownException;
+import com.zebra.sdk.printer.ZebraPrinterLinkOs;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -60,9 +72,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -78,12 +89,13 @@ public class MainActivity extends AppCompatActivity {
 
     private View focusedTextView;
 
+    @RequiresApi(api = Build.VERSION_CODES.CUPCAKE)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
 
-        setContentView(org.phenoapps.intercross.R.layout.activity_main);
+        setContentView(R.layout.activity_main);
 
         mCrossIds = new ArrayList<>();
 
@@ -102,7 +114,9 @@ public class MainActivity extends AppCompatActivity {
             launchIntro();
             SharedPreferences.Editor editor = sharedPref.edit();
             editor.putBoolean("onlyLoadTutorialOnce", true);
-            editor.apply();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+                editor.apply();
+            }
         } else {
             boolean tutorialMode = sharedPref.getBoolean(SettingsActivity.TUTORIAL_MODE, false);
 
@@ -120,35 +134,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void copyRawToVerify(File verifyDirectory, String fileName, int rawId) {
-        
-        String fieldSampleName = verifyDirectory.getAbsolutePath() + "/" + fileName;
-        File fieldSampleFile = new File(fieldSampleName);
-        if (!Arrays.asList(verifyDirectory.listFiles()).contains(fieldSampleFile)) {
-            try {
-                InputStream inputStream = getResources().openRawResource(rawId);
-                FileOutputStream foStream =  new FileOutputStream(fieldSampleName);
-                byte[] buff = new byte[1024];
-                int read = 0;
-                try {
-                    while ((read = inputStream.read(buff)) > 0) {
-                        foStream.write(buff, 0, read);
-                    }
-                    scanFile(this, fieldSampleFile);
-                } finally {
-                    inputStream.close();
-                    foStream.close();
-                }
-            } catch (IOException io) {
-                io.printStackTrace();
-            }
+    public static void scanFile(Context ctx, File filePath) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
+            MediaScannerConnection.scanFile(ctx, new String[] { filePath.getAbsolutePath()}, null, null);
         }
     }
 
-    public static void scanFile(Context ctx, File filePath) {
-        MediaScannerConnection.scanFile(ctx, new String[] { filePath.getAbsolutePath()}, null, null);
-    }
-
+    @RequiresApi(api = Build.VERSION_CODES.CUPCAKE)
     private void initializeUIVariables() {
 
         if (getSupportActionBar() != null){
@@ -241,6 +233,9 @@ public class MainActivity extends AppCompatActivity {
                 focusedTextView.requestFocus();
             }
         });
+
+        focusedTextView = femaleEditText;
+        focusedTextView.requestFocus();
     }
 
     private void saveToDB() {
@@ -353,14 +348,16 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Choose name for exported file.");
         final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CUPCAKE) {
+            input.setInputType(InputType.TYPE_CLASS_TEXT);
+        }
         builder.setView(input);
 
         builder.setPositiveButton("Export", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String value = input.getText().toString();
-                if (!value.isEmpty()) {
+                if (value.length() != 0) {
                     if (isExternalStorageWritable()) {
                         try {
                             File dir = new File(Environment.getExternalStorageDirectory().getPath() + "/Intercross");
@@ -422,56 +419,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void ringNotification(boolean success) {
-
-        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        final boolean audioEnabled = sharedPref.getBoolean(SettingsActivity.AUDIO_ENABLED, true);
-
-        if(success) { //ID found
-            if(audioEnabled) {
-                if (success) {
-                    try {
-                        int resID = getResources().getIdentifier("plonk", "raw", getPackageName());
-                        MediaPlayer chimePlayer = MediaPlayer.create(MainActivity.this, resID);
-                        chimePlayer.start();
-
-                        chimePlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                            public void onCompletion(MediaPlayer mp) {
-                                mp.release();
-                            }
-                        });
-                    } catch (Exception ignore) {
-                    }
-                }
-            }
-        }
-
-        if(!success) { //ID not found
-            ((TextView) findViewById(org.phenoapps.intercross.R.id.valueView)).setText("");
-
-            if (audioEnabled) {
-                if(!success) {
-                    try {
-                        int resID = getResources().getIdentifier("error", "raw", getPackageName());
-                        MediaPlayer chimePlayer = MediaPlayer.create(MainActivity.this, resID);
-                        chimePlayer.start();
-
-                        chimePlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                            public void onCompletion(MediaPlayer mp) {
-                                mp.release();
-                            }
-                        });
-                    } catch (Exception ignore) {
-                    }
-                }
-            } else {
-                if (!success) {
-                    Toast.makeText(this, "Scanned ID not found", Toast.LENGTH_SHORT).show();
-                }
-            }
-        }
-    }
-
     @Override
     final public boolean onCreateOptionsMenu(Menu m) {
 
@@ -500,10 +447,82 @@ public class MainActivity extends AppCompatActivity {
                 final Intent countIntent = new Intent(this, CountActivity.class);
                 startActivity(countIntent);
                 break;
+            case R.id.action_print:
+                BluetoothAdapter mBluetoothAdapter = null;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ECLAIR) {
+                    mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+                    Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+                    if (pairedDevices.size() == 1) {
+                        BluetoothDevice bd = pairedDevices.toArray(new BluetoothDevice[] {})[0];
+                        Log.d("BT", "PAIRED");
+                        BluetoothConnection bc = new BluetoothConnection(bd.getAddress());
+                        try {
+                            bc.open();
+                            final ZebraPrinter printer = ZebraPrinterFactory.getInstance(bc);
+                            ZebraPrinterLinkOs linkOsPrinter = ZebraPrinterFactory.createLinkOsPrinter(printer);
+                            PrinterStatus printerStatus = (linkOsPrinter != null) ? linkOsPrinter.getCurrentStatus() : printer.getCurrentStatus();
+                            getPrinterStatus(bc);
+                            if (printerStatus.isReadyToPrint) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+
+                                        Toast.makeText(MainActivity.this, "Printer Ready", Toast.LENGTH_LONG).show();
+
+                                    }
+                                });
+
+                                //printer.sendCommand("! DF RUN.BAT ! UTILITIES JOURNAL SETFF 50 5 PRINT");
+                                //printer.printConfigurationLabel();
+                                //printer.sendCommand("^XA^FO0,0^ADN,36,20^FDCHANEY^FS^XZ");
+                                printer.sendCommand("^XA^FWR^FO150,90^A0N,25,20^FD" + "^FS^FO115,75^A0,25,20^FD0123456789^FS^FO150,115^A0N,25,20^FD333PhenoAppsHackathon^FS^FO400,75^A0,25,20^FDIntercross^FS^XZ");
+                                printer.printImage(new ZebraImageAndroid(BitmapFactory.decodeResource(getApplicationContext().getResources(),
+                                        R.drawable.intercross_small)), 50,50,-1,-1,false);
+
+                            } else if (printerStatus.isHeadOpen) {
+                                //helper.showErrorMessage("Error: Head Open \nPlease Close Printer Head to Print");
+                            } else if (printerStatus.isPaused) {
+                                //helper.showErrorMessage("Error: Printer Paused");
+                            } else if (printerStatus.isPaperOut) {
+                                //helper.showErrorMessage("Error: Media Out \nPlease Load Media to Print");
+                            } else {
+                                //helper.showErrorMessage("Error: Please check the Connection of the Printer");
+                            }
+
+                            bc.close();
+
+                        } catch (ConnectionException e) {
+                            e.printStackTrace();
+                        } catch (ZebraPrinterLanguageUnknownException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                break;
             default:
                 return super.onOptionsItemSelected(item);
         }
         return true;
+    }
+
+    private void getPrinterStatus(BluetoothConnection connection) throws ConnectionException{
+
+
+        final String printerLanguage = SGD.GET("device.languages", connection); //This command is used to get the language of the printer.
+
+        final String displayPrinterLanguage = "Printer Language is " + printerLanguage;
+
+        SGD.SET("device.languages", "zpl", connection); //This command set the language of the printer to ZPL
+
+        MainActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                Toast.makeText(MainActivity.this, displayPrinterLanguage + "\n" + "Language set to ZPL", Toast.LENGTH_LONG).show();
+
+            }
+        });
+
     }
 
     @Override
@@ -612,8 +631,10 @@ public class MainActivity extends AppCompatActivity {
             public void onDrawerOpened(View drawerView) {
                 View view = MainActivity.this.getCurrentFocus();
                 if (view != null) {
-                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CUPCAKE) {
+                        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    }
                 }
             }
 
@@ -671,32 +692,6 @@ public class MainActivity extends AppCompatActivity {
 
         DrawerLayout dl = (DrawerLayout) findViewById(org.phenoapps.intercross.R.id.drawer_layout);
         dl.closeDrawers();
-    }
-
-    private void showPairDialog() {
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Pair column selected, would you like to switch to Pair mode?");
-
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-
-                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-                SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putString(SettingsActivity.SCAN_MODE_LIST, "4");
-                editor.apply();
-            }
-        });
-
-        builder.setNegativeButton("No thanks", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-
-            }
-        });
-
-        builder.show();
     }
 
     private void showAboutDialog()
