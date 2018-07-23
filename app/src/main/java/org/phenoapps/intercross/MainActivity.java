@@ -1,5 +1,6 @@
 package org.phenoapps.intercross;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.ContentValues;
@@ -134,9 +135,7 @@ public class MainActivity extends AppCompatActivity {
             launchIntro();
             SharedPreferences.Editor editor = sharedPref.edit();
             editor.putBoolean("onlyLoadTutorialOnce", true);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-                editor.apply();
-            }
+            editor.apply();
         } else {
             boolean tutorialMode = sharedPref.getBoolean(SettingsActivity.TUTORIAL_MODE, false);
 
@@ -144,7 +143,28 @@ public class MainActivity extends AppCompatActivity {
                 launchIntro();
         }
 
-        ActivityCompat.requestPermissions(this, IntercrossConstants.permissions, IntercrossConstants.PERM_REQ);
+        boolean allGranted = true;
+        for (String perm : IntercrossConstants.permissions) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (checkSelfPermission(perm) != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+        }
+
+        if (!allGranted) {
+            ActivityCompat.requestPermissions(this, IntercrossConstants.permissions,
+                IntercrossConstants.PERM_REQ);
+        }
+
+        if (isExternalStorageWritable()) {
+            File intercrossDir = new File(Environment.getExternalStorageDirectory().getPath() + "/Intercross");
+            if (!intercrossDir.isDirectory()) {
+                final boolean makeDirsSuccess = intercrossDir.mkdirs();
+                if (!makeDirsSuccess) Log.d("Make Directory", "failed");
+            }
+        }
 
         initializeUIVariables();
 
@@ -450,7 +470,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     final public boolean onOptionsItemSelected(MenuItem item) {
 
-        DrawerLayout dl = (DrawerLayout) findViewById(org.phenoapps.intercross.R.id.drawer_layout);
+        DrawerLayout dl = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
@@ -459,9 +479,21 @@ public class MainActivity extends AppCompatActivity {
             case android.R.id.home:
                 dl.openDrawer(GravityCompat.START);
                 break;
-            case org.phenoapps.intercross.R.id.action_camera:
-                final Intent cameraIntent = new Intent(this, ScanActivity.class);
-                startActivityForResult(cameraIntent, IntercrossConstants.CAMERA_INTENT_REQ);
+            case R.id.action_camera:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                        final Intent cameraIntent = new Intent(this, ScanActivity.class);
+                        startActivityForResult(cameraIntent, IntercrossConstants.CAMERA_INTENT_REQ);
+                    } else {
+                        Toast.makeText(this,
+                                "You must accept camera permissions before using the barcode reader.",
+                                Toast.LENGTH_LONG).show();
+                        ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, IntercrossConstants.PERM_REQ);
+                    }
+                } else { //permission granted on installation
+                    final Intent cameraIntent = new Intent(this, ScanActivity.class);
+                    startActivityForResult(cameraIntent, IntercrossConstants.CAMERA_INTENT_REQ);
+                }
                 break;
             case R.id.action_count:
                 final Intent countIntent = new Intent(this, CountActivity.class);
@@ -484,13 +516,6 @@ public class MainActivity extends AppCompatActivity {
 
             if (intent != null) {
                 switch (requestCode) {
-
-                    //File data response from import request
-                    case IntercrossConstants.DEFAULT_CONTENT_REQ:
-                        Intent i = new Intent(this, LoaderDBActivity.class);
-                        loadFileToSQL(intent.getData());
-                        loadSQLToLocal();
-                        break;
                     case 100:
                         importListOfReadableNames(intent.getData());
                         break;
@@ -787,9 +812,19 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
-    /* Checks if external storage is available for read and write */
-    static private boolean isExternalStorageWritable() {
-        return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
+    private boolean isExternalStorageWritable() {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                Log.v("Security","Permission is granted");
+                return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 200);
+            }
+        } else return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
+
+        return false;
     }
 
     @Override
@@ -801,33 +836,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int resultCode, String[] permissions, int[] granted) {
 
-        boolean allGranted = true;
-        boolean externalWriteAccept = false;
         if (resultCode == IntercrossConstants.PERM_REQ) {
             for (int i = 0; i < permissions.length; i++) {
-                if (permissions[i].equals("android.permission.WRITE_EXTERNAL_STORAGE")
-                        && granted[i] == PackageManager.PERMISSION_GRANTED) {
-                    externalWriteAccept = true;
-                }
                 if (granted[i] != PackageManager.PERMISSION_GRANTED) {
-                    allGranted = false;
+                    Log.d("Security", permissions[i] + " : " + granted[i]);
                 }
             }
-        }
-        if (externalWriteAccept && isExternalStorageWritable()) {
-            File intercrossDir = new File(Environment.getExternalStorageDirectory().getPath() + "/Intercross");
-            if (!intercrossDir.isDirectory()) {
-                final boolean makeDirsSuccess = intercrossDir.mkdirs();
-                if (!makeDirsSuccess) Log.d("Make Directory", "failed");
-            }
-            //copyRawToVerify(intercrossDir, "field_sample.csv", R.raw.field_sample);
-            //copyRawToVerify(intercrossDir, "verify_pair_sample.csv", R.raw.verify_pair_sample);
-        }
-        if (!allGranted) {
-            Toast.makeText(this, "You must accept all permissions to continue.", Toast.LENGTH_LONG).show();
-            finish();
-        } else {
-            loadSQLToLocal();
         }
     }
 }

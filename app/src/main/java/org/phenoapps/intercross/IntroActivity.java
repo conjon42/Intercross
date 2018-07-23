@@ -18,9 +18,9 @@ public class IntroActivity extends AppIntro2 {
         showStatusBar(false);
 
         // Add slides
-        addSlide(AppIntroFragment.newInstance(getString(org.phenoapps.intercross.R.string.intro_title_1), getString(org.phenoapps.intercross.R.string.intro_body_1), org.phenoapps.intercross.R.drawable.intro_launcher, Color.parseColor("#A84937")));
-        addSlide(AppIntroFragment.newInstance(getString(org.phenoapps.intercross.R.string.intro_title_2), getString(org.phenoapps.intercross.R.string.intro_body_2), org.phenoapps.intercross.R.drawable.intro_folder, Color.parseColor("#285E3D")));
-        addSlide(AppIntroFragment.newInstance(getString(org.phenoapps.intercross.R.string.intro_title_3), getString(org.phenoapps.intercross.R.string.intro_body_3), org.phenoapps.intercross.R.drawable.intro_list, Color.parseColor("#0C6291")));
+        addSlide(AppIntroFragment.newInstance(getString(R.string.intro_title_1), getString(org.phenoapps.intercross.R.string.intro_body_1), R.drawable.intercross_large, Color.parseColor("#A84937")));
+        addSlide(AppIntroFragment.newInstance(getString(R.string.intro_title_2), getString(org.phenoapps.intercross.R.string.intro_body_2), R.drawable.intro_folder, Color.parseColor("#285E3D")));
+        addSlide(AppIntroFragment.newInstance(getString(R.string.intro_title_3), getString(R.string.intro_body_3), R.drawable.intro_list, Color.parseColor("#0C6291")));
 
         // Hide Skip/Done button.
         showSkipButton(false);

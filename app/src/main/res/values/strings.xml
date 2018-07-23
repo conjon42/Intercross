@@ -8,32 +8,21 @@
     <string name="action_camera">Barcode Scanner</string>
     <string name="save">Save</string>
     <string name="next">Next</string>
-    <!-- Import Strings -->
-    <string name="choose_separator_tutorial">Input a separator character.\nThis character should separate the headers and columns in the uploaded file.\nThen press Done.</string>
-    <string name="choose_header_tutorial">Choose your barcode column.</string>
-    <string name="finish_tutorial">Press finish, you\'re done!</string>
-    <string name="open_file_tutorial">Choose a file with the open button.</string>
-    <string name="choose_pair_button_tutorial">Choose your pair ID column.</string>
-    <string name="columns_tutorial">Choose display columns.</string>
 
     <!-- Settings Strings -->
-    <string name="prefs_mode">Scan Mode</string>
-    <string name="prefs_audio">Audio</string>
+    <string name="cross_mode">Cross Mode</string>
 
-    <string name="default_mode">Default - View item details</string>
-    <string name="filter_mode">Filter - Remove scanned items</string>
-    <string name="color_mode">Color - Paint scanned items</string>
-    <string name="match_mode">Order - Verify order of items</string>
-    <string name="pair_mode">Pair - Track pairings of items</string>
+    <string name="biparental_mode">Biparental - Ensures the male and female identifiers are different.</string>
+    <string name="self_cross_mode">Self Cross - Ensures the male and female identifiers are equal.</string>
 
     <!-- Intro Strings -->
-    <string name="intro_title_1">Welcome to Verify!</string>
-    <string name="intro_title_2">Import a File</string>
-    <string name="intro_title_3">Many modes</string>
+    <string name="intro_title_1">Welcome to Intercross!</string>
+    <string name="intro_title_2">Barcodes</string>
+    <string name="intro_title_3">Data</string>
 
-    <string name="intro_body_1">Verify lets you import a list of entries to visualize details or manipulate your list.</string>
-    <string name="intro_body_2">After you give Verify permission to access files, open the navigation drawer, choose import, select your file, and choose the column that matches your external barcodes.</string>
-    <string name="intro_body_3">Once a list has been imported, entries can be scanned to A) show accompanying data, B) paint scanned entries, C) remove scanned entries, or D) ensure the scanned order matches the imported order.</string>
+    <string name="intro_body_1">Track your crosses and various phenotypes.</string>
+    <string name="intro_body_2">After you give Intercross permission to access your device\'s camera you can start scanning barcodes!</string>
+    <string name="intro_body_3">Cross properties and auxiliary data can be saved locally or exported to a flat file.</string>
 
     <!-- About Strings -->
     <string name="ok">OK</string>
