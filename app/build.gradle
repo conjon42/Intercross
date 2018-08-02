@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 25
@@ -55,4 +56,8 @@ dependencies {
     compile files('libs/poi-3.12-android-a.jar')
     compile files('libs/poi-ooxml-schemas-3.12-20150511-a.jar')
     implementation files('libs/ZSDK_ANDROID_API.jar')
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+}
+repositories {
+    mavenCentral()
 }
