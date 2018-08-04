@@ -22,11 +22,10 @@ import java.util.ArrayList
 import java.util.Arrays
 import java.util.HashSet
 
-class ManageHeadersActivity : AppCompatActivity(), HeaderRecyclerViewAdapter.ItemClickListener {
+class ManageHeadersActivity : AppCompatActivity() {
 
     private var mHeaderIds: ArrayList<String>? = null
 
-    private var mAdapter: HeaderRecyclerViewAdapter? = null
 
     private var mDbHelper: IdEntryDbHelper? = null
 
@@ -49,7 +48,7 @@ class ManageHeadersActivity : AppCompatActivity(), HeaderRecyclerViewAdapter.Ite
                 mHeaderIds!!.add(header)
             }
 
-            buildListView()
+            //buildListView()
 
         }
         val headerInputButton = findViewById(R.id.addHeaderButton) as Button
@@ -67,7 +66,7 @@ class ManageHeadersActivity : AppCompatActivity(), HeaderRecyclerViewAdapter.Ite
 
                 editor.apply()
 
-                buildListView()
+                //buildListView()
 
                 val db = mDbHelper!!.writableDatabase
 
@@ -84,17 +83,9 @@ class ManageHeadersActivity : AppCompatActivity(), HeaderRecyclerViewAdapter.Ite
         }
     }
 
-    private fun buildListView() {
-
-        val recyclerView = findViewById(R.id.listHeaders) as RecyclerView
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        mAdapter = HeaderRecyclerViewAdapter(this, mHeaderIds)
-        mAdapter!!.setClickListener(this)
-        recyclerView.adapter = mAdapter
-
-    }
-
+/*
     override fun onItemClick(view: View, position: Int) {
+
         Log.d("CLICK", "C")
 
         var db = mDbHelper!!.readableDatabase
@@ -215,5 +206,5 @@ class ManageHeadersActivity : AppCompatActivity(), HeaderRecyclerViewAdapter.Ite
 
     override fun onLongItemClick(v: View, position: Int) {
 
-    }
+    }*/
 }

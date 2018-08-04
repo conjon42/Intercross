@@ -123,7 +123,7 @@ class AuxValueInputActivity : AppCompatActivity() {
             editTexts.add(editText)
         }
 
-        val adapter = object : ViewAdapter<EditTextAdapterEntry>(entries.toList()) {
+        /*val adapter = object : ViewAdapter<EditTextAdapterEntry>(entries.toList()) {
             override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
                 RecyclerView.ViewHolder {
                     return RecyclerView.ViewHolder(view)
@@ -135,7 +135,7 @@ class AuxValueInputActivity : AppCompatActivity() {
             }
 
         }
-        recyclerView.adapter = adapter
+        recyclerView.adapter = adapter*/
 
         val view = LinearLayout(this)
         view.orientation = LinearLayout.VERTICAL

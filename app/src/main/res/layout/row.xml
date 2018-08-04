@@ -7,18 +7,18 @@
     android:padding="20dp">
 
     <TextView
-        android:id="@+id/crossEntryId"
+        android:id="@+id/firstTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:gravity="left"
+        android:gravity="start"
         android:textSize="20sp" />
 
     <TextView
-        android:id="@+id/timestamp"
+        android:id="@+id/secondTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="right"
+        android:gravity="end"
         android:textSize="20sp" />
 
 </LinearLayout>

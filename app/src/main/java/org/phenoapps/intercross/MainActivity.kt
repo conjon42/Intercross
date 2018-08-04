@@ -1,6 +1,7 @@
 package org.phenoapps.intercross
 
 import android.Manifest
+import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.ContentValues
@@ -36,6 +37,7 @@ import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
 import android.util.Log
+import android.util.SparseArray
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuInflater
@@ -78,11 +80,15 @@ import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
-    private var mDbHelper: IdEntryDbHelper? = null
+    private lateinit var mFemaleEditText: EditText
+    private lateinit var mMaleEditText: EditText
+    private lateinit var mCrossEditText: EditText
+    private lateinit var mRecyclerView: RecyclerView
+    private lateinit var mNavView: NavigationView
 
-    private var mPrefListener: SharedPreferences.OnSharedPreferenceChangeListener? = null
+    private val mEntries = ArrayList<AdapterEntry>()
 
-    private var mCrossIds: ArrayList<AdapterEntry>? = null
+    private val mDbHelper: IdEntryDbHelper = IdEntryDbHelper(this)
 
     private var mDrawerToggle: ActionBarDrawerToggle? = null
 
@@ -114,13 +120,11 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-        mCrossIds = ArrayList()
-
         mNameMap = HashMap()
 
-        val sharedPref = PreferenceManager.getDefaultSharedPreferences(this)
-
-        val namePrefs = getSharedPreferences("Names", Context.MODE_PRIVATE)
+       // val sharedPref = PreferenceManager.getDefaultSharedPreferences(this)
+//
+        /*val namePrefs = getSharedPreferences("Names", Context.MODE_PRIVATE)
         val encodedNames = namePrefs.getStringSet("EncodedNames", HashSet())
         if (encodedNames.size > 0) {
             val encodings = encodedNames.toTypedArray<String>()
@@ -132,10 +136,6 @@ class MainActivity : AppCompatActivity() {
                 mNameMap!![key] = `val`
             }
         }
-
-        mPrefListener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, s -> }
-
-        sharedPref.registerOnSharedPreferenceChangeListener(mPrefListener)
 
         if (!sharedPref.getBoolean("onlyLoadTutorialOnce", false)) {
             launchIntro()
@@ -170,11 +170,9 @@ class MainActivity : AppCompatActivity() {
                 val makeDirsSuccess = intercrossDir.mkdirs()
                 if (!makeDirsSuccess) Log.d("Make Directory", "failed")
             }
-        }
+        }*/
 
         initializeUIVariables()
-
-        mDbHelper = IdEntryDbHelper(this)
 
         loadSQLToLocal()
 
@@ -183,11 +181,11 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(api = Build.VERSION_CODES.CUPCAKE)
     private fun initializeUIVariables() {
 
-        if (supportActionBar != null) {
-            supportActionBar!!.title = null
-            supportActionBar!!.themedContext
-            supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-            supportActionBar!!.setHomeButtonEnabled(true)
+        supportActionBar?.let {
+            it.title = "Intercross"
+            it.themedContext
+            it.setDisplayHomeAsUpEnabled(true)
+            it.setHomeButtonEnabled(true)
         }
 
         val nvDrawer = findViewById(R.id.nvView) as NavigationView
@@ -272,7 +270,7 @@ class MainActivity : AppCompatActivity() {
                 && crossEditText.text.length != 0) {
 
             //database update
-            val db = mDbHelper!!.writableDatabase
+            val db = mDbHelper.writableDatabase
 
             val entry = ContentValues()
 
@@ -303,64 +301,42 @@ class MainActivity : AppCompatActivity() {
     //reads the SQLite database and displays cross ids and their total counts / timestamps
     private fun loadSQLToLocal() {
 
-        mDbHelper = IdEntryDbHelper(this)
+        mEntries.clear()
 
-        mCrossIds = ArrayList()
-
-        val db = mDbHelper!!.readableDatabase
+        val db = mDbHelper.readableDatabase
         try {
-            val table = IdEntryContract.IdEntry.TABLE_NAME
-            val cursor = db.query(table, null, null, null, null, null, null)
+            val cursor = db.query(IdEntryContract.IdEntry.TABLE_NAME, null,
+                    null, null, null, null, null)
+
+            val entry = AdapterEntry()
 
             if (cursor.moveToFirst()) {
                 do {
-                    val headers = cursor.columnNames
-                    var male: String? = null
-                    var female: String? = null
-                    var crossId: String? = null
-                    var timestamp: String? = null
+                    cursor.columnNames.forEach { header ->
+                        header?.let {
 
-                    for (header in headers) {
+                            val colVal = cursor.getString(
+                                    cursor.getColumnIndexOrThrow(it)) ?: String()
 
-
-                        val `val` = cursor.getString(
-                                cursor.getColumnIndexOrThrow(header)
-                        )
-
-                        if (header == "male") {
-                            male = `val`
+                            when (it) {
+                                "cross_id" -> entry.first = colVal
+                                "timestamp" -> entry.second = colVal.split(" ".toRegex())
+                                        .dropLastWhile({ token -> token.isEmpty() }).toTypedArray()[0]
+                            }
                         }
-
-                        if (header == "female") {
-                            female = `val`
-                        }
-
-                        if (header == "cross_id") crossId = `val`
-
-                        if (header == "timestamp") timestamp = `val`.split(" ".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0]
-
                     }
 
-                    if (male != null && female != null) {
-                        val countCursor = db.query(table, arrayOf("male, female"),
-                                "male=? and female=?",
-                                arrayOf(male, female), null, null, null)
-
-                        val entry = AdapterEntry(crossId, timestamp, mNameMap!!.get(crossId))
-
-                        mCrossIds!!.add(entry)
-
-                        countCursor.close()
-                    }
+                    mEntries.add(entry)
 
                 } while (cursor.moveToNext())
-
             }
             cursor.close()
 
         } catch (e: SQLiteException) {
             e.printStackTrace()
         }
+
+        db.close()
 
         buildListView()
     }
@@ -517,6 +493,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun importListOfReadableNames(data: Uri) {
 
+        /*
         mNameMap = HashMap()
         val `is`: InputStream?
         try {
@@ -559,12 +536,11 @@ class MainActivity : AppCompatActivity() {
             edit.apply()
 
             buildListView()
-        }
+        }*/
     }
 
     private fun loadFileToSQL(data: Uri) {
-
-
+        /*
         val db = mDbHelper!!.writableDatabase
 
         db.execSQL(IdEntryContract.SQL_DELETE_ENTRIES)
@@ -597,16 +573,40 @@ class MainActivity : AppCompatActivity() {
         } catch (ioe: IOException) {
             ioe.printStackTrace()
         }
+        */
+    }
 
+    inner class ViewHolder internal constructor(itemView: RecyclerView) : RecyclerView.ViewHolder(itemView) {
+        internal var firstText: TextView
+        internal var secondText: TextView
+
+        init {
+            firstText = itemView.findViewById(R.id.firstTextView) as TextView
+            secondText = itemView.findViewById(R.id.secondTextView) as TextView
+        }
     }
 
     private fun buildListView() {
 
         val recyclerView = findViewById(R.id.crossList) as RecyclerView
+
         recyclerView.layoutManager = LinearLayoutManager(this)
-        val adapter = CrossRecyclerViewAdapter(this, mCrossIds)
-        //adapter.setClickListener(this);
+
+        val adapter = object : ViewAdapter<AdapterEntry>(mEntries) {
+
+            override fun getLayoutId(position: Int, obj: AdapterEntry): Int {
+                return R.layout.row
+            }
+
+            override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
+                return ViewHolder(view as RecyclerView)
+            }
+
+        }
+
         recyclerView.adapter = adapter
+
+        recyclerView.adapter.notifyDataSetChanged()
     }
 
     private fun clearListView() {
@@ -742,7 +742,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     public override fun onDestroy() {
-        mDbHelper!!.close()
+        mDbHelper.close()
         super.onDestroy()
     }
 
@@ -762,9 +762,7 @@ class MainActivity : AppCompatActivity() {
         private val line_separator = System.getProperty("line.separator")
 
         fun scanFile(ctx: Context, filePath: File) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
-                MediaScannerConnection.scanFile(ctx, arrayOf(filePath.absolutePath), null, null)
-            }
+            MediaScannerConnection.scanFile(ctx, arrayOf(filePath.absolutePath), null, null)
         }
     }
 }

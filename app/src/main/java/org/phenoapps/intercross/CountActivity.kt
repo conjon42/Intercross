@@ -12,6 +12,7 @@ import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Adapter
 import android.widget.LinearLayout
 import android.widget.TextView
 
@@ -42,59 +43,42 @@ class CountActivity : AppCompatActivity() {
             }
         }
 
-        mCrossIds = ArrayList()
+        val crossIds = ArrayList<AdapterEntry>()
 
         val db = mDbHelper.readableDatabase
-
         try {
-            val table = IdEntryContract.IdEntry.TABLE_NAME
-            val cursor = db.query(table, null, null, null, null, null, null)
+            val cursor = db.query( IdEntryContract.IdEntry.TABLE_NAME, arrayOf("cross_id", "male", "female"),
+                    null, null, null, null, null)
 
+            val entry = AdapterEntry()
+            var male: String? = null
+            var female: String? = null
             if (cursor.moveToFirst()) {
                 do {
-                    val headers = cursor.columnNames
-                    var male: String? = null
-                    var female: String? = null
-                    var crossId: String? = null
-                    var timestamp: String? = null
+                    cursor.columnNames.forEach { header ->
+                        header?.let {
 
-                    for (header in headers) {
+                            val colVal = cursor.getString(
+                                    cursor.getColumnIndexOrThrow(it)) ?: String()
 
-
-                        val `val` = cursor.getString(
-                                cursor.getColumnIndexOrThrow(header)
-                        )
-
-                        if (header == "male") {
-                            male = `val`
+                            when (it) {
+                                "male" -> male = colVal
+                                "female" -> female = colVal
+                                "cross_id" -> entry.first = colVal
+                            }
                         }
-
-                        if (header == "female") {
-                            female = `val`
-                        }
-
-                        if (header == "cross_id") crossId = `val`
-
-                        if (header == "timestamp") timestamp = `val`.split(" ".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0]
-
                     }
 
-                    if (male != null && female != null) {
-                        val countCursor = db.query(table, arrayOf("male, female"),
-                                "male=? and female=?",
-                                arrayOf(male, female), null, null, null)
+                    val countCursor = db.query(IdEntryContract.IdEntry.TABLE_NAME, arrayOf("male", "female"),
+                            "male=?, female=?", arrayOf(male, female), null, null, null)
 
+                    entry.second = countCursor.columnCount.toString()
 
-                        val entry = AdapterEntry(crossId,
-                                countCursor.count.toString(), mNameMap!!.get(crossId))
+                    countCursor.close()
 
-                        mCrossIds!!.add(entry)
-
-                        countCursor.close()
-                    }
+                    crossIds.add(entry)
 
                 } while (cursor.moveToNext())
-
             }
             cursor.close()
 
@@ -102,69 +86,42 @@ class CountActivity : AppCompatActivity() {
             e.printStackTrace()
         }
 
-        buildListView()
+        db.close()
+
+        crossIds.clear()
+
+        buildListView(crossIds)
 
     }
 
-    private fun buildListView() {
-
-        val recyclerView = findViewById(R.id.recyclerView) as RecyclerView
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        val adapter = CountRecyclerViewAdapter(this, mCrossIds)
-        recyclerView.adapter = adapter
-    }
-
-    class CountRecyclerViewAdapter internal constructor(private val mContext: Context, private val mData: List<AdapterEntry>) : RecyclerView.Adapter<CountRecyclerViewAdapter.ViewHolder>() {
-
-        inner class AdapterEntry internal constructor(var crossId: String, var timestamp: String, var crossName: String)
-
-        private val mInflater: LayoutInflater
-        private val mDbHelper: IdEntryDbHelper
+    inner class ViewHolder internal constructor(itemView: RecyclerView) : RecyclerView.ViewHolder(itemView) {
+        internal var firstText: TextView
+        internal var secondText: TextView
 
         init {
-            this.mInflater = LayoutInflater.from(mContext)
-            mDbHelper = IdEntryDbHelper(mContext)
-
+            firstText = itemView.findViewById(R.id.firstTextView) as TextView
+            secondText = itemView.findViewById(R.id.secondTextView) as TextView
         }
+    }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CountRecyclerViewAdapter.ViewHolder {
-            val view = mInflater.inflate(R.layout.row, parent, false)
-            return ViewHolder(view)
-        }
+    private fun buildListView(crossIds: ArrayList<AdapterEntry>) {
 
-        override fun onBindViewHolder(holder: CountRecyclerViewAdapter.ViewHolder, position: Int) {
-            val entry = mData[position]
-            if (entry.crossName == null || entry.crossName.length == 0)
-                holder.crossView.text = entry.crossId
-            else
-                holder.crossView.text = entry.crossName
-            holder.countView.text = entry.timestamp
-        }
+        val recyclerView = findViewById(R.id.crossList) as RecyclerView
 
-        override fun getItemCount(): Int {
-            return mData.size
-        }
+        recyclerView.layoutManager = LinearLayoutManager(this)
 
+        val adapter = object : ViewAdapter<AdapterEntry>(crossIds) {
 
-        inner class ViewHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
-            internal var crossView: TextView
-            internal var countView: TextView
-            internal var crossName: String
-
-            init {
-                val childCount = (itemView as LinearLayout).childCount
-                crossName = (itemView.getChildAt(0) as TextView).text.toString()
-                crossView = itemView.findViewById(R.id.crossEntryId) as TextView
-                crossView.setSingleLine()
-                crossView.ellipsize = TextUtils.TruncateAt.END
-                countView = itemView.findViewById(R.id.timestamp) as TextView
-                countView.setSingleLine()
-                itemView.setOnClickListener(this)
+            override fun getLayoutId(position: Int, obj: AdapterEntry): Int {
+                return R.layout.row
             }
 
-            override fun onClick(view: View) {
-
+            override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
+                return ViewHolder(view as RecyclerView)
             }
+
         }
+
+        recyclerView.adapter = adapter
     }
 }

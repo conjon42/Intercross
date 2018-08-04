@@ -2,4 +2,21 @@ package org.phenoapps.intercross
 
 import android.widget.Adapter
 
-class AdapterEntry internal constructor(var crossId: String, var timestamp: String, var crossName: String)
+class AdapterEntry {
+
+    var first: String = String()
+
+    var second: String = String()
+
+    constructor()
+
+    constructor(first: String, second: String) {
+        this.first = first
+        this.second = second
+    }
+
+    fun clear() {
+        first = String()
+        second = String()
+    }
+}
