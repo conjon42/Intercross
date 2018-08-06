@@ -2,27 +2,17 @@ package org.phenoapps.intercross
 
 import android.Manifest
 import android.app.Activity
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.content.ContentValues
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.database.Cursor
-import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
-import android.graphics.BitmapFactory
-import android.graphics.drawable.Drawable
-import android.media.MediaPlayer
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.preference.PreferenceManager
 import android.support.annotation.RequiresApi
 import android.support.design.widget.NavigationView
 import android.support.v4.app.ActivityCompat
@@ -37,46 +27,19 @@ import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
 import android.util.Log
-import android.util.SparseArray
-import android.view.KeyEvent
 import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ListView
-import android.widget.TextView
-import android.widget.Toast
-
-import com.zebra.sdk.comm.BluetoothConnection
-import com.zebra.sdk.comm.Connection
-import com.zebra.sdk.comm.ConnectionException
-import com.zebra.sdk.graphics.internal.ZebraImageAndroid
-import com.zebra.sdk.printer.PrinterStatus
-import com.zebra.sdk.printer.SGD
-import com.zebra.sdk.printer.ZebraPrinter
-import com.zebra.sdk.printer.ZebraPrinterFactory
-import com.zebra.sdk.printer.ZebraPrinterLanguageUnknownException
-import com.zebra.sdk.printer.ZebraPrinterLinkOs
-
-import java.io.BufferedReader
+import android.widget.*
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
-import java.io.InputStream
-import java.io.InputStreamReader
 import java.text.SimpleDateFormat
-import java.util.ArrayList
-import java.util.Arrays
-import java.util.Calendar
-import java.util.HashMap
-import java.util.HashSet
-import java.util.Locale
+import java.util.*
+import java.util.Arrays.asList
 
 class MainActivity : AppCompatActivity() {
 
@@ -88,11 +51,22 @@ class MainActivity : AppCompatActivity() {
 
     private val mEntries = ArrayList<AdapterEntry>()
 
+    private val mAdapter: ViewAdapter<AdapterEntry> = object : ViewAdapter<AdapterEntry>(mEntries) {
+
+        override fun getLayoutId(position: Int, obj: AdapterEntry): Int {
+            return R.layout.row
+        }
+
+        override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
+            return ViewHolder(view)
+        }
+
+    }
+
     private val mDbHelper: IdEntryDbHelper = IdEntryDbHelper(this)
 
     private var mDrawerToggle: ActionBarDrawerToggle? = null
 
-    private var focusedTextView: View? = null
 
     private var mNameMap: MutableMap<String, String>? = null
 
@@ -181,6 +155,10 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(api = Build.VERSION_CODES.CUPCAKE)
     private fun initializeUIVariables() {
 
+        mRecyclerView = findViewById(R.id.recyclerView) as RecyclerView
+        mRecyclerView.adapter = mAdapter
+        mRecyclerView.layoutManager = LinearLayoutManager(this)
+
         supportActionBar?.let {
             it.title = "Intercross"
             it.themedContext
@@ -188,31 +166,30 @@ class MainActivity : AppCompatActivity() {
             it.setHomeButtonEnabled(true)
         }
 
-        val nvDrawer = findViewById(R.id.nvView) as NavigationView
+        mNavView = findViewById(R.id.nvView) as NavigationView
 
         // Setup drawer view
-        setupDrawerContent(nvDrawer)
+        setupDrawerContent(mNavView)
         setupDrawer()
 
-        val maleEditText = findViewById(R.id.editTextMale) as EditText
-        val femaleEditText = findViewById(R.id.editTextFemale) as EditText
-        val crossEditText = findViewById(R.id.editTextCross) as EditText
+        mMaleEditText = findViewById(R.id.editTextMale) as EditText
+        mFemaleEditText = findViewById(R.id.editTextFemale) as EditText
+        mCrossEditText = findViewById(R.id.editTextCross) as EditText
         val saveButton = findViewById(R.id.saveButton) as Button
 
         //single text watcher class to check if all fields are non-empty to enable the save button
         val emptyGuard = object : TextWatcher {
+
             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
 
             }
 
             override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
-                if (maleEditText.text.length != 0
-                        && femaleEditText.text.length != 0
-                        && crossEditText.text.length != 0) {
-                    saveButton.isEnabled = true
-                } else {
-                    saveButton.isEnabled = false
-                }
+
+                saveButton.isEnabled = mMaleEditText.text.isNotEmpty()
+                        && mFemaleEditText.text.isNotEmpty()
+                        && mCrossEditText.text.isNotEmpty()
+
             }
 
             override fun afterTextChanged(editable: Editable) {
@@ -220,63 +197,50 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        val focusChanged = View.OnFocusChangeListener { view, b -> focusedTextView = view }
+        mMaleEditText.addTextChangedListener(emptyGuard)
+        mFemaleEditText.addTextChangedListener(emptyGuard)
+        mCrossEditText.addTextChangedListener(emptyGuard)
 
-        maleEditText.addTextChangedListener(emptyGuard)
-        femaleEditText.addTextChangedListener(emptyGuard)
-        crossEditText.addTextChangedListener(emptyGuard)
-
-        crossEditText.setOnEditorActionListener(TextView.OnEditorActionListener { textView, i, keyEvent ->
+        mCrossEditText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
             if (i == EditorInfo.IME_ACTION_DONE) {
                 saveToDB()
-                focusedTextView = femaleEditText
-                focusedTextView!!.requestFocus()
+                mFemaleEditText.requestFocus()
                 return@OnEditorActionListener true
             }
             false
         })
 
-        maleEditText.onFocusChangeListener = focusChanged
-        femaleEditText.onFocusChangeListener = focusChanged
-        crossEditText.onFocusChangeListener = focusChanged
-
         saveButton.isEnabled = false
         saveButton.setOnClickListener {
             saveToDB()
-            focusedTextView = femaleEditText
-            focusedTextView!!.requestFocus()
+            mFemaleEditText.requestFocus()
+
         }
 
         (findViewById(R.id.clearButton) as Button).setOnClickListener {
-            (findViewById(R.id.editTextCross) as EditText).setText("")
-            (findViewById(R.id.editTextMale) as EditText).setText("")
-            (findViewById(R.id.editTextFemale) as EditText).setText("")
-            focusedTextView = femaleEditText
-            focusedTextView!!.requestFocus()
+            mCrossEditText.setText("")
+            mMaleEditText.setText("")
+            mFemaleEditText.setText("")
+            mFemaleEditText.requestFocus()
+
         }
 
-        focusedTextView = femaleEditText
-        focusedTextView!!.requestFocus()
+        mFemaleEditText.requestFocus()
     }
 
     private fun saveToDB() {
 
-        val maleEditText = findViewById(R.id.editTextMale) as EditText
-        val femaleEditText = findViewById(R.id.editTextFemale) as EditText
-        val crossEditText = findViewById(R.id.editTextCross) as EditText
-
-        if (maleEditText.text.length != 0
-                && femaleEditText.text.length != 0
-                && crossEditText.text.length != 0) {
+        if (mMaleEditText.text.isNotEmpty() && mFemaleEditText.text.isNotEmpty()
+                && mCrossEditText.text.isNotEmpty()) {
 
             //database update
             val db = mDbHelper.writableDatabase
 
             val entry = ContentValues()
 
-            entry.put("male", maleEditText.text.toString())
-            entry.put("female", femaleEditText.text.toString())
-            entry.put("cross_id", crossEditText.text.toString())
+            entry.put("male", mMaleEditText.text.toString())
+            entry.put("female", mFemaleEditText.text.toString())
+            entry.put("cross_id", mCrossEditText.text.toString())
 
             val c = Calendar.getInstance()
             val sdf = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault())
@@ -290,9 +254,11 @@ class MainActivity : AppCompatActivity() {
             db.insert("INTERCROSS", null, entry)
 
             //clear fields
-            maleEditText.text.clear()
-            femaleEditText.text.clear()
-            crossEditText.text.clear()
+            mMaleEditText.text.clear()
+            mFemaleEditText.text.clear()
+            mCrossEditText.text.clear()
+
+            mFemaleEditText.requestFocus()
 
             loadSQLToLocal()
         }
@@ -308,10 +274,11 @@ class MainActivity : AppCompatActivity() {
             val cursor = db.query(IdEntryContract.IdEntry.TABLE_NAME, null,
                     null, null, null, null, null)
 
-            val entry = AdapterEntry()
-
             if (cursor.moveToFirst()) {
                 do {
+
+                    val entry = AdapterEntry()
+
                     cursor.columnNames.forEach { header ->
                         header?.let {
 
@@ -319,9 +286,11 @@ class MainActivity : AppCompatActivity() {
                                     cursor.getColumnIndexOrThrow(it)) ?: String()
 
                             when (it) {
-                                "cross_id" -> entry.first = colVal
-                                "timestamp" -> entry.second = colVal.split(" ".toRegex())
-                                        .dropLastWhile({ token -> token.isEmpty() }).toTypedArray()[0]
+                                IdEntryContract.IdEntry.COLUMN_NAME_ID -> entry.id = colVal
+                                IdEntryContract.IdEntry.COLUMN_NAME_CROSS -> entry.first = colVal
+                                IdEntryContract.IdEntry.COLUMN_NAME_DATE -> entry.second = colVal
+                                        .split(" ".toRegex()).dropLastWhile(
+                                                { token -> token.isEmpty() }).toTypedArray()[0]
                             }
                         }
                     }
@@ -338,7 +307,7 @@ class MainActivity : AppCompatActivity() {
 
         db.close()
 
-        buildListView()
+        mAdapter.notifyDataSetChanged()
     }
 
     private fun askUserExportFileName() {
@@ -471,21 +440,26 @@ class MainActivity : AppCompatActivity() {
 
                 //barcode text response from Zebra intent
                 if (intent.hasExtra(IntercrossConstants.CAMERA_RETURN_ID)) {
-                    if (focusedTextView == null) {
-                        focusedTextView = findViewById(R.id.editTextMale)
 
+                    asList(mFemaleEditText, mMaleEditText, mCrossEditText).forEach iter@ { editText ->
+                        editText?.let {
+                            when(editText.hasFocus()) {
+                                true -> {
+                                    editText.setText(intent.getStringExtra(IntercrossConstants.CAMERA_RETURN_ID))
+                                    when(editText) {
+                                        mFemaleEditText -> mMaleEditText.requestFocus()
+                                        mMaleEditText -> mCrossEditText.requestFocus()
+                                        mCrossEditText -> {
+                                            saveToDB()
+                                        }
+                                        else -> Log.d("Focus", "Unexpected request focus.")
+                                    }
+                                    return
+                                }
+                                false -> return@iter
+                            }
+                        }
                     }
-                    (focusedTextView as EditText)
-                            .setText(intent.getStringExtra(IntercrossConstants.CAMERA_RETURN_ID))
-
-                    if (focusedTextView === findViewById(R.id.editTextMale)) {
-                        focusedTextView = findViewById(R.id.editTextFemale)
-                    } else if (focusedTextView === findViewById(R.id.editTextFemale)) {
-                        focusedTextView = findViewById(R.id.editTextCross)
-                    } else {
-                        focusedTextView = findViewById(R.id.editTextMale)
-                    }
-                    focusedTextView!!.requestFocus()
                 }
             }
         }
@@ -576,46 +550,35 @@ class MainActivity : AppCompatActivity() {
         */
     }
 
-    inner class ViewHolder internal constructor(itemView: RecyclerView) : RecyclerView.ViewHolder(itemView) {
-        internal var firstText: TextView
-        internal var secondText: TextView
+    inner class ViewHolder internal constructor(itemView: View) :
+            RecyclerView.ViewHolder(itemView), ViewAdapter.Binder<AdapterEntry>, View.OnClickListener {
+
+        private var entry: AdapterEntry = AdapterEntry()
+
+        private var firstText: TextView = itemView.findViewById(R.id.firstTextView) as TextView
+        private var secondText: TextView = itemView.findViewById(R.id.secondTextView) as TextView
 
         init {
-            firstText = itemView.findViewById(R.id.firstTextView) as TextView
-            secondText = itemView.findViewById(R.id.secondTextView) as TextView
-        }
-    }
-
-    private fun buildListView() {
-
-        val recyclerView = findViewById(R.id.crossList) as RecyclerView
-
-        recyclerView.layoutManager = LinearLayoutManager(this)
-
-        val adapter = object : ViewAdapter<AdapterEntry>(mEntries) {
-
-            override fun getLayoutId(position: Int, obj: AdapterEntry): Int {
-                return R.layout.row
-            }
-
-            override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
-                return ViewHolder(view as RecyclerView)
-            }
-
+            itemView.setOnClickListener(this)
         }
 
-        recyclerView.adapter = adapter
+        override fun bind(data: AdapterEntry) {
 
-        recyclerView.adapter.notifyDataSetChanged()
-    }
+            this.entry = data
+            firstText.text = data.first
+            secondText.text = data.second
+        }
 
-    private fun clearListView() {
+        override fun onClick(v: View?) {
+            v?.let {
 
-        val idTable = findViewById(R.id.crossList) as ListView
-        val adapter = ArrayAdapter<String>(this, org.phenoapps.intercross.R.layout.row)
+                val intent = Intent(this@MainActivity, AuxValueInputActivity::class.java)
 
-        idTable.adapter = adapter
-        adapter.notifyDataSetChanged()
+                intent.putExtra("id", entry.id)
+
+                startActivity(intent)
+            }
+        }
     }
 
     private fun setupDrawer() {
@@ -659,8 +622,7 @@ class MainActivity : AppCompatActivity() {
             org.phenoapps.intercross.R.id.nav_export -> askUserExportFileName()
             org.phenoapps.intercross.R.id.nav_about -> showAboutDialog()
             org.phenoapps.intercross.R.id.nav_intro -> {
-                val intro_intent = Intent(this@MainActivity, IntroActivity::class.java)
-                runOnUiThread { startActivity(intro_intent) }
+
             }
             org.phenoapps.intercross.R.id.nav_manage_headers -> {
                 val nav_manage_headers = Intent(this@MainActivity, ManageHeadersActivity::class.java)
@@ -729,16 +691,6 @@ class MainActivity : AppCompatActivity() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         mDrawerToggle!!.onConfigurationChanged(newConfig)
-    }
-
-    private fun launchIntro() {
-
-        Thread(Runnable {
-            //  Launch app intro
-            val i = Intent(this@MainActivity, IntroActivity::class.java)
-
-            runOnUiThread { startActivity(i) }
-        }).start()
     }
 
     public override fun onDestroy() {

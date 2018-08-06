@@ -7,7 +7,7 @@
     android:padding="10dp">
 
     <TextView
-        android:id="@+id/headerTextValue"
+        android:id="@+id/firstView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/headerValueEditText"
+        android:id="@+id/secondView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -26,8 +26,9 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:textSize="20sp"
+        android:hint="Input value here."
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/headerTextValue"
+        app:layout_constraintStart_toEndOf="@+id/firstView"
         app:layout_constraintTop_toTopOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

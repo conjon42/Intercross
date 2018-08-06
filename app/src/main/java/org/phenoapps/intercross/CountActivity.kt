@@ -106,7 +106,7 @@ class CountActivity : AppCompatActivity() {
 
     private fun buildListView(crossIds: ArrayList<AdapterEntry>) {
 
-        val recyclerView = findViewById(R.id.crossList) as RecyclerView
+        val recyclerView = findViewById(R.id.recyclerView) as RecyclerView
 
         recyclerView.layoutManager = LinearLayoutManager(this)
 

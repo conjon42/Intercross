@@ -58,7 +58,8 @@ internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DAT
 
         try {
             val table = IdEntryContract.IdEntry.TABLE_NAME
-            val cursor = db.query(table, null, null, null, null, null, null)
+            val cursor = db.query(table, null, null, null,
+                    null, null, null)
 
             if (cursor.moveToFirst()) {
                 do {

@@ -17,16 +17,14 @@ import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 
 import com.zebra.sdk.comm.BluetoothConnection
 import com.zebra.sdk.comm.ConnectionException
@@ -46,126 +44,139 @@ import java.util.HashSet
 //TODO create bitmap preview of barcode print
 class AuxValueInputActivity : AppCompatActivity() {
 
-    private var mTimestamp: String? = null
-    private var mCrossId: String? = null
+    private lateinit var mRecyclerView: RecyclerView
+    private lateinit var mIdTextView: TextView
+    private lateinit var mTimeTextView: TextView
+    private lateinit var mUpdateButton: Button
 
-    private var mDbHelper: IdEntryDbHelper? = null
+    private val mEntries = ArrayList<AdapterEntry>()
 
-    private val mPrefListener: SharedPreferences.OnSharedPreferenceChangeListener? = null
-
-    private val mCrossIds: ArrayList<AdapterEntry>? = null
-
-    private val mDrawerToggle: ActionBarDrawerToggle? = null
-
-    private val focusedTextView: View? = null
-
-    class EditTextAdapterEntry internal constructor(var editText: EditText, var headerTextValue: String)
+    private val mDbHelper: IdEntryDbHelper = IdEntryDbHelper(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
 
-        val crossId = intent.getStringExtra("crossId")
-        // String[] headers = getIntent().getStringArrayExtra("headers");
+        setContentView(R.layout.activity_manage_values)
 
-        val prefs = getSharedPreferences("Settings", Context.MODE_PRIVATE)
+        mRecyclerView = findViewById(R.id.recyclerView) as RecyclerView
+        mIdTextView = findViewById(R.id.textView2) as TextView
+        mTimeTextView = findViewById(R.id.textView3) as TextView
+        mUpdateButton = findViewById(R.id.button) as Button
 
-        mCrossId = crossId
+        mRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        val headers = prefs.getStringSet(SettingsActivity.HEADER_SET, HashSet()).toTypedArray<String>()
-        val recyclerView = RecyclerView(this)
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        val key = intent.getStringExtra("id")
 
-        mDbHelper = IdEntryDbHelper(this)
+        key?.let {
 
-        val db = mDbHelper!!.writableDatabase
-        val colMap = HashMap<String, String>()
+            var timestamp = String()
+            var crossId = String()
 
-        try {
-            val table = IdEntryContract.IdEntry.TABLE_NAME
+            val prefs = getSharedPreferences("Settings", Context.MODE_PRIVATE)
 
-            val cursor = db.query(table, headers, "cross_id=?", arrayOf(crossId), null, null, null)
+            val headers = prefs.getStringSet(SettingsActivity.HEADER_SET, HashSet()).toTypedArray<String>()
 
-            if (cursor.moveToFirst()) {
-                do {
-                    val headerCols = cursor.columnNames
+            val db = mDbHelper.writableDatabase
 
-                    for (header in headerCols) {
+            try {
 
+                val cursor = db.query(IdEntryContract.IdEntry.TABLE_NAME, null,
+                        "_id=?", arrayOf(it), null, null, null)
 
-                        val `val` = cursor.getString(
-                                cursor.getColumnIndexOrThrow(header)
-                        )
+                if (cursor.moveToFirst()) {
 
-                        if (header == "timestamp") mTimestamp = `val`
+                    do {
 
+                        cursor.columnNames.forEach iter@ { header ->
 
-                        colMap[header] = `val`
+                            header?.let { head ->
 
-                    }
+                                val colVal: String =
+                                        cursor.getString(cursor.getColumnIndexOrThrow(head)) ?: "None"
 
-                } while (cursor.moveToNext())
+                                when (head) {
+                                    IdEntryContract.IdEntry.COLUMN_NAME_DATE -> timestamp = colVal
+                                    IdEntryContract.IdEntry.COLUMN_NAME_CROSS -> crossId = colVal
+                                }
 
+                                when (head in headers) {
+                                    true -> mEntries.add(AdapterEntry(head, colVal, it))
+                                    false -> return@iter
+                                }
+                            }
+                        }
+
+                    } while (cursor.moveToNext())
+
+                }
+
+                cursor.close()
+
+            } catch (e: SQLiteException) {
+                e.printStackTrace()
             }
-            cursor.close()
 
-        } catch (e: SQLiteException) {
-            e.printStackTrace()
-        }
+            val adapter = object : ViewAdapter<AdapterEntry>(mEntries.toList()) {
 
-        val entries = ArrayList<EditTextAdapterEntry>()
-        val editTexts = ArrayList<EditText>()
+                override fun getLayoutId(position: Int, obj: AdapterEntry): Int {
+                    return R.layout.value_input_row
+                }
 
-        for (header in headers) {
-            val editText = EditText(this)
-            editText.setText(colMap[header])
-            entries.add(EditTextAdapterEntry(editText, header))
-            editTexts.add(editText)
-        }
-
-        /*val adapter = object : ViewAdapter<EditTextAdapterEntry>(entries.toList()) {
-            override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
-                RecyclerView.ViewHolder {
-                    return RecyclerView.ViewHolder(view)
+                override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
+                    return ViewHolder(view)
                 }
             }
 
-            override fun getLayoutId(position: Int, obj: EditTextAdapterEntry): Int {
-                return R.layout.value_input_row
-            }
+            mRecyclerView.adapter = adapter
 
-        }
-        recyclerView.adapter = adapter*/
+            mIdTextView.text = "Cross ID: $crossId"
+            mTimeTextView.text = "Timestamp: $timestamp"
 
-        val view = LinearLayout(this)
-        view.orientation = LinearLayout.VERTICAL
-        view.addView(recyclerView)
+            mUpdateButton.setOnClickListener { _ ->
 
-        val tv = TextView(this)
-        tv.textSize = 24.0f
-        tv.text = "Cross ID: $crossId"
-        val tv2 = TextView(this)
-        tv2.textSize = 24.0f
-        tv2.text = "Timestamp: " + mTimestamp!!
-        view.addView(tv)
-        view.addView(tv2)
-
-        val submitButton = Button(this)// = entry.editText;
-        submitButton.text = "Update"
-        submitButton.setOnClickListener {
-            var next = 0
-
-            for (header in headers) {
-                db.execSQL("UPDATE INTERCROSS SET " +
-                        header + " = '" + editTexts[next++].text.toString() + //adapter.getItem(next++).editText.getText().toString() + //entries.get(next++).editText.getText() +
-
-                        "' WHERE cross_id = '" + crossId + "'")
+                db.beginTransaction()
+                try {
+                    mEntries.forEach { entry ->
+                        db.execSQL("UPDATE INTERCROSS SET ${entry.first} = '${entry.second}' " +
+                                "WHERE _id = '$it'")
+                    }
+                    db.setTransactionSuccessful()
+                } catch (e: SQLiteException) {
+                    e.printStackTrace()
+                }
+                db.endTransaction()
             }
         }
+    }
 
-        view.addView(submitButton)
-        setContentView(view)
+    inner class ViewHolder internal constructor(itemView: View) :
+            RecyclerView.ViewHolder(itemView), ViewAdapter.Binder<AdapterEntry> {
 
+        private var firstText: TextView = itemView.findViewById(R.id.firstView) as TextView
+        private var secondText: EditText = itemView.findViewById(R.id.secondView) as EditText
+        private var mEntry: AdapterEntry = AdapterEntry()
+
+        init {
+            secondText.addTextChangedListener(object : TextWatcher {
+                override fun afterTextChanged(s: Editable?) {
+                    mEntries[mEntries.indexOf(mEntry)].second = secondText.text.toString()
+                }
+
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                }
+
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                }
+
+            })
+        }
+
+        override fun bind(data: AdapterEntry) {
+            mEntry = data
+            firstText.text = data.first
+            secondText.setText(data.second)
+        }
     }
 
     override fun onCreateOptionsMenu(m: Menu): Boolean {
@@ -175,7 +186,7 @@ class AuxValueInputActivity : AppCompatActivity() {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    /*override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
         when (item.itemId) {
             R.id.action_print ->
@@ -240,7 +251,7 @@ class AuxValueInputActivity : AppCompatActivity() {
             else -> return super.onOptionsItemSelected(item)
         }
         return true
-    }
+    }*/
 
     @Throws(ConnectionException::class)
     private fun getPrinterStatus(connection: BluetoothConnection) {
