@@ -1,44 +1,22 @@
 package org.phenoapps.intercross
 
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
-import android.database.Cursor
-import android.database.sqlite.SQLiteDatabase
-import android.database.sqlite.SQLiteException
-import android.graphics.BitmapFactory
-import android.os.AsyncTask
 import android.os.Bundle
-import android.support.v4.view.GravityCompat
-import android.support.v4.widget.DrawerLayout
-import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
-import android.widget.*
-
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
 import com.zebra.sdk.comm.BluetoothConnection
 import com.zebra.sdk.comm.ConnectionException
-import com.zebra.sdk.graphics.internal.ZebraImageAndroid
-import com.zebra.sdk.printer.PrinterStatus
 import com.zebra.sdk.printer.SGD
-import com.zebra.sdk.printer.ZebraPrinter
-import com.zebra.sdk.printer.ZebraPrinterFactory
-import com.zebra.sdk.printer.ZebraPrinterLanguageUnknownException
-import com.zebra.sdk.printer.ZebraPrinterLinkOs
-
-import java.util.ArrayList
-import java.util.HashMap
-import java.util.HashSet
+import java.util.*
 
 //TODO create separate file for async bluetooth task
 //TODO create bitmap preview of barcode print
@@ -66,87 +44,41 @@ class AuxValueInputActivity : AppCompatActivity() {
 
         mRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        val key = intent.getStringExtra("id")
+        val key = intent.getIntExtra("id", -1)
 
-        key?.let {
+        val prefs = getSharedPreferences("Settings", Context.MODE_PRIVATE)
 
-            var timestamp = String()
-            var crossId = String()
+        val headers = prefs.getStringSet(SettingsActivity.HEADER_SET, HashSet()).toTypedArray<String>()
 
-            val prefs = getSharedPreferences("Settings", Context.MODE_PRIVATE)
+        val output: Triple<ArrayList<AdapterEntry>, String, String> =
+                mDbHelper.getUserInputHeaders(headers, key)
 
-            val headers = prefs.getStringSet(SettingsActivity.HEADER_SET, HashSet()).toTypedArray<String>()
+        output.first.forEach { entry ->
+            mEntries.add(entry)
+        }
 
-            val db = mDbHelper.writableDatabase
+        val crossId = output.third
+        val timestamp = output.second
 
-            try {
+        val adapter = object : ViewAdapter<AdapterEntry>(mEntries) {
 
-                val cursor = db.query(IdEntryContract.IdEntry.TABLE_NAME, null,
-                        "_id=?", arrayOf(it), null, null, null)
-
-                if (cursor.moveToFirst()) {
-
-                    do {
-
-                        cursor.columnNames.forEach iter@ { header ->
-
-                            header?.let { head ->
-
-                                val colVal: String =
-                                        cursor.getString(cursor.getColumnIndexOrThrow(head)) ?: "None"
-
-                                when (head) {
-                                    IdEntryContract.IdEntry.COLUMN_NAME_DATE -> timestamp = colVal
-                                    IdEntryContract.IdEntry.COLUMN_NAME_CROSS -> crossId = colVal
-                                }
-
-                                when (head in headers) {
-                                    true -> mEntries.add(AdapterEntry(head, colVal, it))
-                                    false -> return@iter
-                                }
-                            }
-                        }
-
-                    } while (cursor.moveToNext())
-
-                }
-
-                cursor.close()
-
-            } catch (e: SQLiteException) {
-                e.printStackTrace()
+            override fun getLayoutId(position: Int, obj: AdapterEntry): Int {
+                return R.layout.value_input_row
             }
 
-            val adapter = object : ViewAdapter<AdapterEntry>(mEntries.toList()) {
-
-                override fun getLayoutId(position: Int, obj: AdapterEntry): Int {
-                    return R.layout.value_input_row
-                }
-
-                override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
-                    return ViewHolder(view)
-                }
+            override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
+                return ViewHolder(view)
             }
+        }
 
-            mRecyclerView.adapter = adapter
+        mRecyclerView.adapter = adapter
 
-            mIdTextView.text = "Cross ID: $crossId"
-            mTimeTextView.text = "Timestamp: $timestamp"
+        mIdTextView.text = "Cross ID: $crossId"
+        mTimeTextView.text = "Timestamp: $timestamp"
 
-            mUpdateButton.setOnClickListener { _ ->
+        mUpdateButton.setOnClickListener { _ ->
 
-                db.beginTransaction()
-                try {
-                    mEntries.forEach { entry ->
-                        db.execSQL("UPDATE INTERCROSS SET ${entry.first} = '${entry.second}' " +
-                                "WHERE _id = '$it'")
-                    }
-                    db.setTransactionSuccessful()
-                } catch (e: SQLiteException) {
-                    e.printStackTrace()
-                }
-                db.endTransaction()
-            }
+            mDbHelper.updateUserColumns(key, mEntries)
         }
     }
 

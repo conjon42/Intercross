@@ -13,7 +13,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.support.annotation.RequiresApi
 import android.support.design.widget.NavigationView
 import android.support.v4.app.ActivityCompat
 import android.support.v4.view.GravityCompat
@@ -32,7 +31,10 @@ import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -67,7 +69,6 @@ class MainActivity : AppCompatActivity() {
 
     private var mDrawerToggle: ActionBarDrawerToggle? = null
 
-
     private var mNameMap: MutableMap<String, String>? = null
 
     private val isExternalStorageWritable: Boolean
@@ -87,7 +88,6 @@ class MainActivity : AppCompatActivity() {
             return false
         }
 
-    @RequiresApi(api = Build.VERSION_CODES.CUPCAKE)
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -152,7 +152,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.CUPCAKE)
     private fun initializeUIVariables() {
 
         mRecyclerView = findViewById(R.id.recyclerView) as RecyclerView
@@ -233,9 +232,6 @@ class MainActivity : AppCompatActivity() {
         if (mMaleEditText.text.isNotEmpty() && mFemaleEditText.text.isNotEmpty()
                 && mCrossEditText.text.isNotEmpty()) {
 
-            //database update
-            val db = mDbHelper.writableDatabase
-
             val entry = ContentValues()
 
             entry.put("male", mMaleEditText.text.toString())
@@ -251,7 +247,7 @@ class MainActivity : AppCompatActivity() {
 
             entry.put("person", "not implemented.")
 
-            db.insert("INTERCROSS", null, entry)
+            mDbHelper.insertEntry(entry)
 
             //clear fields
             mMaleEditText.text.clear()
@@ -269,43 +265,9 @@ class MainActivity : AppCompatActivity() {
 
         mEntries.clear()
 
-        val db = mDbHelper.readableDatabase
-        try {
-            val cursor = db.query(IdEntryContract.IdEntry.TABLE_NAME, null,
-                    null, null, null, null, null)
-
-            if (cursor.moveToFirst()) {
-                do {
-
-                    val entry = AdapterEntry()
-
-                    cursor.columnNames.forEach { header ->
-                        header?.let {
-
-                            val colVal = cursor.getString(
-                                    cursor.getColumnIndexOrThrow(it)) ?: String()
-
-                            when (it) {
-                                IdEntryContract.IdEntry.COLUMN_NAME_ID -> entry.id = colVal
-                                IdEntryContract.IdEntry.COLUMN_NAME_CROSS -> entry.first = colVal
-                                IdEntryContract.IdEntry.COLUMN_NAME_DATE -> entry.second = colVal
-                                        .split(" ".toRegex()).dropLastWhile(
-                                                { token -> token.isEmpty() }).toTypedArray()[0]
-                            }
-                        }
-                    }
-
-                    mEntries.add(entry)
-
-                } while (cursor.moveToNext())
-            }
-            cursor.close()
-
-        } catch (e: SQLiteException) {
-            e.printStackTrace()
+        mDbHelper.getMainPageEntries().forEach { entry ->
+            mEntries.add(entry)
         }
-
-        db.close()
 
         mAdapter.notifyDataSetChanged()
     }
@@ -313,11 +275,13 @@ class MainActivity : AppCompatActivity() {
     private fun askUserExportFileName() {
 
         val builder = AlertDialog.Builder(this)
+
         builder.setTitle("Choose name for exported file.")
+
         val input = EditText(this)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CUPCAKE) {
-            input.inputType = InputType.TYPE_CLASS_TEXT
-        }
+
+        input.inputType = InputType.TYPE_CLASS_TEXT
+
         builder.setView(input)
 
         builder.setPositiveButton("Export") { dialog, which ->
@@ -328,9 +292,10 @@ class MainActivity : AppCompatActivity() {
                         val dir = File(Environment.getExternalStorageDirectory().path + "/Intercross")
                         val output = File(dir, "$value.csv")
                         val fstream = FileOutputStream(output)
-                        val db = mDbHelper!!.readableDatabase
-                        val table = IdEntryContract.IdEntry.TABLE_NAME
-                        val cursor = db.query(table, null, null, null, null, null, null)
+                        val db = mDbHelper.readableDatabase
+                        val cursor = db.query(IdEntryContract.IdEntry.TABLE_NAME,
+                                null, null, null,
+                                null, null, null)
                         //final Cursor cursor = db.rawQuery("SElECT * FROM VERIFY", null);
 
                         //first write header line
@@ -513,43 +478,6 @@ class MainActivity : AppCompatActivity() {
         }*/
     }
 
-    private fun loadFileToSQL(data: Uri) {
-        /*
-        val db = mDbHelper!!.writableDatabase
-
-        db.execSQL(IdEntryContract.SQL_DELETE_ENTRIES)
-
-        db.execSQL(IdEntryContract.SQL_CREATE_ENTRIES)
-
-        try {
-            val `is` = contentResolver.openInputStream(data)
-            if (`is` != null) {
-                val br = BufferedReader(InputStreamReader(`is`))
-                val headerLine = br.readLine().split(",".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
-                var temp: String? = null
-                val entry = ContentValues()
-                db.beginTransaction()
-                while ((temp = br.readLine()) != null) {
-                    val row = temp!!.split(",".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
-                    val size = row.size
-                    for (i in 0 until size) {
-                        entry.put(headerLine[i], row[i])
-                    }
-                    val newRowId = db.insert("INTERCROSS", null, entry)
-                    entry.clear()
-                }
-                db.setTransactionSuccessful()
-                db.endTransaction()
-                br.close()
-            }
-        } catch (e: FileNotFoundException) {
-            e.printStackTrace()
-        } catch (ioe: IOException) {
-            ioe.printStackTrace()
-        }
-        */
-    }
-
     inner class ViewHolder internal constructor(itemView: View) :
             RecyclerView.ViewHolder(itemView), ViewAdapter.Binder<AdapterEntry>, View.OnClickListener {
 
@@ -587,17 +515,15 @@ class MainActivity : AppCompatActivity() {
         mDrawerToggle = object : ActionBarDrawerToggle(this, dl,
                 org.phenoapps.intercross.R.string.drawer_open, org.phenoapps.intercross.R.string.drawer_close) {
 
-            override fun onDrawerOpened(drawerView: View?) {
+            override fun onDrawerOpened(drawerView: View) {
                 val view = this@MainActivity.currentFocus
                 if (view != null) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CUPCAKE) {
-                        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                        imm.hideSoftInputFromWindow(view.windowToken, 0)
-                    }
+                    val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(view.windowToken, 0)
                 }
             }
 
-            override fun onDrawerClosed(view: View?) {}
+            override fun onDrawerClosed(view: View) {}
 
         }
 

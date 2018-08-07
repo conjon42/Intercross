@@ -56,7 +56,7 @@ class ScanActivity : AppCompatActivity() {
         barcodeScannerView!!.decodeContinuous(callback)
 
         if (supportActionBar != null) {
-            supportActionBar!!.setTitle(null)
+            supportActionBar!!.title = null
             supportActionBar!!.themedContext
             supportActionBar!!.setDisplayHomeAsUpEnabled(true)
             supportActionBar!!.setHomeButtonEnabled(true)

@@ -1,33 +1,36 @@
 package org.phenoapps.intercross
 
 import android.content.Context
-import android.content.SharedPreferences
-import android.database.Cursor
-import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
-import android.preference.PreferenceManager
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.TextView
-import android.widget.Toast
-
-import java.util.ArrayList
-import java.util.Arrays
-import java.util.HashSet
+import android.widget.*
+import java.util.*
 
 class ManageHeadersActivity : AppCompatActivity() {
 
-    private var mHeaderIds: ArrayList<String>? = null
+    private lateinit var mButton: Button
+    private lateinit var mEditText: EditText
+    private lateinit var mRecyclerView: RecyclerView
 
+    private val mEntries = ArrayList<String>()
 
-    private var mDbHelper: IdEntryDbHelper? = null
+    private val mAdapter: ViewAdapter<String> = object : ViewAdapter<String>(mEntries) {
+
+        override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
+            return ViewHolder(view)
+        }
+
+        override fun getLayoutId(position: Int, obj: String): Int {
+            return R.layout.row
+        }
+    }
+
+    private val mDbHelper: IdEntryDbHelper = IdEntryDbHelper(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -35,46 +38,51 @@ class ManageHeadersActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_headers)
 
-        mDbHelper = IdEntryDbHelper(this)
-
         val sharedPref = getSharedPreferences("Settings", Context.MODE_PRIVATE)
+
         val headerList = sharedPref.getStringSet(SettingsActivity.HEADER_SET, HashSet())
 
-        mHeaderIds = ArrayList()
+        if (headerList.isNotEmpty()) {
 
-        if (!headerList.isEmpty()) {
-
-            for (header in headerList) {
-                mHeaderIds!!.add(header)
+            headerList.forEach { header ->
+                header?.let {
+                    mEntries.add(header)
+                }
             }
-
-            //buildListView()
-
         }
-        val headerInputButton = findViewById(R.id.addHeaderButton) as Button
 
-        headerInputButton.setOnClickListener {
-            val newHeaderName = (findViewById(R.id.editTextHeader) as EditText).text.toString()
+        mButton = findViewById(R.id.addHeaderButton) as Button
+        mEditText = findViewById(R.id.editTextHeader) as EditText
+        mRecyclerView = findViewById(R.id.recyclerView) as RecyclerView
 
-            if (!mHeaderIds!!.contains(newHeaderName)) {
+        mRecyclerView.adapter = mAdapter
 
-                mHeaderIds!!.add(newHeaderName)
+        mRecyclerView.layoutManager = LinearLayoutManager(this)
+
+        mButton.setOnClickListener {
+
+            val newHeaderName = mEditText.text.toString()
+
+            if (!mEntries.contains(newHeaderName)) {
+
+                mEntries.add(newHeaderName)
 
                 val editor = sharedPref.edit()
 
-                editor.putStringSet(SettingsActivity.HEADER_SET, HashSet(mHeaderIds!!))
+                editor.putStringSet(SettingsActivity.HEADER_SET, HashSet(mEntries))
 
                 editor.apply()
 
-                //buildListView()
+                val db = mDbHelper.writableDatabase
 
-                val db = mDbHelper!!.writableDatabase
-
-                db.execSQL("ALTER TABLE INTERCROSS ADD COLUMN $newHeaderName TEXT DEFAULT '';")
-
-                mDbHelper!!.onUpdateColumns(db, mHeaderIds!!.toTypedArray<String>())
+                db.execSQL("ALTER TABLE ${IdEntryContract.IdEntry.TABLE_NAME} " +
+                        "ADD COLUMN $newHeaderName TEXT DEFAULT '';")
 
                 db.close()
+
+                mRecyclerView.adapter.notifyDataSetChanged()
+
+                mEditText.setText("")
 
             } else {
                 Toast.makeText(this@ManageHeadersActivity,
@@ -83,128 +91,127 @@ class ManageHeadersActivity : AppCompatActivity() {
         }
     }
 
-/*
-    override fun onItemClick(view: View, position: Int) {
 
-        Log.d("CLICK", "C")
+    inner class ViewHolder internal constructor(itemView: View) :
+            RecyclerView.ViewHolder(itemView), ViewAdapter.Binder<String>,
+            View.OnClickListener {
 
-        var db = mDbHelper!!.readableDatabase
-        var currentHeaders: Array<String>? = null
-        try {
-            val table = IdEntryContract.IdEntry.TABLE_NAME
-            val cursor = db.query(table, null, null, null, null, null, null)
+        private var firstText: TextView = itemView.findViewById(R.id.firstTextView) as TextView
 
-            if (cursor.moveToFirst()) {
-                do {
-                    currentHeaders = cursor.columnNames
-
-                } while (cursor.moveToNext())
-
-            }
-            cursor.close()
-
-        } catch (e: SQLiteException) {
-            e.printStackTrace()
+        init {
+            itemView.setOnClickListener(this)
         }
 
-        db.close()
-
-        val removedCol = mAdapter!!.getItem(position)
-
-        val updatedHeaders = ArrayList<String>()
-        for (i in currentHeaders!!.indices) {
-            if (currentHeaders[i] != removedCol) {
-                updatedHeaders.add(currentHeaders[i])
-            }
+        override fun bind(data: String) {
+            firstText.text = data
         }
 
-        val prefs = getSharedPreferences("Settings", Context.MODE_PRIVATE)
+        override fun onClick(v: View?) {
 
-        val headerSet = prefs.getStringSet(SettingsActivity.HEADER_SET, HashSet())
+            var db = mDbHelper.readableDatabase
+            var currentHeaders: Array<String>? = null
+            try {
+                val cursor = db.query(IdEntryContract.IdEntry.TABLE_NAME,
+                        null, null, null,
+                        null, null, null)
 
-        headerSet.remove(removedCol)
+                currentHeaders = cursor.columnNames
 
-        val editor = prefs.edit()
+                cursor.close()
 
-        editor.putStringSet(SettingsActivity.HEADER_SET, headerSet)
-
-        //editor.clear();
-
-        editor.apply()
-
-        db = mDbHelper!!.writableDatabase
-
-        db.execSQL("DROP TABLE IF EXISTS INTERCROSS_OLD")
-
-        db.execSQL("ALTER TABLE INTERCROSS RENAME TO INTERCROSS_OLD")
-
-        var SQL_CREATE_ENTRIES = "CREATE TABLE INTERCROSS( "/* + IdEntryContract.IdEntry.COLUMN_NAME_MALE + " TEXT,"
-                        + IdEntryContract.IdEntry.COLUMN_NAME_FEMALE + " TEXT,"
-                        + IdEntryContract.IdEntry.COLUMN_NAME_CROSS + " TEXT,"
-                        + IdEntryContract.IdEntry.COLUMN_NAME_USER + " TEXT,"
-                        + IdEntryContract.IdEntry.COLUMN_NAME_DATE + " TEXT,"
-                        + IdEntryContract.IdEntry.COLUMN_NAME_LOCATION + " TEXT "*/
-
-
-        if (updatedHeaders.size == 0)
-            SQL_CREATE_ENTRIES += ");"
-        else {
-            for (colName in updatedHeaders) {
-                SQL_CREATE_ENTRIES += colName
-                if (updatedHeaders.indexOf(colName) == updatedHeaders.size - 1) {
-                    SQL_CREATE_ENTRIES += " TEXT);"
-                } else
-                    SQL_CREATE_ENTRIES += " TEXT, "
-
+            } catch (e: SQLiteException) {
+                e.printStackTrace()
             }
-        }
-        Log.d("CREATE", SQL_CREATE_ENTRIES)
-        db.execSQL(SQL_CREATE_ENTRIES)
 
-        var SQL_INSERT = "INSERT INTO INTERCROSS ("
+            db.close()
 
-        if (updatedHeaders != null && updatedHeaders.size == 0)
-            SQL_INSERT += ")"
-        else {
-            for (colName in updatedHeaders) {
-                if (colName != "_id") {
-                    SQL_INSERT += colName
-                    if (updatedHeaders.indexOf(colName) == updatedHeaders.size - 1) {
-                        SQL_INSERT += ")"
-                    } else
-                        SQL_INSERT += ","
+            val removedCol = ((v as LinearLayout).getChildAt(0) as TextView).text
 
-                }
-            }
-        }
+            val updatedHeaders = ArrayList<String>()
 
-        SQL_INSERT += "SELECT "
-
-        if (updatedHeaders != null && updatedHeaders.size != 0) {
-            for (colName in updatedHeaders) {
-                if (colName != "_id") {
-                    SQL_INSERT += colName
-                    if (updatedHeaders.indexOf(colName) != updatedHeaders.size - 1) {
-                        SQL_INSERT += ","
+            currentHeaders?.let {
+                currentHeaders.forEach { header ->
+                    when (header != removedCol) {
+                        true -> updatedHeaders.add(header)
                     }
                 }
             }
+
+            val prefs = getSharedPreferences("Settings", Context.MODE_PRIVATE)
+
+            val headerSet = prefs.getStringSet(SettingsActivity.HEADER_SET, HashSet())
+
+            headerSet.remove(removedCol)
+
+            val editor = prefs.edit()
+
+            editor.putStringSet(SettingsActivity.HEADER_SET, headerSet)
+
+            editor.apply()
+
+            db = mDbHelper.writableDatabase
+
+            db.execSQL("DROP TABLE IF EXISTS ${IdEntryContract.IdEntry.TABLE_NAME}_OLD")
+
+            db.execSQL("ALTER TABLE ${IdEntryContract.IdEntry.TABLE_NAME} " +
+                    "RENAME TO ${IdEntryContract.IdEntry.TABLE_NAME}_OLD")
+
+            var sqlCreateEntries = "CREATE TABLE ${IdEntryContract.IdEntry.TABLE_NAME}( "
+
+            when (updatedHeaders.size) {
+                0 -> sqlCreateEntries += ");"
+                else -> {
+                    updatedHeaders.forEach { header ->
+                        sqlCreateEntries += header
+                        when (header) {
+                            updatedHeaders.last() -> sqlCreateEntries += " TEXT);"
+                            else -> sqlCreateEntries += " TEXT, "
+                        }
+                    }
+                }
+            }
+
+            Log.d("CREATE", sqlCreateEntries)
+            db.execSQL(sqlCreateEntries)
+
+            var sqlInsert = "INSERT INTO ${IdEntryContract.IdEntry.TABLE_NAME} ("
+
+            when (updatedHeaders.size) {
+                0 -> sqlInsert += ")"
+                else -> {
+                    updatedHeaders.forEach { header ->
+
+                        sqlInsert += header
+                        when (header == updatedHeaders.last()) {
+                            true -> sqlInsert += ")"
+                            false -> sqlInsert += ","
+                        }
+
+                    }
+                }
+            }
+
+            sqlInsert += "SELECT "
+
+            when (updatedHeaders.size != 0) {
+                true -> updatedHeaders.forEach { header ->
+                    sqlInsert += header
+                    when (header == updatedHeaders.last()) {
+                        false -> sqlInsert += ","
+                        else -> sqlInsert +=
+                                " FROM ${IdEntryContract.IdEntry.TABLE_NAME}_OLD;"
+                    }
+                }
+            }
+
+            Log.d("INSERT", sqlInsert)
+
+            db.execSQL(sqlInsert)
+
+            mEntries.remove(removedCol)
+
+            mAdapter.notifyDataSetChanged()
         }
-
-        SQL_INSERT += " FROM INTERCROSS_OLD;"
-
-        Log.d("INSERT", SQL_INSERT)
-
-        db.execSQL(SQL_INSERT)
-
-
-        mHeaderIds!!.removeAt(position)
-
-        mAdapter!!.notifyDataSetChanged()
-
     }
 
-    override fun onLongItemClick(v: View, position: Int) {
-
-    }*/
 }

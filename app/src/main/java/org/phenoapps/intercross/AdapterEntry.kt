@@ -1,18 +1,16 @@
 package org.phenoapps.intercross
 
-import android.widget.Adapter
-
 class AdapterEntry {
 
     var first: String = String()
 
     var second: String = String()
 
-    var id: String = String()
+    var id: Int = -1
 
     constructor()
 
-    constructor(first: String, second: String, id: String) {
+    constructor(first: String, second: String, id: Int) {
         this.first = first
         this.second = second
         this.id = id
@@ -21,6 +19,6 @@ class AdapterEntry {
     fun clear() {
         first = String()
         second = String()
-        id = String()
+        id = -1
     }
 }
