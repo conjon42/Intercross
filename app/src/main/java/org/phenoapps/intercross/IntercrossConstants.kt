@@ -11,13 +11,21 @@ internal object IntercrossConstants {
     val CAMERA_INTENT_REQ = 102
     val SETTINGS_INTENT_REQ = 103
     val DEFAULT_CONTENT_REQ = 104
+    val MANAGE_HEADERS_REQ = 300
+    val USER_INPUT_HEADERS_REQ = 301
 
     //extras
     val CSV_URI = "org.phenoapps.intercross.CSV_URI"
 
     val LIST_ID_EXTRA = "org.phenoapps.intercross.LIST_ID_EXTRA"
 
+    val COL_ID_KEY = "org.phenoapps.intercross.COL_ID_KEY"
+
     val CAMERA_RETURN_ID = "org.phenoapps.intercross.CAMERA_RETURN_ID"
+
+    val HEADERS = "org.phenoapps.intercross.HEADERS"
+
+    val USER_INPUT_VALUES = "org.phenoapps.intercross.USER_INPUT_VALUES"
 
 
 }

@@ -10,6 +10,11 @@ class AdapterEntry {
 
     constructor()
 
+    constructor(first: String, second: String) {
+        this.first = first
+        this.second = second
+    }
+
     constructor(first: String, second: String, id: Int) {
         this.first = first
         this.second = second

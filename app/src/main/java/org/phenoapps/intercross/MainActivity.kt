@@ -203,7 +203,6 @@ class MainActivity : AppCompatActivity() {
         mCrossEditText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
             if (i == EditorInfo.IME_ACTION_DONE) {
                 saveToDB()
-                mFemaleEditText.requestFocus()
                 return@OnEditorActionListener true
             }
             false
@@ -212,8 +211,6 @@ class MainActivity : AppCompatActivity() {
         saveButton.isEnabled = false
         saveButton.setOnClickListener {
             saveToDB()
-            mFemaleEditText.requestFocus()
-
         }
 
         (findViewById(R.id.clearButton) as Button).setOnClickListener {
@@ -401,6 +398,16 @@ class MainActivity : AppCompatActivity() {
             if (intent != null) {
                 when (requestCode) {
                     100 -> importListOfReadableNames(intent.data)
+                    IntercrossConstants.MANAGE_HEADERS_REQ -> {
+                        mDbHelper.updateColumns(
+                                intent.extras.getStringArrayList(IntercrossConstants.HEADERS)
+                        )
+                    }
+                    IntercrossConstants.USER_INPUT_HEADERS_REQ -> {
+                        mDbHelper.updateValues(intent.extras.getString(IntercrossConstants.COL_ID_KEY),
+                                intent.extras.getStringArrayList(IntercrossConstants.USER_INPUT_VALUES)
+                        )
+                    }
                 }
 
                 //barcode text response from Zebra intent
@@ -502,9 +509,16 @@ class MainActivity : AppCompatActivity() {
 
                 val intent = Intent(this@MainActivity, AuxValueInputActivity::class.java)
 
-                intent.putExtra("id", entry.id)
+                intent.putExtra(IntercrossConstants.COL_ID_KEY, entry.id.toString())
 
-                startActivity(intent)
+                intent.putExtra("timestamp", entry.second)
+
+                intent.putExtra(IntercrossConstants.HEADERS, mDbHelper.getUserInputHeaders())
+
+                intent.putExtra(IntercrossConstants.USER_INPUT_VALUES,
+                        mDbHelper.getUserInputValues(entry.id))
+
+                startActivityForResult(intent, IntercrossConstants.USER_INPUT_HEADERS_REQ)
             }
         }
     }
@@ -551,8 +565,9 @@ class MainActivity : AppCompatActivity() {
 
             }
             org.phenoapps.intercross.R.id.nav_manage_headers -> {
-                val nav_manage_headers = Intent(this@MainActivity, ManageHeadersActivity::class.java)
-                runOnUiThread { startActivity(nav_manage_headers) }
+                val manageHeadersIntent = Intent(this@MainActivity, ManageHeadersActivity::class.java)
+                manageHeadersIntent.putExtra(IntercrossConstants.HEADERS, mDbHelper.getUserInputHeaders())
+                runOnUiThread { startActivityForResult(manageHeadersIntent, IntercrossConstants.MANAGE_HEADERS_REQ) }
             }
             R.id.nav_import_readable_names -> {
                 val i = Intent(Intent.ACTION_GET_CONTENT)

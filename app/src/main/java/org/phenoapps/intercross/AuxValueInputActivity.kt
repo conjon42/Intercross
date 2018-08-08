@@ -1,6 +1,6 @@
 package org.phenoapps.intercross
 
-import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
@@ -16,7 +16,6 @@ import android.widget.Toast
 import com.zebra.sdk.comm.BluetoothConnection
 import com.zebra.sdk.comm.ConnectionException
 import com.zebra.sdk.printer.SGD
-import java.util.*
 
 //TODO create separate file for async bluetooth task
 //TODO create bitmap preview of barcode print
@@ -28,8 +27,6 @@ class AuxValueInputActivity : AppCompatActivity() {
     private lateinit var mUpdateButton: Button
 
     private val mEntries = ArrayList<AdapterEntry>()
-
-    private val mDbHelper: IdEntryDbHelper = IdEntryDbHelper(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -44,21 +41,17 @@ class AuxValueInputActivity : AppCompatActivity() {
 
         mRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        val key = intent.getIntExtra("id", -1)
+        val key = intent.getStringExtra(IntercrossConstants.COL_ID_KEY)
 
-        val prefs = getSharedPreferences("Settings", Context.MODE_PRIVATE)
+        val timestamp = intent.getStringExtra("timestamp") ?: ""
 
-        val headers = prefs.getStringSet(SettingsActivity.HEADER_SET, HashSet()).toTypedArray<String>()
+        val headers = intent.getStringArrayListExtra(IntercrossConstants.HEADERS)
 
-        val output: Triple<ArrayList<AdapterEntry>, String, String> =
-                mDbHelper.getUserInputHeaders(headers, key)
+        val values = intent.getStringArrayListExtra(IntercrossConstants.USER_INPUT_VALUES)
 
-        output.first.forEach { entry ->
-            mEntries.add(entry)
+        headers?.forEachIndexed { index, header ->
+            mEntries.add(AdapterEntry(header, values[index] ?: ""))
         }
-
-        val crossId = output.third
-        val timestamp = output.second
 
         val adapter = object : ViewAdapter<AdapterEntry>(mEntries) {
 
@@ -73,12 +66,22 @@ class AuxValueInputActivity : AppCompatActivity() {
 
         mRecyclerView.adapter = adapter
 
-        mIdTextView.text = "Cross ID: $crossId"
+        mIdTextView.text = "Cross ID: $key"
         mTimeTextView.text = "Timestamp: $timestamp"
 
         mUpdateButton.setOnClickListener { _ ->
 
-            mDbHelper.updateUserColumns(key, mEntries)
+            val updatedValues = ArrayList<String>()
+            val intent = Intent()
+
+            mEntries.forEach { entry ->
+                updatedValues.add(entry.second)
+            }
+
+            intent.putExtra(IntercrossConstants.USER_INPUT_VALUES, updatedValues)
+            intent.putExtra(IntercrossConstants.COL_ID_KEY, key.toString())
+            setResult(RESULT_OK, intent)
+            finish()
         }
     }
 
