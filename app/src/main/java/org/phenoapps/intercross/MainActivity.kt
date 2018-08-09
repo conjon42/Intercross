@@ -402,7 +402,7 @@ class MainActivity : AppCompatActivity() {
                         mDbHelper.updateColumns(intent.extras.getStringArrayList(IntercrossConstants.HEADERS))
                     }
                     IntercrossConstants.USER_INPUT_HEADERS_REQ -> {
-                        mDbHelper.updateValues(intent.extras.getString(IntercrossConstants.COL_ID_KEY),
+                        mDbHelper.updateValues(intent.extras.getInt(IntercrossConstants.COL_ID_KEY).toString(),
                                 intent.extras.getStringArrayList(IntercrossConstants.USER_INPUT_VALUES)
                         )
                     }
@@ -507,12 +507,19 @@ class MainActivity : AppCompatActivity() {
 
                 val intent = Intent(this@MainActivity, AuxValueInputActivity::class.java)
 
+                val headers = mDbHelper.getColumns() - IdEntryContract.IdEntry.COLUMNS.toList()
+
+                val values = mDbHelper.getUserInputValues(id)
+
                 intent.putExtra(IntercrossConstants.COL_ID_KEY, id)
 
-                intent.putExtra("timestamp", secondText.text)
+                intent.putExtra(IntercrossConstants.CROSS_ID, firstText.text)
 
-                //intent.putExtra(IntercrossConstants.USER_INPUT_VALUES,
-                    //    mDbHelper.getUserInputValues(entry.id))
+                intent.putExtra(IntercrossConstants.TIMESTAMP, secondText.text)
+
+                intent.putStringArrayListExtra(IntercrossConstants.HEADERS, ArrayList(headers))
+
+                intent.putStringArrayListExtra(IntercrossConstants.USER_INPUT_VALUES, ArrayList(values))
 
                 startActivityForResult(intent, IntercrossConstants.USER_INPUT_HEADERS_REQ)
             }

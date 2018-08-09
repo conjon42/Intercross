@@ -41,15 +41,11 @@ class AuxValueInputActivity : AppCompatActivity() {
 
         mRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        val mDbHelper = IdEntryDbHelper(this)
-
-        val key = intent.getIntExtra(IntercrossConstants.COL_ID_KEY, -1)
-
-        val timestamp = intent.getStringExtra("timestamp") ?: ""
-
-        val headers = mDbHelper.getColumns() - IdEntryContract.IdEntry.COLUMNS.toList()
-
-        val values = mDbHelper.getUserInputValues(key, headers)
+        val id = intent.getIntExtra(IntercrossConstants.COL_ID_KEY, -1)
+        val crossId = intent.getStringExtra(IntercrossConstants.CROSS_ID) ?: ""
+        val timestamp = intent.getStringExtra(IntercrossConstants.TIMESTAMP) ?: ""
+        val headers = intent.getStringArrayListExtra(IntercrossConstants.HEADERS)
+        val values = intent.getStringArrayListExtra(IntercrossConstants.USER_INPUT_VALUES)
 
         headers.forEachIndexed { index, header ->
             mEntries.add(AdapterEntry(header, values[index] ?: ""))
@@ -68,7 +64,7 @@ class AuxValueInputActivity : AppCompatActivity() {
 
         mRecyclerView.adapter = adapter
 
-        mIdTextView.text = "Cross ID: $key"
+        mIdTextView.text = "Cross ID: $crossId"
         mTimeTextView.text = "Timestamp: $timestamp"
 
         mUpdateButton.setOnClickListener { _ ->
@@ -81,7 +77,7 @@ class AuxValueInputActivity : AppCompatActivity() {
             }
 
             intent.putExtra(IntercrossConstants.USER_INPUT_VALUES, updatedValues)
-            intent.putExtra(IntercrossConstants.COL_ID_KEY, key.toString())
+            intent.putExtra(IntercrossConstants.COL_ID_KEY, id)
             setResult(RESULT_OK, intent)
             finish()
         }
@@ -96,6 +92,7 @@ class AuxValueInputActivity : AppCompatActivity() {
 
         init {
             secondText.addTextChangedListener(object : TextWatcher {
+
                 override fun afterTextChanged(s: Editable?) {
                     mEntries[mEntries.indexOf(mEntry)].second = secondText.text.toString()
                 }

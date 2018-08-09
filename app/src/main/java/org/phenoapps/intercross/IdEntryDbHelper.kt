@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
+import android.database.sqlite.SQLiteStatement
 import android.util.Log
 import org.phenoapps.intercross.IdEntryContract.SQL_CREATE_ENTRIES
 import java.util.*
@@ -237,18 +238,22 @@ internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DAT
         writableDatabase.beginTransaction()
         try {
             headers.forEachIndexed { index, header ->
-                writableDatabase.execSQL(
-                        "UPDATE ${IdEntryContract.IdEntry.TABLE_NAME} " +
-                                "SET $header = '${values[index]}' " + "WHERE _id = $key")
+                val update = writableDatabase.compileStatement(
+                        "UPDATE ${IdEntryContract.IdEntry.TABLE_NAME} SET $header = ? WHERE _id = ?")
+                update.bindAllArgsAsStrings(arrayOf(values[index], key))
+                update.executeUpdateDelete()
             }
             writableDatabase.setTransactionSuccessful()
         } catch (e: SQLiteException) {
             e.printStackTrace()
+        } finally {
+            writableDatabase.endTransaction()
         }
-        writableDatabase.endTransaction()
     }
 
-    fun getUserInputValues(key: Int, userHeaders: List<String>): ArrayList<String?> {
+    fun getUserInputValues(key: Int): ArrayList<String?> {
+
+        val userHeaders = getColumns() - IdEntryContract.IdEntry.COLUMNS.toList()
 
         val values = arrayOfNulls<String>(userHeaders.size)
 

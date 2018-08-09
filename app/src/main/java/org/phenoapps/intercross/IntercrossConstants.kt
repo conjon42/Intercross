@@ -21,6 +21,10 @@ internal object IntercrossConstants {
 
     val COL_ID_KEY = "org.phenoapps.intercross.COL_ID_KEY"
 
+    val TIMESTAMP = "org.phenoapps.intercross.TIMESTAMP"
+
+    val CROSS_ID = "org.phenoapps.intercross.CROSS_ID"
+
     val CAMERA_RETURN_ID = "org.phenoapps.intercross.CAMERA_RETURN_ID"
 
     val HEADERS = "org.phenoapps.intercross.HEADERS"
