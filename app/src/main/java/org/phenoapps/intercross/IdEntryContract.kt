@@ -27,8 +27,8 @@ internal object IdEntryContract {
             const val COLUMN_NAME_DATE = "timestamp"
             const val COLUMN_NAME_LOCATION = "location"
 
-            val COLUMNS = arrayOf(COLUMN_NAME_CROSS, COLUMN_NAME_USER, COLUMN_NAME_LOCATION,
-                    COLUMN_NAME_MALE, COLUMN_NAME_ID, COLUMN_NAME_DATE, COLUMN_NAME_CROSS, COLUMN_NAME_FEMALE)
+            val COLUMNS = arrayOf(COLUMN_NAME_ID, COLUMN_NAME_MALE, COLUMN_NAME_FEMALE,
+                    COLUMN_NAME_CROSS, COLUMN_NAME_USER, COLUMN_NAME_DATE, COLUMN_NAME_LOCATION)
         }
     }
 

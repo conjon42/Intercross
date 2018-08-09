@@ -41,15 +41,17 @@ class AuxValueInputActivity : AppCompatActivity() {
 
         mRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        val key = intent.getStringExtra(IntercrossConstants.COL_ID_KEY)
+        val mDbHelper = IdEntryDbHelper(this)
+
+        val key = intent.getIntExtra(IntercrossConstants.COL_ID_KEY, -1)
 
         val timestamp = intent.getStringExtra("timestamp") ?: ""
 
-        val headers = intent.getStringArrayListExtra(IntercrossConstants.HEADERS)
+        val headers = mDbHelper.getColumns() - IdEntryContract.IdEntry.COLUMNS.toList()
 
-        val values = intent.getStringArrayListExtra(IntercrossConstants.USER_INPUT_VALUES)
+        val values = mDbHelper.getUserInputValues(key, headers)
 
-        headers?.forEachIndexed { index, header ->
+        headers.forEachIndexed { index, header ->
             mEntries.add(AdapterEntry(header, values[index] ?: ""))
         }
 

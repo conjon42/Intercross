@@ -36,15 +36,14 @@ class ManageHeadersActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_headers)
 
-        val userHeaders = intent.extras.getStringArrayList(IntercrossConstants.HEADERS)
+        val dbHelper = IdEntryDbHelper(this)
 
-        if (userHeaders.isNotEmpty()) {
+        val userHeaders = dbHelper.getColumns() - IdEntryContract.IdEntry.COLUMNS
 
-            userHeaders.forEach { header ->
-                header?.let {
-                    mEntries.add(header)
-                }
-            }
+        dbHelper.close()
+
+        userHeaders.forEach { header ->
+            mEntries.add(header)
         }
 
         mSubmitButton = findViewById(R.id.submitButton) as Button

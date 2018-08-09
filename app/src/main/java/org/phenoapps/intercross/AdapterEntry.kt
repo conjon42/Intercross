@@ -15,12 +15,6 @@ class AdapterEntry {
         this.second = second
     }
 
-    constructor(first: String, second: String, id: Int) {
-        this.first = first
-        this.second = second
-        this.id = id
-    }
-
     fun clear() {
         first = String()
         second = String()

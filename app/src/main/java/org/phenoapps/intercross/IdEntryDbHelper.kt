@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 import org.phenoapps.intercross.IdEntryContract.SQL_CREATE_ENTRIES
 import java.util.*
+import kotlin.collections.ArrayList
 
 internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
@@ -100,73 +101,72 @@ internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DAT
         return entries
     }
 
-    fun updateColumns(inputCols: ArrayList<String>) {
+    fun getColumns(): ArrayList<String> {
+
+        val cols = ArrayList<String>()
+
+        val cursor = readableDatabase.rawQuery(
+                "pragma table_info(${IdEntryContract.IdEntry.TABLE_NAME});", null)
+
+        if (cursor.moveToFirst()) {
+            do {
+                cols += cursor.getString(cursor.getColumnIndex("name"))
+            } while (cursor.moveToNext())
+        }
+
+        return cols
+    }
+
+    fun updateColumns(newCols: ArrayList<String>) {
 
         //TODO add function for just altering / add col
         //TODO split thsi function into an alter col / create new table
+
         try {
-
-            val colCursor = readableDatabase.query(IdEntryContract.IdEntry.TABLE_NAME,
-                    null, null, null,
-                    null, null, null)
-            val knownCols = colCursor.columnNames
-
-            val cols = ArrayList(inputCols.filter { c -> c !in knownCols })
-
-            colCursor.close()
-
-            writableDatabase.execSQL("DROP TABLE IF EXISTS ${IdEntryContract.IdEntry.TABLE_NAME}_OLD")
+            writableDatabase.beginTransaction()
 
             writableDatabase.execSQL("ALTER TABLE ${IdEntryContract.IdEntry.TABLE_NAME} " +
                     "RENAME TO ${IdEntryContract.IdEntry.TABLE_NAME}_OLD")
 
             var sqlCreateEntries = "CREATE TABLE ${IdEntryContract.IdEntry.TABLE_NAME}( "
 
-            knownCols.forEach { col ->
+            val createCols = IdEntryContract.IdEntry.COLUMNS + newCols
+
+            createCols.forEach { col ->
                 when (col) {
-                    IdEntryContract.IdEntry.COLUMN_NAME_ID -> sqlCreateEntries += "$col PRIMARY KEY"
+                    IdEntryContract.IdEntry.COLUMN_NAME_ID -> sqlCreateEntries += "$col INTEGER PRIMARY KEY"
                     else -> sqlCreateEntries += "$col TEXT"
                 }
-                if (knownCols.last() != col) sqlCreateEntries += ", "
+                if (createCols.last() != col) sqlCreateEntries += ", "
             }
 
-            when (cols.size) {
-                0 -> sqlCreateEntries += ");"
-                else -> {
-                    cols.forEach { header ->
-                        sqlCreateEntries += ", $header"
-                        when (header) {
-                            cols.last() -> sqlCreateEntries += " TEXT);"
-                            else -> sqlCreateEntries += " TEXT "
-                        }
-                    }
-                }
-            }
+            sqlCreateEntries += ");"
 
             Log.d("CREATE", sqlCreateEntries)
             writableDatabase.execSQL(sqlCreateEntries)
 
+            val selectCols = getColumns().filter { it -> it !in newCols }
+
             var sqlInsert = "INSERT INTO ${IdEntryContract.IdEntry.TABLE_NAME} ("
 
-            knownCols.forEach { col ->
+            selectCols.forEach { col ->
 
                 sqlInsert += col
 
                 when (col) {
-                    knownCols.last() -> sqlInsert += ")"
+                    selectCols.last() -> sqlInsert += ")"
                     else -> sqlInsert += ", "
                 }
             }
 
-
             sqlInsert += "SELECT "
 
-            knownCols.forEach { col ->
+            selectCols.forEach { col ->
 
                 sqlInsert += col
 
                 when(col) {
-                    knownCols.last() -> sqlInsert += " FROM ${IdEntryContract.IdEntry.TABLE_NAME}_OLD;"
+                    selectCols.last() -> sqlInsert += " FROM ${IdEntryContract.IdEntry.TABLE_NAME}_OLD;"
                     else -> sqlInsert += ", "
                 }
             }
@@ -175,8 +175,14 @@ internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DAT
 
             writableDatabase.execSQL(sqlInsert)
 
+            writableDatabase.execSQL("DROP TABLE IF EXISTS ${IdEntryContract.IdEntry.TABLE_NAME}_OLD")
+
+            writableDatabase.setTransactionSuccessful()
+
         } catch (e: SQLiteException) {
             e.printStackTrace()
+        } finally {
+            writableDatabase.endTransaction()
         }
     }
 
@@ -189,10 +195,9 @@ internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DAT
             writableDatabase.setTransactionSuccessful()
         } catch (e: SQLiteException) {
             e.printStackTrace()
+        } finally {
+            writableDatabase.endTransaction()
         }
-
-        writableDatabase.endTransaction()
-
     }
 
     fun getUserInputHeaders() : ArrayList<String> {
@@ -227,7 +232,7 @@ internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DAT
 
     fun updateValues(key: String, values: ArrayList<String>) {
 
-        val headers = getUserInputHeaders()
+        val headers = getColumns() - IdEntryContract.IdEntry.COLUMNS
 
         writableDatabase.beginTransaction()
         try {
@@ -243,9 +248,7 @@ internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DAT
         writableDatabase.endTransaction()
     }
 
-    fun getUserInputValues(key: Int): ArrayList<String?> {
-
-        val userHeaders = getUserInputHeaders().toTypedArray()
+    fun getUserInputValues(key: Int, userHeaders: List<String>): ArrayList<String?> {
 
         val values = arrayOfNulls<String>(userHeaders.size)
 
@@ -254,7 +257,7 @@ internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DAT
             try {
 
                 val cursor = readableDatabase.query(IdEntryContract.IdEntry.TABLE_NAME,
-                        userHeaders, "_id=?", arrayOf(key.toString()),
+                        userHeaders.toTypedArray(), "_id=?", arrayOf(key.toString()),
                         null, null, null)
 
                 if (cursor.moveToFirst()) {

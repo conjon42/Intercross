@@ -399,9 +399,7 @@ class MainActivity : AppCompatActivity() {
                 when (requestCode) {
                     100 -> importListOfReadableNames(intent.data)
                     IntercrossConstants.MANAGE_HEADERS_REQ -> {
-                        mDbHelper.updateColumns(
-                                intent.extras.getStringArrayList(IntercrossConstants.HEADERS)
-                        )
+                        mDbHelper.updateColumns(intent.extras.getStringArrayList(IntercrossConstants.HEADERS))
                     }
                     IntercrossConstants.USER_INPUT_HEADERS_REQ -> {
                         mDbHelper.updateValues(intent.extras.getString(IntercrossConstants.COL_ID_KEY),
@@ -488,8 +486,7 @@ class MainActivity : AppCompatActivity() {
     inner class ViewHolder internal constructor(itemView: View) :
             RecyclerView.ViewHolder(itemView), ViewAdapter.Binder<AdapterEntry>, View.OnClickListener {
 
-        private var entry: AdapterEntry = AdapterEntry()
-
+        private var id: Int = -1
         private var firstText: TextView = itemView.findViewById(R.id.firstTextView) as TextView
         private var secondText: TextView = itemView.findViewById(R.id.secondTextView) as TextView
 
@@ -499,24 +496,23 @@ class MainActivity : AppCompatActivity() {
 
         override fun bind(data: AdapterEntry) {
 
-            this.entry = data
+            id = data.id
             firstText.text = data.first
             secondText.text = data.second
         }
 
         override fun onClick(v: View?) {
+
             v?.let {
 
                 val intent = Intent(this@MainActivity, AuxValueInputActivity::class.java)
 
-                intent.putExtra(IntercrossConstants.COL_ID_KEY, entry.id.toString())
+                intent.putExtra(IntercrossConstants.COL_ID_KEY, id)
 
-                intent.putExtra("timestamp", entry.second)
+                intent.putExtra("timestamp", secondText.text)
 
-                intent.putExtra(IntercrossConstants.HEADERS, mDbHelper.getUserInputHeaders())
-
-                intent.putExtra(IntercrossConstants.USER_INPUT_VALUES,
-                        mDbHelper.getUserInputValues(entry.id))
+                //intent.putExtra(IntercrossConstants.USER_INPUT_VALUES,
+                    //    mDbHelper.getUserInputValues(entry.id))
 
                 startActivityForResult(intent, IntercrossConstants.USER_INPUT_HEADERS_REQ)
             }
@@ -565,9 +561,8 @@ class MainActivity : AppCompatActivity() {
 
             }
             org.phenoapps.intercross.R.id.nav_manage_headers -> {
-                val manageHeadersIntent = Intent(this@MainActivity, ManageHeadersActivity::class.java)
-                manageHeadersIntent.putExtra(IntercrossConstants.HEADERS, mDbHelper.getUserInputHeaders())
-                runOnUiThread { startActivityForResult(manageHeadersIntent, IntercrossConstants.MANAGE_HEADERS_REQ) }
+                startActivityForResult(Intent(this@MainActivity,
+                        ManageHeadersActivity::class.java), IntercrossConstants.MANAGE_HEADERS_REQ)
             }
             R.id.nav_import_readable_names -> {
                 val i = Intent(Intent.ACTION_GET_CONTENT)
