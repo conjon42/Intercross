@@ -297,7 +297,7 @@ internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DAT
 
         try {
             val cursor = readableDatabase.query(IdEntryContract.IdEntry.TABLE_NAME,
-                    null, null, null, null, null, null)
+                    null, null, null, null, null, IdEntryContract.IdEntry.COLUMN_NAME_ID + " DESC")
 
             if (cursor.moveToFirst()) {
                 do {
