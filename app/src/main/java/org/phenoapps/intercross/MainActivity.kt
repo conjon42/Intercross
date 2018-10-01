@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.database.sqlite.SQLiteException
@@ -13,6 +14,8 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.preference.PreferenceManager
+import android.provider.Settings
 import android.support.design.widget.NavigationView
 import android.support.v4.app.ActivityCompat
 import android.support.v4.view.GravityCompat
@@ -45,11 +48,13 @@ import java.util.Arrays.asList
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var mFemaleEditText: EditText
-    private lateinit var mMaleEditText: EditText
+    private lateinit var mFirstEditText: EditText
+    private lateinit var mSecondEditText: EditText
     private lateinit var mCrossEditText: EditText
     private lateinit var mRecyclerView: RecyclerView
     private lateinit var mNavView: NavigationView
+
+    private var mCrossOrder: Int = 0
 
     private val mEntries = ArrayList<AdapterEntry>()
 
@@ -63,6 +68,25 @@ class MainActivity : AppCompatActivity() {
             return ViewHolder(view)
         }
 
+    }
+
+    private val mPrefListener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
+        key?.let{
+            when (key) {
+                SettingsActivity.CROSS_ORDER -> {
+                    when (sharedPreferences?.getString(key, "0")) {
+                        "0" -> {
+                            mFirstEditText.hint = "Female ID: "
+                            mSecondEditText.hint = "Male ID: "
+                        }
+                        "1" -> {
+                            mFirstEditText.hint = "Male ID: "
+                            mSecondEditText.hint = "Female ID: "
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private val mDbHelper: IdEntryDbHelper = IdEntryDbHelper(this)
@@ -96,7 +120,7 @@ class MainActivity : AppCompatActivity() {
 
         mNameMap = HashMap()
 
-       // val sharedPref = PreferenceManager.getDefaultSharedPreferences(this)
+        val sharedPref = PreferenceManager.getDefaultSharedPreferences(this)
 //
         /*val namePrefs = getSharedPreferences("Names", Context.MODE_PRIVATE)
         val encodedNames = namePrefs.getStringSet("EncodedNames", HashSet())
@@ -110,41 +134,11 @@ class MainActivity : AppCompatActivity() {
                 mNameMap!![key] = `val`
             }
         }
+*/
 
-        if (!sharedPref.getBoolean("onlyLoadTutorialOnce", false)) {
-            launchIntro()
-            val editor = sharedPref.edit()
-            editor.putBoolean("onlyLoadTutorialOnce", true)
-            editor.apply()
-        } else {
-            val tutorialMode = sharedPref.getBoolean(SettingsActivity.TUTORIAL_MODE, false)
+        mCrossOrder = sharedPref.getString(SettingsActivity.CROSS_ORDER, "0").toInt()
 
-            if (tutorialMode)
-                launchIntro()
-        }
-
-        var allGranted = true
-        for (perm in IntercrossConstants.permissions) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (checkSelfPermission(perm) != PackageManager.PERMISSION_GRANTED) {
-                    allGranted = false
-                    break
-                }
-            }
-        }
-
-        if (!allGranted) {
-            ActivityCompat.requestPermissions(this, IntercrossConstants.permissions,
-                    IntercrossConstants.PERM_REQ)
-        }
-
-        if (isExternalStorageWritable) {
-            val intercrossDir = File(Environment.getExternalStorageDirectory().path + "/Intercross")
-            if (!intercrossDir.isDirectory) {
-                val makeDirsSuccess = intercrossDir.mkdirs()
-                if (!makeDirsSuccess) Log.d("Make Directory", "failed")
-            }
-        }*/
+        sharedPref.registerOnSharedPreferenceChangeListener(mPrefListener)
 
         initializeUIVariables()
 
@@ -171,8 +165,8 @@ class MainActivity : AppCompatActivity() {
         setupDrawerContent(mNavView)
         setupDrawer()
 
-        mMaleEditText = findViewById(R.id.editTextMale) as EditText
-        mFemaleEditText = findViewById(R.id.editTextFemale) as EditText
+        mSecondEditText = findViewById(R.id.secondText) as EditText
+        mFirstEditText = findViewById(R.id.firstText) as EditText
         mCrossEditText = findViewById(R.id.editTextCross) as EditText
         val saveButton = findViewById(R.id.saveButton) as Button
 
@@ -185,8 +179,8 @@ class MainActivity : AppCompatActivity() {
 
             override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
 
-                saveButton.isEnabled = mMaleEditText.text.isNotEmpty()
-                        && mFemaleEditText.text.isNotEmpty()
+                saveButton.isEnabled = mFirstEditText.text.isNotEmpty()
+                        && mSecondEditText.text.isNotEmpty()
                         && mCrossEditText.text.isNotEmpty()
 
             }
@@ -196,8 +190,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        mMaleEditText.addTextChangedListener(emptyGuard)
-        mFemaleEditText.addTextChangedListener(emptyGuard)
+        mSecondEditText.addTextChangedListener(emptyGuard)
+        mFirstEditText.addTextChangedListener(emptyGuard)
         mCrossEditText.addTextChangedListener(emptyGuard)
 
         mCrossEditText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
@@ -215,43 +209,54 @@ class MainActivity : AppCompatActivity() {
 
         (findViewById(R.id.clearButton) as Button).setOnClickListener {
             mCrossEditText.setText("")
-            mMaleEditText.setText("")
-            mFemaleEditText.setText("")
-            mFemaleEditText.requestFocus()
+            mFirstEditText.setText("")
+            mSecondEditText.setText("")
+            mFirstEditText.requestFocus()
 
         }
 
-        mFemaleEditText.requestFocus()
+        when (mCrossOrder) {
+            0 -> {
+                mFirstEditText.hint = "Female ID: "
+                mSecondEditText.hint = "Male ID: "
+            }
+            1 -> {
+                mFirstEditText.hint = "Male ID: "
+                mSecondEditText.hint = "Female ID: "
+            }
+        }
+        mFirstEditText.requestFocus()
     }
 
     private fun saveToDB() {
 
-        if (mMaleEditText.text.isNotEmpty() && mFemaleEditText.text.isNotEmpty()
+        if (mFirstEditText.text.isNotEmpty() && mSecondEditText.text.isNotEmpty()
                 && mCrossEditText.text.isNotEmpty()) {
 
             val entry = ContentValues()
 
-            entry.put("male", mMaleEditText.text.toString())
-            entry.put("female", mFemaleEditText.text.toString())
+            entry.put("male", if (mCrossOrder == 0) mSecondEditText.text.toString() else mFirstEditText.text.toString())
+            entry.put("female", if (mCrossOrder == 0) mFirstEditText.text.toString() else mSecondEditText.text.toString())
             entry.put("cross_id", mCrossEditText.text.toString())
 
             val c = Calendar.getInstance()
             val sdf = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault())
 
-            //String firstName = sharedPref.getString(SettingsActivity.FIRST_NAME, "");
+            val pref = PreferenceManager.getDefaultSharedPreferences(this)
+            val person : String = pref.getString(SettingsActivity.PERSON, "None")
 
             entry.put("timestamp", sdf.format(c.time).toString())
 
-            entry.put("person", "not implemented.")
+            entry.put("person", person)
 
             mDbHelper.insertEntry(entry)
 
             //clear fields
-            mMaleEditText.text.clear()
-            mFemaleEditText.text.clear()
+            mFirstEditText.text.clear()
+            mSecondEditText.text.clear()
             mCrossEditText.text.clear()
 
-            mFemaleEditText.requestFocus()
+            mFirstEditText.requestFocus()
 
             loadSQLToLocal()
         }
@@ -269,22 +274,24 @@ class MainActivity : AppCompatActivity() {
         mAdapter.notifyDataSetChanged()
     }
 
+    //TODO Kotlin-ize
     private fun askUserExportFileName() {
 
-        val builder = AlertDialog.Builder(this)
+        if (isExternalStorageWritable) {
 
-        builder.setTitle("Choose name for exported file.")
+            val builder = AlertDialog.Builder(this)
 
-        val input = EditText(this)
+            builder.setTitle("Choose name for exported file.")
 
-        input.inputType = InputType.TYPE_CLASS_TEXT
+            val input = EditText(this)
 
-        builder.setView(input)
+            input.inputType = InputType.TYPE_CLASS_TEXT
 
-        builder.setPositiveButton("Export") { dialog, which ->
-            val value = input.text.toString()
-            if (value.length != 0) {
-                if (isExternalStorageWritable) {
+            builder.setView(input)
+
+            builder.setPositiveButton("Export") { dialog, which ->
+                val value = input.text.toString()
+                if (value.isNotEmpty()) {
                     try {
                         val dir = File(Environment.getExternalStorageDirectory().path + "/Intercross")
                         val output = File(dir, "$value.csv")
@@ -293,7 +300,6 @@ class MainActivity : AppCompatActivity() {
                         val cursor = db.query(IdEntryContract.IdEntry.TABLE_NAME,
                                 null, null, null,
                                 null, null, null)
-                        //final Cursor cursor = db.rawQuery("SElECT * FROM VERIFY", null);
 
                         //first write header line
                         val headers = cursor.columnNames
@@ -307,13 +313,10 @@ class MainActivity : AppCompatActivity() {
                             do {
                                 for (i in headers.indices) {
                                     if (i != 0) fstream.write(",".toByteArray())
-                                    val `val` = cursor.getString(
+                                    val colVal = cursor.getString(
                                             cursor.getColumnIndexOrThrow(headers[i])
                                     )
-                                    if (`val` == null)
-                                        fstream.write("null".toByteArray())
-                                    else
-                                        fstream.write(`val`.toByteArray())
+                                    fstream.write((colVal ?: "null").toByteArray())
                                 }
                                 fstream.write(line_separator.toByteArray())
                             } while (cursor.moveToNext())
@@ -335,17 +338,14 @@ class MainActivity : AppCompatActivity() {
 
                 } else {
                     Toast.makeText(this@MainActivity,
-                            "External storage not writable.", Toast.LENGTH_SHORT).show()
+                            "Must enter a file name.", Toast.LENGTH_SHORT).show()
                 }
 
-            } else {
-                Toast.makeText(this@MainActivity,
-                        "Must enter a file name.", Toast.LENGTH_SHORT).show()
+                builder.show()
             }
+        } else {
+            Toast.makeText(this@MainActivity, "External storage not writable.", Toast.LENGTH_SHORT).show()
         }
-
-        builder.show()
-
     }
 
     override fun onCreateOptionsMenu(m: Menu): Boolean {
@@ -411,14 +411,14 @@ class MainActivity : AppCompatActivity() {
                 //barcode text response from Zebra intent
                 if (intent.hasExtra(IntercrossConstants.CAMERA_RETURN_ID)) {
 
-                    asList(mFemaleEditText, mMaleEditText, mCrossEditText).forEach iter@ { editText ->
+                    asList(mFirstEditText, mSecondEditText, mCrossEditText).forEach iter@ { editText ->
                         editText?.let {
                             when(editText.hasFocus()) {
                                 true -> {
                                     editText.setText(intent.getStringExtra(IntercrossConstants.CAMERA_RETURN_ID))
                                     when(editText) {
-                                        mFemaleEditText -> mMaleEditText.requestFocus()
-                                        mMaleEditText -> mCrossEditText.requestFocus()
+                                        mFirstEditText -> mSecondEditText.requestFocus()
+                                        mSecondEditText -> mCrossEditText.requestFocus()
                                         mCrossEditText -> {
                                             saveToDB()
                                         }
@@ -435,6 +435,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    //TODO Kotlin-ize
     private fun importListOfReadableNames(data: Uri) {
 
         /*

@@ -36,15 +36,11 @@ class SettingsActivity : AppCompatActivity() {
 
     companion object {
 
-        var SCAN_MODE_LIST = "org.phenoapps.verify.SCAN_MODE"
-        var AUDIO_ENABLED = "org.phenoapps.verify.AUDIO_ENABLED"
-        var TUTORIAL_MODE = "org.phenoapps.verify.TUTORIAL_MODE"
-        var FIRST_NAME = "org.phenoapps.verify.FIRST_NAME"
-        var LAST_NAME = "org.phenoapps.verify.LAST_NAME"
-        var LIST_KEY_NAME = "org.phenoapps.verify.LIST_KEY_NAME"
-        var PAIR_NAME = "org.phenoapps.verify.PAIR_NAME"
-        var DISABLE_PAIR = "org.phenoapps.verify.DISABLE_PAIR"
-        var AUX_INFO = "org.phenoapps.verify.AUX_INFO"
-        var HEADER_SET = "org.phenoapps.intercross.HEADER_SET"
+        val CROSS_ORDER = "org.phenoapps.intercross.CROSS_ORDER"
+        val HEADER_SET = "org.phenoapps.intercross.HEADER_SET"
+        var PERSON = "org.phenoapps.intercross.PERSON"
+        var LOCATION = "org.phenoapps.intercross.LOCATION"
+        var PRINTER = "org.phenoapps.intercross.PRINTER"
+        var FEMALE_FIRST = "org.phenoapps.intercross.FEMALE_FIRST"
     }
 }
