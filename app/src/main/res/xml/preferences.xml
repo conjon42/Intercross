@@ -10,14 +10,9 @@
         android:title="@string/cross_mode" />
     <EditTextPreference
         android:icon="@drawable/ic_about"
-        android:key="org.phenoapps.intercross.FIRST_NAME"
-        android:summary="First displayed name of person."
-        android:title="First Name" />
-    <EditTextPreference
-        android:icon="@drawable/ic_about"
-        android:key="org.phenoapps.intercross.LAST_NAME"
-        android:summary="Last displayed name of person."
-        android:title="Last Name" />
+        android:key="org.phenoapps.intercross.PERSON"
+        android:summary="Name of a person."
+        android:title="Name" />
     <EditTextPreference
         android:icon="@drawable/ic_about"
         android:key="org.phenoapps.intercross.LOCATION"
