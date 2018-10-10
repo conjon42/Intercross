@@ -1,13 +1,18 @@
 package org.phenoapps.intercross
 
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.content.Intent
+import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -16,6 +21,8 @@ import android.widget.Toast
 import com.zebra.sdk.comm.BluetoothConnection
 import com.zebra.sdk.comm.ConnectionException
 import com.zebra.sdk.printer.SGD
+import com.zebra.sdk.printer.ZebraPrinterFactory
+import com.zebra.sdk.printer.ZebraPrinterLanguageUnknownException
 
 //TODO create separate file for async bluetooth task
 //TODO create bitmap preview of barcode print
@@ -27,6 +34,8 @@ class AuxValueInputActivity : AppCompatActivity() {
     private lateinit var mUpdateButton: Button
 
     private val mEntries = ArrayList<AdapterEntry>()
+    private var mCrossId = String()
+    private var mTimestamp = String()
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -42,8 +51,8 @@ class AuxValueInputActivity : AppCompatActivity() {
         mRecyclerView.layoutManager = LinearLayoutManager(this)
 
         val id = intent.getIntExtra(IntercrossConstants.COL_ID_KEY, -1)
-        val crossId = intent.getStringExtra(IntercrossConstants.CROSS_ID) ?: ""
-        val timestamp = intent.getStringExtra(IntercrossConstants.TIMESTAMP) ?: ""
+        mCrossId = intent.getStringExtra(IntercrossConstants.CROSS_ID) ?: ""
+        mTimestamp = intent.getStringExtra(IntercrossConstants.TIMESTAMP) ?: ""
         val headers = intent.getStringArrayListExtra(IntercrossConstants.HEADERS)
         val values = intent.getStringArrayListExtra(IntercrossConstants.USER_INPUT_VALUES)
 
@@ -64,8 +73,8 @@ class AuxValueInputActivity : AppCompatActivity() {
 
         mRecyclerView.adapter = adapter
 
-        mIdTextView.text = "Cross ID: $crossId"
-        mTimeTextView.text = "Timestamp: $timestamp"
+        mIdTextView.text = "Cross ID: $mCrossId"
+        mTimeTextView.text = "Timestamp: $mTimestamp"
 
         mUpdateButton.setOnClickListener { _ ->
 
@@ -120,7 +129,7 @@ class AuxValueInputActivity : AppCompatActivity() {
         return true
     }
 
-    /*override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
         when (item.itemId) {
             R.id.action_print ->
@@ -185,7 +194,7 @@ class AuxValueInputActivity : AppCompatActivity() {
             else -> return super.onOptionsItemSelected(item)
         }
         return true
-    }*/
+    }
 
     @Throws(ConnectionException::class)
     private fun getPrinterStatus(connection: BluetoothConnection) {
