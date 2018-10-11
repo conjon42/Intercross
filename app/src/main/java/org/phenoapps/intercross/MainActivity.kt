@@ -121,20 +121,6 @@ class MainActivity : AppCompatActivity() {
         mNameMap = HashMap()
 
         val sharedPref = PreferenceManager.getDefaultSharedPreferences(this)
-//
-        /*val namePrefs = getSharedPreferences("Names", Context.MODE_PRIVATE)
-        val encodedNames = namePrefs.getStringSet("EncodedNames", HashSet())
-        if (encodedNames.size > 0) {
-            val encodings = encodedNames.toTypedArray<String>()
-            val size = encodedNames.size
-            for (i in 0 until size) {
-                val keyVal = encodings[i].split(":".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
-                val key = keyVal[0]
-                val `val` = keyVal[1]
-                mNameMap!![key] = `val`
-            }
-        }
-*/
 
         mCrossOrder = sharedPref.getString(SettingsActivity.CROSS_ORDER, "0").toInt()
 
@@ -194,6 +180,20 @@ class MainActivity : AppCompatActivity() {
         mFirstEditText.addTextChangedListener(emptyGuard)
         mCrossEditText.addTextChangedListener(emptyGuard)
 
+        mFirstEditText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
+            if (i == EditorInfo.IME_ACTION_DONE) {
+                mSecondEditText.requestFocus()
+                return@OnEditorActionListener true
+            }
+            false
+        })
+        mSecondEditText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
+            if (i == EditorInfo.IME_ACTION_DONE) {
+                mCrossEditText.requestFocus()
+                return@OnEditorActionListener true
+            }
+            false
+        })
         mCrossEditText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
             if (i == EditorInfo.IME_ACTION_DONE) {
                 saveToDB()
@@ -397,7 +397,6 @@ class MainActivity : AppCompatActivity() {
 
             if (intent != null) {
                 when (requestCode) {
-                    100 -> importListOfReadableNames(intent.data)
                     IntercrossConstants.MANAGE_HEADERS_REQ -> {
                         mDbHelper.updateColumns(intent.extras.getStringArrayList(IntercrossConstants.HEADERS))
                     }
@@ -433,55 +432,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-
-    //TODO Kotlin-ize
-    private fun importListOfReadableNames(data: Uri) {
-
-        /*
-        mNameMap = HashMap()
-        val `is`: InputStream?
-        try {
-            `is` = contentResolver.openInputStream(data)
-            if (`is` != null) {
-                val br = BufferedReader(InputStreamReader(`is`))
-                val header = br.readLine()
-                var temp: String
-                while ((temp = br.readLine()) != null) {
-                    val map = temp.split(",".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
-                    if (map.size == 2) {
-                        mNameMap!![map[0]] = map[1]
-                    }
-                }
-                br.close()
-            }
-        } catch (e: FileNotFoundException) {
-            e.printStackTrace()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-
-        if (mNameMap!!.size > 0) {
-            val pref = getSharedPreferences("Names", Context.MODE_PRIVATE)
-            val edit = pref.edit()
-            val keys = mNameMap!!.keys.toTypedArray<String>()
-            val values = mNameMap!!.values.toTypedArray<String>()
-            val keyVals = arrayOfNulls<String>(keys.size)
-            if (keys.size == values.size) {
-                for (i in keys.indices) {
-                    val k = keys[i].replace(":".toRegex(), "")
-                    val v = values[i].replace(":".toRegex(), "")
-                    keyVals[i] = k + ":" + v
-                    for (e in mCrossIds!!) {
-                        if (e.crossId == k) e.crossName = v
-                    }
-                }
-            }
-            edit.putStringSet("EncodedNames", HashSet(Arrays.asList<String>(*keyVals)))
-            edit.apply()
-
-            buildListView()
-        }*/
     }
 
     inner class ViewHolder internal constructor(itemView: View) :
@@ -572,11 +522,6 @@ class MainActivity : AppCompatActivity() {
                 startActivityForResult(Intent(this@MainActivity,
                         ManageHeadersActivity::class.java), IntercrossConstants.MANAGE_HEADERS_REQ)
             }
-            /*R.id.nav_import_readable_names -> {
-                val i = Intent(Intent.ACTION_GET_CONTENT)
-               /*i.type = "*/*"
-            //    startActivityForResult(i, 100)
-            }*/
         }
 
         val dl = findViewById(org.phenoapps.intercross.R.id.drawer_layout) as DrawerLayout
