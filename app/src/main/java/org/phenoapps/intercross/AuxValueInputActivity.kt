@@ -1,28 +1,35 @@
 package org.phenoapps.intercross
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.Intent
+import android.database.sqlite.SQLiteException
 import android.os.AsyncTask
 import android.os.Bundle
+import android.os.Environment
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.Editable
+import android.text.InputType
 import android.text.TextWatcher
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import com.zebra.sdk.comm.BluetoothConnection
 import com.zebra.sdk.comm.ConnectionException
+import com.zebra.sdk.printer.PrinterLanguage
 import com.zebra.sdk.printer.SGD
 import com.zebra.sdk.printer.ZebraPrinterFactory
 import com.zebra.sdk.printer.ZebraPrinterLanguageUnknownException
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
 
 //TODO create separate file for async bluetooth task
 //TODO create bitmap preview of barcode print
@@ -131,66 +138,83 @@ class AuxValueInputActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
+        val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+
+        val pairedDevices = mBluetoothAdapter.bondedDevices
+
         when (item.itemId) {
-            R.id.action_print ->
+            R.id.action_print -> {
 
-                object : AsyncTask<Void, Void, Void>() {
+                object : AsyncTask<Void, Void, String>() {
 
-                    override fun doInBackground(voids: Array<Void>): Void? {
-                        var mBluetoothAdapter: BluetoothAdapter? = null
-                        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-                        val pairedDevices = mBluetoothAdapter!!.bondedDevices
+                    override fun doInBackground(vararg params: Void?): String {
 
-                        //TODO allow multiple pairs
-                        //TODO wrap in async task
-                        if (pairedDevices.size == 1) {
-                            val bd = pairedDevices.toTypedArray<BluetoothDevice>()[0]
+                        val builder = AlertDialog.Builder(this@AuxValueInputActivity)
+
+                        builder.setTitle("Choose bluetooth device to print from.")
+
+                        val input = RadioGroup(this@AuxValueInputActivity)
+
+                        pairedDevices.forEach {
+                            val button = RadioButton(this@AuxValueInputActivity)
+                            button.text = it.name
+                            input.addView(button)
+                        }
+
+                        builder.setView(input)
+
+                        builder.setPositiveButton("OK") { dialog, which ->
+                            val value = input.findViewById(input.checkedRadioButtonId) as RadioButton
+                            //TODO wrap in async task
                             Log.d("BT", "PAIRED")
-                            val bc = BluetoothConnection(bd.getAddress())
+                            val bc = BluetoothConnection(pairedDevices.toTypedArray()[input.indexOfChild(value)].address)
                             try {
                                 bc.open()
                                 val printer = ZebraPrinterFactory.getInstance(bc)
                                 val linkOsPrinter = ZebraPrinterFactory.createLinkOsPrinter(printer)
-                                val printerStatus = if (linkOsPrinter != null) linkOsPrinter.currentStatus else printer.currentStatus
-                                getPrinterStatus(bc)
-                                if (printerStatus.isReadyToPrint) {
-                                    runOnUiThread { Toast.makeText(this@AuxValueInputActivity, "Printer Ready", Toast.LENGTH_LONG).show() }
+                                linkOsPrinter?.let {
+                                    val printerStatus = it.currentStatus
+                                    getPrinterStatus(bc)
+                                    if (printerStatus.isReadyToPrint) {
 
-                                    //printer.sendCommand("! DF RUN.BAT ! UTILITIES JOURNAL SETFF 50 5 PRINT");
-                                    //printer.printConfigurationLabel();
-                                    //printer.sendCommand("^XA^FO0,0^ADN,36,20^FDCHANEY^FS^XZ");
-                                    printer.sendCommand("^XA"
-                                            + "^FWR"
-                                            + "^FO100,75^A0,25,20^FD" + mCrossId + "^FS"
-                                            + "^FO200,75^A0N,25,20"
-                                            + "^BQN,2,10^FDMA" + mCrossId + "^FS"
-                                            + "^FO450,75^A0,25,20^FD" + mTimestamp + "^FS^XZ")
-                                    /*printer.printImage(new ZebraImageAndroid(BitmapFactory.decodeResource(getApplicationContext().getResources(),
-                                    R.drawable.intercross_small)), 75,500,-1,-1,false);*/
+                                        printer.sendCommand("^XA"
+                                                + "^FWR"
+                                                + "^FO100,75^A0,25,20^FD" + mCrossId + "^FS"
+                                                + "^FO200,75^A0N,25,20"
+                                                + "^BQN,2,6" +
+                                                "^FDQA," + mCrossId + "^FS"
+                                                + "^FO450,75^A0,25,20^FD" + mTimestamp + "^FS^XZ")
+                                        /*printer.printImage(new ZebraImageAndroid(BitmapFactory.decodeResource(getApplicationContext().getResources(),
+                                        R.drawable.intercross_small)), 75,500,-1,-1,false);*/
 
-                                } else if (printerStatus.isHeadOpen) {
-                                    //helper.showErrorMessage("Error: Head Open \nPlease Close Printer Head to Print");
-                                } else if (printerStatus.isPaused) {
-                                    //helper.showErrorMessage("Error: Printer Paused");
-                                } else if (printerStatus.isPaperOut) {
-                                    //helper.showErrorMessage("Error: Media Out \nPlease Load Media to Print");
-                                } else {
-                                    //helper.showErrorMessage("Error: Please check the Connection of the Printer");
+                                    } else if (printerStatus.isHeadOpen) {
+                                        runOnUiThread { Toast.makeText(this@AuxValueInputActivity, "Printer is open.", Toast.LENGTH_LONG).show() }
+                                    } else if (printerStatus.isPaused) {
+                                        runOnUiThread { Toast.makeText(this@AuxValueInputActivity, "Printer is paused.", Toast.LENGTH_LONG).show() }
+                                    } else if (printerStatus.isPaperOut) {
+                                        runOnUiThread { Toast.makeText(this@AuxValueInputActivity, "No paper.", Toast.LENGTH_LONG).show() }
+                                    } else {
+                                        runOnUiThread { Toast.makeText(this@AuxValueInputActivity, "Please check the printer's connection.", Toast.LENGTH_LONG).show() }
+                                    }
                                 }
-
-                                bc.close()
-
                             } catch (e: ConnectionException) {
                                 e.printStackTrace()
                             } catch (e: ZebraPrinterLanguageUnknownException) {
                                 e.printStackTrace()
+                            } finally {
+                                bc.close()
                             }
-
-                            return null
                         }
-                        return null
+
+                        runOnUiThread { builder.show() }
+
+                        return String()
                     }
+
                 }.execute()
+
+
+            }
             else -> return super.onOptionsItemSelected(item)
         }
         return true

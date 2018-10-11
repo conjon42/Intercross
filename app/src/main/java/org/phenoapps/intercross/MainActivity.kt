@@ -572,11 +572,11 @@ class MainActivity : AppCompatActivity() {
                 startActivityForResult(Intent(this@MainActivity,
                         ManageHeadersActivity::class.java), IntercrossConstants.MANAGE_HEADERS_REQ)
             }
-            R.id.nav_import_readable_names -> {
+            /*R.id.nav_import_readable_names -> {
                 val i = Intent(Intent.ACTION_GET_CONTENT)
-                i.type = "*/*"
-                startActivityForResult(i, 100)
-            }
+               /*i.type = "*/*"
+            //    startActivityForResult(i, 100)
+            }*/
         }
 
         val dl = findViewById(org.phenoapps.intercross.R.id.drawer_layout) as DrawerLayout

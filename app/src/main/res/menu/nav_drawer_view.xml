@@ -25,8 +25,8 @@
         android:icon="@drawable/ic_list"
         android:title="Manage Headers" />
 
-    <item
+    <!--<item
         android:id="@+id/nav_import_readable_names"
         android:icon="@drawable/ic_list"
-        android:title="Import readable names" />
+        android:title="Import readable names" /> -->
 </menu>
