@@ -4,18 +4,18 @@
         android:defaultValue="0"
         android:entries="@array/cross_order_array"
         android:entryValues="@array/cross_order_array_values"
-        android:icon="@drawable/ic_scanning"
+        android:icon="@drawable/ic_cross_order"
         android:key="org.phenoapps.intercross.CROSS_ORDER"
-        android:summary="Choose female or male for first target."
+        android:summary="%s"
         android:title="@string/cross_mode" />
+
     <EditTextPreference
-        android:icon="@drawable/ic_about"
+        android:icon="@drawable/ic_person"
         android:key="org.phenoapps.intercross.PERSON"
-        android:summary="Name of a person."
-        android:title="Name" />
+        android:title="Person" />
+
     <EditTextPreference
-        android:icon="@drawable/ic_about"
+        android:icon="@drawable/ic_location"
         android:key="org.phenoapps.intercross.LOCATION"
-        android:summary=""
         android:title="Location" />
 </PreferenceScreen>

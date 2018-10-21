@@ -139,7 +139,7 @@ class MainActivity : AppCompatActivity() {
         mRecyclerView.layoutManager = LinearLayoutManager(this)
 
         supportActionBar?.let {
-            it.title = "Intercross"
+            it.title = ""
             it.themedContext
             it.setDisplayHomeAsUpEnabled(true)
             it.setHomeButtonEnabled(true)
@@ -217,12 +217,12 @@ class MainActivity : AppCompatActivity() {
 
         when (mCrossOrder) {
             0 -> {
-                mFirstEditText.hint = "Female ID: "
-                mSecondEditText.hint = "Male ID: "
+                mFirstEditText.hint = "Female ID:"
+                mSecondEditText.hint = "Male ID:"
             }
             1 -> {
-                mFirstEditText.hint = "Male ID: "
-                mSecondEditText.hint = "Female ID: "
+                mFirstEditText.hint = "Male ID:"
+                mSecondEditText.hint = "Female ID:"
             }
         }
         mFirstEditText.requestFocus()
@@ -378,12 +378,6 @@ class MainActivity : AppCompatActivity() {
                 val cameraIntent = Intent(this, ScanActivity::class.java)
                 startActivityForResult(cameraIntent, IntercrossConstants.CAMERA_INTENT_REQ)
             }
-            R.id.action_count -> {
-                val countIntent = Intent(this, CountActivity::class.java)
-                countIntent.putExtra("NameMapKey", mNameMap!!.keys.toTypedArray<String>())
-                countIntent.putExtra("NameMapValue", mNameMap!!.values.toTypedArray<String>())
-                startActivity(countIntent)
-            }
             else -> return super.onOptionsItemSelected(item)
         }
         return true
@@ -515,13 +509,19 @@ class MainActivity : AppCompatActivity() {
             }
             org.phenoapps.intercross.R.id.nav_export -> askUserExportFileName()
             org.phenoapps.intercross.R.id.nav_about -> showAboutDialog()
+            org.phenoapps.intercross.R.id.cross_count -> {
+                val countIntent = Intent(this, CountActivity::class.java)
+                countIntent.putExtra("NameMapKey", mNameMap!!.keys.toTypedArray<String>())
+                countIntent.putExtra("NameMapValue", mNameMap!!.values.toTypedArray<String>())
+                startActivity(countIntent)
+            }
             org.phenoapps.intercross.R.id.nav_intro -> {
 
             }
-            org.phenoapps.intercross.R.id.nav_manage_headers -> {
-                startActivityForResult(Intent(this@MainActivity,
-                        ManageHeadersActivity::class.java), IntercrossConstants.MANAGE_HEADERS_REQ)
-            }
+            //org.phenoapps.intercross.R.id.nav_manage_headers -> {
+            //    startActivityForResult(Intent(this@MainActivity,
+            //            ManageHeadersActivity::class.java), IntercrossConstants.MANAGE_HEADERS_REQ)
+            //}
         }
 
         val dl = findViewById(org.phenoapps.intercross.R.id.drawer_layout) as DrawerLayout

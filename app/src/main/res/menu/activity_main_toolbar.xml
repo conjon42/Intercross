@@ -6,9 +6,4 @@
         android:icon="@drawable/ic_barcode_scan"
         android:title="@string/action_camera"
         app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/action_count"
-        android:icon="@drawable/ic_action_count"
-        android:title="Count Unique Crosses"
-        app:showAsAction="ifRoom" />
 </menu>

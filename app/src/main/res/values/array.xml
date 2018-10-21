@@ -2,8 +2,8 @@
 <resources>
     <string-array
         name="cross_order_array">
-        <item>Female</item>
-        <item>Male</item>
+        <item>Female first</item>
+        <item>Male first</item>
     </string-array>
     <string-array
         name="cross_order_array_values">
