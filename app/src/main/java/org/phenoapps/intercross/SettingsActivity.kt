@@ -11,7 +11,7 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         if (supportActionBar != null) {
-            supportActionBar!!.title = null
+            supportActionBar!!.title = "Settings"
             supportActionBar!!.themedContext
             supportActionBar!!.setDisplayHomeAsUpEnabled(true)
             supportActionBar!!.setHomeButtonEnabled(true)

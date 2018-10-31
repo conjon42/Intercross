@@ -31,5 +31,7 @@ internal object IntercrossConstants {
 
     val USER_INPUT_VALUES = "org.phenoapps.intercross.USER_INPUT_VALUES"
 
+    val FEMALE_PARENT = "org.phenoapps.intercross.FEMALE_PARENT"
 
+    val MALE_PARENT = "org.phenoapps.intercross.MALE_PARENT"
 }

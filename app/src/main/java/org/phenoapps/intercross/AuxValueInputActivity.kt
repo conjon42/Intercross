@@ -40,6 +40,8 @@ class AuxValueInputActivity : AppCompatActivity() {
     private lateinit var mTimeTextView: TextView
     private lateinit var mUpdateButton: Button
 
+    private var mMaleParent = String()
+    private var mFemaleParent = String()
     private val mEntries = ArrayList<AdapterEntry>()
     private var mCrossId = String()
     private var mTimestamp = String()
@@ -53,15 +55,20 @@ class AuxValueInputActivity : AppCompatActivity() {
         mRecyclerView = findViewById(R.id.recyclerView) as RecyclerView
         mIdTextView = findViewById(R.id.textView2) as TextView
         mTimeTextView = findViewById(R.id.textView3) as TextView
-        mUpdateButton = findViewById(R.id.button) as Button
+        //mUpdateButton = findViewById(R.id.button) as Button
 
         mRecyclerView.layoutManager = LinearLayoutManager(this)
 
         val id = intent.getIntExtra(IntercrossConstants.COL_ID_KEY, -1)
         mCrossId = intent.getStringExtra(IntercrossConstants.CROSS_ID) ?: ""
+        mMaleParent = intent.getStringExtra(IntercrossConstants.MALE_PARENT) ?: ""
+        mFemaleParent = intent.getStringExtra(IntercrossConstants.FEMALE_PARENT) ?: ""
         mTimestamp = intent.getStringExtra(IntercrossConstants.TIMESTAMP) ?: ""
         val headers = intent.getStringArrayListExtra(IntercrossConstants.HEADERS)
         val values = intent.getStringArrayListExtra(IntercrossConstants.USER_INPUT_VALUES)
+
+        findViewById<TextView>(R.id.maleParentTextView).text = "M: $mMaleParent"
+        findViewById<TextView>(R.id.femaleParentTextView).text = "F: $mFemaleParent"
 
         headers.forEachIndexed { index, header ->
             mEntries.add(AdapterEntry(header, values[index] ?: ""))
@@ -83,7 +90,7 @@ class AuxValueInputActivity : AppCompatActivity() {
         mIdTextView.text = "Cross ID: $mCrossId"
         mTimeTextView.text = "Timestamp: $mTimestamp"
 
-        mUpdateButton.setOnClickListener { _ ->
+        /*mUpdateButton.setOnClickListener { _ ->
 
             val updatedValues = ArrayList<String>()
             val intent = Intent()
@@ -96,7 +103,7 @@ class AuxValueInputActivity : AppCompatActivity() {
             intent.putExtra(IntercrossConstants.COL_ID_KEY, id)
             setResult(RESULT_OK, intent)
             finish()
-        }
+        }*/
     }
 
     inner class ViewHolder internal constructor(itemView: View) :

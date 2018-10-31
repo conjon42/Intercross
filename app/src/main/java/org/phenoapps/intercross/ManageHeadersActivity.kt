@@ -3,9 +3,12 @@ package org.phenoapps.intercross
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.support.design.widget.NavigationView
+import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.view.MenuItem
 import android.view.View
 import android.widget.*
 import java.util.*
@@ -16,6 +19,7 @@ class ManageHeadersActivity : AppCompatActivity() {
     private lateinit var mEditText: EditText
     private lateinit var mRecyclerView: RecyclerView
     private lateinit var mSubmitButton: Button
+    private lateinit var mNavView: NavigationView
 
     private val mEntries = ArrayList<String>()
 
@@ -45,6 +49,17 @@ class ManageHeadersActivity : AppCompatActivity() {
         userHeaders.forEach { header ->
             mEntries.add(header)
         }
+
+        supportActionBar?.let {
+            it.title = "Manage Headers"
+            it.themedContext
+            it.setDisplayHomeAsUpEnabled(true)
+            it.setHomeButtonEnabled(true)
+        }
+        mNavView = findViewById(R.id.nvView) as NavigationView
+
+        // Setup drawer view
+        setupDrawer()
 
         mSubmitButton = findViewById(R.id.submitButton) as Button
         mButton = findViewById(R.id.addHeaderButton) as Button
@@ -81,6 +96,19 @@ class ManageHeadersActivity : AppCompatActivity() {
             finish()
         }
 
+    }
+
+    private fun setupDrawer() {
+        val dl = findViewById(org.phenoapps.intercross.R.id.drawer_layout) as DrawerLayout
+        dl.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> onBackPressed()
+            //else -> return super.onOptionsItemSelected(item)
+        }
+        return true
     }
 
     inner class ViewHolder internal constructor(itemView: View) :

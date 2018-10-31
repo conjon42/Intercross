@@ -340,9 +340,8 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this@MainActivity,
                             "Must enter a file name.", Toast.LENGTH_SHORT).show()
                 }
-
-                builder.show()
             }
+            builder.show()
         } else {
             Toast.makeText(this@MainActivity, "External storage not writable.", Toast.LENGTH_SHORT).show()
         }
@@ -450,6 +449,8 @@ class MainActivity : AppCompatActivity() {
 
             v?.let {
 
+                val parents = mDbHelper.getParents(id)
+
                 val intent = Intent(this@MainActivity, AuxValueInputActivity::class.java)
 
                 val headers = mDbHelper.getColumns() - IdEntryContract.IdEntry.COLUMNS.toList()
@@ -461,6 +462,10 @@ class MainActivity : AppCompatActivity() {
                 intent.putExtra(IntercrossConstants.CROSS_ID, firstText.text)
 
                 intent.putExtra(IntercrossConstants.TIMESTAMP, secondText.text)
+
+                intent.putExtra(IntercrossConstants.FEMALE_PARENT, parents[0])
+
+                intent.putExtra(IntercrossConstants.MALE_PARENT, parents[1])
 
                 intent.putStringArrayListExtra(IntercrossConstants.HEADERS, ArrayList(headers))
 
