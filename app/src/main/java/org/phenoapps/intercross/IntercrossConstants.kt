@@ -34,4 +34,6 @@ internal object IntercrossConstants {
     val FEMALE_PARENT = "org.phenoapps.intercross.FEMALE_PARENT"
 
     val MALE_PARENT = "org.phenoapps.intercross.MALE_PARENT"
+
+    val COMPLETED_TUTORIAL = "org.phenoapps.intercross.COMPLETED_TUTORIAL"
 }

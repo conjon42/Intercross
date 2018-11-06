@@ -10,12 +10,10 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.database.sqlite.SQLiteException
 import android.media.MediaScannerConnection
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.preference.PreferenceManager
-import android.provider.Settings
 import android.support.design.widget.NavigationView
 import android.support.v4.app.ActivityCompat
 import android.support.v4.view.GravityCompat
@@ -117,6 +115,18 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
+
+        //Show Tutorial Fragment for first-time users
+        PreferenceManager.getDefaultSharedPreferences(this).apply {
+            if (!getBoolean(IntercrossConstants.COMPLETED_TUTORIAL, false)) {
+                startActivity(Intent(this@MainActivity, IntercrossOnboardingActivity::class.java))
+            }
+        }
+
+        PreferenceManager.getDefaultSharedPreferences(this).edit().apply {
+            putBoolean(IntercrossConstants.COMPLETED_TUTORIAL, true)
+            apply()
+        }
 
         mNameMap = HashMap()
 
@@ -521,7 +531,7 @@ class MainActivity : AppCompatActivity() {
                 startActivity(countIntent)
             }
             org.phenoapps.intercross.R.id.nav_intro -> {
-
+                startActivity(Intent(this, IntercrossOnboardingActivity::class.java))
             }
             //org.phenoapps.intercross.R.id.nav_manage_headers -> {
             //    startActivityForResult(Intent(this@MainActivity,
@@ -531,6 +541,10 @@ class MainActivity : AppCompatActivity() {
 
         val dl = findViewById(org.phenoapps.intercross.R.id.drawer_layout) as DrawerLayout
         dl.closeDrawers()
+    }
+
+    override fun onBackPressed() {
+        //do nothing
     }
 
     private fun showAboutDialog() {

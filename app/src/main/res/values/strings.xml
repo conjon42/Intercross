@@ -23,6 +23,11 @@
     <string name="intro_body_2">After you give Intercross permission to access your device\'s camera you can start scanning barcodes!</string>
     <string name="intro_body_3">Cross properties and auxiliary data can be saved locally or exported to a flat file.</string>
 
+    <string name="tutorial0_text">Import crosses from a CSV file.</string>
+    <string name="tutorial1_text">Scan barcodes with your phone\'s camera.</string>
+    <string name="tutorial2_text">Print barcodes with your Zebra bluetooth printer.</string>
+    <string name="tutorial3_text">Tutorial complete!</string>
+
     <!-- About Strings -->
     <string name="ok">OK</string>
     <string name="about">About</string>
@@ -35,5 +40,4 @@
     <string name="dev_jesse_email">jpoland@ksu.edu</string>
     <string name="wg_site">http://wheatgenetics.org\n</string>
     <string name="action_clear">Clear</string>
-
 </resources>

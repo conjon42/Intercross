@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.phenoapps.intercross">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="org.phenoapps.intercross"
+    tools:ignore="MissingLeanbackLauncher">
+
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -30,6 +39,11 @@
         <activity android:name=".AuxValueInputActivity" />
         <activity android:name=".ManageHeadersActivity" />
         <activity android:name=".CountActivity" />
+        <activity android:name=".IntercrossOnboardingActivity">
+            android:enabled="true"
+            android:exported="true"
+            android:theme="@style/Theme.Leanback.Onboarding">
+        </activity>
     </application>
 
 </manifest>

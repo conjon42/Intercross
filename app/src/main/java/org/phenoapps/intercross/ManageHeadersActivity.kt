@@ -78,7 +78,7 @@ class ManageHeadersActivity : AppCompatActivity() {
 
                 mEntries.add(newHeaderName)
 
-                mRecyclerView.adapter.notifyDataSetChanged()
+                (mRecyclerView.adapter as ViewAdapter<String>).notifyDataSetChanged()
 
                 mEditText.setText("")
 
