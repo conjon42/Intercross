@@ -145,16 +145,16 @@ class AuxValueInputActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-
-        val pairedDevices = mBluetoothAdapter.bondedDevices
-
         when (item.itemId) {
             R.id.action_print -> {
 
                 object : AsyncTask<Void, Void, String>() {
 
                     override fun doInBackground(vararg params: Void?): String {
+
+                        val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter() ?: return String()
+
+                        val pairedDevices = mBluetoothAdapter.bondedDevices
 
                         val builder = AlertDialog.Builder(this@AuxValueInputActivity)
 
@@ -171,10 +171,10 @@ class AuxValueInputActivity : AppCompatActivity() {
                         builder.setView(input)
 
                         builder.setPositiveButton("OK") { dialog, which ->
+                            if (input.checkedRadioButtonId == -1) return@setPositiveButton
                             val value = input.findViewById(input.checkedRadioButtonId) as RadioButton
-                            //TODO wrap in async task
-                            Log.d("BT", "PAIRED")
                             val bc = BluetoothConnection(pairedDevices.toTypedArray()[input.indexOfChild(value)].address)
+
                             try {
                                 bc.open()
                                 val printer = ZebraPrinterFactory.getInstance(bc)
