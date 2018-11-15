@@ -17,11 +17,13 @@
     <!-- Intro Strings -->
     <string name="intro_title_1">Welcome to Intercross!</string>
     <string name="intro_title_2">Barcodes</string>
-    <string name="intro_title_3">Data</string>
+    <string name="intro_title_3">Print labels</string>
+    <string name="intro_title_4">Export data</string>
 
     <string name="intro_body_1">Track your crosses and various phenotypes.</string>
-    <string name="intro_body_2">After you give Intercross permission to access your device\'s camera you can start scanning barcodes!</string>
-    <string name="intro_body_3">Cross properties and auxiliary data can be saved locally or exported to a flat file.</string>
+    <string name="intro_body_2">After you give Intercross permission to access your device\'s camera you can start scanning barcodes.</string>
+    <string name="intro_body_3">Print barcodes with your Zebra bluetooth printer.</string>
+    <string name="intro_body_4">Crosses can be exported to a local file.</string>
 
     <string name="tutorial0_text">Import crosses from a CSV file.</string>
     <string name="tutorial1_text">Scan barcodes with your phone\'s camera.</string>

@@ -14,15 +14,15 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.preference.PreferenceManager
-import android.support.design.widget.NavigationView
-import android.support.v4.app.ActivityCompat
-import android.support.v4.view.GravityCompat
-import android.support.v4.widget.DrawerLayout
-import android.support.v7.app.ActionBarDrawerToggle
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import com.google.android.material.navigation.NavigationView
+import androidx.core.app.ActivityCompat
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
@@ -119,7 +119,7 @@ class MainActivity : AppCompatActivity() {
         //Show Tutorial Fragment for first-time users
         PreferenceManager.getDefaultSharedPreferences(this).apply {
             if (!getBoolean(IntercrossConstants.COMPLETED_TUTORIAL, false)) {
-                startActivity(Intent(this@MainActivity, IntercrossOnboardingActivity::class.java))
+                startActivity(Intent(this@MainActivity, IntroActivity::class.java))
             }
         }
 
@@ -531,8 +531,10 @@ class MainActivity : AppCompatActivity() {
                 startActivity(countIntent)
             }
             org.phenoapps.intercross.R.id.nav_intro -> {
-                startActivity(Intent(this, IntercrossOnboardingActivity::class.java))
+                //startActivity(Intent(this, IntercrossOnboardingActivity::class.java))
+                startActivity(Intent(this, IntroActivity::class.java))
             }
+
             //org.phenoapps.intercross.R.id.nav_manage_headers -> {
             //    startActivityForResult(Intent(this@MainActivity,
             //            ManageHeadersActivity::class.java), IntercrossConstants.MANAGE_HEADERS_REQ)
