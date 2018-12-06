@@ -29,6 +29,15 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import com.google.android.material.navigation.NavigationView
+import androidx.core.app.ActivityCompat
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
@@ -660,8 +669,10 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                 startActivity(countIntent)
             }
             org.phenoapps.intercross.R.id.nav_intro -> {
-                startActivity(Intent(this, IntercrossOnboardingActivity::class.java))
+                //startActivity(Intent(this, IntercrossOnboardingActivity::class.java))
+                startActivity(Intent(this, IntroActivity::class.java))
             }
+
             //org.phenoapps.intercross.R.id.nav_manage_headers -> {
             //    startActivityForResult(Intent(this@MainActivity,
             //            ManageHeadersActivity::class.java), IntercrossConstants.MANAGE_HEADERS_REQ)
