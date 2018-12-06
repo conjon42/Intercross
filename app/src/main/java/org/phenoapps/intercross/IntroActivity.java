@@ -2,6 +2,7 @@ package org.phenoapps.intercross;
 
 import android.graphics.Color;
 import android.os.Bundle;
+
 import androidx.annotation.Nullable;
 
 import com.github.paolorotolo.appintro.AppIntro2;
@@ -11,6 +12,7 @@ import androidx.fragment.app.Fragment;
 
 
 public class IntroActivity extends AppIntro2 {
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

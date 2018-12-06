@@ -2,42 +2,17 @@ package org.phenoapps.intercross
 
 import android.Manifest
 import android.app.Activity
-import android.arch.lifecycle.Lifecycle
-import android.arch.lifecycle.LifecycleObserver
-import android.arch.lifecycle.OnLifecycleEvent
-import android.arch.lifecycle.ProcessLifecycleOwner
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.database.sqlite.SQLiteException
 import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.preference.PreferenceManager
-import android.support.constraint.ConstraintLayout
-import android.support.design.widget.NavigationView
-import android.support.v17.leanback.widget.GuidedActionAdapter
-import android.support.v4.app.ActivityCompat
-import android.support.v4.view.GravityCompat
-import android.support.v4.widget.DrawerLayout
-import android.support.v7.app.ActionBarDrawerToggle
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
-import com.google.android.material.navigation.NavigationView
-import androidx.core.app.ActivityCompat
-import androidx.core.view.GravityCompat
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
@@ -51,6 +26,20 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.app.ActivityCompat
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.navigation.NavigationView
 import org.phenoapps.intercross.IntercrossConstants.REQUEST_WRITE_PERMISSION
 import java.io.File
 import java.io.FileNotFoundException
@@ -282,7 +271,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         //Show Tutorial Fragment for first-time users
         PreferenceManager.getDefaultSharedPreferences(this).apply {
             if (!getBoolean(IntercrossConstants.COMPLETED_TUTORIAL, false)) {
-                startActivity(Intent(this@MainActivity, IntercrossOnboardingActivity::class.java))
+                startActivity(Intent(this@MainActivity, IntroActivity::class.java))
             }
             mAllowBlankMale = getBoolean(SettingsActivity.BLANK_MALE_ID, false)
         }
@@ -368,7 +357,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             mEntries.add(entry)
         }
 
-        mAdapter.notifyDataSetChanged()
+        //mAdapter.notifyDataSetChanged()
     }
 
     private fun askIfSamePerson() {
