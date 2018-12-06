@@ -357,7 +357,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             mEntries.add(entry)
         }
 
-        //mAdapter.notifyDataSetChanged()
+        mAdapter.notifyDataSetChanged()
     }
 
     private fun askIfSamePerson() {
