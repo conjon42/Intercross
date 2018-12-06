@@ -13,6 +13,7 @@ internal object IntercrossConstants {
     val DEFAULT_CONTENT_REQ = 104
     val MANAGE_HEADERS_REQ = 300
     val USER_INPUT_HEADERS_REQ = 301
+    val REQUEST_WRITE_PERMISSION = 200
 
     //extras
     val CSV_URI = "org.phenoapps.intercross.CSV_URI"

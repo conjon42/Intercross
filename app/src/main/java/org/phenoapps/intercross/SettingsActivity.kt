@@ -36,6 +36,7 @@ class SettingsActivity : AppCompatActivity() {
 
     companion object {
 
+        val BLANK_MALE_ID = "org.phenoapps.intercross.BLANK_MALE_ID"
         val CROSS_ORDER = "org.phenoapps.intercross.CROSS_ORDER"
         val HEADER_SET = "org.phenoapps.intercross.HEADER_SET"
         var PERSON = "org.phenoapps.intercross.PERSON"

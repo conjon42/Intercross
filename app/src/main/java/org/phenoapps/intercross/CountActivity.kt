@@ -123,7 +123,7 @@ class CountActivity : AppCompatActivity() {
             intent.putStringArrayListExtra(IntercrossConstants.USER_INPUT_VALUES, ArrayList(values))
             startActivityForResult(intent, IntercrossConstants.USER_INPUT_HEADERS_REQ)
         }
-        private var firstText: TextView = itemView.findViewById(R.id.firstTextView) as TextView
+        private var firstText: TextView = itemView.findViewById(R.id.crossTextView) as TextView
         init {
             firstText.setOnClickListener(this)
         }
@@ -148,7 +148,7 @@ class CountActivity : AppCompatActivity() {
     inner class ViewHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView),
             ViewAdapter.Binder<AdapterEntry>, View.OnClickListener {
 
-        private var firstText: TextView = itemView.findViewById(R.id.firstTextView) as TextView
+        private var firstText: TextView = itemView.findViewById(R.id.crossTextView) as TextView
         private var secondText: TextView = itemView.findViewById(R.id.secondTextView) as TextView
         private var countText: TextView = itemView.findViewById(R.id.thirdTextView) as TextView
 

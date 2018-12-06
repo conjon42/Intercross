@@ -9,7 +9,7 @@
     app:barrierAllowsGoneWidgets="false"
     tools:layout_editor_absoluteY="81dp">
     <TextView
-        android:id="@+id/firstTextView"
+        android:id="@+id/crossTextView"
         android:layout_width="205dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
@@ -29,7 +29,7 @@
         android:padding="4dp"
         android:textSize="20sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/firstTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/crossTextView" />
     <TextView
         android:id="@+id/thirdTextView"
         android:layout_width="0dp"
@@ -44,6 +44,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/firstTextView"
+        app:layout_constraintStart_toEndOf="@+id/crossTextView"
         app:layout_constraintTop_toTopOf="parent" />
 </android.support.constraint.ConstraintLayout>

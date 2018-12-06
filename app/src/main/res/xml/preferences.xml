@@ -9,6 +9,11 @@
         android:summary="%s"
         android:title="@string/cross_mode" />
 
+    <CheckBoxPreference
+        android:icon="@drawable/ic_human_male"
+        android:key="org.phenoapps.intercross.BLANK_MALE_ID"
+        android:title="Allow Blank Male ID" />
+
     <EditTextPreference
         android:icon="@drawable/ic_person"
         android:key="org.phenoapps.intercross.PERSON"

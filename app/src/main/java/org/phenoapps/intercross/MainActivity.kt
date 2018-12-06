@@ -2,6 +2,10 @@ package org.phenoapps.intercross
 
 import android.Manifest
 import android.app.Activity
+import android.arch.lifecycle.Lifecycle
+import android.arch.lifecycle.LifecycleObserver
+import android.arch.lifecycle.OnLifecycleEvent
+import android.arch.lifecycle.ProcessLifecycleOwner
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -14,7 +18,9 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.preference.PreferenceManager
+import android.support.constraint.ConstraintLayout
 import android.support.design.widget.NavigationView
+import android.support.v17.leanback.widget.GuidedActionAdapter
 import android.support.v4.app.ActivityCompat
 import android.support.v4.view.GravityCompat
 import android.support.v4.widget.DrawerLayout
@@ -36,6 +42,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import org.phenoapps.intercross.IntercrossConstants.REQUEST_WRITE_PERMISSION
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -44,13 +51,22 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.Arrays.asList
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), LifecycleObserver {
+
+    enum class PollinationType {
+        Biparental,
+        SelfPollinated,
+        OpenPollinated
+    }
 
     private lateinit var mFirstEditText: EditText
     private lateinit var mSecondEditText: EditText
     private lateinit var mCrossEditText: EditText
     private lateinit var mRecyclerView: RecyclerView
     private lateinit var mNavView: NavigationView
+    private lateinit var mSaveButton: Button
+
+    private var mAllowBlankMale: Boolean = false
 
     private var mCrossOrder: Int = 0
 
@@ -59,7 +75,12 @@ class MainActivity : AppCompatActivity() {
     private val mAdapter: ViewAdapter<AdapterEntry> = object : ViewAdapter<AdapterEntry>(mEntries) {
 
         override fun getLayoutId(position: Int, obj: AdapterEntry): Int {
-            return R.layout.row
+            val type = mDbHelper.getPollinationType(obj.id)
+            return when(type) {
+                PollinationType.SelfPollinated.toString() -> R.layout.main_self_pollinated_row
+                PollinationType.OpenPollinated.toString() -> R.layout.main_open_pollinated_row
+                else -> R.layout.main_biparental_row
+            }
         }
 
         override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
@@ -68,11 +89,11 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private val mPrefListener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
+    private val mPrefListener = SharedPreferences.OnSharedPreferenceChangeListener { pref, key ->
         key?.let{
             when (key) {
                 SettingsActivity.CROSS_ORDER -> {
-                    when (sharedPreferences?.getString(key, "0")) {
+                    when (pref?.getString(key, "0")) {
                         "0" -> {
                             mFirstEditText.hint = "Female ID: "
                             mSecondEditText.hint = "Male ID: "
@@ -83,26 +104,29 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
+                SettingsActivity.BLANK_MALE_ID -> {
+                    mAllowBlankMale = !mAllowBlankMale
+                    findViewById<Button>(R.id.saveButton).isEnabled = isInputValid()
+                }
             }
         }
     }
 
     private val mDbHelper: IdEntryDbHelper = IdEntryDbHelper(this)
 
-    private var mDrawerToggle: ActionBarDrawerToggle? = null
+    private lateinit var mDrawerToggle: ActionBarDrawerToggle
 
-    private var mNameMap: MutableMap<String, String>? = null
+    private lateinit var mNameMap: MutableMap<String, String>
 
     private val isExternalStorageWritable: Boolean
         get() {
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                     Log.v("Security", "Permission is granted")
                     return Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()
                 } else {
                     ActivityCompat.requestPermissions(this,
-                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 200)
+                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), REQUEST_WRITE_PERMISSION)
                 }
             } else
                 return Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()
@@ -110,41 +134,11 @@ class MainActivity : AppCompatActivity() {
             return false
         }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onStart() {
 
-        super.onCreate(savedInstanceState)
+        super.onStart()
 
-        setContentView(R.layout.activity_main)
-
-        //Show Tutorial Fragment for first-time users
-        PreferenceManager.getDefaultSharedPreferences(this).apply {
-            if (!getBoolean(IntercrossConstants.COMPLETED_TUTORIAL, false)) {
-                startActivity(Intent(this@MainActivity, IntercrossOnboardingActivity::class.java))
-            }
-        }
-
-        PreferenceManager.getDefaultSharedPreferences(this).edit().apply {
-            putBoolean(IntercrossConstants.COMPLETED_TUTORIAL, true)
-            apply()
-        }
-
-        mNameMap = HashMap()
-
-        val sharedPref = PreferenceManager.getDefaultSharedPreferences(this)
-
-        mCrossOrder = sharedPref.getString(SettingsActivity.CROSS_ORDER, "0").toInt()
-
-        sharedPref.registerOnSharedPreferenceChangeListener(mPrefListener)
-
-        initializeUIVariables()
-
-        loadSQLToLocal()
-
-    }
-
-    private fun initializeUIVariables() {
-
-        mRecyclerView = findViewById(R.id.recyclerView) as RecyclerView
+        mRecyclerView = findViewById(R.id.recyclerView)
         mRecyclerView.adapter = mAdapter
         mRecyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -161,10 +155,10 @@ class MainActivity : AppCompatActivity() {
         setupDrawerContent(mNavView)
         setupDrawer()
 
-        mSecondEditText = findViewById(R.id.secondText) as EditText
-        mFirstEditText = findViewById(R.id.firstText) as EditText
-        mCrossEditText = findViewById(R.id.editTextCross) as EditText
-        val saveButton = findViewById(R.id.saveButton) as Button
+        mSecondEditText = findViewById(R.id.secondText)
+        mFirstEditText = findViewById(R.id.firstText)
+        mCrossEditText = findViewById(R.id.editTextCross)
+        mSaveButton = findViewById(R.id.saveButton)
 
         //single text watcher class to check if all fields are non-empty to enable the save button
         val emptyGuard = object : TextWatcher {
@@ -174,11 +168,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
-
-                saveButton.isEnabled = mFirstEditText.text.isNotEmpty()
-                        && mSecondEditText.text.isNotEmpty()
-                        && mCrossEditText.text.isNotEmpty()
-
+                mSaveButton.isEnabled = isInputValid()
             }
 
             override fun afterTextChanged(editable: Editable) {
@@ -189,6 +179,21 @@ class MainActivity : AppCompatActivity() {
         mSecondEditText.addTextChangedListener(emptyGuard)
         mFirstEditText.addTextChangedListener(emptyGuard)
         mCrossEditText.addTextChangedListener(emptyGuard)
+
+        val focusListener = object : View.OnFocusChangeListener {
+
+            override fun onFocusChange(p0: View?, p1: Boolean) {
+                if (p1 && PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
+                                ?.getString(SettingsActivity.PERSON, "")?.isNotBlank() == false) {
+                    askUserForPerson()
+                }
+            }
+
+        }
+
+        mFirstEditText.onFocusChangeListener = focusListener
+        mSecondEditText.onFocusChangeListener = focusListener
+        mCrossEditText.onFocusChangeListener = focusListener
 
         mFirstEditText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
             if (i == EditorInfo.IME_ACTION_DONE) {
@@ -212,12 +217,13 @@ class MainActivity : AppCompatActivity() {
             false
         })
 
-        saveButton.isEnabled = false
-        saveButton.setOnClickListener {
+        mSaveButton.isEnabled = isInputValid()
+
+        mSaveButton.setOnClickListener {
             saveToDB()
         }
 
-        (findViewById(R.id.clearButton) as Button).setOnClickListener {
+        (findViewById<Button>(R.id.clearButton)).setOnClickListener {
             mCrossEditText.setText("")
             mFirstEditText.setText("")
             mSecondEditText.setText("")
@@ -235,25 +241,97 @@ class MainActivity : AppCompatActivity() {
                 mSecondEditText.hint = "Female ID:"
             }
         }
-        mFirstEditText.requestFocus()
+
+        findViewById<ConstraintLayout>(R.id.constraint_layout_parent).requestFocus()
+
+        loadSQLToLocal()
+    }
+
+    private fun isInputValid(): Boolean {
+
+        val male: String
+        val female: String
+        val cross: String = mCrossEditText.text.toString()
+        if (mCrossOrder == 0) {
+            female = mFirstEditText.text.toString()
+            male = mSecondEditText.text.toString()
+        } else {
+            male = mFirstEditText.text.toString()
+            female = mSecondEditText.text.toString()
+        }
+
+
+        return ((male.isNotEmpty() || mAllowBlankMale) && female.isNotEmpty() && cross.isNotEmpty())
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+
+        super.onCreate(savedInstanceState)
+
+        setContentView(R.layout.activity_main)
+
+        //Show Tutorial Fragment for first-time users
+        PreferenceManager.getDefaultSharedPreferences(this).apply {
+            if (!getBoolean(IntercrossConstants.COMPLETED_TUTORIAL, false)) {
+                startActivity(Intent(this@MainActivity, IntercrossOnboardingActivity::class.java))
+            }
+            mAllowBlankMale = getBoolean(SettingsActivity.BLANK_MALE_ID, false)
+        }
+
+        PreferenceManager.getDefaultSharedPreferences(this).edit().apply {
+            putBoolean(IntercrossConstants.COMPLETED_TUTORIAL, true)
+            apply()
+        }
+
+        mNameMap = HashMap()
+
+        val sharedPref = PreferenceManager.getDefaultSharedPreferences(this)
+
+        mCrossOrder = sharedPref?.getString(SettingsActivity.CROSS_ORDER, "0")?.toInt() ?: 0
+
+        sharedPref.registerOnSharedPreferenceChangeListener(mPrefListener)
+
+        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+
     }
 
     private fun saveToDB() {
 
-        if (mFirstEditText.text.isNotEmpty() && mSecondEditText.text.isNotEmpty()
-                && mCrossEditText.text.isNotEmpty()) {
+        val male: String
+        val female: String
+        val cross: String = mCrossEditText.text.toString()
+        if (mCrossOrder == 0) {
+            female = mFirstEditText.text.toString()
+            male = mSecondEditText.text.toString()
+        } else {
+            male = mFirstEditText.text.toString()
+            female = mSecondEditText.text.toString()
+        }
+
+        if ((male.isNotEmpty() || mAllowBlankMale) && female.isNotEmpty() && cross.isNotEmpty()) {
+
+            val pollinationType = when {
+                male.isBlank() -> PollinationType.OpenPollinated
+                male != female -> PollinationType.Biparental
+                else -> PollinationType.SelfPollinated
+            }
+
+            val crossCount = mDbHelper.getCrosses(female, male).size + 1
 
             val entry = ContentValues()
 
-            entry.put("male", if (mCrossOrder == 0) mSecondEditText.text.toString() else mFirstEditText.text.toString())
-            entry.put("female", if (mCrossOrder == 0) mFirstEditText.text.toString() else mSecondEditText.text.toString())
+            entry.put("male", if(male.isBlank()) "blank" else male)
+            entry.put("female", female)
             entry.put("cross_id", mCrossEditText.text.toString())
+            entry.put("p_type", pollinationType.toString())
+            entry.put("cross_count", crossCount)
+            entry.put("cross_name", "$female/$male-$crossCount")
 
             val c = Calendar.getInstance()
             val sdf = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault())
 
             val pref = PreferenceManager.getDefaultSharedPreferences(this)
-            val person : String = pref.getString(SettingsActivity.PERSON, "None")
+            val person : String = pref?.getString(SettingsActivity.PERSON, "None") ?: "None"
 
             entry.put("timestamp", sdf.format(c.time).toString())
 
@@ -284,77 +362,128 @@ class MainActivity : AppCompatActivity() {
         mAdapter.notifyDataSetChanged()
     }
 
-    //TODO Kotlin-ize
+    private fun askIfSamePerson() {
+
+        findViewById<ConstraintLayout>(R.id.constraint_layout_parent).requestFocus()
+
+        val input = EditText(this).apply {
+            hint = "Person: "
+            inputType = InputType.TYPE_CLASS_TEXT
+        }
+
+        val builder = AlertDialog.Builder(this).apply {
+
+            setView(input)
+
+            setNegativeButton("Yes") { _, _ ->
+                //welcome back
+            }
+
+            setPositiveButton("Change Person") { _, _ ->
+                val value = input.text.toString()
+                if (value.isNotEmpty()) {
+                    PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
+                            .edit().putString(SettingsActivity.PERSON, value)
+                            .apply()
+                } else {
+                    Toast.makeText(this@MainActivity,
+                            "You must enter a name.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        builder.setTitle("Is this still " +
+                "${PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
+                        .getString(SettingsActivity.PERSON, "Guillaume")}?")
+        builder.show()
+    }
+
     private fun askUserExportFileName() {
 
         if (isExternalStorageWritable) {
 
-            val builder = AlertDialog.Builder(this)
+            val input = EditText(this).apply {
+                inputType = InputType.TYPE_CLASS_TEXT
+            }
 
-            builder.setTitle("Choose name for exported file.")
+            val builder = AlertDialog.Builder(this).apply {
 
-            val input = EditText(this)
+                setView(input)
 
-            input.inputType = InputType.TYPE_CLASS_TEXT
+                setPositiveButton("Export") { _, _ ->
+                    val value = input.text.toString()
+                    if (value.isNotEmpty()) {
+                        try {
+                            val dir = File(Environment.getExternalStorageDirectory().path + "/Intercross")
+                            dir.mkdir()
+                            val output = File(dir, "$value.csv")
+                            val fstream = FileOutputStream(output)
 
-            builder.setView(input)
+                            val colVals = mDbHelper.getExportData()
 
-            builder.setPositiveButton("Export") { dialog, which ->
-                val value = input.text.toString()
-                if (value.isNotEmpty()) {
-                    try {
-                        val dir = File(Environment.getExternalStorageDirectory().path + "/Intercross")
-                        val output = File(dir, "$value.csv")
-                        val fstream = FileOutputStream(output)
-                        val db = mDbHelper.readableDatabase
-                        val cursor = db.query(IdEntryContract.IdEntry.TABLE_NAME,
-                                null, null, null,
-                                null, null, null)
+                            colVals.forEach {
+                                fstream.write(it.toByteArray())
+                                fstream.write(lineSeparator.toByteArray())
+                            }
 
-                        //first write header line
-                        val headers = cursor.columnNames
-                        for (i in headers.indices) {
-                            if (i != 0) fstream.write(",".toByteArray())
-                            fstream.write(headers[i].toByteArray())
-                        }
-                        fstream.write(line_separator.toByteArray())
-                        //populate text file with current database values
-                        if (cursor.moveToFirst()) {
-                            do {
-                                for (i in headers.indices) {
-                                    if (i != 0) fstream.write(",".toByteArray())
-                                    val colVal = cursor.getString(
-                                            cursor.getColumnIndexOrThrow(headers[i])
-                                    )
-                                    fstream.write((colVal ?: "null").toByteArray())
-                                }
-                                fstream.write(line_separator.toByteArray())
-                            } while (cursor.moveToNext())
+                            scanFile(this@MainActivity, output)
+
+                            fstream.flush()
+                            fstream.close()
+                        } catch (e: FileNotFoundException) {
+                            e.printStackTrace()
+                        } catch (io: IOException) {
+                            io.printStackTrace()
+                        } finally {
+                            Toast.makeText(this@MainActivity, "File write successful!", Toast.LENGTH_SHORT).show()
                         }
 
-                        scanFile(this@MainActivity, output)
-
-                        cursor.close()
-                        fstream.flush()
-                        fstream.close()
-                    } catch (e: SQLiteException) {
-                        e.printStackTrace()
-                        Toast.makeText(this@MainActivity, "Error exporting file, is your table empty?", Toast.LENGTH_SHORT).show()
-                    } catch (e: FileNotFoundException) {
-                        e.printStackTrace()
-                    } catch (io: IOException) {
-                        io.printStackTrace()
+                    } else {
+                        Toast.makeText(this@MainActivity,
+                                "You must enter a file name.", Toast.LENGTH_SHORT).show()
                     }
-
-                } else {
-                    Toast.makeText(this@MainActivity,
-                            "Must enter a file name.", Toast.LENGTH_SHORT).show()
                 }
             }
+
+            builder.setTitle("Choose a name for the exported file.")
             builder.show()
-        } else {
-            Toast.makeText(this@MainActivity, "External storage not writable.", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun askUserForPerson() {
+
+        findViewById<ConstraintLayout>(R.id.constraint_layout_parent).requestFocus()
+
+        val input = EditText(this).apply {
+            hint = "Person: "
+            inputType = InputType.TYPE_CLASS_TEXT
+        }
+
+        val builder = AlertDialog.Builder(this).apply {
+
+
+            setView(input)
+
+            setNegativeButton("Cancel") { _, _ ->
+                Toast.makeText(this@MainActivity,
+                        "Person must be set before crosses can be made.", Toast.LENGTH_SHORT).show()
+            }
+
+            setPositiveButton("Set Person") { _, _ ->
+                val value = input.text.toString()
+                if (value.isNotEmpty()) {
+                    PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
+                            .edit().putString(SettingsActivity.PERSON, value)
+                            .apply()
+                } else {
+                    Toast.makeText(this@MainActivity,
+                            "You must enter a name.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        builder.setTitle("Person must be set before crosses can be made.")
+        builder.show()
     }
 
     override fun onCreateOptionsMenu(m: Menu): Boolean {
@@ -401,10 +530,10 @@ class MainActivity : AppCompatActivity() {
             if (intent != null) {
                 when (requestCode) {
                     IntercrossConstants.MANAGE_HEADERS_REQ -> {
-                        mDbHelper.updateColumns(intent.extras.getStringArrayList(IntercrossConstants.HEADERS))
+                        mDbHelper.updateColumns(intent.extras?.getStringArrayList(IntercrossConstants.HEADERS) ?: ArrayList())
                     }
                     IntercrossConstants.USER_INPUT_HEADERS_REQ -> {
-                        mDbHelper.updateValues(intent.extras.getInt(IntercrossConstants.COL_ID_KEY).toString(),
+                        mDbHelper.updateValues(intent.extras?.getInt(IntercrossConstants.COL_ID_KEY).toString(),
                                 intent.extras.getStringArrayList(IntercrossConstants.USER_INPUT_VALUES)
                         )
                     }
@@ -441,8 +570,8 @@ class MainActivity : AppCompatActivity() {
             RecyclerView.ViewHolder(itemView), ViewAdapter.Binder<AdapterEntry>, View.OnClickListener {
 
         private var id: Int = -1
-        private var firstText: TextView = itemView.findViewById(R.id.firstTextView) as TextView
-        private var secondText: TextView = itemView.findViewById(R.id.secondTextView) as TextView
+        private var firstText: TextView = itemView.findViewById(R.id.crossTextView) as TextView
+        private var secondText: TextView = itemView.findViewById(R.id.dateTextView) as TextView
 
         init {
             itemView.setOnClickListener(this)
@@ -593,17 +722,24 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
-        mDrawerToggle!!.syncState()
+        mDrawerToggle?.syncState()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        mDrawerToggle!!.onConfigurationChanged(newConfig)
+        mDrawerToggle?.onConfigurationChanged(newConfig)
     }
 
     public override fun onDestroy() {
         mDbHelper.close()
         super.onDestroy()
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    fun onAppForegrounded() {
+        if (PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
+                        .getString(SettingsActivity.PERSON, "").isNotBlank())
+            askIfSamePerson()
     }
 
     override fun onRequestPermissionsResult(resultCode: Int, permissions: Array<String>, granted: IntArray) {
@@ -619,7 +755,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
 
-        private val line_separator = System.getProperty("line.separator")
+        private val lineSeparator = System.getProperty("line.separator")
 
         fun scanFile(ctx: Context, filePath: File) {
             MediaScannerConnection.scanFile(ctx, arrayOf(filePath.absolutePath), null, null)

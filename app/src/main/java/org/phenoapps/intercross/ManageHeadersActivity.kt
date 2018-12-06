@@ -115,7 +115,7 @@ class ManageHeadersActivity : AppCompatActivity() {
             RecyclerView.ViewHolder(itemView), ViewAdapter.Binder<String>,
             View.OnClickListener {
 
-        private var firstText: TextView = itemView.findViewById(R.id.firstTextView) as TextView
+        private var firstText: TextView = itemView.findViewById(R.id.crossTextView) as TextView
 
         init {
             itemView.setOnClickListener(this)

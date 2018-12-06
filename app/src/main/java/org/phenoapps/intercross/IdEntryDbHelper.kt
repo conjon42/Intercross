@@ -161,7 +161,9 @@ internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DAT
         }
         return "-1"
     }
+
     fun getCrosses(female: String, male: String): List<String> {
+
         val crosses = ArrayList<String>()
         try {
             val cursor = readableDatabase.query(IdEntryContract.IdEntry.TABLE_NAME,
@@ -194,6 +196,8 @@ internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DAT
                 cols += cursor.getString(cursor.getColumnIndex("name"))
             } while (cursor.moveToNext())
         }
+
+        cursor.close()
 
         return cols
     }
@@ -421,6 +425,61 @@ internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DAT
         return input.split(" ".toRegex())
                 .dropLastWhile { token -> token.isEmpty() }
                 .toTypedArray()[0]
+    }
+
+    fun getPollinationType(id: Int): String {
+
+        var polType = String()
+        try {
+            val cursor = readableDatabase.query(IdEntryContract.IdEntry.TABLE_NAME,
+                    arrayOf(IdEntryContract.IdEntry.COLUMN_NAME_POLLINATION_TYPE),
+                    "${IdEntryContract.IdEntry.COLUMN_NAME_ID}=?", arrayOf(id.toString()),
+                    null, null, null)
+
+            if (cursor.moveToFirst()) {
+                polType = cursor.getString(
+                        cursor.getColumnIndexOrThrow(
+                                IdEntryContract.IdEntry.COLUMN_NAME_POLLINATION_TYPE)) ?: ""
+            }
+            cursor.close()
+
+        } catch (e: SQLiteException) {
+            e.printStackTrace()
+        }
+
+        return polType
+    }
+
+    fun getExportData(): ArrayList<String> {
+
+        val data = ArrayList<String>()
+
+        val cursor = readableDatabase.query(IdEntryContract.IdEntry.TABLE_NAME,
+                IdEntryContract.IdEntry.COLUMNS.filter { it != IdEntryContract.IdEntry.COLUMN_NAME_ID }.toTypedArray(),
+                null, null, null, null, null)
+
+        //first write header line
+        val headers = arrayOf("cross_id", "male", "female", "person", "timestamp",
+                "location", "p_type", "cross_count", "cross_name")
+        data.add(headers.joinToString(","))
+
+        //populate text file with current database values
+        if (cursor.moveToFirst()) {
+            do {
+                val values = ArrayList<String>()
+                for (i in headers.indices) {
+                    val colVal = cursor.getString(
+                            cursor.getColumnIndexOrThrow(headers[i])
+                    )
+                    values.add(colVal ?: "none")
+                }
+                data.add(values.joinToString(","))
+            } while (cursor.moveToNext())
+        }
+
+        cursor.close()
+
+        return data
     }
 
     companion object {
