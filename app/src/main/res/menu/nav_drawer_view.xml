@@ -24,6 +24,10 @@
         android:icon="@drawable/ic_help"
         android:title="Intro" />
 
+    <item
+        android:id="@+id/nav_delete_entries"
+        android:icon="@drawable/ic_baseline_delete_24px"
+        android:title="Delete Entries" />
     <!--<item
         android:id="@+id/nav_import_readable_names"
         android:icon="@drawable/ic_list"

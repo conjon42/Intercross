@@ -22,10 +22,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -440,6 +437,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                         Toast.makeText(this@MainActivity,
                                 "You must enter a file name.", Toast.LENGTH_SHORT).show()
                     }
+                    askUserDeleteEntries()
                 }
             }
 
@@ -481,6 +479,37 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         }
 
         builder.setTitle("Person must be set before crosses can be made.")
+        builder.show()
+    }
+
+    private fun askUserDeleteEntries() {
+
+        val builder = AlertDialog.Builder(this).apply {
+
+            setNegativeButton("Cancel") { _, _ ->
+
+            }
+
+            setPositiveButton("Yes") { _, _ ->
+                val builder = AlertDialog.Builder(this@MainActivity).apply {
+
+                    setNegativeButton("Cancel") { _, _ ->
+
+                    }
+
+                    setPositiveButton("Yes") { _, _ ->
+                        mEntries.clear()
+                        mDbHelper.onUpgrade(mDbHelper.readableDatabase, 0, 0)
+                        mAdapter.notifyDataSetChanged()
+                    }
+                }
+
+                builder.setTitle("Are you sure you want to delete all entries?")
+                builder.show()
+            }
+        }
+
+        builder.setTitle("Delete all cross entries?")
         builder.show()
     }
 
@@ -580,6 +609,11 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             id = data.id
             firstText.text = data.first
             secondText.text = data.second
+
+            itemView.findViewById<ImageView>(R.id.deleteView).setOnClickListener { _ ->
+                mDbHelper.deleteEntry(id)
+                loadSQLToLocal()
+            }
         }
 
         override fun onClick(v: View?) {
@@ -661,7 +695,9 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                 //startActivity(Intent(this, IntercrossOnboardingActivity::class.java))
                 startActivity(Intent(this, IntroActivity::class.java))
             }
-
+            org.phenoapps.intercross.R.id.nav_delete_entries -> {
+                askUserDeleteEntries()
+            }
             //org.phenoapps.intercross.R.id.nav_manage_headers -> {
             //    startActivityForResult(Intent(this@MainActivity,
             //            ManageHeadersActivity::class.java), IntercrossConstants.MANAGE_HEADERS_REQ)

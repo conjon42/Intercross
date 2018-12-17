@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.database.sqlite.SQLiteStatement
 import android.util.Log
 import org.phenoapps.intercross.IdEntryContract.SQL_CREATE_ENTRIES
+import org.phenoapps.intercross.IdEntryContract.TABLE_NAME
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -146,6 +147,7 @@ internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DAT
         }
         return -1
     }
+
     fun getTimestampById(id: Int): String {
         try {
             val cursor = readableDatabase.query(IdEntryContract.IdEntry.TABLE_NAME,
@@ -450,6 +452,10 @@ internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DAT
         return polType
     }
 
+    fun deleteEntries() {
+
+    }
+
     fun getExportData(): ArrayList<String> {
 
         val data = ArrayList<String>()
@@ -480,6 +486,11 @@ internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DAT
         cursor.close()
 
         return data
+    }
+
+    fun deleteEntry(id: Int) {
+        writableDatabase.delete(TABLE_NAME, "_id = ?", arrayOf(id.toString()))
+
     }
 
     companion object {
