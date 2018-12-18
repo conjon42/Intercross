@@ -14,6 +14,7 @@ internal object IntercrossConstants {
     val MANAGE_HEADERS_REQ = 300
     val USER_INPUT_HEADERS_REQ = 301
     val REQUEST_WRITE_PERMISSION = 200
+    val PATTERN_REQ = 400
 
     //extras
     val CSV_URI = "org.phenoapps.intercross.CSV_URI"
@@ -37,4 +38,6 @@ internal object IntercrossConstants {
     val MALE_PARENT = "org.phenoapps.intercross.MALE_PARENT"
 
     val COMPLETED_TUTORIAL = "org.phenoapps.intercross.COMPLETED_TUTORIAL"
+
+    val PATTERN = "org.phenoapps.intercross.LABEL_PATTERN"
 }

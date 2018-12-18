@@ -87,6 +87,12 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     private val mPrefListener = SharedPreferences.OnSharedPreferenceChangeListener { pref, key ->
         key?.let{
             when (key) {
+                SettingsActivity.PATTERN -> {
+                    when (pref?.getBoolean(key, true)) {
+                        true -> mCrossEditText.isEnabled = false
+                        false -> mCrossEditText.isEnabled = true
+                    }
+                }
                 SettingsActivity.CROSS_ORDER -> {
                     when (pref?.getString(key, "0")) {
                         "0" -> {
@@ -155,6 +161,22 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         mCrossEditText = findViewById(R.id.editTextCross)
         mSaveButton = findViewById(R.id.saveButton)
 
+        //Show Tutorial Fragment for first-time users
+        PreferenceManager.getDefaultSharedPreferences(this).apply {
+            if (!getBoolean(IntercrossConstants.COMPLETED_TUTORIAL, false)) {
+                startActivity(Intent(this@MainActivity, IntroActivity::class.java))
+            }
+            if (getBoolean(SettingsActivity.PATTERN, false)) {
+                mCrossEditText.isEnabled = false
+            }
+            mAllowBlankMale = getBoolean(SettingsActivity.BLANK_MALE_ID, false)
+        }
+
+        PreferenceManager.getDefaultSharedPreferences(this).edit().apply {
+            putBoolean(IntercrossConstants.COMPLETED_TUTORIAL, true)
+            apply()
+        }
+
         //single text watcher class to check if all fields are non-empty to enable the save button
         val emptyGuard = object : TextWatcher {
 
@@ -197,13 +219,21 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             }
             false
         })
+
+        //if auto generation is enabled save after the second text is submitted
         mSecondEditText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
             if (i == EditorInfo.IME_ACTION_DONE) {
-                mCrossEditText.requestFocus()
+                if (PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
+                        ?.getBoolean(SettingsActivity.PATTERN, false) == false) {
+                    mCrossEditText.requestFocus()
+                } else {
+                    saveToDB()
+                }
                 return@OnEditorActionListener true
             }
             false
         })
+
         mCrossEditText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
             if (i == EditorInfo.IME_ACTION_DONE) {
                 saveToDB()
@@ -244,6 +274,9 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     private fun isInputValid(): Boolean {
 
+        val pref = PreferenceManager.getDefaultSharedPreferences(this)
+        val auto = pref.getBoolean(SettingsActivity.PATTERN, false)
+
         val male: String
         val female: String
         val cross: String = mCrossEditText.text.toString()
@@ -255,8 +288,8 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             female = mSecondEditText.text.toString()
         }
 
-
-        return ((male.isNotEmpty() || mAllowBlankMale) && female.isNotEmpty() && cross.isNotEmpty())
+        return ((male.isNotEmpty() || mAllowBlankMale) && female.isNotEmpty()
+                && (cross.isNotEmpty() || auto))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -264,19 +297,6 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
-
-        //Show Tutorial Fragment for first-time users
-        PreferenceManager.getDefaultSharedPreferences(this).apply {
-            if (!getBoolean(IntercrossConstants.COMPLETED_TUTORIAL, false)) {
-                startActivity(Intent(this@MainActivity, IntroActivity::class.java))
-            }
-            mAllowBlankMale = getBoolean(SettingsActivity.BLANK_MALE_ID, false)
-        }
-
-        PreferenceManager.getDefaultSharedPreferences(this).edit().apply {
-            putBoolean(IntercrossConstants.COMPLETED_TUTORIAL, true)
-            apply()
-        }
 
         mNameMap = HashMap()
 
@@ -294,7 +314,24 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
         val male: String
         val female: String
-        val cross: String = mCrossEditText.text.toString()
+        var cross: String = mCrossEditText.text.toString()
+
+        val pref = PreferenceManager.getDefaultSharedPreferences(this)
+        val isAutoPattern = pref.getBoolean(SettingsActivity.PATTERN, false)
+
+        if (isAutoPattern) {
+            val auto = pref.getBoolean("PATTERN_AUTO", true)
+            val prefix = pref.getString("PATTERN_PREFIX", "")
+            val suffix = pref.getString("PATTERN_SUFFIX", "")
+            val num = pref.getInt("PATTERN_INT", 0)
+            val pad = pref.getInt("PATTERN_PAD", 0)
+            cross = "$prefix${num.toString().padStart(pad, '0')}$suffix"
+            val edit = pref.edit()
+            edit.putInt("PATTERN_INT", num + 1)
+            edit.apply()
+        }
+
+
         if (mCrossOrder == 0) {
             female = mFirstEditText.text.toString()
             male = mSecondEditText.text.toString()
@@ -317,7 +354,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
             entry.put("male", if(male.isBlank()) "blank" else male)
             entry.put("female", female)
-            entry.put("cross_id", mCrossEditText.text.toString())
+            entry.put("cross_id", cross)
             entry.put("p_type", pollinationType.toString())
             entry.put("cross_count", crossCount)
             entry.put("cross_name", "$female/$male-$crossCount")
@@ -554,27 +591,42 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
         if (resultCode == Activity.RESULT_OK) {
 
-            if (intent != null) {
+            intent?.let {
+
                 when (requestCode) {
                     IntercrossConstants.MANAGE_HEADERS_REQ -> {
-                        mDbHelper.updateColumns(intent.extras?.getStringArrayList(IntercrossConstants.HEADERS) ?: ArrayList())
+                        mDbHelper.updateColumns(intent.extras?.getStringArrayList(IntercrossConstants.HEADERS)
+                                ?: ArrayList())
                     }
                     IntercrossConstants.USER_INPUT_HEADERS_REQ -> {
                         mDbHelper.updateValues(intent.extras?.getInt(IntercrossConstants.COL_ID_KEY).toString(),
                                 intent.extras.getStringArrayList(IntercrossConstants.USER_INPUT_VALUES)
                         )
                     }
+                    IntercrossConstants.PATTERN_REQ -> {
+                        if (intent.hasExtra(IntercrossConstants.PATTERN)) {
+                            val pattern = intent.extras
+                                    .getParcelable<AutoGenerationActivity.LabelPattern>(IntercrossConstants.PATTERN)
+                            val editor = PreferenceManager.getDefaultSharedPreferences(this).edit()
+                            editor.putString("PATTERN_PREFIX", pattern.prefix)
+                            editor.putString("PATTERN_SUFFIX", pattern.suffix)
+                            editor.putInt("PATTERN_INT", pattern.number)
+                            editor.putBoolean("PATTERN_AUTO", pattern.auto)
+                            editor.putInt("PATTERN_PAD", pattern.pad)
+                            editor.apply()
+                        }
+                    }
                 }
 
                 //barcode text response from Zebra intent
                 if (intent.hasExtra(IntercrossConstants.CAMERA_RETURN_ID)) {
 
-                    asList(mFirstEditText, mSecondEditText, mCrossEditText).forEach iter@ { editText ->
+                    asList(mFirstEditText, mSecondEditText, mCrossEditText).forEach iter@{ editText ->
                         editText?.let {
-                            when(editText.hasFocus()) {
+                            when (editText.hasFocus()) {
                                 true -> {
                                     editText.setText(intent.getStringExtra(IntercrossConstants.CAMERA_RETURN_ID))
-                                    when(editText) {
+                                    when (editText) {
                                         mFirstEditText -> mSecondEditText.requestFocus()
                                         mSecondEditText -> mCrossEditText.requestFocus()
                                         mCrossEditText -> {
@@ -697,6 +749,10 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             }
             org.phenoapps.intercross.R.id.nav_delete_entries -> {
                 askUserDeleteEntries()
+            }
+            org.phenoapps.intercross.R.id.nav_auto_generate -> {
+                startActivityForResult(Intent(this, AutoGenerationActivity::class.java),
+                        IntercrossConstants.PATTERN_REQ)
             }
             //org.phenoapps.intercross.R.id.nav_manage_headers -> {
             //    startActivityForResult(Intent(this@MainActivity,

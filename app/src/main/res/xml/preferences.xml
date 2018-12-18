@@ -23,4 +23,9 @@
         android:icon="@drawable/ic_location"
         android:key="org.phenoapps.intercross.LOCATION"
         android:title="Location" />
+
+    <CheckBoxPreference
+        android:icon="@drawable/ic_baseline_receipt_24px"
+        android:key="org.phenoapps.intercross.LABEL_PATTERN"
+        android:title="Auto Generate Cross IDs" />
 </PreferenceScreen>

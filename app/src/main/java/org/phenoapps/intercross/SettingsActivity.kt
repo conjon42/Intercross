@@ -43,5 +43,6 @@ class SettingsActivity : AppCompatActivity() {
         var LOCATION = "org.phenoapps.intercross.LOCATION"
         var PRINTER = "org.phenoapps.intercross.PRINTER"
         var FEMALE_FIRST = "org.phenoapps.intercross.FEMALE_FIRST"
+        val PATTERN = "org.phenoapps.intercross.LABEL_PATTERN"
     }
 }
