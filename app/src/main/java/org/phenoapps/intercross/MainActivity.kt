@@ -401,29 +401,15 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
         findViewById<ConstraintLayout>(R.id.constraint_layout_parent).requestFocus()
 
-        val input = EditText(this).apply {
-            hint = "Person: "
-            inputType = InputType.TYPE_CLASS_TEXT
-        }
 
         val builder = AlertDialog.Builder(this).apply {
-
-            setView(input)
 
             setNegativeButton("Yes") { _, _ ->
                 //welcome back
             }
 
             setPositiveButton("Change Person") { _, _ ->
-                val value = input.text.toString()
-                if (value.isNotEmpty()) {
-                    PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
-                            .edit().putString(SettingsActivity.PERSON, value)
-                            .apply()
-                } else {
-                    Toast.makeText(this@MainActivity,
-                            "You must enter a name.", Toast.LENGTH_SHORT).show()
-                }
+                startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
             }
         }
 
@@ -490,15 +476,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
         findViewById<ConstraintLayout>(R.id.constraint_layout_parent).requestFocus()
 
-        val input = EditText(this).apply {
-            hint = "Person: "
-            inputType = InputType.TYPE_CLASS_TEXT
-        }
-
         val builder = AlertDialog.Builder(this).apply {
-
-
-            setView(input)
 
             setNegativeButton("Cancel") { _, _ ->
                 Toast.makeText(this@MainActivity,
@@ -506,15 +484,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             }
 
             setPositiveButton("Set Person") { _, _ ->
-                val value = input.text.toString()
-                if (value.isNotEmpty()) {
-                    PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
-                            .edit().putString(SettingsActivity.PERSON, value)
-                            .apply()
-                } else {
-                    Toast.makeText(this@MainActivity,
-                            "You must enter a name.", Toast.LENGTH_SHORT).show()
-                }
+                startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
             }
         }
 

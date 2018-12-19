@@ -27,7 +27,7 @@ internal object IdEntryContract {
             const val COLUMN_NAME_USER = "person"
             const val COLUMN_NAME_DATE = "timestamp"
             const val COLUMN_NAME_LOCATION = "location"
-            const val COLUMN_NAME_POLLINATION_TYPE = "p_type"
+            const val COLUMN_NAME_POLLINATION_TYPE = "cross_type"
             const val COLUMN_NAME_CROSS_COUNT = "cross_count"
             const val COLUMN_NAME_CROSS_NAME = "cross_name"
 

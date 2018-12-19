@@ -466,7 +466,7 @@ internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DAT
 
         //first write header line
         val headers = arrayOf("cross_id", "male", "female", "person", "timestamp",
-                "location", "p_type", "cross_count", "cross_name")
+                "location", "cross_type", "cross_count", "cross_name")
         data.add(headers.joinToString(","))
 
         //populate text file with current database values
