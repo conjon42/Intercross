@@ -184,8 +184,9 @@ class AuxValueInputActivity : AppCompatActivity() {
                                                         + "^FN2^FDQA," + mCrossId + "^FS"
                                                         + "^FN3^FD" + mTimestamp + "^FS^XZ")
                                             } else {
-                                                printer.sendCommand("^MMT,N")
                                                 printer.sendCommand("^XA"
+                                                        + "^MNA"
+                                                        + "^MMT,N"
                                                         + "^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS"
                                                         + "^FWR"
                                                         + "^FO100,25^A0,25,20^FN1^FS"
