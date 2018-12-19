@@ -44,5 +44,6 @@ class SettingsActivity : AppCompatActivity() {
         var PRINTER = "org.phenoapps.intercross.PRINTER"
         var FEMALE_FIRST = "org.phenoapps.intercross.FEMALE_FIRST"
         val PATTERN = "org.phenoapps.intercross.LABEL_PATTERN"
+        val BT_ID = "org.phenoapps.intercross.BLUETOOTH_ID"
     }
 }

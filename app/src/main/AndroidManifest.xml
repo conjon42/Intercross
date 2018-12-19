@@ -37,6 +37,7 @@
         <activity android:name=".AuxValueInputActivity" />
         <activity android:name=".ManageHeadersActivity" />
         <activity android:name=".CountActivity" />
+        <activity android:name=".ImportZPL" />
         <activity
             android:name=".IntroActivity"
             android:theme="@style/AppThemeNoActionBar" />

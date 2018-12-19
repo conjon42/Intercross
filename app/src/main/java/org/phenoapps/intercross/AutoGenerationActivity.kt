@@ -1,48 +1,16 @@
 package org.phenoapps.intercross
 
-import android.Manifest
 import android.app.Activity
-import android.content.ContentValues
-import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
-import android.content.pm.PackageManager
-import android.content.res.Configuration
-import android.media.MediaScannerConnection
 import android.os.*
 import android.preference.PreferenceManager
 import android.text.Editable
-import android.text.InputType
 import android.text.TextWatcher
-import android.util.Log
-import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
 import android.widget.*
-import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.app.ActivityCompat
-import androidx.core.view.GravityCompat
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
-import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.navigation.NavigationView
-import org.phenoapps.intercross.IntercrossConstants.REQUEST_WRITE_PERMISSION
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
-import java.text.SimpleDateFormat
 import java.util.*
-import java.util.Arrays.asList
 
 class AutoGenerationActivity : AppCompatActivity(), LifecycleObserver {
 
@@ -72,7 +40,7 @@ class AutoGenerationActivity : AppCompatActivity(), LifecycleObserver {
 
         val pref = PreferenceManager.getDefaultSharedPreferences(this)
 
-        mPatternText = findViewById<TextView>(R.id.patternView)
+        mPatternText = findViewById<TextView>(R.id.codeTextView)
         mPrefixEditText = findViewById<EditText>(R.id.prefixEditText)
         mSuffixEditText = findViewById<EditText>(R.id.suffixEditText)
         mNumberEditText = findViewById<EditText>(R.id.numberEditText)

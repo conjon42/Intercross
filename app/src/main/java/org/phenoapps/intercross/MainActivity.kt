@@ -2,6 +2,7 @@ package org.phenoapps.intercross
 
 import android.Manifest
 import android.app.Activity
+import android.bluetooth.BluetoothAdapter
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -13,6 +14,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.preference.PreferenceManager
+import android.provider.Settings
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
@@ -37,6 +39,7 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
+import org.apache.xmlbeans.impl.xb.xsdschema.ImportDocument
 import org.phenoapps.intercross.IntercrossConstants.REQUEST_WRITE_PERMISSION
 import java.io.File
 import java.io.FileNotFoundException
@@ -668,33 +671,78 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             }
         }
 
+        fun startCrossActivity() {
+
+            val parents = mDbHelper.getParents(id)
+
+            val intent = Intent(this@MainActivity, AuxValueInputActivity::class.java)
+
+            val headers = mDbHelper.getColumns() - IdEntryContract.IdEntry.COLUMNS.toList()
+
+            val values = mDbHelper.getUserInputValues(id)
+
+            intent.putExtra(IntercrossConstants.COL_ID_KEY, id)
+
+            intent.putExtra(IntercrossConstants.CROSS_ID, firstText.text)
+
+            intent.putExtra(IntercrossConstants.TIMESTAMP, secondText.text)
+
+            intent.putExtra(IntercrossConstants.FEMALE_PARENT, parents[0])
+
+            intent.putExtra(IntercrossConstants.MALE_PARENT, parents[1])
+
+            intent.putStringArrayListExtra(IntercrossConstants.HEADERS, ArrayList(headers))
+
+            intent.putStringArrayListExtra(IntercrossConstants.USER_INPUT_VALUES, ArrayList(values))
+
+            startActivityForResult(intent, IntercrossConstants.USER_INPUT_HEADERS_REQ)
+        }
+
         override fun onClick(v: View?) {
 
             v?.let {
 
-                val parents = mDbHelper.getParents(id)
+                val pref = PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
+                val btId = pref.getString(SettingsActivity.BT_ID, "")
+                if (btId.isBlank()) {
 
-                val intent = Intent(this@MainActivity, AuxValueInputActivity::class.java)
+                    val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
-                val headers = mDbHelper.getColumns() - IdEntryContract.IdEntry.COLUMNS.toList()
+                    val pairedDevices = mBluetoothAdapter.bondedDevices
 
-                val values = mDbHelper.getUserInputValues(id)
+                    val input = RadioGroup(this@MainActivity)
 
-                intent.putExtra(IntercrossConstants.COL_ID_KEY, id)
+                    pairedDevices.forEach {
+                        val button = RadioButton(this@MainActivity)
+                        button.text = it.name
+                        input.addView(button)
+                    }
 
-                intent.putExtra(IntercrossConstants.CROSS_ID, firstText.text)
+                    val builder = AlertDialog.Builder(this@MainActivity).apply {
 
-                intent.putExtra(IntercrossConstants.TIMESTAMP, secondText.text)
+                        setTitle("Choose bluetooth device to print from.")
 
-                intent.putExtra(IntercrossConstants.FEMALE_PARENT, parents[0])
+                        setView(input)
 
-                intent.putExtra(IntercrossConstants.MALE_PARENT, parents[1])
+                        setNegativeButton("Cancel") { _, _ ->
 
-                intent.putStringArrayListExtra(IntercrossConstants.HEADERS, ArrayList(headers))
+                        }
 
-                intent.putStringArrayListExtra(IntercrossConstants.USER_INPUT_VALUES, ArrayList(values))
+                        setPositiveButton("OK") { _, _ ->
 
-                startActivityForResult(intent, IntercrossConstants.USER_INPUT_HEADERS_REQ)
+                            if (input.checkedRadioButtonId == -1) return@setPositiveButton
+
+                            val edit = pref.edit()
+                            edit.putString(SettingsActivity.BT_ID,
+                                    input.findViewById<RadioButton>(input.checkedRadioButtonId).text.toString())
+                            edit.apply()
+
+                            startCrossActivity()
+                        }
+                    }
+
+                    builder.show()
+                } else startCrossActivity()
             }
         }
     }
@@ -753,6 +801,9 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             org.phenoapps.intercross.R.id.nav_auto_generate -> {
                 startActivityForResult(Intent(this, AutoGenerationActivity::class.java),
                         IntercrossConstants.PATTERN_REQ)
+            }
+            org.phenoapps.intercross.R.id.nav_import_zpl -> {
+                startActivity(Intent(this, ImportZPL::class.java))
             }
             //org.phenoapps.intercross.R.id.nav_manage_headers -> {
             //    startActivityForResult(Intent(this@MainActivity,

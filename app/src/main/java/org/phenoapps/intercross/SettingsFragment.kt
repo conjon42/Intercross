@@ -10,5 +10,6 @@ class SettingsFragment : PreferenceFragment() {
 
         addPreferencesFromResource(org.phenoapps.intercross.R.xml.preferences)
 
+
     }
 }

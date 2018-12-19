@@ -28,4 +28,9 @@
         android:icon="@drawable/ic_baseline_receipt_24px"
         android:key="org.phenoapps.intercross.LABEL_PATTERN"
         android:title="Auto Generate Cross IDs" />
+
+    <EditTextPreference
+        android:icon="@drawable/ic_bluetooth"
+        android:key="org.phenoapps.intercross.BLUETOOTH_ID"
+        android:title="Bluetooth ID" />
 </PreferenceScreen>
