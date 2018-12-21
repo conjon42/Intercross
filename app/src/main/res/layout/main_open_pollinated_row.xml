@@ -30,7 +30,7 @@
         android:maxLines="1"
         android:textAlignment="viewStart"
         android:textSize="18sp"
-        app:layout_constraintEnd_toStartOf="@+id/deleteView"
+        app:layout_constraintEnd_toStartOf="@+id/inputImageView"
         app:layout_constraintStart_toEndOf="@+id/crossTypeImageView"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -45,7 +45,7 @@
         android:gravity="start"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/deleteView"
+        app:layout_constraintEnd_toStartOf="@+id/inputImageView"
         app:layout_constraintStart_toEndOf="@+id/crossTypeImageView"
         app:layout_constraintTop_toBottomOf="@+id/crossTextView" />
 
@@ -53,11 +53,21 @@
         android:id="@+id/deleteView"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:layout_marginEnd="4dp"
+        android:layout_marginEnd="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.492"
         app:srcCompat="@drawable/ic_baseline_delete_24px" />
+
+    <ImageView
+        android:id="@+id/inputImageView"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/deleteView"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_baseline_input_24px" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

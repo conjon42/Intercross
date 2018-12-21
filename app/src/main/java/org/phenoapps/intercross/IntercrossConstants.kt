@@ -41,4 +41,6 @@ internal object IntercrossConstants {
     val COMPLETED_TUTORIAL = "org.phenoapps.intercross.COMPLETED_TUTORIAL"
 
     val PATTERN = "org.phenoapps.intercross.LABEL_PATTERN"
+
+    val PERSON = "org.phenoapps.intercross.PERSON"
 }

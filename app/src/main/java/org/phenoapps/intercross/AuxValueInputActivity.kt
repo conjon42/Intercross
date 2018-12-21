@@ -1,6 +1,7 @@
 package org.phenoapps.intercross
 
 import android.bluetooth.BluetoothAdapter
+import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
 import android.preference.PreferenceManager
@@ -10,7 +11,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.*
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -19,21 +19,45 @@ import com.zebra.sdk.comm.ConnectionException
 import com.zebra.sdk.printer.SGD
 import com.zebra.sdk.printer.ZebraPrinterFactory
 import com.zebra.sdk.printer.ZebraPrinterLanguageUnknownException
+import org.w3c.dom.Text
 
 //TODO create separate file for async bluetooth task
-//TODO create bitmap preview of barcode print
 class AuxValueInputActivity : AppCompatActivity() {
 
-    private lateinit var mRecyclerView: RecyclerView
-    private lateinit var mIdTextView: TextView
-    private lateinit var mTimeTextView: TextView
-    private lateinit var mUpdateButton: Button
+    private val mIdTextView: TextView by lazy {
+        findViewById<TextView>(R.id.selfTextView)
+    }
+    private val mNotBpParentTextView: TextView by lazy {
+        findViewById<TextView>(R.id.nbpTextView)
+    }
+    private val mDateTextView: TextView by lazy {
+        findViewById<TextView>(R.id.dateTextView)
+    }
+    private val mPolTypeTextView: TextView by lazy {
+        findViewById<TextView>(R.id.polTypeTextView)
+    }
+    private val mBpMaleTextView: TextView by lazy {
+        findViewById<TextView>(R.id.bpMaleTextView)
+    }
+    private val mBpFemaleTextView: TextView by lazy {
+        findViewById<TextView>(R.id.bpFemaleTextView)
+    }
+    private val mPersonTextView: TextView by lazy {
+        findViewById<TextView>(R.id.personTextView)
+    }
+    private val mRecyclerView: RecyclerView by lazy {
+        findViewById<RecyclerView>(R.id.offspringRecyclerView)
+    }
+
+    private val mEntries = ArrayList<AdapterEntry>()
+
+    private val mDbHelper = IdEntryDbHelper(this)
 
     private var mMaleParent = String()
     private var mFemaleParent = String()
-    private val mEntries = ArrayList<AdapterEntry>()
     private var mCrossId = String()
     private var mTimestamp = String()
+    private var mPerson = String()
 
     private var mZplFileName = String()
     private val mCode: String by lazy {
@@ -54,43 +78,16 @@ class AuxValueInputActivity : AppCompatActivity() {
             it.setHomeButtonEnabled(true)
         }
 
-        mRecyclerView = findViewById(R.id.recyclerView) as RecyclerView
-        mIdTextView = findViewById(R.id.textView2) as TextView
-        mTimeTextView = findViewById(R.id.textView3) as TextView
-        //mUpdateButton = findViewById(R.id.button) as Button
-
-        mRecyclerView.layoutManager = LinearLayoutManager(this)
-
         val id = intent.getIntExtra(IntercrossConstants.COL_ID_KEY, -1)
         mCrossId = intent.getStringExtra(IntercrossConstants.CROSS_ID) ?: ""
         mMaleParent = intent.getStringExtra(IntercrossConstants.MALE_PARENT) ?: ""
         mFemaleParent = intent.getStringExtra(IntercrossConstants.FEMALE_PARENT) ?: ""
-        mTimestamp = intent.getStringExtra(IntercrossConstants.TIMESTAMP) ?: ""
-        val headers = intent.getStringArrayListExtra(IntercrossConstants.HEADERS)
-        val values = intent.getStringArrayListExtra(IntercrossConstants.USER_INPUT_VALUES)
-
-        findViewById<TextView>(R.id.maleParentTextView).text = "M: $mMaleParent"
-        findViewById<TextView>(R.id.femaleParentTextView).text = "F: $mFemaleParent"
-
-        headers.forEachIndexed { index, header ->
-            mEntries.add(AdapterEntry(header, values[index] ?: ""))
-        }
-
-        val adapter = object : ViewAdapter<AdapterEntry>(mEntries) {
-
-            override fun getLayoutId(position: Int, obj: AdapterEntry): Int {
-                return R.layout.value_input_row
-            }
-
-            override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
-                return ViewHolder(view)
-            }
-        }
-
-        mRecyclerView.adapter = adapter
+        mTimestamp = mDbHelper.getTimestampById(id)
+        mPerson = mDbHelper.getPersonById(id)
 
         mIdTextView.text = "Cross ID: $mCrossId"
-        mTimeTextView.text = "Timestamp: $mTimestamp"
+        mDateTextView.text = "$mTimestamp"
+        mPersonTextView.text = "by $mPerson"
 
         if (mCode.isNotBlank()) {
             if (mCode.contains("DFR:")) {
@@ -103,36 +100,105 @@ class AuxValueInputActivity : AppCompatActivity() {
                 }
             }
         }
+
+        val polType = mDbHelper.getPollinationType(id)
+        mPolTypeTextView.text = polType
+
+        when (polType) {
+            "Biparental" -> {
+                mBpFemaleTextView.visibility = View.VISIBLE
+                mBpMaleTextView.visibility = View.VISIBLE
+                mNotBpParentTextView.visibility = View.INVISIBLE
+                mBpMaleTextView.text = mMaleParent
+                mBpFemaleTextView.text = mFemaleParent
+                mBpMaleTextView.setOnClickListener {
+                    val maleId = mDbHelper.getRowId(mMaleParent)
+                    if (maleId != -1) startCrossActivity(id, mMaleParent)
+                    else Toast.makeText(this, "This id has not DB entry.", Toast.LENGTH_SHORT).show()
+                }
+                mBpFemaleTextView.setOnClickListener {
+                    val femaleId = mDbHelper.getRowId(mFemaleParent)
+                    if (femaleId != -1) startCrossActivity(mDbHelper.getRowId(mFemaleParent), mFemaleParent)
+                    else Toast.makeText(this, "This id has not DB entry.", Toast.LENGTH_SHORT).show()
+                }
+            }
+            "OpenPollinated", "SelfPollinated" -> {
+                mBpFemaleTextView.visibility = View.INVISIBLE
+                mBpMaleTextView.visibility = View.INVISIBLE
+                mNotBpParentTextView.visibility = View.VISIBLE
+                mNotBpParentTextView.text = mFemaleParent
+                mNotBpParentTextView.setOnClickListener {
+                    val femaleId = mDbHelper.getRowId(mFemaleParent)
+                    if (femaleId != -1) startCrossActivity(mDbHelper.getRowId(mFemaleParent), mFemaleParent)
+                    else Toast.makeText(this, "This id has not DB entry.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        val offspring = mDbHelper.getOffspring(id)
+
+        mRecyclerView.layoutManager = LinearLayoutManager(this)
+
+        offspring.forEach { child ->
+            mEntries.add(AdapterEntry(child.first, child.second))
+        }
+
+        val adapter = object : ViewAdapter<AdapterEntry>(mEntries) {
+
+            override fun getLayoutId(position: Int, obj: AdapterEntry): Int {
+                return R.layout.row
+            }
+
+            override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
+                return ViewHolder(view)
+            }
+        }
+
+        mRecyclerView.adapter = adapter
     }
 
     inner class ViewHolder internal constructor(itemView: View) :
             RecyclerView.ViewHolder(itemView), ViewAdapter.Binder<AdapterEntry> {
 
-        private var firstText: TextView = itemView.findViewById(R.id.firstView) as TextView
-        private var secondText: EditText = itemView.findViewById(R.id.secondView) as EditText
+        private var firstText: TextView = itemView.findViewById(R.id.crossTextView) as TextView
+
         private var mEntry: AdapterEntry = AdapterEntry()
 
         init {
-            secondText.addTextChangedListener(object : TextWatcher {
-
-                override fun afterTextChanged(s: Editable?) {
-                    mEntries[mEntries.indexOf(mEntry)].second = secondText.text.toString()
-                }
-
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                }
-
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                }
-
-            })
+            firstText.setOnClickListener {
+                startCrossActivity(mEntry.second.toInt(), mEntry.first)
+            }
         }
 
         override fun bind(data: AdapterEntry) {
             mEntry = data
             firstText.text = data.first
-            secondText.setText(data.second)
         }
+    }
+
+    private fun startCrossActivity(id: Int, crossId: String) {
+
+        val pref = PreferenceManager.getDefaultSharedPreferences(this@AuxValueInputActivity)
+
+        val parents = mDbHelper.getParents(id)
+
+        val timestamp = mDbHelper.getTimestampById(id)
+
+        val intent = Intent(this@AuxValueInputActivity, AuxValueInputActivity::class.java)
+
+        intent.putExtra(IntercrossConstants.COL_ID_KEY, id)
+
+        intent.putExtra(IntercrossConstants.CROSS_ID, crossId)
+
+        intent.putExtra(IntercrossConstants.TIMESTAMP, timestamp)
+
+        intent.putExtra(IntercrossConstants.FEMALE_PARENT, parents[0])
+
+        intent.putExtra(IntercrossConstants.MALE_PARENT, parents[1])
+
+        intent.putExtra(IntercrossConstants.PERSON, pref.getString(SettingsActivity.PERSON, ""))
+
+        startActivityForResult(intent, IntercrossConstants.USER_INPUT_HEADERS_REQ)
     }
 
     override fun onCreateOptionsMenu(m: Menu): Boolean {

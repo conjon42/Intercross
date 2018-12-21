@@ -98,11 +98,16 @@ class AutoGenerationActivity : AppCompatActivity(), LifecycleObserver {
         mSaveButton.setOnClickListener {
             val i = Intent()
 
+            var midNum = mNumberEditText.text.toString()
+            if (midNum.isBlank()) midNum = "0"
+            var pad = mPadEditText.text.toString()
+            if (pad.isBlank()) pad = "0"
+
             i.putExtra(IntercrossConstants.PATTERN, LabelPattern(mPrefixEditText.text.toString(),
                     mSuffixEditText.text.toString(),
-                    mNumberEditText.text.toString().toInt(),
+                    midNum.toInt(),
                     mRadioGroup.checkedRadioButtonId == R.id.autoRadioButton,
-                    mPadEditText.text.toString().toInt()))
+                    pad.toInt()))
 
             this@AutoGenerationActivity.setResult(Activity.RESULT_OK, i)
 

@@ -14,7 +14,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.preference.PreferenceManager
-import android.provider.Settings
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
@@ -39,7 +38,6 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
-import org.apache.xmlbeans.impl.xb.xsdschema.ImportDocument
 import org.phenoapps.intercross.IntercrossConstants.REQUEST_WRITE_PERMISSION
 import java.io.File
 import java.io.FileNotFoundException
@@ -358,7 +356,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             entry.put("male", if(male.isBlank()) "blank" else male)
             entry.put("female", female)
             entry.put("cross_id", cross)
-            entry.put("p_type", pollinationType.toString())
+            entry.put("cross_type", pollinationType.toString())
             entry.put("cross_count", crossCount)
             entry.put("cross_name", "$female/$male-$crossCount")
 
@@ -639,31 +637,29 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                 mDbHelper.deleteEntry(id)
                 loadSQLToLocal()
             }
+
+            itemView.findViewById<ImageView>(R.id.inputImageView).setOnClickListener {
+                (currentFocus as? EditText).apply {
+                    this?.setText(firstText.text.toString())
+                }
+            }
         }
 
         fun startCrossActivity() {
+
+            val pref = PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
 
             val parents = mDbHelper.getParents(id)
 
             val intent = Intent(this@MainActivity, AuxValueInputActivity::class.java)
 
-            val headers = mDbHelper.getColumns() - IdEntryContract.IdEntry.COLUMNS.toList()
-
-            val values = mDbHelper.getUserInputValues(id)
-
             intent.putExtra(IntercrossConstants.COL_ID_KEY, id)
 
             intent.putExtra(IntercrossConstants.CROSS_ID, firstText.text)
 
-            intent.putExtra(IntercrossConstants.TIMESTAMP, secondText.text)
-
             intent.putExtra(IntercrossConstants.FEMALE_PARENT, parents[0])
 
             intent.putExtra(IntercrossConstants.MALE_PARENT, parents[1])
-
-            intent.putStringArrayListExtra(IntercrossConstants.HEADERS, ArrayList(headers))
-
-            intent.putStringArrayListExtra(IntercrossConstants.USER_INPUT_VALUES, ArrayList(values))
 
             startActivityForResult(intent, IntercrossConstants.USER_INPUT_HEADERS_REQ)
         }

@@ -5,11 +5,9 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
-import android.database.sqlite.SQLiteStatement
 import android.util.Log
 import org.phenoapps.intercross.IdEntryContract.SQL_CREATE_ENTRIES
 import org.phenoapps.intercross.IdEntryContract.TABLE_NAME
-import java.util.*
 import kotlin.collections.ArrayList
 
 internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
@@ -104,6 +102,72 @@ internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DAT
         return entries
     }
 
+    //query for any row that has male or female parent as this id's cross id
+    fun getOffspring(id: Int): Array<Pair<String,String>> {
+
+        val crossId = getCrossId(id)
+
+        val childFromMale = ArrayList<Pair<String, String>>()
+        val childFromFemale = ArrayList<Pair<String, String>>()
+
+        try {
+            var cursor = readableDatabase.query(IdEntryContract.IdEntry.TABLE_NAME,
+                    arrayOf(IdEntryContract.IdEntry.COLUMN_NAME_CROSS, IdEntryContract.IdEntry.COLUMN_NAME_ID),
+                    "${IdEntryContract.IdEntry.COLUMN_NAME_FEMALE}=?", arrayOf(crossId), null, null, null)
+            var childId = String()
+            var childCross = String()
+            if (cursor.moveToFirst()) {
+                do {
+                    cursor.columnNames.forEach { header ->
+                        header?.let {
+                            val colVal = cursor.getString(
+                                    cursor.getColumnIndexOrThrow(it)) ?: String()
+                            when (it) {
+                                IdEntryContract.IdEntry.COLUMN_NAME_CROSS -> childCross = colVal
+                                IdEntryContract.IdEntry.COLUMN_NAME_ID -> childId = colVal
+                            }
+                        }
+                    }
+                    if (childId.isNotBlank() && childCross.isNotBlank()) {
+                        childFromFemale.add(Pair(childCross, childId))
+                    }
+                } while (cursor.moveToNext())
+            }
+
+            cursor = readableDatabase.query(IdEntryContract.IdEntry.TABLE_NAME,
+                    arrayOf(IdEntryContract.IdEntry.COLUMN_NAME_CROSS, IdEntryContract.IdEntry.COLUMN_NAME_ID),
+                    "${IdEntryContract.IdEntry.COLUMN_NAME_MALE}=?", arrayOf(crossId), null, null, null)
+
+            childId = String()
+            childCross = String()
+            if (cursor.moveToFirst()) {
+                do {
+                    cursor.columnNames.forEach { header ->
+                        header?.let {
+                            val colVal = cursor.getString(
+                                    cursor.getColumnIndexOrThrow(it)) ?: String()
+                            when (it) {
+                                IdEntryContract.IdEntry.COLUMN_NAME_CROSS -> childCross = colVal
+                                IdEntryContract.IdEntry.COLUMN_NAME_ID -> childId = colVal
+                            }
+                        }
+                    }
+                    if (childId.isNotBlank() && childCross.isNotBlank()) {
+                        childFromMale.add(Pair(childCross, childId))
+                    }
+                } while (cursor.moveToNext())
+            }
+
+            cursor.close()
+
+
+            return (childFromFemale + childFromMale).toTypedArray()
+        } catch (e: SQLiteException) {
+            e.printStackTrace()
+        }
+        return arrayOf()
+    }
+
     fun getParents(id: Int): Array<String> {
         val entries = ArrayList<AdapterEntry>()
         try {
@@ -146,6 +210,39 @@ internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DAT
             e.printStackTrace()
         }
         return -1
+    }
+
+    private fun getCrossId(id: Int): String {
+        try {
+            val cursor = readableDatabase.query(IdEntryContract.IdEntry.TABLE_NAME,
+                    arrayOf(IdEntryContract.IdEntry.COLUMN_NAME_CROSS),
+                    "${IdEntryContract.IdEntry.COLUMN_NAME_ID}=?",
+                    arrayOf(id.toString()), null, null, null)
+            if (cursor.moveToFirst()) {
+                return cursor.getString(cursor.getColumnIndexOrThrow(
+                        IdEntryContract.IdEntry.COLUMN_NAME_CROSS))
+            }
+            cursor.close()
+        } catch (e: SQLiteException) {
+            e.printStackTrace()
+        }
+        return ""
+    }
+
+    fun getPersonById(id: Int): String {
+        try {
+            val cursor = readableDatabase.query(IdEntryContract.IdEntry.TABLE_NAME,
+                    arrayOf(IdEntryContract.IdEntry.COLUMN_NAME_USER), "${IdEntryContract.IdEntry.COLUMN_NAME_ID}=?",
+                    arrayOf(id.toString()), null, null, null)
+            if (cursor.moveToFirst()) {
+                return cursor.getString(cursor.getColumnIndexOrThrow(
+                        IdEntryContract.IdEntry.COLUMN_NAME_USER)) ?: "-1"
+            }
+            cursor.close()
+        } catch (e: SQLiteException) {
+            e.printStackTrace()
+        }
+        return "-1"
     }
 
     fun getTimestampById(id: Int): String {

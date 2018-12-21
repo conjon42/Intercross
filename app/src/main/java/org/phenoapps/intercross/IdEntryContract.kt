@@ -4,7 +4,6 @@ import android.provider.BaseColumns
 
 internal object IdEntryContract {
 
-
     const val TABLE_NAME = "INTERCROSS"
 
     const val SQL_CREATE_ENTRIES =
