@@ -114,12 +114,12 @@ class AuxValueInputActivity : AppCompatActivity() {
                 mBpMaleTextView.setOnClickListener {
                     val maleId = mDbHelper.getRowId(mMaleParent)
                     if (maleId != -1) startCrossActivity(id, mMaleParent)
-                    else Toast.makeText(this, "This id has not DB entry.", Toast.LENGTH_SHORT).show()
+                    else Toast.makeText(this, "This id has no DB entry.", Toast.LENGTH_SHORT).show()
                 }
                 mBpFemaleTextView.setOnClickListener {
                     val femaleId = mDbHelper.getRowId(mFemaleParent)
                     if (femaleId != -1) startCrossActivity(mDbHelper.getRowId(mFemaleParent), mFemaleParent)
-                    else Toast.makeText(this, "This id has not DB entry.", Toast.LENGTH_SHORT).show()
+                    else Toast.makeText(this, "This id has no DB entry.", Toast.LENGTH_SHORT).show()
                 }
             }
             "OpenPollinated", "SelfPollinated" -> {
@@ -130,7 +130,7 @@ class AuxValueInputActivity : AppCompatActivity() {
                 mNotBpParentTextView.setOnClickListener {
                     val femaleId = mDbHelper.getRowId(mFemaleParent)
                     if (femaleId != -1) startCrossActivity(mDbHelper.getRowId(mFemaleParent), mFemaleParent)
-                    else Toast.makeText(this, "This id has not DB entry.", Toast.LENGTH_SHORT).show()
+                    else Toast.makeText(this, "This id has no DB entry.", Toast.LENGTH_SHORT).show()
                 }
             }
         }
