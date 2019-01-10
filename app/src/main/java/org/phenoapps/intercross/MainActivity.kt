@@ -86,12 +86,24 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     }
 
     private val mPrefListener = SharedPreferences.OnSharedPreferenceChangeListener { pref, key ->
+
         key?.let{
             when (key) {
                 SettingsActivity.PATTERN -> {
                     when (pref?.getBoolean(key, true)) {
-                        true -> mCrossEditText.isEnabled = false
-                        false -> mCrossEditText.isEnabled = true
+                        true -> {
+                            val auto = pref.getBoolean("LABEL_PATTERN_AUTO", true)
+                            val prefix = pref.getString("LABEL_PATTERN_PREFIX", "")
+                            val suffix = pref.getString("LABEL_PATTERN_SUFFIX", "")
+                            val num = pref.getInt("LABEL_PATTERN_MID", 0)
+                            val pad = pref.getInt("LABEL_PATTERN_PAD", 0)
+                            mCrossEditText.setText("$prefix${num.toString().padStart(pad, '0')}$suffix")
+                            mCrossEditText.isEnabled = false
+                        }
+                        false -> {
+                            mCrossEditText.setText("")
+                            mCrossEditText.isEnabled = true
+                        }
                     }
                 }
                 SettingsActivity.CROSS_ORDER -> {
@@ -268,6 +280,18 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             }
         }
 
+        val pref = PreferenceManager.getDefaultSharedPreferences(this)
+        val isAutoPattern = pref.getBoolean(SettingsActivity.PATTERN, false)
+
+        if (isAutoPattern) {
+            val auto = pref.getBoolean("LABEL_PATTERN_AUTO", true)
+            val prefix = pref.getString("LABEL_PATTERN_PREFIX", "")
+            val suffix = pref.getString("LABEL_PATTERN_SUFFIX", "")
+            val num = pref.getInt("LABEL_PATTERN_MID", 0)
+            val pad = pref.getInt("LABEL_PATTERN_PAD", 0)
+            mCrossEditText.setText("$prefix${num.toString().padStart(pad, '0')}$suffix")
+        }
+
         findViewById<ConstraintLayout>(R.id.constraint_layout_parent).requestFocus()
 
         loadSQLToLocal()
@@ -320,15 +344,18 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         val pref = PreferenceManager.getDefaultSharedPreferences(this)
         val isAutoPattern = pref.getBoolean(SettingsActivity.PATTERN, false)
 
+        var prefix = String()
+        var suffix = String()
+        var num = 0
+        var pad = 0
         if (isAutoPattern) {
-            val auto = pref.getBoolean("PATTERN_AUTO", true)
-            val prefix = pref.getString("PATTERN_PREFIX", "")
-            val suffix = pref.getString("PATTERN_SUFFIX", "")
-            val num = pref.getInt("PATTERN_INT", 0)
-            val pad = pref.getInt("PATTERN_PAD", 0)
+            prefix = pref.getString("LABEL_PATTERN_PREFIX", "")
+            suffix = pref.getString("LABEL_PATTERN_SUFFIX", "")
+            num = pref.getInt("LABEL_PATTERN_MID", 0)
+            pad = pref.getInt("LABEL_PATTERN_PAD", 0)
             cross = "$prefix${num.toString().padStart(pad, '0')}$suffix"
             val edit = pref.edit()
-            edit.putInt("PATTERN_INT", num + 1)
+            edit.putInt("LABEL_PATTERN_MID", num + 1)
             edit.apply()
         }
 
@@ -375,7 +402,10 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             //clear fields
             mFirstEditText.text.clear()
             mSecondEditText.text.clear()
-            mCrossEditText.text.clear()
+            if (isAutoPattern) {
+                mCrossEditText.setText("$prefix${(num+1).toString().padStart(pad, '0')}$suffix")
+            } else mCrossEditText.text.clear()
+
 
             mFirstEditText.requestFocus()
 
@@ -574,19 +604,6 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                                 intent.extras.getStringArrayList(IntercrossConstants.USER_INPUT_VALUES)
                         )
                     }
-                    IntercrossConstants.PATTERN_REQ -> {
-                        if (intent.hasExtra(IntercrossConstants.PATTERN)) {
-                            val pattern = intent.extras
-                                    .getParcelable<AutoGenerationActivity.LabelPattern>(IntercrossConstants.PATTERN)
-                            val editor = PreferenceManager.getDefaultSharedPreferences(this).edit()
-                            editor.putString("PATTERN_PREFIX", pattern.prefix)
-                            editor.putString("PATTERN_SUFFIX", pattern.suffix)
-                            editor.putInt("PATTERN_INT", pattern.number)
-                            editor.putBoolean("PATTERN_AUTO", pattern.auto)
-                            editor.putInt("PATTERN_PAD", pattern.pad)
-                            editor.apply()
-                        }
-                    }
                 }
 
                 //barcode text response from Zebra intent
@@ -638,11 +655,11 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                 loadSQLToLocal()
             }
 
-            itemView.findViewById<ImageView>(R.id.inputImageView).setOnClickListener {
+            /*itemView.findViewById<ImageView>(R.id.inputImageView).setOnClickListener {
                 (currentFocus as? EditText).apply {
                     this?.setText(firstText.text.toString())
                 }
-            }
+            }*/
         }
 
         fun startCrossActivity() {
@@ -764,17 +781,6 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             org.phenoapps.intercross.R.id.nav_delete_entries -> {
                 askUserDeleteEntries()
             }
-            org.phenoapps.intercross.R.id.nav_auto_generate -> {
-                startActivityForResult(Intent(this, AutoGenerationActivity::class.java),
-                        IntercrossConstants.PATTERN_REQ)
-            }
-            org.phenoapps.intercross.R.id.nav_import_zpl -> {
-                startActivity(Intent(this, ImportZPL::class.java))
-            }
-            //org.phenoapps.intercross.R.id.nav_manage_headers -> {
-            //    startActivityForResult(Intent(this@MainActivity,
-            //            ManageHeadersActivity::class.java), IntercrossConstants.MANAGE_HEADERS_REQ)
-            //}
         }
 
         val dl = findViewById(org.phenoapps.intercross.R.id.drawer_layout) as DrawerLayout

@@ -1,36 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <ListPreference
-        android:defaultValue="0"
-        android:entries="@array/cross_order_array"
-        android:entryValues="@array/cross_order_array_values"
-        android:icon="@drawable/ic_cross_order"
-        android:key="org.phenoapps.intercross.CROSS_ORDER"
-        android:summary="%s"
-        android:title="@string/cross_mode" />
+    <PreferenceCategory android:title="Profile">
+        <EditTextPreference
+            android:icon="@drawable/ic_person"
+            android:key="org.phenoapps.intercross.PERSON"
+            android:title="Person" />
 
-    <CheckBoxPreference
-        android:icon="@drawable/ic_human_male"
-        android:key="org.phenoapps.intercross.BLANK_MALE_ID"
-        android:title="Allow Blank Male ID" />
-
-    <EditTextPreference
-        android:icon="@drawable/ic_person"
-        android:key="org.phenoapps.intercross.PERSON"
-        android:title="Person" />
-
-    <EditTextPreference
-        android:icon="@drawable/ic_location"
-        android:key="org.phenoapps.intercross.LOCATION"
-        android:title="Location" />
-
-    <CheckBoxPreference
-        android:icon="@drawable/ic_baseline_receipt_24px"
-        android:key="org.phenoapps.intercross.LABEL_PATTERN"
-        android:title="Auto Generate Cross IDs" />
-
-    <EditTextPreference
-        android:icon="@drawable/ic_bluetooth"
-        android:key="org.phenoapps.intercross.BLUETOOTH_ID"
-        android:title="Bluetooth ID" />
+        <EditTextPreference
+            android:icon="@drawable/ic_location"
+            android:key="org.phenoapps.intercross.LOCATION"
+            android:title="Location" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Workflow">
+        <ListPreference
+            android:defaultValue="0"
+            android:entries="@array/cross_order_array"
+            android:entryValues="@array/cross_order_array_values"
+            android:icon="@drawable/ic_cross_order"
+            android:key="org.phenoapps.intercross.CROSS_ORDER"
+            android:summary="%s"
+            android:title="@string/cross_mode" />
+        <CheckBoxPreference
+            android:icon="@drawable/ic_human_male"
+            android:key="org.phenoapps.intercross.BLANK_MALE_ID"
+            android:title="Allow Blank Male ID" />
+        <Preference
+            android:key="org.phenoapps.intercross.CREATE_PATTERN"
+            android:icon="@drawable/ic_baseline_receipt_24px"
+            android:title="Create Pattern for Cross IDs">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:targetPackage="org.phenoapps.intercross"
+                android:targetClass="org.phenoapps.intercross.AutoGenerationActivity" />
+        </Preference>
+        <CheckBoxPreference
+            android:icon="@drawable/ic_baseline_receipt_24px"
+            android:key="org.phenoapps.intercross.LABEL_PATTERN"
+            android:title="Auto Generate Cross IDs" />
+        <Preference
+            android:icon="@drawable/ic_import"
+            android:title="ZPL Import"
+            android:key="org.phenoapps.intercross.ZPL_IMPORT">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:targetPackage="org.phenoapps.intercross"
+                android:targetClass="org.phenoapps.intercross.ImportZPL" />
+        </Preference>
+        <Preference
+            android:icon="@drawable/ic_baseline_delete_24px"
+            android:title="Delete Entries"
+            android:key="org.phenoapps.intercross.DELETE_ENTRIES" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Printing">
+        <EditTextPreference
+            android:icon="@drawable/ic_bluetooth"
+            android:key="org.phenoapps.intercross.BLUETOOTH_ID"
+            android:title="Bluetooth ID" />
+    </PreferenceCategory>
 </PreferenceScreen>

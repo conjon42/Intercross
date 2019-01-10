@@ -2,8 +2,10 @@ package org.phenoapps.intercross
 
 import android.app.Activity
 import android.os.Bundle
+import android.preference.Preference
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import android.util.Log
 
 class SettingsActivity : AppCompatActivity() {
 

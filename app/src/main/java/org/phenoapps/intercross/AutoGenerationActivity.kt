@@ -1,6 +1,7 @@
 package org.phenoapps.intercross
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.*
 import android.preference.PreferenceManager
@@ -45,23 +46,25 @@ class AutoGenerationActivity : AppCompatActivity(), LifecycleObserver {
         mSuffixEditText = findViewById<EditText>(R.id.suffixEditText)
         mNumberEditText = findViewById<EditText>(R.id.numberEditText)
         mPadEditText = findViewById(R.id.padEditText)
+
         mRadioGroup = findViewById(R.id.radioGroup)
 
         mRadioGroup.check(R.id.startFromRadioButton)
 
-        mPrefixEditText.setText(pref.getString("PATTERN_PREFIX", ""))
-        mSuffixEditText.setText(pref.getString("PATTERN_SUFFIX", ""))
-        val initialNum = pref.getInt("PATTERN_INT", -1)
+        mPrefixEditText.setText(pref.getString("LABEL_PATTERN_PREFIX", ""))
+        mSuffixEditText.setText(pref.getString("LABEL_PATTERN_SUFFIX", ""))
+        val initialNum = pref.getInt("LABEL_PATTERN_MID", -1)
         if (initialNum == -1) mNumberEditText.setText("")
         else mNumberEditText.setText(initialNum.toString())
-        val initialPad = pref.getInt("PATTERN_PAD", -1)
+        val initialPad = pref.getInt("LABEL_PATTERN_PAD", -1)
         if (initialPad == -1) mPadEditText.setText("")
         else mPadEditText.setText(initialPad.toString())
 
         mRadioGroup.setOnCheckedChangeListener { radioGroup, i ->
             when (i) {
                 R.id.autoRadioButton -> {
-                    mNumberEditText.setText("00000")
+                    mNumberEditText.setText("0001")
+                    mNumberEditText.isEnabled = false
                 }
                 R.id.startFromRadioButton -> {
                     //mNumberEditText.setText("")
@@ -86,7 +89,7 @@ class AutoGenerationActivity : AppCompatActivity(), LifecycleObserver {
             }
         }
 
-        val pad = mPadEditText.text.toString()
+        var pad = mPadEditText.text.toString()
         var padValue = 0
         if (!pad.isEmpty()) padValue = pad.toInt()
         mPatternText.setText("${mPrefixEditText.text}${mNumberEditText.text.padStart(padValue, '0')}${mSuffixEditText.text}")
@@ -96,20 +99,28 @@ class AutoGenerationActivity : AppCompatActivity(), LifecycleObserver {
         mPadEditText.addTextChangedListener(watcher)
 
         mSaveButton.setOnClickListener {
-            val i = Intent()
+            //val i = Intent()
 
+            var newPad = mPadEditText.text.toString()
             var midNum = mNumberEditText.text.toString()
-            if (midNum.isBlank()) midNum = "0"
-            var pad = mPadEditText.text.toString()
-            if (pad.isBlank()) pad = "0"
+            if (midNum.isBlank()) midNum = "0001"
+            if (newPad.isBlank()) pad = "0"
 
-            i.putExtra(IntercrossConstants.PATTERN, LabelPattern(mPrefixEditText.text.toString(),
+            /*i.putExtra(IntercrossConstants.PATTERN, LabelPattern(mPrefixEditText.text.toString(),
                     mSuffixEditText.text.toString(),
                     midNum.toInt(),
                     mRadioGroup.checkedRadioButtonId == R.id.autoRadioButton,
                     pad.toInt()))
 
-            this@AutoGenerationActivity.setResult(Activity.RESULT_OK, i)
+            this@AutoGenerationActivity.setResult(Activity.RESULT_OK, i)*/
+
+            val edit = PreferenceManager.getDefaultSharedPreferences(this).edit()
+            edit.putString("LABEL_PATTERN_PREFIX", mPrefixEditText.text.toString())
+            edit.putString("LABEL_PATTERN_SUFFIX", mSuffixEditText.text.toString())
+            edit.putInt("LABEL_PATTERN_MID", midNum.toInt())
+            edit.putBoolean("LABEL_PATTERN_AUTO", mRadioGroup.checkedRadioButtonId == R.id.autoRadioButton)
+            edit.putInt("LABEL_PATTERN_PAD", newPad.toInt())
+            edit.apply()
 
             finish()
         }
