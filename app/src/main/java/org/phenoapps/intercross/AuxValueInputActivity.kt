@@ -11,6 +11,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -143,6 +144,14 @@ class AuxValueInputActivity : AppCompatActivity() {
             mEntries.add(AdapterEntry(child.first, child.second))
         }
 
+        /*val siblings = mDbHelper.getSiblings(id)
+
+        mSiblingsRecyclerView.layoutManager = LinearLayoutManager(this)
+
+        siblings.forEach {bro ->
+            mSiblingsEntries.add(AdapterEntry())
+        }*/
+
         val adapter = object : ViewAdapter<AdapterEntry>(mEntries) {
 
             override fun getLayoutId(position: Int, obj: AdapterEntry): Int {
@@ -213,89 +222,129 @@ class AuxValueInputActivity : AppCompatActivity() {
         when (item.itemId) {
             R.id.action_print -> {
 
-                object : AsyncTask<Void, Void, String>() {
+                val pref = PreferenceManager.getDefaultSharedPreferences(this@AuxValueInputActivity)
+                val btId = pref.getString(SettingsActivity.BT_ID, "")
+                if (btId.isBlank()) {
 
-                    override fun doInBackground(vararg params: Void?): String {
+                    val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
-                        val pref = PreferenceManager.getDefaultSharedPreferences(this@AuxValueInputActivity)
-                        val btId = pref.getString(SettingsActivity.BT_ID, "")
+                    val pairedDevices = mBluetoothAdapter.bondedDevices
 
-                        if (btId.isBlank()) {
-                            run { Toast.makeText(this@AuxValueInputActivity,
-                                    "No bluetooth device paired.", Toast.LENGTH_SHORT) }
-                        } else {
-                            val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+                    val input = RadioGroup(this@AuxValueInputActivity)
 
-                            val pairedDevices = mBluetoothAdapter.bondedDevices.filter {
-                                it.name == btId
-                            }
-
-                            if (pairedDevices.isNotEmpty()) {
-                                val bc = BluetoothConnection(pairedDevices[0].address)
-
-                                try {
-                                    bc.open()
-                                    val printer = ZebraPrinterFactory.getInstance(bc)
-                                    val linkOsPrinter = ZebraPrinterFactory.createLinkOsPrinter(printer)
-                                    linkOsPrinter?.let {
-                                        val printerStatus = it.currentStatus
-                                        getPrinterStatus(bc)
-                                        if (printerStatus.isReadyToPrint) {
-
-                                            if (mCode.isNotBlank() && mZplFileName.isNotBlank()) {
-                                                printer.sendCommand(mCode)
-                                                printer.sendCommand("^XA"
-                                                        + "^XFR:${mZplFileName}"
-                                                        + "^FN1^FD" + mCrossId + "^FS"
-                                                        + "^FN2^FDQA," + mCrossId + "^FS"
-                                                        + "^FN3^FD" + mTimestamp + "^FS^XZ")
-                                            } else {
-                                                printer.sendCommand("^XA"
-                                                        + "^MNA"
-                                                        + "^MMT,N"
-                                                        + "^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS"
-                                                        + "^FWR"
-                                                        + "^FO100,25^A0,25,20^FN1^FS"
-                                                        + "^FO200,25^A0N,25,20"
-                                                        + "^BQ,2,6" +
-                                                        "^FN2^FS"
-                                                        + "^FO450,25^A0,25,20^FN3^FS^XZ")
-
-                                                printer.sendCommand("^XA"
-                                                        + "^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF"
-                                                        + "^FN1^FD" + mCrossId + "^FS"
-                                                        + "^FN2^FDQA," + mCrossId + "^FS"
-                                                        + "^FN3^FD" + mTimestamp + "^FS^XZ")
-                                            }
-                                            /*printer.printImage(new ZebraImageAndroid(BitmapFactory.decodeResource(getApplicationContext().getResources(),
-                                    R.drawable.intercross_small)), 75,500,-1,-1,false);*/
-
-                                        } else if (printerStatus.isHeadOpen) {
-                                            runOnUiThread { Toast.makeText(this@AuxValueInputActivity, "Printer is open.", Toast.LENGTH_LONG).show() }
-                                        } else if (printerStatus.isPaused) {
-                                            runOnUiThread { Toast.makeText(this@AuxValueInputActivity, "Printer is paused.", Toast.LENGTH_LONG).show() }
-                                        } else if (printerStatus.isPaperOut) {
-                                            runOnUiThread { Toast.makeText(this@AuxValueInputActivity, "No paper.", Toast.LENGTH_LONG).show() }
-                                        } else {
-                                            runOnUiThread { Toast.makeText(this@AuxValueInputActivity, "Please check the printer's connection.", Toast.LENGTH_LONG).show() }
-                                        }
-                                    }
-                                } catch (e: ConnectionException) {
-                                    e.printStackTrace()
-                                } catch (e: ZebraPrinterLanguageUnknownException) {
-                                    e.printStackTrace()
-                                } finally {
-                                    bc.close()
-                                }
-                            }
-                        }
-
-                        return String()
+                    pairedDevices.forEach {
+                        val button = RadioButton(this@AuxValueInputActivity)
+                        button.text = it.name
+                        input.addView(button)
                     }
 
-                }.execute()
+                    val builder = AlertDialog.Builder(this@AuxValueInputActivity).apply {
 
+                        setTitle("Choose bluetooth device to print from.")
 
+                        setView(input)
+
+                        setNegativeButton("Cancel") { _, _ ->
+
+                        }
+
+                        setPositiveButton("OK") { _, _ ->
+
+                            if (input.checkedRadioButtonId == -1) return@setPositiveButton
+
+                            val edit = pref.edit()
+                            edit.putString(SettingsActivity.BT_ID,
+                                    input.findViewById<RadioButton>(input.checkedRadioButtonId).text.toString())
+                            edit.apply()
+
+                            object : AsyncTask<Void, Void, String>() {
+
+                                override fun doInBackground(vararg params: Void?): String {
+
+                                    val pref = PreferenceManager.getDefaultSharedPreferences(this@AuxValueInputActivity)
+                                    val btId = pref.getString(SettingsActivity.BT_ID, "")
+
+                                    if (btId.isBlank()) {
+                                        run {
+                                            Toast.makeText(this@AuxValueInputActivity,
+                                                    "No bluetooth device paired.", Toast.LENGTH_SHORT)
+                                        }
+                                    } else {
+                                        val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+
+                                        val pairedDevices = mBluetoothAdapter.bondedDevices.filter {
+                                            it.name == btId
+                                        }
+
+                                        if (pairedDevices.isNotEmpty()) {
+                                            val bc = BluetoothConnection(pairedDevices[0].address)
+
+                                            try {
+                                                bc.open()
+                                                val printer = ZebraPrinterFactory.getInstance(bc)
+                                                val linkOsPrinter = ZebraPrinterFactory.createLinkOsPrinter(printer)
+                                                linkOsPrinter?.let {
+                                                    val printerStatus = it.currentStatus
+                                                    getPrinterStatus(bc)
+                                                    if (printerStatus.isReadyToPrint) {
+
+                                                        if (mCode.isNotBlank() && mZplFileName.isNotBlank()) {
+                                                            printer.sendCommand(mCode)
+                                                            printer.sendCommand("^XA"
+                                                                    + "^XFR:${mZplFileName}"
+                                                                    + "^FN1^FD" + mCrossId + "^FS"
+                                                                    + "^FN2^FDQA," + mCrossId + "^FS"
+                                                                    + "^FN3^FD" + mTimestamp + "^FS^XZ")
+                                                        } else {
+                                                            printer.sendCommand("^XA"
+                                                                    + "^MNA"
+                                                                    + "^MMT,N"
+                                                                    + "^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS"
+                                                                    + "^FWR"
+                                                                    + "^FO100,25^A0,25,20^FN1^FS"
+                                                                    + "^FO200,25^A0N,25,20"
+                                                                    + "^BQ,2,6" +
+                                                                    "^FN2^FS"
+                                                                    + "^FO450,25^A0,25,20^FN3^FS^XZ")
+
+                                                            printer.sendCommand("^XA"
+                                                                    + "^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF"
+                                                                    + "^FN1^FD" + mCrossId + "^FS"
+                                                                    + "^FN2^FDQA," + mCrossId + "^FS"
+                                                                    + "^FN3^FD" + mTimestamp + "^FS^XZ")
+                                                        }
+                                                        /*printer.printImage(new ZebraImageAndroid(BitmapFactory.decodeResource(getApplicationContext().getResources(),
+                                                R.drawable.intercross_small)), 75,500,-1,-1,false);*/
+
+                                                    } else if (printerStatus.isHeadOpen) {
+                                                        runOnUiThread { Toast.makeText(this@AuxValueInputActivity, "Printer is open.", Toast.LENGTH_LONG).show() }
+                                                    } else if (printerStatus.isPaused) {
+                                                        runOnUiThread { Toast.makeText(this@AuxValueInputActivity, "Printer is paused.", Toast.LENGTH_LONG).show() }
+                                                    } else if (printerStatus.isPaperOut) {
+                                                        runOnUiThread { Toast.makeText(this@AuxValueInputActivity, "No paper.", Toast.LENGTH_LONG).show() }
+                                                    } else {
+                                                        runOnUiThread { Toast.makeText(this@AuxValueInputActivity, "Please check the printer's connection.", Toast.LENGTH_LONG).show() }
+                                                    }
+                                                }
+                                            } catch (e: ConnectionException) {
+                                                e.printStackTrace()
+                                            } catch (e: ZebraPrinterLanguageUnknownException) {
+                                                e.printStackTrace()
+                                            } finally {
+                                                bc.close()
+                                            }
+                                        }
+                                    }
+
+                                    return String()
+                                }
+
+                            }.execute()
+                        }
+                    }
+
+                    builder.show()
+                }
             }
             else -> finish()
         }

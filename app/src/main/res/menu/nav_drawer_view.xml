@@ -13,7 +13,10 @@
         android:id="@+id/nav_export"
         android:icon="@drawable/ic_export"
         android:title="Export" />
-
+    <item
+        android:id="@+id/nav_delete_entries"
+        android:icon="@drawable/ic_baseline_delete_24px"
+        android:title="Delete Entries" />
     <item
         android:id="@+id/nav_about"
         android:icon="@drawable/ic_about"
@@ -23,9 +26,4 @@
         android:id="@+id/nav_intro"
         android:icon="@drawable/ic_help"
         android:title="Intro" />
-
-    <item
-        android:id="@+id/nav_delete_entries"
-        android:icon="@drawable/ic_baseline_delete_24px"
-        android:title="Delete Entries" />
 </menu>

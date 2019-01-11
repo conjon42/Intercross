@@ -89,6 +89,9 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
         key?.let{
             when (key) {
+                "org.phenoapps.intercross.LABEL_PATTERN_CREATED" -> {
+
+                }
                 SettingsActivity.PATTERN -> {
                     when (pref?.getBoolean(key, true)) {
                         true -> {
@@ -651,8 +654,20 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             secondText.text = data.second
 
             itemView.findViewById<ImageView>(R.id.deleteView).setOnClickListener { _ ->
-                mDbHelper.deleteEntry(id)
-                loadSQLToLocal()
+
+                val builder = AlertDialog.Builder(this@MainActivity).apply {
+
+                    setTitle("Delete cross entry?")
+
+                    setNegativeButton("Cancel") { _, _ -> }
+
+                    setPositiveButton("Yes") { _, _ ->
+                        mDbHelper.deleteEntry(id)
+                        loadSQLToLocal()
+                    }
+                }
+
+                builder.show()
             }
 
             /*itemView.findViewById<ImageView>(R.id.inputImageView).setOnClickListener {
@@ -663,8 +678,6 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         }
 
         fun startCrossActivity() {
-
-            val pref = PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
 
             val parents = mDbHelper.getParents(id)
 
@@ -684,48 +697,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         override fun onClick(v: View?) {
 
             v?.let {
-
-                val pref = PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
-                val btId = pref.getString(SettingsActivity.BT_ID, "")
-                if (btId.isBlank()) {
-
-                    val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-
-                    val pairedDevices = mBluetoothAdapter.bondedDevices
-
-                    val input = RadioGroup(this@MainActivity)
-
-                    pairedDevices.forEach {
-                        val button = RadioButton(this@MainActivity)
-                        button.text = it.name
-                        input.addView(button)
-                    }
-
-                    val builder = AlertDialog.Builder(this@MainActivity).apply {
-
-                        setTitle("Choose bluetooth device to print from.")
-
-                        setView(input)
-
-                        setNegativeButton("Cancel") { _, _ ->
-
-                        }
-
-                        setPositiveButton("OK") { _, _ ->
-
-                            if (input.checkedRadioButtonId == -1) return@setPositiveButton
-
-                            val edit = pref.edit()
-                            edit.putString(SettingsActivity.BT_ID,
-                                    input.findViewById<RadioButton>(input.checkedRadioButtonId).text.toString())
-                            edit.apply()
-
-                            startCrossActivity()
-                        }
-                    }
-
-                    builder.show()
-                } else startCrossActivity()
+                startCrossActivity()
             }
         }
     }

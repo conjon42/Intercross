@@ -196,6 +196,35 @@ internal class IdEntryDbHelper(context: Context) : SQLiteOpenHelper(context, DAT
         return arrayOf()
     }
 
+    fun getSiblings(id: Int): List<String> {
+        val parents = getParents(id)
+        if (parents.size == 2) {
+            try {
+                val cursor = readableDatabase.query(IdEntryContract.IdEntry.TABLE_NAME,
+                        arrayOf(IdEntryContract.IdEntry.COLUMN_NAME_CROSS),
+                        "male=?, female=?", arrayOf(parents[1], parents[0]), null, null, null)
+                val siblings = ArrayList<String>()
+                do {
+                    if (cursor.moveToFirst()) {
+                        cursor.columnNames.forEach { header ->
+                            header?.let {
+                                val colVal = cursor.getString(
+                                        cursor.getColumnIndexOrThrow(it)) ?: String()
+                                if (it == IdEntryContract.IdEntry.COLUMN_NAME_CROSS) siblings.add(colVal)
+                            }
+                        }
+                    }
+                } while (cursor.moveToNext())
+                cursor.close()
+                return siblings
+            } catch (e: SQLiteException) {
+                e.printStackTrace()
+            }
+            return listOf()
+        }
+        return listOf()
+    }
+
     fun getRowId(cross: String): Int {
         try {
             val cursor = readableDatabase.query(IdEntryContract.IdEntry.TABLE_NAME,

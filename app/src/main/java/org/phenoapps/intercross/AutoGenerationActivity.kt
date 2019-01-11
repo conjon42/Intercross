@@ -9,6 +9,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.MenuItem
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleObserver
 import java.util.*
@@ -68,6 +69,7 @@ class AutoGenerationActivity : AppCompatActivity(), LifecycleObserver {
                 }
                 R.id.startFromRadioButton -> {
                     //mNumberEditText.setText("")
+                    mNumberEditText.isEnabled = true
                 }
             }
         }
@@ -105,6 +107,7 @@ class AutoGenerationActivity : AppCompatActivity(), LifecycleObserver {
             var midNum = mNumberEditText.text.toString()
             if (midNum.isBlank()) midNum = "0001"
             if (newPad.isBlank()) pad = "0"
+            else pad = newPad
 
             /*i.putExtra(IntercrossConstants.PATTERN, LabelPattern(mPrefixEditText.text.toString(),
                     mSuffixEditText.text.toString(),
@@ -119,11 +122,47 @@ class AutoGenerationActivity : AppCompatActivity(), LifecycleObserver {
             edit.putString("LABEL_PATTERN_SUFFIX", mSuffixEditText.text.toString())
             edit.putInt("LABEL_PATTERN_MID", midNum.toInt())
             edit.putBoolean("LABEL_PATTERN_AUTO", mRadioGroup.checkedRadioButtonId == R.id.autoRadioButton)
-            edit.putInt("LABEL_PATTERN_PAD", newPad.toInt())
+            edit.putInt("LABEL_PATTERN_PAD", pad.toInt())
+
+            edit.putBoolean("LABEL_PATTERN_CREATED", true)
             edit.apply()
 
             finish()
         }
+    }
+
+    override fun onBackPressed() {
+
+        val builder = AlertDialog.Builder(this).apply {
+
+            setTitle("Would you like to save your changes?")
+
+            setNegativeButton("No") { _, _ ->
+                finish()
+            }
+
+            setPositiveButton("Yes") { _, _ ->
+
+                var pad = mPadEditText.text.toString()
+                var midNum = mNumberEditText.text.toString()
+                if (midNum.isBlank()) midNum = "0001"
+                if (pad.isBlank()) pad = "0"
+
+                val edit = PreferenceManager.getDefaultSharedPreferences(this@AutoGenerationActivity).edit()
+                edit.putString("LABEL_PATTERN_PREFIX", mPrefixEditText.text.toString())
+                edit.putString("LABEL_PATTERN_SUFFIX", mSuffixEditText.text.toString())
+                edit.putInt("LABEL_PATTERN_MID", midNum.toInt())
+                edit.putBoolean("LABEL_PATTERN_AUTO", mRadioGroup.checkedRadioButtonId == R.id.autoRadioButton)
+                edit.putInt("LABEL_PATTERN_PAD", pad.toInt())
+
+                edit.putBoolean("LABEL_PATTERN_CREATED", true)
+                edit.apply()
+
+                finish()
+            }
+        }
+
+        builder.show()
     }
 
     data class LabelPattern(val prefix: String, val suffix: String, val number: Int,
@@ -169,7 +208,7 @@ class AutoGenerationActivity : AppCompatActivity(), LifecycleObserver {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        finish()
+        onBackPressed()
 
         return true
     }
@@ -193,9 +232,5 @@ class AutoGenerationActivity : AppCompatActivity(), LifecycleObserver {
                 }
             }
         }
-    }
-
-    override fun onBackPressed() {
-        //do nothing
     }
 }
