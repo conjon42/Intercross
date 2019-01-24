@@ -2,7 +2,6 @@ package org.phenoapps.intercross
 
 import android.Manifest
 import android.app.Activity
-import android.bluetooth.BluetoothAdapter
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -49,12 +48,6 @@ import java.util.Arrays.asList
 
 class MainActivity : AppCompatActivity(), LifecycleObserver {
 
-    enum class PollinationType {
-        Biparental,
-        SelfPollinated,
-        OpenPollinated
-    }
-
     private lateinit var mFirstEditText: EditText
     private lateinit var mSecondEditText: EditText
     private lateinit var mCrossEditText: EditText
@@ -73,8 +66,8 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         override fun getLayoutId(position: Int, obj: AdapterEntry): Int {
             val type = mDbHelper.getPollinationType(obj.id)
             return when(type) {
-                PollinationType.SelfPollinated.toString() -> R.layout.main_self_pollinated_row
-                PollinationType.OpenPollinated.toString() -> R.layout.main_open_pollinated_row
+                "Self-Pollinated" -> R.layout.main_self_pollinated_row
+                "Open Pollinated" -> R.layout.main_open_pollinated_row
                 else -> R.layout.main_biparental_row
             }
         }
@@ -135,21 +128,20 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     private lateinit var mNameMap: MutableMap<String, String>
 
-    private val isExternalStorageWritable: Boolean
-        get() {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    Log.v("Security", "Permission is granted")
-                    return Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()
-                } else {
-                    ActivityCompat.requestPermissions(this,
-                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), REQUEST_WRITE_PERMISSION)
-                }
-            } else
+    private fun isExternalStorageWritable(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                Log.v("Security", "Permission is granted")
                 return Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), REQUEST_WRITE_PERMISSION)
+            }
+        } else
+            return Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()
 
-            return false
-        }
+        return false
+    }
 
     override fun onStart() {
 
@@ -374,9 +366,9 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         if ((male.isNotEmpty() || mAllowBlankMale) && female.isNotEmpty() && cross.isNotEmpty()) {
 
             val pollinationType = when {
-                male.isBlank() -> PollinationType.OpenPollinated
-                male != female -> PollinationType.Biparental
-                else -> PollinationType.SelfPollinated
+                male.isBlank() -> "Open Pollinated"
+                male != female -> "Biparental"
+                else -> "Self-Pollinated"
             }
 
             val crossCount = mDbHelper.getCrosses(female, male).size + 1
@@ -452,17 +444,25 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     private fun askUserExportFileName() {
 
-        if (isExternalStorageWritable) {
+        if (isExternalStorageWritable()) {
+
+            val c = Calendar.getInstance()
+            val sdf = SimpleDateFormat("yyyy-MM-dd_hh:mm:ss", Locale.getDefault())
+
+            val pref = PreferenceManager.getDefaultSharedPreferences(this)
+            val person = pref?.getString(SettingsActivity.PERSON, "None") ?: "None"
+            val date = sdf.format(c.time).toString()
 
             val input = EditText(this).apply {
                 inputType = InputType.TYPE_CLASS_TEXT
+                setText("crosses_${person}_$date")
             }
 
             val builder = AlertDialog.Builder(this).apply {
 
                 setView(input)
 
-                setPositiveButton("Export") { _, _ ->
+                setPositiveButton("Export CSV") { _, _ ->
                     val value = input.text.toString()
                     if (value.isNotEmpty()) {
                         try {
@@ -681,7 +681,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
             val parents = mDbHelper.getParents(id)
 
-            val intent = Intent(this@MainActivity, AuxValueInputActivity::class.java)
+            val intent = Intent(this@MainActivity, CrossActivity::class.java)
 
             intent.putExtra(IntercrossConstants.COL_ID_KEY, id)
 
@@ -742,12 +742,12 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             org.phenoapps.intercross.R.id.nav_about -> showAboutDialog()
             org.phenoapps.intercross.R.id.cross_count -> {
                 val countIntent = Intent(this, CountActivity::class.java)
-                countIntent.putExtra("NameMapKey", mNameMap!!.keys.toTypedArray<String>())
-                countIntent.putExtra("NameMapValue", mNameMap!!.values.toTypedArray<String>())
                 startActivity(countIntent)
             }
+            org.phenoapps.intercross.R.id.nav_simple_print -> {
+                startActivity(Intent(this, SimplePrintActivity::class.java))
+            }
             org.phenoapps.intercross.R.id.nav_intro -> {
-                //startActivity(Intent(this, IntercrossOnboardingActivity::class.java))
                 startActivity(Intent(this, IntroActivity::class.java))
             }
             org.phenoapps.intercross.R.id.nav_delete_entries -> {
@@ -755,7 +755,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             }
         }
 
-        val dl = findViewById(org.phenoapps.intercross.R.id.drawer_layout) as DrawerLayout
+        val dl = findViewById<DrawerLayout>(R.id.drawer_layout)
         dl.closeDrawers()
     }
 
@@ -809,12 +809,12 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
-        mDrawerToggle?.syncState()
+        mDrawerToggle.syncState()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        mDrawerToggle?.onConfigurationChanged(newConfig)
+        mDrawerToggle.onConfigurationChanged(newConfig)
     }
 
     public override fun onDestroy() {
@@ -829,12 +829,17 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             askIfSamePerson()
     }
 
+    //Control flow is sent here when a user is prompted for permission access
+    //Control flow only continues if that permission has been accepted.
     override fun onRequestPermissionsResult(resultCode: Int, permissions: Array<String>, granted: IntArray) {
 
-        if (resultCode == IntercrossConstants.PERM_REQ) {
-            for (i in permissions.indices) {
-                if (granted[i] != PackageManager.PERMISSION_GRANTED) {
-                    Log.d("Security", permissions[i] + " : " + granted[i])
+        permissions.forEachIndexed { index, perm ->
+            when (perm) {
+                "android.permission.WRITE_EXTERNAL_STORAGE" -> {
+                    if (resultCode == REQUEST_WRITE_PERMISSION &&
+                                    granted[index] == PackageManager.PERMISSION_GRANTED) {
+                        askUserExportFileName()
+                    }
                 }
             }
         }

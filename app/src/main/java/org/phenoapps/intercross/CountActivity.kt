@@ -63,14 +63,6 @@ class CountActivity : AppCompatActivity() {
 
         mRecyclerView.adapter = mAdapter
 
-        /*val keys = intent.getStringArrayExtra("NameMapKey")
-        val values = intent.getStringArrayExtra("NameMapValue")
-
-        if (keys.size == values.size) {
-            for (i in keys.indices) {
-                mNameMap[keys[i]] = values[i]
-            }
-        }*/
 
         var result = mDbHelper.getParentCounts()
         //sort
@@ -109,7 +101,7 @@ class CountActivity : AppCompatActivity() {
             val crossName = (v as? TextView)?.text.toString()
             val id = mDbHelper.getRowId(crossName)
             val timestamp = mDbHelper.getTimestampById(id)
-            val intent = Intent(this@CountActivity, AuxValueInputActivity::class.java)
+            val intent = Intent(this@CountActivity, CrossActivity::class.java)
             val headers = mDbHelper.getColumns() - IdEntryContract.IdEntry.COLUMNS.toList()
             val values = mDbHelper.getUserInputValues(id)
             val parents = mDbHelper.getParents(id)

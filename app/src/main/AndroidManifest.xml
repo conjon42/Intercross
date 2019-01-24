@@ -31,12 +31,13 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".SimplePrintActivity"/>
         <activity android:name=".AutoGenerationActivity"
             android:windowSoftInputMode="adjustNothing"
             />
         <activity android:name=".ScanActivity" />
         <activity android:name=".SettingsActivity" />
-        <activity android:name=".AuxValueInputActivity" />
+        <activity android:name=".CrossActivity"/>
         <activity android:name=".ManageHeadersActivity" />
         <activity android:name=".CountActivity" />
         <activity android:name=".ImportZPL" />
