@@ -25,28 +25,19 @@
             android:key="org.phenoapps.intercross.BLANK_MALE_ID"
             android:title="Allow Blank Male ID" />
         <Preference
-            android:key="org.phenoapps.intercross.CREATE_PATTERN"
             android:icon="@drawable/ic_baseline_receipt_24px"
+            android:key="org.phenoapps.intercross.CREATE_PATTERN"
             android:title="Create Pattern for Cross IDs">
             <intent
                 android:action="android.intent.action.VIEW"
-                android:targetPackage="org.phenoapps.intercross"
-                android:targetClass="org.phenoapps.intercross.AutoGenerationActivity" />
+                android:targetClass="org.phenoapps.intercross.AutoGenerationActivity"
+                android:targetPackage="org.phenoapps.intercross" />
         </Preference>
         <CheckBoxPreference
+            android:enabled="false"
             android:icon="@drawable/ic_baseline_receipt_24px"
             android:key="org.phenoapps.intercross.LABEL_PATTERN"
-            android:title="Auto Generate Cross IDs"
-            android:enabled="false"/>
-        <Preference
-            android:icon="@drawable/ic_import"
-            android:title="ZPL Import"
-            android:key="org.phenoapps.intercross.ZPL_IMPORT">
-            <intent
-                android:action="android.intent.action.VIEW"
-                android:targetPackage="org.phenoapps.intercross"
-                android:targetClass="org.phenoapps.intercross.ImportZPL" />
-        </Preference>
+            android:title="Auto Generate Cross IDs" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Printing">
         <EditTextPreference
@@ -55,8 +46,16 @@
             android:title="Bluetooth ID" />
         <Preference
             android:icon="@drawable/ic_action_print"
-            android:title="Zebra Print Connect"
-            android:key="org.phenoapps.intercross.PRINTER_SETUP">
+            android:key="org.phenoapps.intercross.PRINTER_SETUP"
+            android:title="Zebra Print Connect" />
+        <Preference
+            android:icon="@drawable/ic_import"
+            android:key="org.phenoapps.intercross.ZPL_IMPORT"
+            android:title="ZPL Import">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:targetClass="org.phenoapps.intercross.ImportZPL"
+                android:targetPackage="org.phenoapps.intercross" />
         </Preference>
     </PreferenceCategory>
 </PreferenceScreen>

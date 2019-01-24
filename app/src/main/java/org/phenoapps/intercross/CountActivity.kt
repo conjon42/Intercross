@@ -47,7 +47,6 @@ class CountActivity : AppCompatActivity() {
         setContentView(R.layout.activity_count)
 
         supportActionBar?.let {
-            it.title = "Unique Crosses"
             it.themedContext
             it.setDisplayHomeAsUpEnabled(true)
             it.setHomeButtonEnabled(true)
