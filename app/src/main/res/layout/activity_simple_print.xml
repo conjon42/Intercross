@@ -157,6 +157,17 @@
             app:layout_constraintStart_toStartOf="@+id/printButton"
             app:layout_constraintTop_toTopOf="@+id/printButton"
             app:layout_constraintVertical_bias="0.715" />
+
+        <ImageView
+            android:id="@+id/msgImageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="@+id/printButton"
+            app:layout_constraintStart_toEndOf="@+id/printButton"
+            app:layout_constraintTop_toTopOf="@+id/printButton"
+            app:srcCompat="@drawable/animvectordrawable" />
     </androidx.constraintlayout.widget.ConstraintLayout>
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nvView"
