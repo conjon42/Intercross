@@ -631,21 +631,27 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                             }
                         }
                         CAMERA_INTENT_SEARCH -> {
+
                             val cross = intent.getStringExtra(IntercrossConstants.CAMERA_RETURN_ID)
                             val id = mDbHelper.getRowId(cross)
-                            val parents = mDbHelper.getParents(id)
 
-                            val i = Intent(this@MainActivity, CrossActivity::class.java)
+                            if (id == -1) Toast.makeText(this,
+                                    "This cross ID is not in the database.", Toast.LENGTH_LONG).show()
+                            else {
+                                val parents = mDbHelper.getParents(id)
 
-                            i.putExtra(IntercrossConstants.COL_ID_KEY, id)
+                                val i = Intent(this@MainActivity, CrossActivity::class.java)
 
-                            i.putExtra(IntercrossConstants.CROSS_ID, cross)
+                                i.putExtra(IntercrossConstants.COL_ID_KEY, id)
 
-                            i.putExtra(IntercrossConstants.FEMALE_PARENT, parents[0])
+                                i.putExtra(IntercrossConstants.CROSS_ID, cross)
 
-                            i.putExtra(IntercrossConstants.MALE_PARENT, parents[1])
+                                i.putExtra(IntercrossConstants.FEMALE_PARENT, parents[0])
 
-                            startActivityForResult(i, IntercrossConstants.CROSS_INFO_REQ)
+                                i.putExtra(IntercrossConstants.MALE_PARENT, parents[1])
+
+                                startActivityForResult(i, IntercrossConstants.CROSS_INFO_REQ)
+                            }
                         }
                     }
                 }
