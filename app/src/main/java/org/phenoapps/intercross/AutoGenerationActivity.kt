@@ -1,7 +1,6 @@
 package org.phenoapps.intercross
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.os.*
 import android.preference.PreferenceManager
@@ -224,7 +223,7 @@ class AutoGenerationActivity : AppCompatActivity(), LifecycleObserver {
                     IntercrossConstants.MANAGE_HEADERS_REQ -> {
                         mDbHelper.updateColumns(intent.extras?.getStringArrayList(IntercrossConstants.HEADERS) ?: ArrayList())
                     }
-                    IntercrossConstants.USER_INPUT_HEADERS_REQ -> {
+                    IntercrossConstants.CROSS_INFO_REQ -> {
                         mDbHelper.updateValues(intent.extras?.getInt(IntercrossConstants.COL_ID_KEY).toString(),
                                 intent.extras.getStringArrayList(IntercrossConstants.USER_INPUT_VALUES)
                         )

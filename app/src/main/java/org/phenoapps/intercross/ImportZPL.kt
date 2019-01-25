@@ -2,7 +2,6 @@ package org.phenoapps.intercross
 
 import android.Manifest
 import android.app.Activity
-import android.app.DownloadManager
 import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
@@ -12,8 +11,6 @@ import android.net.Uri
 import android.os.*
 import android.preference.PreferenceManager
 import android.provider.DocumentsContract
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Log
 import android.view.MenuItem
 import android.widget.*
@@ -27,12 +24,6 @@ class ImportZPL : AppCompatActivity(), LifecycleObserver {
     private val mCodeTextView: TextView by lazy {
         findViewById<TextView>(R.id.codeTextView)
     }
-
-    private lateinit var mPrefixEditText: EditText
-    private lateinit var mNumberEditText: EditText
-    private lateinit var mSuffixEditText: EditText
-    private lateinit var mPadEditText: EditText
-    private lateinit var mRadioGroup: RadioGroup
 
     private val mImportButton: Button by lazy {
         findViewById<Button>(R.id.importButton)
@@ -101,25 +92,24 @@ class ImportZPL : AppCompatActivity(), LifecycleObserver {
         }
     }
 
-    private val isExternalStorageWritable: Boolean
-        get() {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    Log.v("Security", "Permission is granted")
-                    return Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()
-                } else {
-                    ActivityCompat.requestPermissions(this,
-                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), IntercrossConstants.REQUEST_WRITE_PERMISSION)
-                }
-            } else
+    private fun isExternalStorageWritable(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                Log.v("Security", "Permission is granted")
                 return Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), IntercrossConstants.REQUEST_WRITE_PERMISSION)
+            }
+        } else
+            return Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()
 
-            return false
-        }
+        return false
+    }
 
     private fun readText(uri: Uri?): CharSequence {
         uri?.let {
-            if (isExternalStorageWritable) {
+            if (isExternalStorageWritable()) {
                 val lines = File(getPath(uri)).readLines()
                 return lines.joinToString("\n")
             }
@@ -131,7 +121,7 @@ class ImportZPL : AppCompatActivity(), LifecycleObserver {
         //do nothing
     }
 
-    fun getPath(uri: Uri): String? {
+    private fun getPath(uri: Uri): String? {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 
@@ -164,7 +154,7 @@ class ImportZPL : AppCompatActivity(), LifecycleObserver {
         return null
     }
 
-    fun getDataColumn(context: Context, uri: Uri, selection: String?, selectionArgs: Array<String>?): String? {
+    private fun getDataColumn(context: Context, uri: Uri, selection: String?, selectionArgs: Array<String>?): String? {
 
         var cursor: Cursor? = null
         val column = "_data"

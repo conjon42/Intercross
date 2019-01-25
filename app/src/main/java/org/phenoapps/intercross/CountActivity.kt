@@ -33,8 +33,6 @@ class CountActivity : AppCompatActivity() {
 
     }
 
-    private val mNameMap = HashMap<String, String>()
-
     private val mDbHelper = IdEntryDbHelper(this)
 
     private lateinit var mNavView: NavigationView
@@ -85,7 +83,7 @@ class CountActivity : AppCompatActivity() {
         if (resultCode == Activity.RESULT_OK) {
             if (intent != null) {
                 when (requestCode) {
-                    IntercrossConstants.USER_INPUT_HEADERS_REQ -> {
+                    IntercrossConstants.CROSS_INFO_REQ -> {
                         mDbHelper.updateValues(intent.extras.getInt(IntercrossConstants.COL_ID_KEY).toString(),
                                 intent.extras.getStringArrayList(IntercrossConstants.USER_INPUT_VALUES)
                         )
@@ -112,7 +110,7 @@ class CountActivity : AppCompatActivity() {
             intent.putExtra(IntercrossConstants.MALE_PARENT, parents[1])
             intent.putStringArrayListExtra(IntercrossConstants.HEADERS, ArrayList(headers))
             intent.putStringArrayListExtra(IntercrossConstants.USER_INPUT_VALUES, ArrayList(values))
-            startActivityForResult(intent, IntercrossConstants.USER_INPUT_HEADERS_REQ)
+            startActivityForResult(intent, IntercrossConstants.CROSS_INFO_REQ)
         }
         private var firstText: TextView = itemView.findViewById(R.id.crossTextView) as TextView
         init {

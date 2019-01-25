@@ -9,10 +9,11 @@ internal object IntercrossConstants {
     //request
     val PERM_REQ = 100
     val CAMERA_INTENT_REQ = 102
+    val CAMERA_INTENT_SEARCH = 105
     val SETTINGS_INTENT_REQ = 103
     val DEFAULT_CONTENT_REQ = 104
     val MANAGE_HEADERS_REQ = 300
-    val USER_INPUT_HEADERS_REQ = 301
+    val CROSS_INFO_REQ = 301
     val REQUEST_WRITE_PERMISSION = 200
     val PATTERN_REQ = 400
     val IMPORT_ZPL = 500

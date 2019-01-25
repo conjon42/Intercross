@@ -1,6 +1,5 @@
 package org.phenoapps.intercross
 
-import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.os.Bundle
 import android.preference.PreferenceManager
@@ -8,7 +7,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.*
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -186,7 +184,7 @@ class CrossActivity : AppCompatActivity() {
 
         intent.putExtra(IntercrossConstants.PERSON, pref.getString(SettingsActivity.PERSON, ""))
 
-        startActivityForResult(intent, IntercrossConstants.USER_INPUT_HEADERS_REQ)
+        startActivityForResult(intent, IntercrossConstants.CROSS_INFO_REQ)
     }
 
     override fun onCreateOptionsMenu(m: Menu): Boolean {
@@ -220,7 +218,8 @@ class CrossActivity : AppCompatActivity() {
                         + "^XFR:${mZplFileName}"
                         + "^FN1^FD" + mCrossId + "^FS"
                         + "^FN2^FDQA," + mCrossId + "^FS"
-                        + "^FN3^FD" + mTimestamp + "^FS^XZ")
+                        + "^FN3^FD" + mTimestamp + "^FS"
+                        + "^FN4^FD$mPerson^FS^XZ")
                 } else {
                     //uses bluetooth utility to send the default ZPL template and fields
                     BluetoothUtil(this@CrossActivity).variablePrint(

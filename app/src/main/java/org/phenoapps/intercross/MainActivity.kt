@@ -37,6 +37,8 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
+import org.phenoapps.intercross.IntercrossConstants.CAMERA_INTENT_REQ
+import org.phenoapps.intercross.IntercrossConstants.CAMERA_INTENT_SEARCH
 import org.phenoapps.intercross.IntercrossConstants.REQUEST_WRITE_PERMISSION
 import java.io.File
 import java.io.FileNotFoundException
@@ -127,6 +129,18 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     private lateinit var mDrawerToggle: ActionBarDrawerToggle
 
     private lateinit var mNameMap: MutableMap<String, String>
+
+    private fun ifCameraAllowed(f: () -> Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) f()
+            else {
+                Toast.makeText(this,
+                        "You must accept camera permissions before using the barcode reader.",
+                        Toast.LENGTH_LONG).show()
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), IntercrossConstants.PERM_REQ)
+            }
+        } else f() //permission granted on installation
+    }
 
     private fun isExternalStorageWritable(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -563,26 +577,20 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        val dl = findViewById(R.id.drawer_layout) as DrawerLayout
-        if (mDrawerToggle!!.onOptionsItemSelected(item)) {
+        val dl = findViewById<DrawerLayout>(R.id.drawer_layout)
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true
         }
 
         when (item.itemId) {
             android.R.id.home -> dl.openDrawer(GravityCompat.START)
-            R.id.action_camera -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-                    val cameraIntent = Intent(this, ScanActivity::class.java)
-                    startActivityForResult(cameraIntent, IntercrossConstants.CAMERA_INTENT_REQ)
-                } else {
-                    Toast.makeText(this,
-                            "You must accept camera permissions before using the barcode reader.",
-                            Toast.LENGTH_LONG).show()
-                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), IntercrossConstants.PERM_REQ)
-                }
-            } else { //permission granted on installation
-                val cameraIntent = Intent(this, ScanActivity::class.java)
-                startActivityForResult(cameraIntent, IntercrossConstants.CAMERA_INTENT_REQ)
+            R.id.action_camera -> ifCameraAllowed {
+                startActivityForResult(Intent(this, ScanActivity::class.java),
+                        IntercrossConstants.CAMERA_INTENT_REQ)
+            }
+            R.id.action_search -> {
+                startActivityForResult(Intent(this, ScanActivity::class.java),
+                        IntercrossConstants.CAMERA_INTENT_SEARCH)
             }
             else -> return super.onOptionsItemSelected(item)
         }
@@ -597,38 +605,47 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
             intent?.let {
 
-                when (requestCode) {
-                    IntercrossConstants.MANAGE_HEADERS_REQ -> {
-                        mDbHelper.updateColumns(intent.extras?.getStringArrayList(IntercrossConstants.HEADERS)
-                                ?: ArrayList())
-                    }
-                    IntercrossConstants.USER_INPUT_HEADERS_REQ -> {
-                        mDbHelper.updateValues(intent.extras?.getInt(IntercrossConstants.COL_ID_KEY).toString(),
-                                intent.extras.getStringArrayList(IntercrossConstants.USER_INPUT_VALUES)
-                        )
-                    }
-                }
-
                 //barcode text response from Zebra intent
                 if (intent.hasExtra(IntercrossConstants.CAMERA_RETURN_ID)) {
 
-                    asList(mFirstEditText, mSecondEditText, mCrossEditText).forEach iter@{ editText ->
-                        editText?.let {
-                            when (editText.hasFocus()) {
-                                true -> {
-                                    editText.setText(intent.getStringExtra(IntercrossConstants.CAMERA_RETURN_ID))
-                                    when (editText) {
-                                        mFirstEditText -> mSecondEditText.requestFocus()
-                                        mSecondEditText -> mCrossEditText.requestFocus()
-                                        mCrossEditText -> {
-                                            saveToDB()
+                    when (requestCode) {
+                        CAMERA_INTENT_REQ -> {
+                            asList(mFirstEditText, mSecondEditText, mCrossEditText).forEach iter@{ editText ->
+                                editText?.let {
+                                    when (editText.hasFocus()) {
+                                        true -> {
+                                            editText.setText(intent.getStringExtra(IntercrossConstants.CAMERA_RETURN_ID))
+                                            when (editText) {
+                                                mFirstEditText -> mSecondEditText.requestFocus()
+                                                mSecondEditText -> mCrossEditText.requestFocus()
+                                                mCrossEditText -> {
+                                                    saveToDB()
+                                                }
+                                                else -> Log.d("Focus", "Unexpected request focus.")
+                                            }
+                                            return
                                         }
-                                        else -> Log.d("Focus", "Unexpected request focus.")
+                                        false -> return@iter
                                     }
-                                    return
                                 }
-                                false -> return@iter
                             }
+                        }
+                        CAMERA_INTENT_SEARCH -> {
+                            val cross = intent.getStringExtra(IntercrossConstants.CAMERA_RETURN_ID)
+                            val id = mDbHelper.getRowId(cross)
+                            val parents = mDbHelper.getParents(id)
+
+                            val i = Intent(this@MainActivity, CrossActivity::class.java)
+
+                            i.putExtra(IntercrossConstants.COL_ID_KEY, id)
+
+                            i.putExtra(IntercrossConstants.CROSS_ID, cross)
+
+                            i.putExtra(IntercrossConstants.FEMALE_PARENT, parents[0])
+
+                            i.putExtra(IntercrossConstants.MALE_PARENT, parents[1])
+
+                            startActivityForResult(i, IntercrossConstants.CROSS_INFO_REQ)
                         }
                     }
                 }
@@ -691,7 +708,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
             intent.putExtra(IntercrossConstants.MALE_PARENT, parents[1])
 
-            startActivityForResult(intent, IntercrossConstants.USER_INPUT_HEADERS_REQ)
+            startActivityForResult(intent, IntercrossConstants.CROSS_INFO_REQ)
         }
 
         override fun onClick(v: View?) {
@@ -720,8 +737,8 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
         }
 
-        mDrawerToggle!!.isDrawerIndicatorEnabled = true
-        dl.addDrawerListener(mDrawerToggle!!)
+        mDrawerToggle.isDrawerIndicatorEnabled = true
+        dl.addDrawerListener(mDrawerToggle)
     }
 
     private fun setupDrawerContent(navigationView: NavigationView) {
@@ -733,26 +750,16 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     private fun selectDrawerItem(menuItem: MenuItem) {
         when (menuItem.itemId) {
-
-            org.phenoapps.intercross.R.id.nav_settings -> {
-                val settingsIntent = Intent(this, SettingsActivity::class.java)
-                startActivityForResult(settingsIntent, IntercrossConstants.SETTINGS_INTENT_REQ)
-            }
+            org.phenoapps.intercross.R.id.nav_settings ->
+                startActivityForResult(Intent(this, SettingsActivity::class.java),
+                        IntercrossConstants.SETTINGS_INTENT_REQ)
             org.phenoapps.intercross.R.id.nav_export -> askUserExportFileName()
             org.phenoapps.intercross.R.id.nav_about -> showAboutDialog()
-            org.phenoapps.intercross.R.id.cross_count -> {
-                val countIntent = Intent(this, CountActivity::class.java)
-                startActivity(countIntent)
-            }
-            org.phenoapps.intercross.R.id.nav_simple_print -> {
+            org.phenoapps.intercross.R.id.nav_simple_print ->
                 startActivity(Intent(this, SimplePrintActivity::class.java))
-            }
-            org.phenoapps.intercross.R.id.nav_intro -> {
+            org.phenoapps.intercross.R.id.nav_intro ->
                 startActivity(Intent(this, IntroActivity::class.java))
-            }
-            org.phenoapps.intercross.R.id.nav_delete_entries -> {
-                askUserDeleteEntries()
-            }
+            org.phenoapps.intercross.R.id.nav_delete_entries -> askUserDeleteEntries()
         }
 
         val dl = findViewById<DrawerLayout>(R.id.drawer_layout)
