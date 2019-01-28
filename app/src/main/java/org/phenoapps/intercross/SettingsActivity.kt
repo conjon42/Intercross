@@ -20,6 +20,9 @@ import android.widget.Toast
 class SettingsActivity : AppCompatActivity() {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
+
+        setTheme(R.style.AppTheme)
+
         super.onCreate(savedInstanceState)
 
         if (supportActionBar != null) {
@@ -49,6 +52,7 @@ class SettingsActivity : AppCompatActivity() {
     class SettingsFragment : PreferenceFragment() {
 
         override fun onCreate(savedInstanceState: Bundle?) {
+
             super.onCreate(savedInstanceState)
 
             addPreferencesFromResource(org.phenoapps.intercross.R.xml.preferences)

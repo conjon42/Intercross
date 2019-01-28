@@ -30,7 +30,7 @@
             android:title="Create Pattern for Cross IDs">
             <intent
                 android:action="android.intent.action.VIEW"
-                android:targetClass="org.phenoapps.intercross.AutoGenerationActivity"
+                android:targetClass="org.phenoapps.intercross.CrossPattern"
                 android:targetPackage="org.phenoapps.intercross" />
         </Preference>
         <CheckBoxPreference
@@ -54,7 +54,7 @@
             android:title="ZPL Import">
             <intent
                 android:action="android.intent.action.VIEW"
-                android:targetClass="org.phenoapps.intercross.ImportZPL"
+                android:targetClass="org.phenoapps.intercross.ImportZPLActivity"
                 android:targetPackage="org.phenoapps.intercross" />
         </Preference>
     </PreferenceCategory>

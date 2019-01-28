@@ -2,7 +2,7 @@ package org.phenoapps.intercross
 
 import android.provider.BaseColumns
 
-internal object IdEntryContract {
+internal object IntercrossDbContract {
 
     const val TABLE_NAME = "INTERCROSS"
 

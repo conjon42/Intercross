@@ -14,6 +14,7 @@ import com.google.zxing.ResultPoint
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.DecoratedBarcodeView
+import org.phenoapps.intercross.IntercrossActivity.Companion.CAMERA_RETURN_ID
 
 class ScanActivity : AppCompatActivity() {
 
@@ -33,7 +34,7 @@ class ScanActivity : AppCompatActivity() {
             imageView.setImageBitmap(result.getBitmapWithResultPoints(Color.GREEN))
 
             val i = Intent()
-            i.putExtra(IntercrossConstants.CAMERA_RETURN_ID, result.text)
+            i.putExtra(CAMERA_RETURN_ID, result.text)
 
             setResult(Activity.RESULT_OK, i)
             finish()
@@ -46,6 +47,8 @@ class ScanActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        setTheme(R.style.AppTheme)
 
         super.onCreate(savedInstanceState)
 

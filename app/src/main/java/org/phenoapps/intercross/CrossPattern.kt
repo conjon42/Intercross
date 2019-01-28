@@ -1,7 +1,5 @@
 package org.phenoapps.intercross
 
-import android.app.Activity
-import android.content.Intent
 import android.os.*
 import android.preference.PreferenceManager
 import android.text.Editable
@@ -11,9 +9,8 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleObserver
-import java.util.*
 
-class AutoGenerationActivity : AppCompatActivity(), LifecycleObserver {
+class CrossPattern : AppCompatActivity(), LifecycleObserver {
 
     private lateinit var mPatternText: TextView
     private lateinit var mPrefixEditText: EditText
@@ -25,8 +22,6 @@ class AutoGenerationActivity : AppCompatActivity(), LifecycleObserver {
     private val mSaveButton: Button by lazy {
         findViewById<Button>(R.id.saveButton)
     }
-
-    private val mDbHelper: IdEntryDbHelper = IdEntryDbHelper(this)
 
     override fun onStart() {
 
@@ -60,7 +55,7 @@ class AutoGenerationActivity : AppCompatActivity(), LifecycleObserver {
         if (initialPad == -1) mPadEditText.setText("")
         else mPadEditText.setText(initialPad.toString())
 
-        mRadioGroup.setOnCheckedChangeListener { radioGroup, i ->
+        mRadioGroup.setOnCheckedChangeListener { _, i ->
             when (i) {
                 R.id.autoRadioButton -> {
                     mNumberEditText.setText("0001")
@@ -93,7 +88,7 @@ class AutoGenerationActivity : AppCompatActivity(), LifecycleObserver {
         var pad = mPadEditText.text.toString()
         var padValue = 0
         if (!pad.isEmpty()) padValue = pad.toInt()
-        mPatternText.setText("${mPrefixEditText.text}${mNumberEditText.text.padStart(padValue, '0')}${mSuffixEditText.text}")
+        mPatternText.text = "${mPrefixEditText.text}${mNumberEditText.text.padStart(padValue, '0')}${mSuffixEditText.text}"
         mPrefixEditText.addTextChangedListener(watcher)
         mNumberEditText.addTextChangedListener(watcher)
         mSuffixEditText.addTextChangedListener(watcher)
@@ -102,19 +97,11 @@ class AutoGenerationActivity : AppCompatActivity(), LifecycleObserver {
         mSaveButton.setOnClickListener {
             //val i = Intent()
 
-            var newPad = mPadEditText.text.toString()
+            val newPad = mPadEditText.text.toString()
             var midNum = mNumberEditText.text.toString()
             if (midNum.isBlank()) midNum = "0001"
             if (newPad.isBlank()) pad = "0"
             else pad = newPad
-
-            /*i.putExtra(IntercrossConstants.PATTERN, LabelPattern(mPrefixEditText.text.toString(),
-                    mSuffixEditText.text.toString(),
-                    midNum.toInt(),
-                    mRadioGroup.checkedRadioButtonId == R.id.autoRadioButton,
-                    pad.toInt()))
-
-            this@AutoGenerationActivity.setResult(Activity.RESULT_OK, i)*/
 
             val edit = PreferenceManager.getDefaultSharedPreferences(this).edit()
             edit.putString("LABEL_PATTERN_PREFIX", mPrefixEditText.text.toString())
@@ -147,7 +134,7 @@ class AutoGenerationActivity : AppCompatActivity(), LifecycleObserver {
                 if (midNum.isBlank()) midNum = "0001"
                 if (pad.isBlank()) pad = "0"
 
-                val edit = PreferenceManager.getDefaultSharedPreferences(this@AutoGenerationActivity).edit()
+                val edit = PreferenceManager.getDefaultSharedPreferences(this@CrossPattern).edit()
                 edit.putString("LABEL_PATTERN_PREFIX", mPrefixEditText.text.toString())
                 edit.putString("LABEL_PATTERN_SUFFIX", mSuffixEditText.text.toString())
                 edit.putInt("LABEL_PATTERN_MID", midNum.toInt())
@@ -164,40 +151,9 @@ class AutoGenerationActivity : AppCompatActivity(), LifecycleObserver {
         builder.show()
     }
 
-    data class LabelPattern(val prefix: String, val suffix: String, val number: Int,
-                            val auto: Boolean, val pad: Int) : Parcelable {
-        constructor(parcel: Parcel) : this(
-                parcel.readString(),
-                parcel.readString(),
-                parcel.readInt(),
-                parcel.readByte() != 0.toByte(),
-                parcel.readInt()) {
-        }
-
-        override fun writeToParcel(parcel: Parcel, flags: Int) {
-            parcel.writeString(prefix)
-            parcel.writeString(suffix)
-            parcel.writeInt(number)
-            parcel.writeByte(if (auto) 1 else 0)
-            parcel.writeInt(pad)
-        }
-
-        override fun describeContents(): Int {
-            return 0
-        }
-
-        companion object CREATOR : Parcelable.Creator<LabelPattern> {
-            override fun createFromParcel(parcel: Parcel): LabelPattern {
-                return LabelPattern(parcel)
-            }
-
-            override fun newArray(size: Int): Array<LabelPattern?> {
-                return arrayOfNulls(size)
-            }
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        setTheme(R.style.AppTheme)
 
         super.onCreate(savedInstanceState)
 
@@ -210,26 +166,5 @@ class AutoGenerationActivity : AppCompatActivity(), LifecycleObserver {
         onBackPressed()
 
         return true
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
-
-        super.onActivityResult(requestCode, resultCode, intent)
-
-        if (resultCode == Activity.RESULT_OK) {
-
-            if (intent != null) {
-                when (requestCode) {
-                    IntercrossConstants.MANAGE_HEADERS_REQ -> {
-                        mDbHelper.updateColumns(intent.extras?.getStringArrayList(IntercrossConstants.HEADERS) ?: ArrayList())
-                    }
-                    IntercrossConstants.CROSS_INFO_REQ -> {
-                        mDbHelper.updateValues(intent.extras?.getInt(IntercrossConstants.COL_ID_KEY).toString(),
-                                intent.extras.getStringArrayList(IntercrossConstants.USER_INPUT_VALUES)
-                        )
-                    }
-                }
-            }
-        }
     }
 }

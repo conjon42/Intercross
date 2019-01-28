@@ -1,41 +1,22 @@
 package org.phenoapps.intercross
 
 import android.animation.Animator
-import android.app.Activity
-import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
-import android.content.Intent
-import android.graphics.drawable.Animatable
-import android.graphics.drawable.AnimatedVectorDrawable
-import android.graphics.drawable.AnimationDrawable
-import android.graphics.drawable.Drawable
-import android.opengl.Visibility
 import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.MenuItem
 import android.view.View
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
-import android.view.animation.LinearInterpolator
 import android.widget.*
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.vectordrawable.graphics.drawable.Animatable2Compat
-import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import com.google.android.material.navigation.NavigationView
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
 import com.journeyapps.barcodescanner.BarcodeEncoder
-import java.util.*
-import kotlin.collections.HashMap
 
 class SimplePrintActivity : AppCompatActivity() {
 
@@ -138,8 +119,8 @@ class SimplePrintActivity : AppCompatActivity() {
                 }
 
                 //send print job to bluetooth device
-                BluetoothUtil(this@SimplePrintActivity)
-                        .variablePrint("^XA"
+                BluetoothUtil()
+                        .variablePrint(this@SimplePrintActivity, "^XA"
                                 + "^MNA"
                                 + "^MMT,N"
                                 + "^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS"
@@ -158,9 +139,12 @@ class SimplePrintActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        setTheme(R.style.AppTheme)
+
         super.onCreate(savedInstanceState)
 
-        setTitle("Simple Print")
+        title = "Simple Print"
 
         setContentView(R.layout.activity_simple_print)
 
@@ -170,7 +154,7 @@ class SimplePrintActivity : AppCompatActivity() {
             it.setHomeButtonEnabled(true)
         }
 
-        mNavView = findViewById(R.id.nvView) as NavigationView
+        mNavView = findViewById<NavigationView>(R.id.nvView)
 
         // Setup drawer view
         setupDrawer()
@@ -178,7 +162,7 @@ class SimplePrintActivity : AppCompatActivity() {
     }
 
     private fun setupDrawer() {
-        val dl = findViewById(org.phenoapps.intercross.R.id.drawer_layout) as DrawerLayout
+        val dl = findViewById<DrawerLayout>(org.phenoapps.intercross.R.id.drawer_layout)
         dl.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
     }
 
@@ -188,59 +172,5 @@ class SimplePrintActivity : AppCompatActivity() {
             //else -> return super.onOptionsItemSelected(item)
         }
         return true
-    }
-
-    fun prepareBluetooth(f: () -> Unit) {
-
-        val pref = PreferenceManager.getDefaultSharedPreferences(this)
-        val btId = pref.getString(SettingsActivity.BT_ID, "")
-        if ((btId ?: "").isBlank()) {
-
-            val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-
-
-            val pairedDevices = mBluetoothAdapter.bondedDevices
-
-            val input = RadioGroup(this)
-
-            pairedDevices.forEach {
-                val button = RadioButton(this)
-                button.text = it.name
-                input.addView(button)
-            }
-
-            val builder = androidx.appcompat.app.AlertDialog.Builder(this.applicationContext).apply {
-
-                setTitle("Choose bluetooth device to print from.")
-
-                setView(input)
-
-                setNegativeButton("Cancel") { _, _ ->
-
-                }
-
-                setPositiveButton("OK") { _, _ ->
-
-                    if (input.checkedRadioButtonId == -1) return@setPositiveButton
-
-                    val edit = pref.edit()
-                    edit.putString(SettingsActivity.BT_ID,
-                            input.findViewById<RadioButton>(input.checkedRadioButtonId).text.toString())
-                    edit.apply()
-
-                    f()
-                }
-            }
-
-            builder.show()
-        }
-    }
-
-    //main function to be called, will ask user to choose bluetooth device from radio group, and then print
-    fun variablePrint(template: String, code: String) {
-
-        prepareBluetooth {
-            Thread(PrintThread(this, template, code)).start()
-        }
     }
 }

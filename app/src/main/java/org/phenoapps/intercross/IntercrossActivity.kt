@@ -2,6 +2,7 @@ package org.phenoapps.intercross
 
 import android.Manifest
 import android.app.Activity
+import android.app.ActivityOptions
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -16,10 +17,9 @@ import android.preference.PreferenceManager
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
+import android.transition.Explode
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
+import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
@@ -28,6 +28,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Lifecycle
@@ -37,9 +38,6 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
-import org.phenoapps.intercross.IntercrossConstants.CAMERA_INTENT_REQ
-import org.phenoapps.intercross.IntercrossConstants.CAMERA_INTENT_SEARCH
-import org.phenoapps.intercross.IntercrossConstants.REQUEST_WRITE_PERMISSION
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -48,14 +46,25 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.Arrays.asList
 
-class MainActivity : AppCompatActivity(), LifecycleObserver {
+internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
-    private lateinit var mFirstEditText: EditText
-    private lateinit var mSecondEditText: EditText
-    private lateinit var mCrossEditText: EditText
-    private lateinit var mRecyclerView: RecyclerView
+    private val mFirstEditText: EditText by lazy {
+        findViewById<EditText>(R.id.firstText)
+    }
+    private val mSecondEditText: EditText by lazy {
+        findViewById<EditText>(R.id.secondText)
+    }
+    private val mCrossEditText: EditText by lazy {
+        findViewById<EditText>(R.id.editTextCross)
+    }
+    private val mRecyclerView: RecyclerView by lazy {
+        findViewById<RecyclerView>(R.id.recyclerView)
+    }
+    private val mSaveButton: Button by lazy {
+        findViewById<Button>(R.id.saveButton)
+    }
+
     private lateinit var mNavView: NavigationView
-    private lateinit var mSaveButton: Button
 
     private var mAllowBlankMale: Boolean = false
 
@@ -63,21 +72,91 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     private val mEntries = ArrayList<AdapterEntry>()
 
+    private lateinit var mObj: AdapterEntry
+
     private val mAdapter: ViewAdapter<AdapterEntry> = object : ViewAdapter<AdapterEntry>(mEntries) {
 
         override fun getLayoutId(position: Int, obj: AdapterEntry): Int {
-            val type = mDbHelper.getPollinationType(obj.id)
-            return when(type) {
-                "Self-Pollinated" -> R.layout.main_self_pollinated_row
-                "Open Pollinated" -> R.layout.main_open_pollinated_row
-                else -> R.layout.main_biparental_row
-            }
+            mObj = obj
+            return R.layout.row
         }
 
         override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
             return ViewHolder(view)
         }
+    }
 
+    inner class ViewHolder internal constructor(itemView: View) :
+            RecyclerView.ViewHolder(itemView), ViewAdapter.Binder<AdapterEntry>, View.OnClickListener {
+
+        private var id: Int = -1
+        private var firstText: TextView = itemView.findViewById(R.id.crossTextView) as TextView
+        private var secondText: TextView = itemView.findViewById(R.id.dateTextView) as TextView
+
+        init {
+            itemView.setOnClickListener(this)
+            itemView.findViewById<ImageView>(R.id.crossTypeImageView)
+                    .setImageDrawable(when(mDbHelper.getPollinationType(mObj.id)) {
+                        "Self-Pollinated" -> ContextCompat.getDrawable(this@IntercrossActivity,
+                                R.drawable.ic_human_female)
+                        "Biparental" -> ContextCompat.getDrawable(this@IntercrossActivity,
+                                R.drawable.ic_human_male_female)
+                        else -> ContextCompat.getDrawable(this@IntercrossActivity,
+                                R.drawable.ic_human_female_female)
+                    })
+        }
+
+        override fun bind(data: AdapterEntry) {
+
+            id = data.id
+            firstText.text = data.first
+            secondText.text = data.second
+
+            itemView.findViewById<ImageView>(R.id.deleteView).setOnClickListener { _ ->
+
+                val builder = AlertDialog.Builder(this@IntercrossActivity).apply {
+
+                    setTitle("Delete cross entry?")
+
+                    setNegativeButton("Cancel") { _, _ -> }
+
+                    setPositiveButton("Yes") { _, _ ->
+                        mDbHelper.deleteEntry(id)
+                        loadSQLToLocal()
+                    }
+                }
+
+                builder.show()
+            }
+        }
+
+        private fun startCrossActivity() {
+
+            val parents = mDbHelper.getParents(id)
+
+            val intent = Intent(this@IntercrossActivity, CrossActivity::class.java)
+
+            intent.putExtra(COL_ID_KEY, id)
+            intent.putExtra(CROSS_ID, firstText.text)
+            intent.putExtra(FEMALE_PARENT, parents[0])
+            intent.putExtra(MALE_PARENT, parents[1])
+
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                startActivityForResult(intent, CROSS_INFO_REQ,
+                        ActivityOptions.makeSceneTransitionAnimation(
+                                this@IntercrossActivity, itemView, "cross")
+                                .toBundle())
+            } else startActivityForResult(intent, CROSS_INFO_REQ)
+
+        }
+
+        override fun onClick(v: View?) {
+
+            v?.let {
+                startCrossActivity()
+            }
+        }
     }
 
     private val mPrefListener = SharedPreferences.OnSharedPreferenceChangeListener { pref, key ->
@@ -124,11 +203,9 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         }
     }
 
-    private val mDbHelper: IdEntryDbHelper = IdEntryDbHelper(this)
+    private val mDbHelper: IntercrossDbHelper = IntercrossDbHelper(this)
 
     private lateinit var mDrawerToggle: ActionBarDrawerToggle
-
-    private lateinit var mNameMap: MutableMap<String, String>
 
     private fun ifCameraAllowed(f: () -> Unit) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -137,7 +214,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                 Toast.makeText(this,
                         "You must accept camera permissions before using the barcode reader.",
                         Toast.LENGTH_LONG).show()
-                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), IntercrossConstants.PERM_REQ)
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), PERM_REQ)
             }
         } else f() //permission granted on installation
     }
@@ -161,7 +238,6 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
         super.onStart()
 
-        mRecyclerView = findViewById(R.id.recyclerView)
         mRecyclerView.adapter = mAdapter
         mRecyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -177,27 +253,6 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         // Setup drawer view
         setupDrawerContent(mNavView)
         setupDrawer()
-
-        mSecondEditText = findViewById(R.id.secondText)
-        mFirstEditText = findViewById(R.id.firstText)
-        mCrossEditText = findViewById(R.id.editTextCross)
-        mSaveButton = findViewById(R.id.saveButton)
-
-        //Show Tutorial Fragment for first-time users
-        PreferenceManager.getDefaultSharedPreferences(this).apply {
-            if (!getBoolean(IntercrossConstants.COMPLETED_TUTORIAL, false)) {
-                startActivity(Intent(this@MainActivity, IntroActivity::class.java))
-            }
-            if (getBoolean(SettingsActivity.PATTERN, false)) {
-                mCrossEditText.isEnabled = false
-            }
-            mAllowBlankMale = getBoolean(SettingsActivity.BLANK_MALE_ID, false)
-        }
-
-        PreferenceManager.getDefaultSharedPreferences(this).edit().apply {
-            putBoolean(IntercrossConstants.COMPLETED_TUTORIAL, true)
-            apply()
-        }
 
         //single text watcher class to check if all fields are non-empty to enable the save button
         val emptyGuard = object : TextWatcher {
@@ -222,7 +277,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         val focusListener = object : View.OnFocusChangeListener {
 
             override fun onFocusChange(p0: View?, p1: Boolean) {
-                if (p1 && PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
+                if (p1 && PreferenceManager.getDefaultSharedPreferences(this@IntercrossActivity)
                                 ?.getString(SettingsActivity.PERSON, "")?.isNotBlank() == false) {
                     askUserForPerson()
                 }
@@ -245,7 +300,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         //if auto generation is enabled save after the second text is submitted
         mSecondEditText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
             if (i == EditorInfo.IME_ACTION_DONE) {
-                if (PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
+                if (PreferenceManager.getDefaultSharedPreferences(this@IntercrossActivity)
                         ?.getBoolean(SettingsActivity.PATTERN, false) == false) {
                     mCrossEditText.requestFocus()
                 } else {
@@ -328,11 +383,22 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
+        // Check if we're running on Android 5.0 or higher
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            with(window) {
+                requestFeature(Window.FEATURE_CONTENT_TRANSITIONS)
+                exitTransition  = Explode()
+            }
+        } else {
+            // Swap without transition
+        }
+
+
+        setTheme(R.style.AppTheme)
+
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
-
-        mNameMap = HashMap()
 
         val sharedPref = PreferenceManager.getDefaultSharedPreferences(this)
 
@@ -342,6 +408,21 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 
+        //Show Tutorial Fragment for first-time users
+        PreferenceManager.getDefaultSharedPreferences(this).apply {
+            if (!getBoolean(COMPLETED_TUTORIAL, false)) {
+                startActivity(Intent(this@IntercrossActivity, IntroActivity::class.java))
+            }
+            if (getBoolean(SettingsActivity.PATTERN, false)) {
+                mCrossEditText.isEnabled = false
+            }
+            mAllowBlankMale = getBoolean(SettingsActivity.BLANK_MALE_ID, false)
+        }
+
+        PreferenceManager.getDefaultSharedPreferences(this).edit().apply {
+            putBoolean(COMPLETED_TUTORIAL, true)
+            apply()
+        }
     }
 
     private fun saveToDB() {
@@ -438,6 +519,10 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
         findViewById<ConstraintLayout>(R.id.constraint_layout_parent).requestFocus()
 
+        val view = layoutInflater.inflate(R.layout.person_check_layout, null)
+        view.findViewById<TextView>(R.id.textView).text = "Is this still " +
+                "${PreferenceManager.getDefaultSharedPreferences(this@IntercrossActivity)
+                        .getString(SettingsActivity.PERSON, "Guillaume")}?"
 
         val builder = AlertDialog.Builder(this).apply {
 
@@ -446,13 +531,18 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             }
 
             setPositiveButton("Change Person") { _, _ ->
-                startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    startActivity(Intent(this@IntercrossActivity, SettingsActivity::class.java),
+                            ActivityOptions.makeSceneTransitionAnimation(this@IntercrossActivity).toBundle())
+                } else startActivity(Intent(this@IntercrossActivity, SettingsActivity::class.java))
             }
+
+            setView(view)
+
+            setCancelable(false)
+
         }
 
-        builder.setTitle("Is this still " +
-                "${PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
-                        .getString(SettingsActivity.PERSON, "Guillaume")}?")
         builder.show()
     }
 
@@ -492,7 +582,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                                 fstream.write(lineSeparator.toByteArray())
                             }
 
-                            scanFile(this@MainActivity, output)
+                            scanFile(this@IntercrossActivity, output)
 
                             fstream.flush()
                             fstream.close()
@@ -501,11 +591,11 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                         } catch (io: IOException) {
                             io.printStackTrace()
                         } finally {
-                            Toast.makeText(this@MainActivity, "File write successful!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@IntercrossActivity, "File write successful!", Toast.LENGTH_SHORT).show()
                         }
 
                     } else {
-                        Toast.makeText(this@MainActivity,
+                        Toast.makeText(this@IntercrossActivity,
                                 "You must enter a file name.", Toast.LENGTH_SHORT).show()
                     }
                     askUserDeleteEntries()
@@ -524,12 +614,12 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         val builder = AlertDialog.Builder(this).apply {
 
             setNegativeButton("Cancel") { _, _ ->
-                Toast.makeText(this@MainActivity,
+                Toast.makeText(this@IntercrossActivity,
                         "Person must be set before crosses can be made.", Toast.LENGTH_SHORT).show()
             }
 
             setPositiveButton("Set Person") { _, _ ->
-                startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
+                startActivity(Intent(this@IntercrossActivity, SettingsActivity::class.java))
             }
         }
 
@@ -546,7 +636,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             }
 
             setPositiveButton("Yes") { _, _ ->
-                val builder = AlertDialog.Builder(this@MainActivity).apply {
+                val builder = AlertDialog.Builder(this@IntercrossActivity).apply {
 
                     setNegativeButton("Cancel") { _, _ ->
 
@@ -586,11 +676,11 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             android.R.id.home -> dl.openDrawer(GravityCompat.START)
             R.id.action_camera -> ifCameraAllowed {
                 startActivityForResult(Intent(this, ScanActivity::class.java),
-                        IntercrossConstants.CAMERA_INTENT_REQ)
+                        CAMERA_INTENT_REQ)
             }
             R.id.action_search -> {
                 startActivityForResult(Intent(this, ScanActivity::class.java),
-                        IntercrossConstants.CAMERA_INTENT_SEARCH)
+                        CAMERA_INTENT_SEARCH)
             }
             else -> return super.onOptionsItemSelected(item)
         }
@@ -606,7 +696,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             intent?.let {
 
                 //barcode text response from Zebra intent
-                if (intent.hasExtra(IntercrossConstants.CAMERA_RETURN_ID)) {
+                if (intent.hasExtra(CAMERA_RETURN_ID)) {
 
                     when (requestCode) {
                         CAMERA_INTENT_REQ -> {
@@ -614,7 +704,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                                 editText?.let {
                                     when (editText.hasFocus()) {
                                         true -> {
-                                            editText.setText(intent.getStringExtra(IntercrossConstants.CAMERA_RETURN_ID))
+                                            editText.setText(intent.getStringExtra(CAMERA_RETURN_ID))
                                             when (editText) {
                                                 mFirstEditText -> mSecondEditText.requestFocus()
                                                 mSecondEditText -> mCrossEditText.requestFocus()
@@ -632,7 +722,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                         }
                         CAMERA_INTENT_SEARCH -> {
 
-                            val cross = intent.getStringExtra(IntercrossConstants.CAMERA_RETURN_ID)
+                            val cross = intent.getStringExtra(CAMERA_RETURN_ID)
                             val id = mDbHelper.getRowId(cross)
 
                             if (id == -1) Toast.makeText(this,
@@ -640,87 +730,21 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                             else {
                                 val parents = mDbHelper.getParents(id)
 
-                                val i = Intent(this@MainActivity, CrossActivity::class.java)
+                                val i = Intent(this@IntercrossActivity, CrossActivity::class.java)
 
-                                i.putExtra(IntercrossConstants.COL_ID_KEY, id)
+                                i.putExtra(COL_ID_KEY, id)
 
-                                i.putExtra(IntercrossConstants.CROSS_ID, cross)
+                                i.putExtra(CROSS_ID, cross)
 
-                                i.putExtra(IntercrossConstants.FEMALE_PARENT, parents[0])
+                                i.putExtra(FEMALE_PARENT, parents[0])
 
-                                i.putExtra(IntercrossConstants.MALE_PARENT, parents[1])
+                                i.putExtra(MALE_PARENT, parents[1])
 
-                                startActivityForResult(i, IntercrossConstants.CROSS_INFO_REQ)
+                                startActivityForResult(i, CROSS_INFO_REQ)
                             }
                         }
                     }
                 }
-            }
-        }
-    }
-
-    inner class ViewHolder internal constructor(itemView: View) :
-            RecyclerView.ViewHolder(itemView), ViewAdapter.Binder<AdapterEntry>, View.OnClickListener {
-
-        private var id: Int = -1
-        private var firstText: TextView = itemView.findViewById(R.id.crossTextView) as TextView
-        private var secondText: TextView = itemView.findViewById(R.id.dateTextView) as TextView
-
-        init {
-            itemView.setOnClickListener(this)
-        }
-
-        override fun bind(data: AdapterEntry) {
-
-            id = data.id
-            firstText.text = data.first
-            secondText.text = data.second
-
-            itemView.findViewById<ImageView>(R.id.deleteView).setOnClickListener { _ ->
-
-                val builder = AlertDialog.Builder(this@MainActivity).apply {
-
-                    setTitle("Delete cross entry?")
-
-                    setNegativeButton("Cancel") { _, _ -> }
-
-                    setPositiveButton("Yes") { _, _ ->
-                        mDbHelper.deleteEntry(id)
-                        loadSQLToLocal()
-                    }
-                }
-
-                builder.show()
-            }
-
-            /*itemView.findViewById<ImageView>(R.id.inputImageView).setOnClickListener {
-                (currentFocus as? EditText).apply {
-                    this?.setText(firstText.text.toString())
-                }
-            }*/
-        }
-
-        fun startCrossActivity() {
-
-            val parents = mDbHelper.getParents(id)
-
-            val intent = Intent(this@MainActivity, CrossActivity::class.java)
-
-            intent.putExtra(IntercrossConstants.COL_ID_KEY, id)
-
-            intent.putExtra(IntercrossConstants.CROSS_ID, firstText.text)
-
-            intent.putExtra(IntercrossConstants.FEMALE_PARENT, parents[0])
-
-            intent.putExtra(IntercrossConstants.MALE_PARENT, parents[1])
-
-            startActivityForResult(intent, IntercrossConstants.CROSS_INFO_REQ)
-        }
-
-        override fun onClick(v: View?) {
-
-            v?.let {
-                startCrossActivity()
             }
         }
     }
@@ -732,7 +756,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                 org.phenoapps.intercross.R.string.drawer_open, org.phenoapps.intercross.R.string.drawer_close) {
 
             override fun onDrawerOpened(drawerView: View) {
-                val view = this@MainActivity.currentFocus
+                val view = this@IntercrossActivity.currentFocus
                 if (view != null) {
                     val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                     imm.hideSoftInputFromWindow(view.windowToken, 0)
@@ -758,7 +782,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         when (menuItem.itemId) {
             org.phenoapps.intercross.R.id.nav_settings ->
                 startActivityForResult(Intent(this, SettingsActivity::class.java),
-                        IntercrossConstants.SETTINGS_INTENT_REQ)
+                        SETTINGS_INTENT_REQ)
             org.phenoapps.intercross.R.id.nav_export -> askUserExportFileName()
             org.phenoapps.intercross.R.id.nav_about -> showAboutDialog()
             org.phenoapps.intercross.R.id.nav_simple_print ->
@@ -797,7 +821,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                     e.printStackTrace()
                 }
 
-                versionTextView.setOnClickListener { this@MainActivity.showChangeLog() }
+                versionTextView.setOnClickListener { this@IntercrossActivity.showChangeLog() }
             }
 
             builder.setCancelable(true)
@@ -837,7 +861,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     fun onAppForegrounded() {
-        if (PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
+        if (PreferenceManager.getDefaultSharedPreferences(this@IntercrossActivity)
                         .getString(SettingsActivity.PERSON, "").isNotBlank())
             askIfSamePerson()
     }
@@ -861,6 +885,47 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     companion object {
 
         private val lineSeparator = System.getProperty("line.separator")
+
+        val permissions = arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.CAMERA)
+
+        //request
+        val PERM_REQ = 100
+        val CAMERA_INTENT_REQ = 102
+        val CAMERA_INTENT_SEARCH = 105
+        val SETTINGS_INTENT_REQ = 103
+        val DEFAULT_CONTENT_REQ = 104
+        val MANAGE_HEADERS_REQ = 300
+        val CROSS_INFO_REQ = 301
+        val REQUEST_WRITE_PERMISSION = 200
+        val PATTERN_REQ = 400
+        val IMPORT_ZPL = 500
+
+        //extras
+        val CSV_URI = "org.phenoapps.intercross.CSV_URI"
+
+        val LIST_ID_EXTRA = "org.phenoapps.intercross.LIST_ID_EXTRA"
+
+        val COL_ID_KEY = "org.phenoapps.intercross.COL_ID_KEY"
+
+        val TIMESTAMP = "org.phenoapps.intercross.TIMESTAMP"
+
+        val CROSS_ID = "org.phenoapps.intercross.CROSS_ID"
+
+        val CAMERA_RETURN_ID = "org.phenoapps.intercross.CAMERA_RETURN_ID"
+
+        val HEADERS = "org.phenoapps.intercross.HEADERS"
+
+        val USER_INPUT_VALUES = "org.phenoapps.intercross.USER_INPUT_VALUES"
+
+        val FEMALE_PARENT = "org.phenoapps.intercross.FEMALE_PARENT"
+
+        val MALE_PARENT = "org.phenoapps.intercross.MALE_PARENT"
+
+        val COMPLETED_TUTORIAL = "org.phenoapps.intercross.COMPLETED_TUTORIAL"
+
+        val PATTERN = "org.phenoapps.intercross.LABEL_PATTERN"
+
+        val PERSON = "org.phenoapps.intercross.PERSON"
 
         fun scanFile(ctx: Context, filePath: File) {
             MediaScannerConnection.scanFile(ctx, arrayOf(filePath.absolutePath), null, null)

@@ -17,9 +17,11 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LifecycleObserver
+import org.phenoapps.intercross.IntercrossActivity.Companion.IMPORT_ZPL
+import org.phenoapps.intercross.IntercrossActivity.Companion.REQUEST_WRITE_PERMISSION
 import java.io.File
 
-class ImportZPL : AppCompatActivity(), LifecycleObserver {
+class ImportZPLActivity : AppCompatActivity(), LifecycleObserver {
 
     private val mCodeTextView: TextView by lazy {
         findViewById<TextView>(R.id.codeTextView)
@@ -45,7 +47,7 @@ class ImportZPL : AppCompatActivity(), LifecycleObserver {
             startActivityForResult(
                     Intent.createChooser(Intent(Intent.ACTION_GET_CONTENT).apply {
                         type = "*/*"
-                    }, "Choose file to import."), IntercrossConstants.IMPORT_ZPL)
+                    }, "Choose file to import."), IMPORT_ZPL)
         }
 
         //set preview text to imported zpl code
@@ -56,6 +58,8 @@ class ImportZPL : AppCompatActivity(), LifecycleObserver {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        setTheme(R.style.AppTheme)
 
         super.onCreate(savedInstanceState)
 
@@ -78,7 +82,7 @@ class ImportZPL : AppCompatActivity(), LifecycleObserver {
         intent?.let {
             if (resultCode == Activity.RESULT_OK) {
                 when (requestCode) {
-                    IntercrossConstants.IMPORT_ZPL -> {
+                    IMPORT_ZPL -> {
 
                         val text = readText(intent.data)
                         mCodeTextView.text = text
@@ -99,7 +103,7 @@ class ImportZPL : AppCompatActivity(), LifecycleObserver {
                 return Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()
             } else {
                 ActivityCompat.requestPermissions(this,
-                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), IntercrossConstants.REQUEST_WRITE_PERMISSION)
+                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), REQUEST_WRITE_PERMISSION)
             }
         } else
             return Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()
@@ -125,7 +129,7 @@ class ImportZPL : AppCompatActivity(), LifecycleObserver {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 
-            if (DocumentsContract.isDocumentUri(this@ImportZPL, uri)) {
+            if (DocumentsContract.isDocumentUri(this@ImportZPLActivity, uri)) {
 
                 if ("com.android.externalstorage.documents" == uri.authority) {
                     val doc = DocumentsContract.getDocumentId(uri).split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
@@ -143,7 +147,7 @@ class ImportZPL : AppCompatActivity(), LifecycleObserver {
                     }
                     val contentUri = ContentUris.withAppendedId(
                             Uri.parse("content://downloads/public_downloads"), java.lang.Long.valueOf(id))
-                    return getDataColumn(this@ImportZPL, contentUri, null, null)
+                    return getDataColumn(this@ImportZPLActivity, contentUri, null, null)
                 }
             } else if ("file".equals(uri.scheme!!, ignoreCase = true)) {
                 return uri.path

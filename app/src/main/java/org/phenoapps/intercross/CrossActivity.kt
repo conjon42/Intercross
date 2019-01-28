@@ -1,49 +1,41 @@
 package org.phenoapps.intercross
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.transition.Explode
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.Window
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import org.phenoapps.intercross.IntercrossActivity.Companion.COL_ID_KEY
+import org.phenoapps.intercross.IntercrossActivity.Companion.CROSS_ID
+import org.phenoapps.intercross.IntercrossActivity.Companion.FEMALE_PARENT
+import org.phenoapps.intercross.IntercrossActivity.Companion.MALE_PARENT
+import org.phenoapps.intercross.IntercrossActivity.Companion.PERSON
+import org.phenoapps.intercross.IntercrossActivity.Companion.TIMESTAMP
 
 class CrossActivity : AppCompatActivity() {
 
-    private val mIdTextView: TextView by lazy {
-        findViewById<TextView>(R.id.selfTextView)
+    private val mParentsRecyclerView: RecyclerView by lazy {
+        findViewById<RecyclerView>(R.id.parentsRecyclerView)
     }
-    private val mNotBpParentTextView: TextView by lazy {
-        findViewById<TextView>(R.id.nbpTextView)
-    }
-    private val mDateTextView: TextView by lazy {
-        findViewById<TextView>(R.id.dateTextView)
-    }
-    private val mPolTypeTextView: TextView by lazy {
-        findViewById<TextView>(R.id.polTypeTextView)
-    }
-    private val mBpMaleTextView: TextView by lazy {
-        findViewById<TextView>(R.id.bpMaleTextView)
-    }
-    private val mBpFemaleTextView: TextView by lazy {
-        findViewById<TextView>(R.id.bpFemaleTextView)
-    }
-    private val mPersonTextView: TextView by lazy {
-        findViewById<TextView>(R.id.personTextView)
-    }
-    private val mRecyclerView: RecyclerView by lazy {
-        findViewById<RecyclerView>(R.id.offspringRecyclerView)
+    private val mChildrenRecyclerView: RecyclerView by lazy {
+        findViewById<RecyclerView>(R.id.childrenRecyclerView)
     }
 
-    private val mEntries = ArrayList<AdapterEntry>()
+    private val mParentEntries = ArrayList<AdapterEntry>()
+    private val mChildrenEntries =  ArrayList<AdapterEntry>()
 
-    private val mDbHelper = IdEntryDbHelper(this)
+    private val mDbHelper = IntercrossDbHelper(this)
 
-    private var mMaleParent = String()
-    private var mFemaleParent = String()
     private var mCrossId = String()
     private var mTimestamp = String()
     private var mPerson = String()
@@ -57,6 +49,18 @@ class CrossActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
+        // Check if we're running on Android 5.0 or higher
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            with(window) {
+                requestFeature(Window.FEATURE_CONTENT_TRANSITIONS)
+                exitTransition  = Explode()
+            }
+        } else {
+            // Swap without transition
+        }
+
+        setTheme(R.style.AppTheme)
+
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_cross)
@@ -68,57 +72,61 @@ class CrossActivity : AppCompatActivity() {
             it.setHomeButtonEnabled(true)
         }
 
-        val id = intent.getIntExtra(IntercrossConstants.COL_ID_KEY, -1)
-        mCrossId = intent.getStringExtra(IntercrossConstants.CROSS_ID) ?: ""
-        mMaleParent = intent.getStringExtra(IntercrossConstants.MALE_PARENT) ?: ""
-        mFemaleParent = intent.getStringExtra(IntercrossConstants.FEMALE_PARENT) ?: ""
+        val id = intent.getIntExtra(COL_ID_KEY, -1)
+        mCrossId = intent.getStringExtra(CROSS_ID) ?: ""
+
         mTimestamp = mDbHelper.getTimestampById(id)
         mPerson = mDbHelper.getPersonById(id)
 
-        mIdTextView.text = "Cross ID: $mCrossId"
-        mDateTextView.text = "$mTimestamp"
-        mPersonTextView.text = "by $mPerson"
-
         val polType = mDbHelper.getPollinationType(id)
-        mPolTypeTextView.text = polType
 
-        when (polType) {
-            "Biparental" -> {
-                mBpFemaleTextView.visibility = View.VISIBLE
-                mBpMaleTextView.visibility = View.VISIBLE
-                mNotBpParentTextView.visibility = View.INVISIBLE
-                mBpMaleTextView.text = mMaleParent
-                mBpFemaleTextView.text = mFemaleParent
-                mBpMaleTextView.setOnClickListener {
-                    val maleId = mDbHelper.getRowId(mMaleParent)
-                    if (maleId != -1) startCrossActivity(id, mMaleParent)
-                    else Toast.makeText(this, "This id has no DB entry.", Toast.LENGTH_SHORT).show()
+        findViewById<ImageView>(R.id.crossTypeImageView)
+                .setImageDrawable(when(polType) {
+                    "Self-Pollinated" -> ContextCompat.getDrawable(this,
+                            R.drawable.ic_human_female)
+                    "Biparental" -> ContextCompat.getDrawable(this,
+                            R.drawable.ic_human_male_female)
+                    else -> ContextCompat.getDrawable(this,
+                            R.drawable.ic_human_female_female)
+                })
+        findViewById<TextView>(R.id.crossTextView)
+                .setText(mCrossId)
+        findViewById<TextView>(R.id.dateTextView)
+                .setText("$mTimestamp")
+
+        findViewById<ImageView>(R.id.deleteView).setOnClickListener {
+            if (mDbHelper.getRowId(mCrossId) != -1) {
+                val builder = AlertDialog.Builder(this@CrossActivity).apply {
+
+                    setTitle("Delete cross entry?")
+
+                    setNegativeButton("Cancel") { _, _ -> }
+
+                    setPositiveButton("Yes") { _, _ ->
+                        mDbHelper.deleteEntry(id)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            finishAfterTransition()
+                        } else finish()
+                    }
                 }
-                mBpFemaleTextView.setOnClickListener {
-                    val femaleId = mDbHelper.getRowId(mFemaleParent)
-                    if (femaleId != -1) startCrossActivity(mDbHelper.getRowId(mFemaleParent), mFemaleParent)
-                    else Toast.makeText(this, "This id has no DB entry.", Toast.LENGTH_SHORT).show()
-                }
-            }
-            "Open Pollinated", "Self-Pollinated" -> {
-                mBpFemaleTextView.visibility = View.INVISIBLE
-                mBpMaleTextView.visibility = View.INVISIBLE
-                mNotBpParentTextView.visibility = View.VISIBLE
-                mNotBpParentTextView.text = mFemaleParent
-                mNotBpParentTextView.setOnClickListener {
-                    val femaleId = mDbHelper.getRowId(mFemaleParent)
-                    if (femaleId != -1) startCrossActivity(mDbHelper.getRowId(mFemaleParent), mFemaleParent)
-                    else Toast.makeText(this, "This id has no DB entry.", Toast.LENGTH_SHORT).show()
-                }
+                builder.show()
             }
         }
 
         val offspring = mDbHelper.getOffspring(id)
 
-        mRecyclerView.layoutManager = LinearLayoutManager(this)
+        mChildrenRecyclerView.layoutManager = LinearLayoutManager(this)
 
         offspring.forEach { child ->
-            mEntries.add(AdapterEntry(child.first, child.second))
+            mChildrenEntries.add(AdapterEntry(child.first))
+        }
+
+        val parents = mDbHelper.getParents(id)
+
+        mParentsRecyclerView.layoutManager = LinearLayoutManager(this)
+
+        parents.forEach { parent ->
+            if (parent.isNotBlank()) mParentEntries.add(AdapterEntry(parent))
         }
 
         /*val siblings = mDbHelper.getSiblings(id)
@@ -129,7 +137,7 @@ class CrossActivity : AppCompatActivity() {
             mSiblingsEntries.add(AdapterEntry())
         }*/
 
-        val adapter = object : ViewAdapter<AdapterEntry>(mEntries) {
+        val childrenAdapter = object : ViewAdapter<AdapterEntry>(mChildrenEntries) {
 
             override fun getLayoutId(position: Int, obj: AdapterEntry): Int {
                 return R.layout.row
@@ -140,51 +148,88 @@ class CrossActivity : AppCompatActivity() {
             }
         }
 
-        mRecyclerView.adapter = adapter
+        mChildrenRecyclerView.adapter = childrenAdapter
+
+        val parentAdapter = object : ViewAdapter<AdapterEntry>(mParentEntries) {
+
+            override fun getLayoutId(position: Int, obj: AdapterEntry): Int {
+                return R.layout.row
+            }
+
+            override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
+                return ViewHolder(view)
+            }
+        }
+
+        mParentsRecyclerView.adapter = parentAdapter
     }
 
     inner class ViewHolder internal constructor(itemView: View) :
             RecyclerView.ViewHolder(itemView), ViewAdapter.Binder<AdapterEntry> {
 
-        private var firstText: TextView = itemView.findViewById(R.id.crossTextView) as TextView
-
+        private val firstView: TextView by lazy {
+            itemView.findViewById<TextView>(R.id.crossTextView)
+        }
+        private val dateView: TextView by lazy {
+            itemView.findViewById<TextView>(R.id.dateTextView)
+        }
+        private val deleteView: ImageView by lazy {
+            itemView.findViewById<ImageView>(R.id.deleteView)
+        }
         private var mEntry: AdapterEntry = AdapterEntry()
 
         init {
-            firstText.setOnClickListener {
-                startCrossActivity(mEntry.second.toInt(), mEntry.first)
+            itemView.setOnClickListener {
+                startCrossActivity(firstView.text.toString())
+            }
+            deleteView.setOnClickListener {
+                val id = mDbHelper.getRowId(firstView.text.toString())
+                if (id != -1) {
+                    val builder = AlertDialog.Builder(this@CrossActivity).apply {
+
+                        setTitle("Delete cross entry?")
+
+                        setNegativeButton("Cancel") { _, _ -> }
+
+                        setPositiveButton("Yes") { _, _ ->
+                            mDbHelper.deleteEntry(id)
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                finishAfterTransition()
+                            } else finish()
+                        }
+                    }
+                    builder.show()
+                }
             }
         }
 
         override fun bind(data: AdapterEntry) {
             mEntry = data
-            firstText.text = data.first
+            firstView.setText(data.first)
+            val date = mDbHelper.getTimestampById(
+                    mDbHelper.getRowId(data.first))
+            if (dateView.text.toString() == "-1") dateView.setText("No record.")
+            else dateView.setText(date)
         }
     }
 
-    private fun startCrossActivity(id: Int, crossId: String) {
+    private fun startCrossActivity(crossId: String) {
 
         val pref = PreferenceManager.getDefaultSharedPreferences(this@CrossActivity)
 
+        val id = mDbHelper.getRowId(crossId)
         val parents = mDbHelper.getParents(id)
-
         val timestamp = mDbHelper.getTimestampById(id)
-
         val intent = Intent(this@CrossActivity, CrossActivity::class.java)
 
-        intent.putExtra(IntercrossConstants.COL_ID_KEY, id)
+        intent.putExtra(COL_ID_KEY, id)
+        intent.putExtra(CROSS_ID, crossId)
+        intent.putExtra(TIMESTAMP, timestamp)
+        intent.putExtra(FEMALE_PARENT, parents[0])
+        intent.putExtra(MALE_PARENT, parents[1])
+        intent.putExtra(PERSON, pref.getString(SettingsActivity.PERSON, ""))
 
-        intent.putExtra(IntercrossConstants.CROSS_ID, crossId)
-
-        intent.putExtra(IntercrossConstants.TIMESTAMP, timestamp)
-
-        intent.putExtra(IntercrossConstants.FEMALE_PARENT, parents[0])
-
-        intent.putExtra(IntercrossConstants.MALE_PARENT, parents[1])
-
-        intent.putExtra(IntercrossConstants.PERSON, pref.getString(SettingsActivity.PERSON, ""))
-
-        startActivityForResult(intent, IntercrossConstants.CROSS_INFO_REQ)
+        startActivity(intent)
     }
 
     override fun onCreateOptionsMenu(m: Menu): Boolean {
@@ -213,8 +258,8 @@ class CrossActivity : AppCompatActivity() {
 
                 //if a template is saved in the preferences, use it, otherwise try the default print
                 if (mCode.isNotBlank() && mZplFileName.isNotBlank()) {
-                    BluetoothUtil(this@CrossActivity).variablePrint(
-                        mCode, "^XA"
+                    BluetoothUtil().variablePrint(
+                        this@CrossActivity, mCode, "^XA"
                         + "^XFR:${mZplFileName}"
                         + "^FN1^FD" + mCrossId + "^FS"
                         + "^FN2^FDQA," + mCrossId + "^FS"
@@ -222,7 +267,7 @@ class CrossActivity : AppCompatActivity() {
                         + "^FN4^FD$mPerson^FS^XZ")
                 } else {
                     //uses bluetooth utility to send the default ZPL template and fields
-                    BluetoothUtil(this@CrossActivity).variablePrint(
+                    BluetoothUtil().variablePrint(this@CrossActivity,
                 "^XA"
                         + "^MNA"
                         + "^MMT,N"
@@ -241,14 +286,10 @@ class CrossActivity : AppCompatActivity() {
                         + "^FN3^FD" + mTimestamp + "^FS^XZ")
                 }
             }
-            else -> finish()
+            else -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                finishAfterTransition()
+            } else finish()
         }
         return true
     }
-
-    companion object {
-
-        private val line_separator = System.getProperty("line.separator")
-    }
-
 }

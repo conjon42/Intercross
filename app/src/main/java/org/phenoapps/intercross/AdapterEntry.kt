@@ -23,6 +23,10 @@ class AdapterEntry {
         this.second = second
     }
 
+    constructor(first: String){
+        this.first = first
+    }
+
     fun clear() {
         first = String()
         second = String()
