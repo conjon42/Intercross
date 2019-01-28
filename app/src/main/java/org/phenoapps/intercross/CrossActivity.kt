@@ -93,6 +93,8 @@ class CrossActivity : AppCompatActivity() {
                 .setText(mCrossId)
         findViewById<TextView>(R.id.dateTextView)
                 .setText("$mTimestamp")
+        if (mTimestamp == "-1") findViewById<TextView>(R.id.dateTextView)
+                .setText("No record.")
 
         findViewById<ImageView>(R.id.deleteView).setOnClickListener {
             if (mDbHelper.getRowId(mCrossId) != -1) {
@@ -208,7 +210,7 @@ class CrossActivity : AppCompatActivity() {
             firstView.setText(data.first)
             val date = mDbHelper.getTimestampById(
                     mDbHelper.getRowId(data.first))
-            if (dateView.text.toString() == "-1") dateView.setText("No record.")
+            if (date == "-1") dateView.setText("No record.")
             else dateView.setText(date)
         }
     }
@@ -218,15 +220,12 @@ class CrossActivity : AppCompatActivity() {
         val pref = PreferenceManager.getDefaultSharedPreferences(this@CrossActivity)
 
         val id = mDbHelper.getRowId(crossId)
-        val parents = mDbHelper.getParents(id)
         val timestamp = mDbHelper.getTimestampById(id)
         val intent = Intent(this@CrossActivity, CrossActivity::class.java)
 
         intent.putExtra(COL_ID_KEY, id)
         intent.putExtra(CROSS_ID, crossId)
         intent.putExtra(TIMESTAMP, timestamp)
-        intent.putExtra(FEMALE_PARENT, parents[0])
-        intent.putExtra(MALE_PARENT, parents[1])
         intent.putExtra(PERSON, pref.getString(SettingsActivity.PERSON, ""))
 
         startActivity(intent)
@@ -243,7 +242,6 @@ class CrossActivity : AppCompatActivity() {
 
         when (item.itemId) {
             R.id.action_print -> {
-
                 if (mCode.isNotBlank()) {
                     if (mCode.contains("DFR:")) {
                         val split = mCode.split("DFR:")
@@ -287,7 +285,7 @@ class CrossActivity : AppCompatActivity() {
                 }
             }
             else -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                finishAfterTransition()
+                supportFinishAfterTransition()
             } else finish()
         }
         return true
