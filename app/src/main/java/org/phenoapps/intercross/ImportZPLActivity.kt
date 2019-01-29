@@ -52,7 +52,7 @@ class ImportZPLActivity : AppCompatActivity(), LifecycleObserver {
 
         //set preview text to imported zpl code
         val code = PreferenceManager.getDefaultSharedPreferences(this)
-                .getString("ZPL_CODE", "")
+                .getString("ZPL_CODE", "") ?: ""
 
         if (code.isNotBlank()) mCodeTextView.text = code
     }

@@ -72,8 +72,14 @@ class CrossActivity : AppCompatActivity() {
             it.setHomeButtonEnabled(true)
         }
 
-        val id = intent.getIntExtra(COL_ID_KEY, -1)
+        val crossEntry = findViewById<View>(R.id.crossEntry)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            crossEntry.transitionName="cross"
+        }
+
         mCrossId = intent.getStringExtra(CROSS_ID) ?: ""
+
+        val id = mDbHelper.getRowId(mCrossId)
 
         mTimestamp = mDbHelper.getTimestampById(id)
         mPerson = mDbHelper.getPersonById(id)
@@ -95,25 +101,6 @@ class CrossActivity : AppCompatActivity() {
                 .setText("$mTimestamp")
         if (mTimestamp == "-1") findViewById<TextView>(R.id.dateTextView)
                 .setText("No record.")
-
-        findViewById<ImageView>(R.id.deleteView).setOnClickListener {
-            if (mDbHelper.getRowId(mCrossId) != -1) {
-                val builder = AlertDialog.Builder(this@CrossActivity).apply {
-
-                    setTitle("Delete cross entry?")
-
-                    setNegativeButton("Cancel") { _, _ -> }
-
-                    setPositiveButton("Yes") { _, _ ->
-                        mDbHelper.deleteEntry(id)
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            finishAfterTransition()
-                        } else finish()
-                    }
-                }
-                builder.show()
-            }
-        }
 
         val offspring = mDbHelper.getOffspring(id)
 
@@ -175,33 +162,11 @@ class CrossActivity : AppCompatActivity() {
         private val dateView: TextView by lazy {
             itemView.findViewById<TextView>(R.id.dateTextView)
         }
-        private val deleteView: ImageView by lazy {
-            itemView.findViewById<ImageView>(R.id.deleteView)
-        }
         private var mEntry: AdapterEntry = AdapterEntry()
 
         init {
             itemView.setOnClickListener {
                 startCrossActivity(firstView.text.toString())
-            }
-            deleteView.setOnClickListener {
-                val id = mDbHelper.getRowId(firstView.text.toString())
-                if (id != -1) {
-                    val builder = AlertDialog.Builder(this@CrossActivity).apply {
-
-                        setTitle("Delete cross entry?")
-
-                        setNegativeButton("Cancel") { _, _ -> }
-
-                        setPositiveButton("Yes") { _, _ ->
-                            mDbHelper.deleteEntry(id)
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                finishAfterTransition()
-                            } else finish()
-                        }
-                    }
-                    builder.show()
-                }
             }
         }
 
@@ -289,5 +254,11 @@ class CrossActivity : AppCompatActivity() {
             } else finish()
         }
         return true
+    }
+
+    override fun onBackPressed() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            supportFinishAfterTransition()
+        } else finish()
     }
 }

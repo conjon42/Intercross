@@ -41,7 +41,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="FN1 is the text cross id\nFN2 is a barcode cross id\nFN3 is the date"
+        android:text="FN1 is the text cross id\nFN2 is a barcode cross id\nFN3 is the date\nFN4 is the person"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.038"
         app:layout_constraintStart_toStartOf="parent"

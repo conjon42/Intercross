@@ -19,7 +19,7 @@ class PrintThread(private val ctx: Context, val template: String, val code: Stri
         Looper.prepare()
 
         val pref = PreferenceManager.getDefaultSharedPreferences(ctx)
-        val btId = pref.getString(SettingsActivity.BT_ID, "")
+        val btId = pref.getString(SettingsActivity.BT_ID, "") ?: ""
 
         if (btId.isBlank()) {
             Toast.makeText(ctx, "No bluetooth device paired.", Toast.LENGTH_SHORT).show()

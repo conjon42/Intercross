@@ -3,5 +3,4 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:animation="@anim/list_item_load"
     android:delay="8%"
-    android:animationOrder="normal"
-    />
+    android:animationOrder="normal" />

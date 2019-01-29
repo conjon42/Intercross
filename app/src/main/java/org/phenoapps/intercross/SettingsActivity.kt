@@ -1,38 +1,44 @@
 package org.phenoapps.intercross
 
-import android.annotation.TargetApi
 import android.app.Activity
 import android.content.Intent
-import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.preference.Preference
+import android.transition.Explode
 import android.view.MenuItem
+import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
-
-import android.preference.PreferenceFragment
-import android.preference.PreferenceManager
-import android.widget.Button
-import android.widget.Toast
+import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceManager
 
 
 class SettingsActivity : AppCompatActivity() {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
 
+        // Check if we're running on Android 5.0 or higher
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            with(window) {
+                requestFeature(Window.FEATURE_CONTENT_TRANSITIONS)
+                //exitTransition  = Explode()
+            }
+        } else {
+            // Swap without transition
+        }
+
         setTheme(R.style.AppTheme)
 
         super.onCreate(savedInstanceState)
 
-        if (supportActionBar != null) {
-            supportActionBar!!.title = "Settings"
-            supportActionBar!!.themedContext
-            supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-            supportActionBar!!.setHomeButtonEnabled(true)
+        supportActionBar?.apply {
+            title = "Settings"
+            themedContext
+            setDisplayHomeAsUpEnabled(true)
+            setHomeButtonEnabled(true)
         }
 
-        fragmentManager.beginTransaction()
+        supportFragmentManager.beginTransaction()
                 .replace(android.R.id.content, SettingsFragment())
                 .commit()
     }
@@ -42,25 +48,23 @@ class SettingsActivity : AppCompatActivity() {
         when (item.itemId) {
             android.R.id.home -> {
                 setResult(Activity.RESULT_OK)
-                finish()
+                supportFinishAfterTransition()
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
         }
     }
 
-    class SettingsFragment : PreferenceFragment() {
+    class SettingsFragment : PreferenceFragmentCompat() {
 
-        override fun onCreate(savedInstanceState: Bundle?) {
+        override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
 
-            super.onCreate(savedInstanceState)
+            setPreferencesFromResource(org.phenoapps.intercross.R.xml.preferences, rootKey)
 
-            addPreferencesFromResource(org.phenoapps.intercross.R.xml.preferences)
-
-            val printSetup = findPreference("org.phenoapps.intercross.PRINTER_SETUP")
+            val printSetup = findPreference<androidx.preference.Preference>("org.phenoapps.intercross.PRINTER_SETUP")
             printSetup.setOnPreferenceClickListener {
-                val intent = activity.packageManager
-                        .getLaunchIntentForPackage("com.zebra.printersetup")
+                val intent = activity?.packageManager
+                        ?.getLaunchIntentForPackage("com.zebra.printersetup")
                 when (intent) {
                     null -> {
                         val i = Intent(Intent.ACTION_VIEW)
@@ -77,7 +81,7 @@ class SettingsActivity : AppCompatActivity() {
 
             val pref = PreferenceManager.getDefaultSharedPreferences(activity)
             if (pref.getBoolean("LABEL_PATTERN_CREATED", false)) {
-                val patternCreated = findPreference(SettingsActivity.PATTERN)
+                val patternCreated = findPreference<androidx.preference.Preference>(SettingsActivity.PATTERN)
                 patternCreated.isEnabled = true
             }
         }
@@ -86,21 +90,19 @@ class SettingsActivity : AppCompatActivity() {
             super.onResume()
             val pref = PreferenceManager.getDefaultSharedPreferences(activity)
             if (pref.getBoolean("LABEL_PATTERN_CREATED", false)) {
-                val patternCreated = findPreference(SettingsActivity.PATTERN)
+                val patternCreated = findPreference<androidx.preference.Preference>(SettingsActivity.PATTERN)
                 patternCreated.isEnabled = true
             }
         }
     }
 
+    override fun onBackPressed() {
+        supportFinishAfterTransition()
+    }
     companion object {
-
         val BLANK_MALE_ID = "org.phenoapps.intercross.BLANK_MALE_ID"
         val CROSS_ORDER = "org.phenoapps.intercross.CROSS_ORDER"
-        val HEADER_SET = "org.phenoapps.intercross.HEADER_SET"
         var PERSON = "org.phenoapps.intercross.PERSON"
-        var LOCATION = "org.phenoapps.intercross.LOCATION"
-        var PRINTER = "org.phenoapps.intercross.PRINTER"
-        var FEMALE_FIRST = "org.phenoapps.intercross.FEMALE_FIRST"
         val PATTERN = "org.phenoapps.intercross.LABEL_PATTERN"
         val BT_ID = "org.phenoapps.intercross.BLUETOOTH_ID"
     }

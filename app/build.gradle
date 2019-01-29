@@ -53,13 +53,14 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha3'
     implementation 'androidx.legacy:legacy-support-v13:1.0.0'
     implementation 'androidx.vectordrawable:vectordrawable:1.0.1'
+    implementation 'androidx.recyclerview:recyclerview:1.0.0'
+    implementation 'androidx.preference:preference:1.1.0-alpha02'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.fasterxml.jackson.core:jackson-core:2.9.4'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.9.4'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.4'
     implementation 'android.arch.lifecycle:extensions:1.1.1'
     implementation 'com.github.paolorotolo:appintro:v5.1.0'
-    implementation 'androidx.recyclerview:recyclerview:1.0.0'
 }
 
 repositories {
