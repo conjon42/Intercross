@@ -393,8 +393,13 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             mSaveButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_baseline_local_florist_24px, 0, R.drawable.ic_baseline_local_florist_24px, 0)
         }
 
-        return ((male.isNotEmpty() || mAllowBlankMale) && female.isNotEmpty()
+        val valid = ((male.isNotEmpty() || mAllowBlankMale) && female.isNotEmpty()
                 && (cross.isNotEmpty() || auto))
+
+        if (valid) {
+            mSaveButton.setTextColor(Color.BLACK)
+        } else mSaveButton.setTextColor(Color.LTGRAY)
+        return valid
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
