@@ -103,8 +103,10 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             firstText.text = data.first
             secondText.text = data.second
 
+            val cross = mDbHelper.getRowId(mObj.first)
+            val pol = mDbHelper.getPollinationType(cross)
             itemView.findViewById<ImageView>(R.id.crossTypeImageView)
-                    .setImageDrawable(when(mDbHelper.getPollinationType(mObj.id)) {
+                    .setImageDrawable(when(pol) {
                         "Self-Pollinated" -> ContextCompat.getDrawable(this@IntercrossActivity,
                                 R.drawable.ic_human_female)
                         "Biparental" -> ContextCompat.getDrawable(this@IntercrossActivity,
@@ -752,10 +754,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
                                 i.putExtra(COL_ID_KEY, id)
                                 i.putExtra(CROSS_ID, cross)
 
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                    startActivity(Intent(this, ScanActivity::class.java),
-                                            ActivityOptions.makeSceneTransitionAnimation(this@IntercrossActivity).toBundle())
-                                } else startActivity(Intent(this, ScanActivity::class.java))
+                                startActivity(i)
                             }
                         }
                     }
