@@ -296,7 +296,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
         mFirstEditText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
             if (i == EditorInfo.IME_ACTION_DONE) {
-                mSaveButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_baseline_local_florist_24px_black, 0, R.drawable.ic_baseline_local_florist_24px, 0)
+                //mSaveButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_baseline_local_florist_24px_black, 0, R.drawable.ic_baseline_local_florist_24px, 0)
                 mSecondEditText.requestFocus()
                 return@OnEditorActionListener true
             }
@@ -306,7 +306,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
         //if auto generation is enabled save after the second text is submitted
         mSecondEditText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
             if (i == EditorInfo.IME_ACTION_DONE) {
-                mSaveButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_baseline_local_florist_24px_black, 0, R.drawable.ic_baseline_local_florist_24px_black, 0)
+                //mSaveButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_baseline_local_florist_24px_black, 0, R.drawable.ic_baseline_local_florist_24px_black, 0)
                 if (PreferenceManager.getDefaultSharedPreferences(this@IntercrossActivity)
                         ?.getBoolean(SettingsActivity.PATTERN, false) == false) {
                     mCrossEditText.requestFocus()
@@ -382,24 +382,24 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             female = mSecondEditText.text.toString()
         }
 
-        //animate flower colors depending on data entered
-        if (male.isNotBlank() && female.isNotBlank()) {
-            mSaveButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_baseline_local_florist_24px_black, 0, R.drawable.ic_baseline_local_florist_24px_black, 0)
-        } else if (male.isNotBlank() && female.isBlank()) {
-            mSaveButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_baseline_local_florist_24px, 0, R.drawable.ic_baseline_local_florist_24px_black, 0)
-        } else if (male.isBlank() && female.isNotBlank()) {
-            mSaveButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_baseline_local_florist_24px_black, 0, R.drawable.ic_baseline_local_florist_24px, 0)
-        } else {
-            mSaveButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_baseline_local_florist_24px, 0, R.drawable.ic_baseline_local_florist_24px, 0)
-        }
+        //calculate how how full the save button should be
+        var numFilled = 0
+        if (pref.getBoolean(SettingsActivity.BLANK_MALE_ID, false)) numFilled++
+        else if (male.isNotBlank()) numFilled++
+        if (female.isNotBlank()) numFilled++
+        if (cross.isNotBlank()) numFilled++
 
-        val valid = ((male.isNotEmpty() || mAllowBlankMale) && female.isNotEmpty()
+        //change save button fill percentage using corresponding xml shapes
+        mSaveButton.background = ContextCompat.getDrawable(this,
+            when (numFilled) {
+                0 -> R.drawable.save_button_empty
+                1 -> R.drawable.save_button_third
+                2 -> R.drawable.save_button_two_thirds
+                else -> R.drawable.save_button_full
+            })
+
+        return ((male.isNotEmpty() || mAllowBlankMale) && female.isNotEmpty()
                 && (cross.isNotEmpty() || auto))
-
-        if (valid) {
-            mSaveButton.setTextColor(Color.BLACK)
-        } else mSaveButton.setTextColor(Color.LTGRAY)
-        return valid
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -497,8 +497,8 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             entry.put("cross_name", "$female/$male-$crossCount")
 
             val c = Calendar.getInstance()
-            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-
+            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:SS", Locale.getDefault())
+            val sdf_short = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             val person : String = pref?.getString(SettingsActivity.PERSON, "None") ?: "None"
 
             entry.put("timestamp", sdf.format(c.time).toString())
@@ -520,7 +520,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             val index = 0
             mEntries.add(index, AdapterEntry().apply {
                 first = cross
-                second = sdf.format(c.time).toString()
+                second = sdf_short.format(c.time).toString()
             })
 
             mAdapter.notifyItemInserted(index)
@@ -799,18 +799,21 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
     private fun selectDrawerItem(menuItem: MenuItem) {
         when (menuItem.itemId) {
-            org.phenoapps.intercross.R.id.nav_settings ->
+            R.id.nav_summary -> {
+                startActivity(Intent(this@IntercrossActivity, SummaryActivity::class.java))
+            }
+            R.id.nav_settings ->
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     startActivity(Intent(this, SettingsActivity::class.java),
                             ActivityOptions.makeSceneTransitionAnimation(this@IntercrossActivity).toBundle())
                 } else startActivity(Intent(this, SettingsActivity::class.java))
-            org.phenoapps.intercross.R.id.nav_export -> askUserExportFileName()
-            org.phenoapps.intercross.R.id.nav_about -> showAboutDialog()
-            org.phenoapps.intercross.R.id.nav_simple_print ->
+            R.id.nav_export -> askUserExportFileName()
+            R.id.nav_about -> showAboutDialog()
+            R.id.nav_simple_print ->
                 startActivity(Intent(this, SimplePrintActivity::class.java))
-            org.phenoapps.intercross.R.id.nav_intro ->
+            R.id.nav_intro ->
                 startActivity(Intent(this, IntroActivity::class.java))
-            org.phenoapps.intercross.R.id.nav_delete_entries -> askUserDeleteEntries()
+            R.id.nav_delete_entries -> askUserDeleteEntries()
         }
 
         val dl = findViewById<DrawerLayout>(R.id.drawer_layout)

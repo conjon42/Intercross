@@ -39,6 +39,7 @@
         <activity android:name=".SettingsActivity" />
         <activity android:name=".CrossActivity"/>
         <activity android:name=".ImportZPLActivity" />
+        <activity android:name=".SummaryActivity" />
         <activity
             android:name=".IntroActivity"
             android:theme="@style/AppThemeNoActionBar" />

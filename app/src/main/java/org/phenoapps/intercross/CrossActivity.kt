@@ -72,6 +72,7 @@ class CrossActivity : AppCompatActivity() {
             it.setHomeButtonEnabled(true)
         }
 
+        //dynamically set transition name for the shared element transition
         val crossEntry = findViewById<View>(R.id.crossEntry)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             crossEntry.transitionName="cross"
@@ -84,8 +85,12 @@ class CrossActivity : AppCompatActivity() {
         mTimestamp = mDbHelper.getTimestampById(id)
         mPerson = mDbHelper.getPersonById(id)
 
-        val polType = mDbHelper.getPollinationType(id)
+        when (mPerson) {
+            "-1" -> findViewById<TextView>(R.id.personTextView).visibility = View.GONE
+            else -> findViewById<TextView>(R.id.personTextView).text = "Breeder: $mPerson"
+        }
 
+        val polType = mDbHelper.getPollinationType(id)
         findViewById<ImageView>(R.id.crossTypeImageView)
                 .setImageDrawable(when(polType) {
                     "Self-Pollinated" -> ContextCompat.getDrawable(this,
@@ -95,12 +100,9 @@ class CrossActivity : AppCompatActivity() {
                     else -> ContextCompat.getDrawable(this,
                             R.drawable.ic_human_female_female)
                 })
-        findViewById<TextView>(R.id.crossTextView)
-                .setText(mCrossId)
-        findViewById<TextView>(R.id.dateTextView)
-                .setText("$mTimestamp")
-        if (mTimestamp == "-1") findViewById<TextView>(R.id.dateTextView)
-                .setText("No record.")
+        findViewById<TextView>(R.id.crossTextView).text = mCrossId
+        findViewById<TextView>(R.id.dateTextView).text = mTimestamp
+        if (mTimestamp == "-1") findViewById<TextView>(R.id.dateTextView).text = ""
 
         val offspring = mDbHelper.getOffspring(id)
 
@@ -129,7 +131,7 @@ class CrossActivity : AppCompatActivity() {
         val childrenAdapter = object : ViewAdapter<AdapterEntry>(mChildrenEntries) {
 
             override fun getLayoutId(position: Int, obj: AdapterEntry): Int {
-                return R.layout.row
+                return R.layout.simple_row
             }
 
             override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
@@ -142,7 +144,7 @@ class CrossActivity : AppCompatActivity() {
         val parentAdapter = object : ViewAdapter<AdapterEntry>(mParentEntries) {
 
             override fun getLayoutId(position: Int, obj: AdapterEntry): Int {
-                return R.layout.row
+                return R.layout.simple_row
             }
 
             override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
@@ -166,34 +168,25 @@ class CrossActivity : AppCompatActivity() {
 
         init {
             itemView.setOnClickListener {
-                startCrossActivity(firstView.text.toString())
+                val cross = firstView.text.toString()
+                if (-1 != mDbHelper.getRowId(cross))
+                    startActivity(Intent(this@CrossActivity, CrossActivity::class.java).apply {
+                        putExtra(CROSS_ID, firstView.text.toString())
+                    })
+                else Toast.makeText(this@CrossActivity, "Entry not in DB.", Toast.LENGTH_SHORT).show()
             }
         }
 
         override fun bind(data: AdapterEntry) {
             mEntry = data
-            firstView.setText(data.first)
-            val date = mDbHelper.getTimestampById(
-                    mDbHelper.getRowId(data.first))
-            if (date == "-1") dateView.setText("No record.")
-            else dateView.setText(date)
+            firstView.text = data.first
+            dateView?.let {
+                val date = mDbHelper.getTimestampById(
+                        mDbHelper.getRowId(data.first))
+                if (date == "-1") dateView.text = ""
+                else dateView.text = date
+            }
         }
-    }
-
-    private fun startCrossActivity(crossId: String) {
-
-        val pref = PreferenceManager.getDefaultSharedPreferences(this@CrossActivity)
-
-        val id = mDbHelper.getRowId(crossId)
-        val timestamp = mDbHelper.getTimestampById(id)
-        val intent = Intent(this@CrossActivity, CrossActivity::class.java)
-
-        intent.putExtra(COL_ID_KEY, id)
-        intent.putExtra(CROSS_ID, crossId)
-        intent.putExtra(TIMESTAMP, timestamp)
-        intent.putExtra(PERSON, pref.getString(SettingsActivity.PERSON, ""))
-
-        startActivity(intent)
     }
 
     override fun onCreateOptionsMenu(m: Menu): Boolean {

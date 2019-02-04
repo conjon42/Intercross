@@ -1,0 +1,16 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape
+            android:shape="rectangle">
+            <corners
+                android:radius="15dp"/>
+            <solid
+                android:color="@color/colorAccent" />
+        </shape>
+    </item>
+    <item>
+        <bitmap
+            android:src="@drawable/ic_clear"
+            android:gravity="center"/>
+    </item>
+</layer-list>

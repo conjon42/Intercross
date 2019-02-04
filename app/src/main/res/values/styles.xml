@@ -1,7 +1,4 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="AppTheme.RoundedCornerButton" parent="Widget.AppCompat.Button.Colored">
-        <item name="android:background">@drawable/rounded</item>
-    </style>
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
