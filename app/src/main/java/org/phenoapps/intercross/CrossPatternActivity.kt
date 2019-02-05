@@ -10,7 +10,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleObserver
 
-class CrossPattern : AppCompatActivity(), LifecycleObserver {
+class CrossPatternActivity : AppCompatActivity(), LifecycleObserver {
 
     private lateinit var mPatternText: TextView
     private lateinit var mPrefixEditText: EditText
@@ -134,7 +134,7 @@ class CrossPattern : AppCompatActivity(), LifecycleObserver {
                 if (midNum.isBlank()) midNum = "0001"
                 if (pad.isBlank()) pad = "0"
 
-                val edit = PreferenceManager.getDefaultSharedPreferences(this@CrossPattern).edit()
+                val edit = PreferenceManager.getDefaultSharedPreferences(this@CrossPatternActivity).edit()
                 edit.putString("LABEL_PATTERN_PREFIX", mPrefixEditText.text.toString())
                 edit.putString("LABEL_PATTERN_SUFFIX", mSuffixEditText.text.toString())
                 edit.putInt("LABEL_PATTERN_MID", midNum.toInt())

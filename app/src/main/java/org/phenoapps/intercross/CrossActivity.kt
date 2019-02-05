@@ -59,8 +59,6 @@ class CrossActivity : AppCompatActivity() {
             // Swap without transition
         }
 
-        setTheme(R.style.AppTheme)
-
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_cross)

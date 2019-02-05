@@ -16,8 +16,6 @@ public class IntroActivity extends AppIntro2 {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
 
-        //setTheme(R.style.AppTheme);
-
         super.onCreate(savedInstanceState);
 
         // Customize view

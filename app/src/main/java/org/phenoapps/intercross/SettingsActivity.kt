@@ -27,8 +27,6 @@ class SettingsActivity : AppCompatActivity() {
             // Swap without transition
         }
 
-        setTheme(R.style.AppTheme)
-
         super.onCreate(savedInstanceState)
 
         supportActionBar?.apply {

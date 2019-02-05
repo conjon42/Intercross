@@ -311,6 +311,7 @@ internal class IntercrossDbHelper(ctx: Context) :
         return crosses
     }
 
+    //pragma command to get the header names of the DB
     private fun getColumns(): ArrayList<String> {
 
         val cols = ArrayList<String>()

@@ -42,8 +42,6 @@ class SummaryActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setTheme(R.style.AppTheme)
-
         setTitle("Unique Crosses")
 
         setContentView(R.layout.activity_count)

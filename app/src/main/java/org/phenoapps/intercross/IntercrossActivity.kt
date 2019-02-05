@@ -40,6 +40,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
+import com.zebra.sdk.settings.Setting
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -214,17 +215,16 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
     private lateinit var mDrawerToggle: ActionBarDrawerToggle
 
-    private fun ifCameraAllowed(f: () -> Unit) {
+    private fun isCameraAllowed(requestCode: Int): Boolean {
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) f()
-            else {
-                Toast.makeText(this,
-                        "You must accept camera permissions before using the barcode reader.",
-                        Toast.LENGTH_LONG).show()
-                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), PERM_REQ)
-            }
-        } else f() //permission granted on installation
-    }
+            if (checkSelfPermission(Manifest.permission.CAMERA)
+                    == PackageManager.PERMISSION_GRANTED) return true
+        }
+        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), requestCode)
+
+        return false
+}
 
     private fun isExternalStorageWritable(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -413,8 +413,6 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
         } else {
             // Swap without transition
         }
-
-        setTheme(R.style.AppTheme)
 
         super.onCreate(savedInstanceState)
 
@@ -700,11 +698,11 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
         when (item.itemId) {
             android.R.id.home -> dl.openDrawer(GravityCompat.START)
-            R.id.action_camera -> ifCameraAllowed {
+            R.id.action_camera -> if (isCameraAllowed(CAMERA_SCAN_REQ)) {
                 startActivityForResult(Intent(this, ScanActivity::class.java),
-                        CAMERA_INTENT_REQ)
+                        CAMERA_INTENT_SCAN)
             }
-            R.id.action_search -> {
+            R.id.action_search -> if (isCameraAllowed(CAMERA_SEARCH_REQ)){
                 startActivityForResult(Intent(this, ScanActivity::class.java),
                         CAMERA_INTENT_SEARCH)
             }
@@ -725,27 +723,22 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
                 if (intent.hasExtra(CAMERA_RETURN_ID)) {
 
                     when (requestCode) {
-                        CAMERA_INTENT_REQ -> {
-                            asList(mFirstEditText, mSecondEditText, mCrossEditText).forEach iter@{ editText ->
-                                editText?.let {
-                                    when (editText.hasFocus()) {
-                                        true -> {
-                                            editText.setText(intent.getStringExtra(CAMERA_RETURN_ID))
-                                            when (editText) {
-                                                mFirstEditText -> mSecondEditText.requestFocus()
-                                                mSecondEditText -> mCrossEditText.requestFocus()
-                                                mCrossEditText -> {
-                                                    saveToDB()
-                                                }
-                                                else -> Log.d("Focus", "Unexpected request focus.")
+                        CAMERA_INTENT_SCAN -> {
+                            asList(mFirstEditText, mSecondEditText, mCrossEditText)
+                                    .forEach { et -> if (et.hasFocus()) {
+                                        et.setText(intent.getStringExtra(CAMERA_RETURN_ID))
+                                        when (it) {
+                                            mFirstEditText -> mSecondEditText.requestFocus()
+                                            mSecondEditText -> mCrossEditText.requestFocus()
+                                            mCrossEditText -> {
+                                                saveToDB()
                                             }
-                                            return
+                                            else -> Log.d("Focus", "Unexpected request focus.")
                                         }
-                                        false -> return@iter
+                                        return
                                     }
                                 }
                             }
-                        }
                         CAMERA_INTENT_SEARCH -> {
 
                             val cross = intent.getStringExtra(CAMERA_RETURN_ID)
@@ -775,6 +768,14 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
                 org.phenoapps.intercross.R.string.drawer_open, org.phenoapps.intercross.R.string.drawer_close) {
 
             override fun onDrawerOpened(drawerView: View) {
+                //update the person viewed under "Intercross" each time the drawer opens
+                mNavView.getHeaderView(0).apply {
+                    findViewById<TextView>(R.id.navUserTextView)
+                            .text = PreferenceManager
+                            .getDefaultSharedPreferences(this@IntercrossActivity)
+                            .getString(SettingsActivity.PERSON, "Trevor")
+                }
+
                 val view = this@IntercrossActivity.currentFocus
                 if (view != null) {
                     val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -894,14 +895,26 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
     //Control flow is sent here when a user is prompted for permission access
     override fun onRequestPermissionsResult(resultCode: Int, permissions: Array<String>, granted: IntArray) {
-
+        //Control flow only continues if that permission has been accepted.
         permissions.forEachIndexed { index, perm ->
-            when (perm) {
-                "android.permission.WRITE_EXTERNAL_STORAGE" -> {
-                    if (resultCode == REQUEST_WRITE_PERMISSION &&
-                                    granted[index] == PackageManager.PERMISSION_GRANTED) {
-                        //Control flow only continues if that permission has been accepted.
-                        askUserExportFileName()
+            if (granted[index] == PackageManager.PERMISSION_GRANTED) {
+                when (perm) {
+                    "android.permission.WRITE_EXTERNAL_STORAGE" -> {
+                        if (resultCode == REQUEST_WRITE_PERMISSION) {
+                            askUserExportFileName()
+                        }
+                    }
+                    "android.permission.CAMERA" -> {
+                        when (resultCode) {
+                            CAMERA_SCAN_REQ -> {
+                                startActivityForResult(Intent(this, ScanActivity::class.java),
+                                        CAMERA_INTENT_SCAN)
+                            }
+                            CAMERA_SEARCH_REQ -> {
+                                startActivityForResult(Intent(this, ScanActivity::class.java),
+                                        CAMERA_INTENT_SEARCH)
+                            }
+                        }
                     }
                 }
             }
@@ -915,8 +928,9 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
         val permissions = arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.CAMERA)
 
         //request
-        val PERM_REQ = 100
-        val CAMERA_INTENT_REQ = 102
+        val CAMERA_SCAN_REQ = 100
+        val CAMERA_SEARCH_REQ = 101
+        val CAMERA_INTENT_SCAN = 102
         val CAMERA_INTENT_SEARCH = 105
         val SETTINGS_INTENT_REQ = 103
         val CROSS_INFO_REQ = 301

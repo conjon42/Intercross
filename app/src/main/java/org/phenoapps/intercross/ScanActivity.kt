@@ -48,8 +48,6 @@ class ScanActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        setTheme(R.style.AppTheme)
-
         super.onCreate(savedInstanceState)
 
         setContentView(org.phenoapps.intercross.R.layout.activity_capture)
