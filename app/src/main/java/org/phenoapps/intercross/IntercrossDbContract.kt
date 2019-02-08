@@ -14,7 +14,7 @@ internal object IntercrossDbContract {
                     "${IdEntry.COLUMN_NAME_POLLINATION_TYPE} TEXT, ${IdEntry.COLUMN_NAME_CROSS_COUNT} INTEGER," +
                     "${IdEntry.COLUMN_NAME_CROSS_NAME} TEXT)"
 
-    val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS " + IdEntry.TABLE_NAME
+    const val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS " + IdEntry.TABLE_NAME
 
     internal class IdEntry : BaseColumns {
         companion object {

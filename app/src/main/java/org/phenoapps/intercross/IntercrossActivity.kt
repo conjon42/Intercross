@@ -1,6 +1,7 @@
 package org.phenoapps.intercross
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityOptions
 import android.content.ContentValues
@@ -9,7 +10,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.graphics.Color
+import android.media.MediaPlayer
 import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Bundle
@@ -19,8 +20,10 @@ import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
 import android.util.Log
-import android.view.*
-import android.view.animation.AnimationUtils
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.Window
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
@@ -40,7 +43,6 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
-import com.zebra.sdk.settings.Setting
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -90,13 +92,15 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
     }
 
     inner class ViewHolder internal constructor(itemView: View) :
-            RecyclerView.ViewHolder(itemView), ViewAdapter.Binder<AdapterEntry>, View.OnClickListener {
+            RecyclerView.ViewHolder(itemView), ViewAdapter.Binder<AdapterEntry> {
 
         private var firstText: TextView = itemView.findViewById(R.id.crossTextView) as TextView
         private var secondText: TextView = itemView.findViewById(R.id.dateTextView) as TextView
 
         init {
-            itemView.setOnClickListener(this)
+            itemView.setOnClickListener {
+                startCrossActivity()
+            }
         }
 
         override fun bind(data: AdapterEntry) {
@@ -107,7 +111,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             val cross = mDbHelper.getRowId(mObj.first)
             val pol = mDbHelper.getPollinationType(cross)
             itemView.findViewById<ImageView>(R.id.crossTypeImageView)
-                    .setImageDrawable(when(pol) {
+                    .setImageDrawable(when (pol) {
                         "Self-Pollinated" -> ContextCompat.getDrawable(this@IntercrossActivity,
                                 R.drawable.ic_human_female)
                         "Biparental" -> ContextCompat.getDrawable(this@IntercrossActivity,
@@ -125,23 +129,16 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(
-                                this@IntercrossActivity, itemView, "cross")
-                                .toBundle())
+                        this@IntercrossActivity, itemView, "cross")
+                        .toBundle())
             } else startActivity(intent)
 
-        }
-
-        override fun onClick(v: View?) {
-
-            v?.let {
-                startCrossActivity()
-            }
         }
     }
 
     private val mPrefListener = SharedPreferences.OnSharedPreferenceChangeListener { pref, key ->
 
-        key?.let{
+        key?.let {
             when (key) {
                 "org.phenoapps.intercross.LABEL_PATTERN_CREATED" -> {
 
@@ -224,7 +221,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
         ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), requestCode)
 
         return false
-}
+    }
 
     private fun isExternalStorageWritable(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -257,7 +254,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             it.setHomeButtonEnabled(true)
         }
 
-        mNavView = findViewById<NavigationView>(R.id.nvView)
+        mNavView = findViewById(R.id.nvView)
 
         // Setup drawer view
         setupDrawerContent(mNavView)
@@ -296,7 +293,6 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
         mFirstEditText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
             if (i == EditorInfo.IME_ACTION_DONE) {
-                //mSaveButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_baseline_local_florist_24px_black, 0, R.drawable.ic_baseline_local_florist_24px, 0)
                 mSecondEditText.requestFocus()
                 return@OnEditorActionListener true
             }
@@ -306,9 +302,8 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
         //if auto generation is enabled save after the second text is submitted
         mSecondEditText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
             if (i == EditorInfo.IME_ACTION_DONE) {
-                //mSaveButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_baseline_local_florist_24px_black, 0, R.drawable.ic_baseline_local_florist_24px_black, 0)
                 if (PreferenceManager.getDefaultSharedPreferences(this@IntercrossActivity)
-                        ?.getBoolean(SettingsActivity.PATTERN, false) == false) {
+                                ?.getBoolean(SettingsActivity.PATTERN, false) == false) {
                     mCrossEditText.requestFocus()
                 } else {
                     saveToDB()
@@ -391,12 +386,12 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
         //change save button fill percentage using corresponding xml shapes
         mSaveButton.background = ContextCompat.getDrawable(this,
-            when (numFilled) {
-                0 -> R.drawable.save_button_empty
-                1 -> R.drawable.save_button_third
-                2 -> R.drawable.save_button_two_thirds
-                else -> R.drawable.save_button_full
-            })
+                when (numFilled) {
+                    0 -> R.drawable.save_button_empty
+                    1 -> R.drawable.save_button_third
+                    2 -> R.drawable.save_button_two_thirds
+                    else -> R.drawable.save_button_full
+                })
 
         return ((male.isNotEmpty() || mAllowBlankMale) && female.isNotEmpty()
                 && (cross.isNotEmpty() || auto))
@@ -487,17 +482,17 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
             val entry = ContentValues()
 
-            entry.put("male", if(male.isBlank()) "blank" else male)
+            entry.put("male", if (male.isBlank()) "blank" else male)
             entry.put("female", female)
             entry.put("cross_id", cross)
-            entry.put("cross_type", pollinationType.toString())
+            entry.put("cross_type", pollinationType)
             entry.put("cross_count", crossCount)
             entry.put("cross_name", "$female/$male-$crossCount")
 
             val c = Calendar.getInstance()
             val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:SS", Locale.getDefault())
-            val sdf_short = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            val person : String = pref?.getString(SettingsActivity.PERSON, "None") ?: "None"
+            val sdfShort = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val person: String = pref?.getString(SettingsActivity.PERSON, "None") ?: "None"
 
             entry.put("timestamp", sdf.format(c.time).toString())
 
@@ -509,7 +504,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             mFirstEditText.text.clear()
             mSecondEditText.text.clear()
             if (isAutoPattern) {
-                mCrossEditText.setText("$prefix${(num+1).toString().padStart(pad, '0')}$suffix")
+                mCrossEditText.setText("$prefix${(num + 1).toString().padStart(pad, '0')}$suffix")
             } else mCrossEditText.text.clear()
 
             mFirstEditText.requestFocus()
@@ -518,12 +513,14 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             val index = 0
             mEntries.add(index, AdapterEntry().apply {
                 first = cross
-                second = sdf_short.format(c.time).toString()
+                second = sdfShort.format(c.time).toString()
             })
 
             mAdapter.notifyItemInserted(index)
 
             mRecyclerView.scrollToPosition(0)
+
+            ringNotification(success = true)
         }
     }
 
@@ -539,14 +536,17 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
         mAdapter.notifyDataSetChanged()
     }
 
+    @SuppressLint("SetTextI18n", "InflateParams")
     private fun askIfSamePerson() {
 
-        findViewById<ConstraintLayout>(R.id.constraint_layout_parent).requestFocus()
+        val v = findViewById<ConstraintLayout>(R.id.constraint_layout_parent)
+        v.requestFocus()
 
         val view = layoutInflater.inflate(R.layout.person_check_layout, null)
-        view.findViewById<TextView>(R.id.textView).text = "Is this still " +
-                "${PreferenceManager.getDefaultSharedPreferences(this@IntercrossActivity)
-                        .getString(SettingsActivity.PERSON, "Guillaume")}?"
+        val person = PreferenceManager.getDefaultSharedPreferences(this@IntercrossActivity)
+                .getString(SettingsActivity.PERSON, "Guillaume")
+
+        view.findViewById<TextView>(R.id.textView).text = "Is this still $person?"
 
         val builder = AlertDialog.Builder(this).apply {
 
@@ -702,7 +702,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
                 startActivityForResult(Intent(this, ScanActivity::class.java),
                         CAMERA_INTENT_SCAN)
             }
-            R.id.action_search -> if (isCameraAllowed(CAMERA_SEARCH_REQ)){
+            R.id.action_search -> if (isCameraAllowed(CAMERA_SEARCH_REQ)) {
                 startActivityForResult(Intent(this, ScanActivity::class.java),
                         CAMERA_INTENT_SEARCH)
             }
@@ -725,20 +725,21 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
                     when (requestCode) {
                         CAMERA_INTENT_SCAN -> {
                             asList(mFirstEditText, mSecondEditText, mCrossEditText)
-                                    .forEach { et -> if (et.hasFocus()) {
-                                        et.setText(intent.getStringExtra(CAMERA_RETURN_ID))
-                                        when (it) {
-                                            mFirstEditText -> mSecondEditText.requestFocus()
-                                            mSecondEditText -> mCrossEditText.requestFocus()
-                                            mCrossEditText -> {
-                                                saveToDB()
+                                    .forEach { et ->
+                                        if (et.hasFocus()) {
+                                            et.setText(intent.getStringExtra(CAMERA_RETURN_ID))
+                                            when (it) {
+                                                mFirstEditText -> mSecondEditText.requestFocus()
+                                                mSecondEditText -> mCrossEditText.requestFocus()
+                                                mCrossEditText -> {
+                                                    saveToDB()
+                                                }
+                                                else -> Log.d("Focus", "Unexpected request focus.")
                                             }
-                                            else -> Log.d("Focus", "Unexpected request focus.")
+                                            return
                                         }
-                                        return
                                     }
-                                }
-                            }
+                        }
                         CAMERA_INTENT_SEARCH -> {
 
                             val cross = intent.getStringExtra(CAMERA_RETURN_ID)
@@ -747,12 +748,9 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
                             if (id == -1) Toast.makeText(this,
                                     "This cross ID is not in the database.", Toast.LENGTH_LONG).show()
                             else {
-                                val i = Intent(this@IntercrossActivity, CrossActivity::class.java)
-
-                                i.putExtra(COL_ID_KEY, id)
-                                i.putExtra(CROSS_ID, cross)
-
-                                startActivity(i)
+                                startActivity(Intent(this@IntercrossActivity, CrossActivity::class.java).apply {
+                                    putExtra(CROSS_ID, cross)
+                                })
                             }
                         }
                     }
@@ -763,7 +761,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
     private fun setupDrawer() {
 
-        val dl = findViewById(org.phenoapps.intercross.R.id.drawer_layout) as DrawerLayout
+        val dl = findViewById<DrawerLayout>(R.id.drawer_layout)
         mDrawerToggle = object : ActionBarDrawerToggle(this, dl,
                 org.phenoapps.intercross.R.string.drawer_open, org.phenoapps.intercross.R.string.drawer_close) {
 
@@ -921,32 +919,51 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
         }
     }
 
+    private fun ringNotification(success: Boolean) {
+        if (PreferenceManager.getDefaultSharedPreferences(this)
+                        .getBoolean(SettingsActivity.AUDIO_ENABLED, false)) {
+            try {
+                when (success) {
+                    true -> {
+                        val chimePlayer = MediaPlayer.create(this,
+                                resources.getIdentifier("plonk", "raw", packageName))
+                        chimePlayer.start()
+                        chimePlayer.setOnCompletionListener {
+                            chimePlayer.release()
+                        }
+                    }
+                    false -> {
+                        val chimePlayer = MediaPlayer.create(this,
+                                resources.getIdentifier("error", "raw", packageName))
+                        chimePlayer.start()
+                        chimePlayer.setOnCompletionListener {
+                            chimePlayer.release()
+                        }
+                    }
+                }
+            } catch (e: IllegalStateException) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     companion object {
 
         private val lineSeparator = System.getProperty("line.separator")
 
-        val permissions = arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.CAMERA)
-
         //request
-        val CAMERA_SCAN_REQ = 100
-        val CAMERA_SEARCH_REQ = 101
-        val CAMERA_INTENT_SCAN = 102
-        val CAMERA_INTENT_SEARCH = 105
-        val SETTINGS_INTENT_REQ = 103
-        val CROSS_INFO_REQ = 301
-        val REQUEST_WRITE_PERMISSION = 200
-        val IMPORT_ZPL = 500
+        private const val CAMERA_SCAN_REQ = 100
+        private const val CAMERA_SEARCH_REQ = 101
+        private const val CAMERA_INTENT_SCAN = 102
+        private const val CAMERA_INTENT_SEARCH = 105
+
+        const val REQUEST_WRITE_PERMISSION = 200
+        const val IMPORT_ZPL = 500
 
         //extras
-
-        val COL_ID_KEY = "org.phenoapps.intercross.COL_ID_KEY"
-        val TIMESTAMP = "org.phenoapps.intercross.TIMESTAMP"
-        val CROSS_ID = "org.phenoapps.intercross.CROSS_ID"
-        val CAMERA_RETURN_ID = "org.phenoapps.intercross.CAMERA_RETURN_ID"
-        val FEMALE_PARENT = "org.phenoapps.intercross.FEMALE_PARENT"
-        val MALE_PARENT = "org.phenoapps.intercross.MALE_PARENT"
-        val COMPLETED_TUTORIAL = "org.phenoapps.intercross.COMPLETED_TUTORIAL"
-        val PERSON = "org.phenoapps.intercross.PERSON"
+        const val CROSS_ID = "org.phenoapps.intercross.CROSS_ID"
+        const val CAMERA_RETURN_ID = "org.phenoapps.intercross.CAMERA_RETURN_ID"
+        const val COMPLETED_TUTORIAL = "org.phenoapps.intercross.COMPLETED_TUTORIAL"
 
         fun scanFile(ctx: Context, filePath: File) {
             MediaScannerConnection.scanFile(ctx, arrayOf(filePath.absolutePath), null, null)

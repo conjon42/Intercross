@@ -12,6 +12,11 @@
             android:title="Location" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Workflow">
+        <CheckBoxPreference
+            android:icon="@drawable/ic_baseline_audiotrack_24px"
+            android:key="org.phenoapps.intercross.AUDIO_ENABLED"
+            android:title="Audio Notifications"
+            android:defaultValue="false" />
         <ListPreference
             android:defaultValue="0"
             android:entries="@array/cross_order_array"
@@ -30,7 +35,7 @@
             android:title="Create Pattern for Cross IDs">
             <intent
                 android:action="android.intent.action.VIEW"
-                android:targetClass="org.phenoapps.intercross.CrossPattern"
+                android:targetClass="org.phenoapps.intercross.CrossPatternActivity"
                 android:targetPackage="org.phenoapps.intercross" />
         </Preference>
         <CheckBoxPreference

@@ -3,11 +3,10 @@ package org.phenoapps.intercross;
 import android.graphics.Color;
 import android.os.Bundle;
 
-import androidx.annotation.Nullable;
-
 import com.github.paolorotolo.appintro.AppIntro2;
 import com.github.paolorotolo.appintro.AppIntroFragment;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 
@@ -33,18 +32,8 @@ public class IntroActivity extends AppIntro2 {
     }
 
     @Override
-    public void onSkipPressed(Fragment currentFragment) {
-        super.onSkipPressed(currentFragment);
-    }
-
-    @Override
     public void onDonePressed(Fragment currentFragment) {
         super.onDonePressed(currentFragment);
         finish();
-    }
-
-    @Override
-    public void onSlideChanged(@Nullable Fragment oldFragment, @Nullable Fragment newFragment) {
-        super.onSlideChanged(oldFragment, newFragment);
     }
 }

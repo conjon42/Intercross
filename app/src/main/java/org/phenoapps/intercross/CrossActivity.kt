@@ -9,18 +9,14 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.Window
-import android.widget.*
-import androidx.appcompat.app.AlertDialog
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import org.phenoapps.intercross.IntercrossActivity.Companion.COL_ID_KEY
 import org.phenoapps.intercross.IntercrossActivity.Companion.CROSS_ID
-import org.phenoapps.intercross.IntercrossActivity.Companion.FEMALE_PARENT
-import org.phenoapps.intercross.IntercrossActivity.Companion.MALE_PARENT
-import org.phenoapps.intercross.IntercrossActivity.Companion.PERSON
-import org.phenoapps.intercross.IntercrossActivity.Companion.TIMESTAMP
 
 class CrossActivity : AppCompatActivity() {
 
@@ -32,7 +28,7 @@ class CrossActivity : AppCompatActivity() {
     }
 
     private val mParentEntries = ArrayList<AdapterEntry>()
-    private val mChildrenEntries =  ArrayList<AdapterEntry>()
+    private val mChildrenEntries = ArrayList<AdapterEntry>()
 
     private val mDbHelper = IntercrossDbHelper(this)
 
@@ -53,7 +49,7 @@ class CrossActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             with(window) {
                 requestFeature(Window.FEATURE_CONTENT_TRANSITIONS)
-                exitTransition  = Explode()
+                exitTransition = Explode()
             }
         } else {
             // Swap without transition
@@ -73,7 +69,7 @@ class CrossActivity : AppCompatActivity() {
         //dynamically set transition name for the shared element transition
         val crossEntry = findViewById<View>(R.id.crossEntry)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            crossEntry.transitionName="cross"
+            crossEntry.transitionName = "cross"
         }
 
         mCrossId = intent.getStringExtra(CROSS_ID) ?: ""
@@ -83,14 +79,14 @@ class CrossActivity : AppCompatActivity() {
         mTimestamp = mDbHelper.getTimestampById(id)
         mPerson = mDbHelper.getPersonById(id)
 
-        when (mPerson) {
-            "-1" -> findViewById<TextView>(R.id.personTextView).visibility = View.GONE
-            else -> findViewById<TextView>(R.id.personTextView).text = "Breeder: $mPerson"
+        crossEntry.findViewById<TextView>(R.id.personTextView).apply {
+            visibility = View.VISIBLE
+            text = mPerson
         }
 
         val polType = mDbHelper.getPollinationType(id)
         findViewById<ImageView>(R.id.crossTypeImageView)
-                .setImageDrawable(when(polType) {
+                .setImageDrawable(when (polType) {
                     "Self-Pollinated" -> ContextCompat.getDrawable(this,
                             R.drawable.ic_human_female)
                     "Biparental" -> ContextCompat.getDrawable(this,
@@ -159,9 +155,6 @@ class CrossActivity : AppCompatActivity() {
         private val firstView: TextView by lazy {
             itemView.findViewById<TextView>(R.id.crossTextView)
         }
-        private val dateView: TextView by lazy {
-            itemView.findViewById<TextView>(R.id.dateTextView)
-        }
         private var mEntry: AdapterEntry = AdapterEntry()
 
         init {
@@ -178,12 +171,6 @@ class CrossActivity : AppCompatActivity() {
         override fun bind(data: AdapterEntry) {
             mEntry = data
             firstView.text = data.first
-            dateView?.let {
-                val date = mDbHelper.getTimestampById(
-                        mDbHelper.getRowId(data.first))
-                if (date == "-1") dateView.text = ""
-                else dateView.text = date
-            }
         }
     }
 
@@ -213,31 +200,31 @@ class CrossActivity : AppCompatActivity() {
                 //if a template is saved in the preferences, use it, otherwise try the default print
                 if (mCode.isNotBlank() && mZplFileName.isNotBlank()) {
                     BluetoothUtil().variablePrint(
-                        this@CrossActivity, mCode, "^XA"
-                        + "^XFR:${mZplFileName}"
-                        + "^FN1^FD" + mCrossId + "^FS"
-                        + "^FN2^FDQA," + mCrossId + "^FS"
-                        + "^FN3^FD" + mTimestamp + "^FS"
-                        + "^FN4^FD$mPerson^FS^XZ")
+                            this@CrossActivity, mCode, "^XA"
+                            + "^XFR:$mZplFileName"
+                            + "^FN1^FD" + mCrossId + "^FS"
+                            + "^FN2^FDQA," + mCrossId + "^FS"
+                            + "^FN3^FD" + mTimestamp + "^FS"
+                            + "^FN4^FD$mPerson^FS^XZ")
                 } else {
                     //uses bluetooth utility to send the default ZPL template and fields
                     BluetoothUtil().variablePrint(this@CrossActivity,
-                "^XA"
-                        + "^MNA"
-                        + "^MMT,N"
-                        + "^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS"
-                        + "^FWR"
-                        + "^FO100,25^A0,25,20^FN1^FS"
-                        + "^FO200,25^A0N,25,20"
-                        + "^BQ,2,6" +
-                        "^FN2^FS"
-                        + "^FO450,25^A0,25,20^FN3^FS^XZ",
+                            "^XA"
+                                    + "^MNA"
+                                    + "^MMT,N"
+                                    + "^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS"
+                                    + "^FWR"
+                                    + "^FO100,25^A0,25,20^FN1^FS"
+                                    + "^FO200,25^A0N,25,20"
+                                    + "^BQ,2,6" +
+                                    "^FN2^FS"
+                                    + "^FO450,25^A0,25,20^FN3^FS^XZ",
 
-                "^XA"
-                        + "^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF"
-                        + "^FN1^FD" + mCrossId + "^FS"
-                        + "^FN2^FDQA," + mCrossId + "^FS"
-                        + "^FN3^FD" + mTimestamp + "^FS^XZ")
+                            "^XA"
+                                    + "^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF"
+                                    + "^FN1^FD" + mCrossId + "^FS"
+                                    + "^FN2^FDQA," + mCrossId + "^FS"
+                                    + "^FN3^FD" + mTimestamp + "^FS^XZ")
                 }
             }
             else -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

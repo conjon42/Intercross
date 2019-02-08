@@ -1,11 +1,11 @@
 package org.phenoapps.intercross
+
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.*
+import android.view.animation.Animation
+import android.view.animation.ScaleAnimation
 import androidx.recyclerview.widget.RecyclerView
-import android.view.animation.AnimationUtils.loadAnimation
-
 
 abstract class ViewAdapter<T>(var listItems: List<T>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 

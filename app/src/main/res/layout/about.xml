@@ -4,17 +4,15 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:paddingBottom="5dp"
-    android:paddingLeft="25dp"
-    android:paddingRight="20dp"
+    android:paddingStart="25dp"
+    android:paddingEnd="20dp"
     android:paddingTop="5dp">
 
     <TextView
         android:id="@+id/tvVersion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:clickable="true"
         android:paddingBottom="10dp"
-        android:paddingLeft="10dp"
         android:text="@string/versiontitle"
         android:textColor="@color/colorPrimary"
         android:textStyle="bold" />
@@ -27,7 +25,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="15dip"
+        android:layout_marginStart="15dip"
         android:text="@string/ksu" />
 
     <TextView
@@ -39,13 +37,13 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="15dip"
+        android:layout_marginStart="15dip"
         android:text="@string/ksu" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="15dip"
+        android:layout_marginStart="15dip"
         android:autoLink="email"
         android:text="@string/dev_trevor_email" />
 
@@ -58,20 +56,20 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="15dip"
+        android:layout_marginStart="15dip"
         android:text="@string/ksu" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="15dip"
+        android:layout_marginStart="15dip"
         android:autoLink="email"
         android:text="@string/dev_jesse_email" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="15dip"
+        android:layout_marginStart="15dip"
         android:autoLink="web"
         android:text="@string/wg_site" />
 

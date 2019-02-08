@@ -6,13 +6,9 @@
     <string name="drawer_open">Open</string>
     <string name="drawer_close">Close</string>
     <string name="action_camera">Barcode Scanner</string>
-    <string name="save">Save</string>
-    <string name="next">Next</string>
 
     <!-- Settings Strings -->
     <string name="cross_mode">Cross Order</string>
-    <string name="biparental_mode">Biparental - Ensures the male and female identifiers are different.</string>
-    <string name="self_cross_mode">Self Cross - Ensures the male and female identifiers are equal.</string>
 
     <!-- Intro Strings -->
     <string name="intro_title_1">Welcome to Intercross!</string>
@@ -25,11 +21,6 @@
     <string name="intro_body_3">Print barcodes with your Zebra bluetooth printer.</string>
     <string name="intro_body_4">Crosses can be exported to a local file.</string>
 
-    <string name="tutorial0_text">Import crosses from a CSV file.</string>
-    <string name="tutorial1_text">Scan barcodes with your phone\'s camera.</string>
-    <string name="tutorial2_text">Print barcodes with your Zebra bluetooth printer.</string>
-    <string name="tutorial3_text">Tutorial complete!</string>
-
     <!-- About Strings -->
     <string name="ok">OK</string>
     <string name="about">About</string>
@@ -41,6 +32,39 @@
     <string name="dev_jesse">Jesse Poland</string>
     <string name="dev_jesse_email">jpoland@ksu.edu</string>
     <string name="wg_site">http://wheatgenetics.org\n</string>
-    <string name="action_clear">Clear</string>
     <string name="pollination_type">Pollination Type</string>
+    <string name="cross">Cross</string>
+    <string name="progeny">Progeny</string>
+    <string name="parents">Parents</string>
+    <string name="generated_barcode">Generated Barcode</string>
+    <string name="enter_text_below_and_print_it_as_a_barcode">Enter text below and print it as a barcode.</string>
+    <string name="enter_text_to_be_encoded">Enter text to be encoded.</string>
+    <string name="print">Print</string>
+    <string name="first_step">First Step, enter a value to encode</string>
+    <string name="second_step_send_to_bluetooth_printer">Second step, send to bluetooth printer</string>
+    <string name="sent_message">Sent message</string>
+    <string name="parental_combinations">Parental Combinations</string>
+    <string name="count">Count</string>
+    <string name="prefix">Prefix</string>
+    <string name="suffix">Suffix</string>
+    <string name="number">Number</string>
+    <string name="create_a_pattern_for_your_auto_generated_cross_names">Create a pattern for your auto generated cross names.</string>
+    <string name="test00000test">TEST00000TEST</string>
+    <string name="pad_length">Pad length</string>
+    <string name="auto">Auto</string>
+    <string name="start_from">Start From</string>
+    <string name="import_a_zpl_file">Import a ZPL file.</string>
+    <string name="zpl_sample">^XA ^DFR:SAMPLE.GRF^FS ^FO100,75^A0,25,20^FN1^FS ^FO200,75^A0N,25,20^BQN,2,6^FDQA,^FN2^FS ^FO450,75^A0,25,20^FN3^FS ^XZ</string>
+    <string name="save_text">Save</string>
+    <string name="zpl_argument_definitinos">FN1 is the text cross id FN2 is a barcode cross id FN3 is the date FN4 is the person</string>
+    <string name="import_zpl">import zpl</string>
+    <string name="cross_id">Cross ID:</string>
+    <string name="search">Search</string>
+    <string name="click">Click!</string>
+    <string name="zebra_bluetooth_print">Zebra Bluetooth Print</string>
+    <string name="summary">Summary</string>
+    <string name="export_crosses">Export Crosses</string>
+    <string name="delete_entries">Delete Entries</string>
+    <string name="simple_print">Simple Print</string>
+    <string name="intro">Intro</string>
 </resources>

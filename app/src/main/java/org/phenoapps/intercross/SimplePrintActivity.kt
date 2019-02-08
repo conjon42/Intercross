@@ -1,15 +1,15 @@
 package org.phenoapps.intercross
 
 import android.animation.Animator
-import android.bluetooth.BluetoothAdapter
 import android.os.Build
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.MenuItem
 import android.view.View
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
@@ -83,6 +83,7 @@ class SimplePrintActivity : AppCompatActivity() {
                             .setListener(object : Animator.AnimatorListener {
                                 override fun onAnimationRepeat(p0: Animator?) {
                                 }
+
                                 override fun onAnimationEnd(p0: Animator?) {
                                     msgImageView.visibility = View.INVISIBLE
                                     (msgImageView).animate()
@@ -108,6 +109,7 @@ class SimplePrintActivity : AppCompatActivity() {
                                             .alpha(1f)
 
                                 }
+
                                 override fun onAnimationCancel(p0: Animator?) {
                                 }
 
@@ -152,7 +154,7 @@ class SimplePrintActivity : AppCompatActivity() {
             it.setHomeButtonEnabled(true)
         }
 
-        mNavView = findViewById<NavigationView>(R.id.nvView)
+        mNavView = findViewById(R.id.nvView)
 
         // Setup drawer view
         setupDrawer()

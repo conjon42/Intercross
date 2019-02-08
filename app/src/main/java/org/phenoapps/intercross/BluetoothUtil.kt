@@ -1,10 +1,8 @@
 package org.phenoapps.intercross
 
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothClass
 import android.content.Context
 import android.preference.PreferenceManager
-import android.util.Log
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import androidx.appcompat.app.AlertDialog

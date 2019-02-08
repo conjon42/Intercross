@@ -4,7 +4,6 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -15,7 +14,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:text="Import a ZPL file."
+        android:text="@string/import_a_zpl_file"
         android:textSize="30sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -29,7 +28,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="12dp"
         android:fontFamily="monospace"
-        android:text="^XA\n^DFR:SAMPLE.GRF^FS\n^FO100,75^A0,25,20^FN1^FS\n^FO200,75^A0N,25,20^BQN,2,6^FDQA,^FN2^FS\n^FO450,75^A0,25,20^FN3^FS\n^XZ"
+        android:text="@string/zpl_sample"
         android:textAlignment="viewStart"
         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
         android:textSize="14sp"
@@ -41,7 +40,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="FN1 is the text cross id\nFN2 is a barcode cross id\nFN3 is the date\nFN4 is the person"
+        android:text="@string/zpl_argument_definitinos"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.038"
         app:layout_constraintStart_toStartOf="parent"
@@ -54,7 +53,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:text="import zpl"
+        android:text="@string/import_zpl"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView7" />

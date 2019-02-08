@@ -1,11 +1,14 @@
 package org.phenoapps.intercross
 
-import android.os.*
+import android.os.Bundle
 import android.preference.PreferenceManager
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.MenuItem
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.RadioGroup
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleObserver
@@ -36,10 +39,10 @@ class CrossPatternActivity : AppCompatActivity(), LifecycleObserver {
 
         val pref = PreferenceManager.getDefaultSharedPreferences(this)
 
-        mPatternText = findViewById<TextView>(R.id.codeTextView)
-        mPrefixEditText = findViewById<EditText>(R.id.prefixEditText)
-        mSuffixEditText = findViewById<EditText>(R.id.suffixEditText)
-        mNumberEditText = findViewById<EditText>(R.id.numberEditText)
+        mPatternText = findViewById(R.id.codeTextView)
+        mPrefixEditText = findViewById(R.id.prefixEditText)
+        mSuffixEditText = findViewById(R.id.suffixEditText)
+        mNumberEditText = findViewById(R.id.numberEditText)
         mPadEditText = findViewById(R.id.padEditText)
 
         mRadioGroup = findViewById(R.id.radioGroup)
@@ -100,8 +103,8 @@ class CrossPatternActivity : AppCompatActivity(), LifecycleObserver {
             val newPad = mPadEditText.text.toString()
             var midNum = mNumberEditText.text.toString()
             if (midNum.isBlank()) midNum = "0001"
-            if (newPad.isBlank()) pad = "0"
-            else pad = newPad
+            pad = if (newPad.isBlank()) "0"
+            else newPad
 
             val edit = PreferenceManager.getDefaultSharedPreferences(this).edit()
             edit.putString("LABEL_PATTERN_PREFIX", mPrefixEditText.text.toString())

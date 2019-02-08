@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
 import org.phenoapps.intercross.IntercrossDbContract.SQL_CREATE_ENTRIES
 import org.phenoapps.intercross.IntercrossDbContract.TABLE_NAME
-import kotlin.collections.ArrayList
 
 internal class IntercrossDbHelper(ctx: Context) :
         SQLiteOpenHelper(ctx, DATABASE_NAME, null, DATABASE_VERSION) {
@@ -59,8 +58,8 @@ internal class IntercrossDbHelper(ctx: Context) :
                     arrayOf("_id", "male", "female"),
                     null, null, null, null, null)
 
-            var male: String? = null
-            var female: String? = null
+            var male = String()
+            var female = String()
             if (cursor.moveToFirst()) {
                 do {
 
@@ -83,8 +82,8 @@ internal class IntercrossDbHelper(ctx: Context) :
                             arrayOf("_id"), "male=? AND female=?",
                             arrayOf(male, female), null, null, null)
 
-                    entry.first = "${female}"
-                    entry.second = "${male}"
+                    entry.first = female
+                    entry.second = male
                     entry.third = countCursor.count.toString()
 
                     countCursor.close()
@@ -103,7 +102,7 @@ internal class IntercrossDbHelper(ctx: Context) :
     }
 
     //query for any row that has male or female parent as this id's cross id
-    fun getOffspring(id: Int): Array<Pair<String,String>> {
+    fun getOffspring(id: Int): Array<Pair<String, String>> {
 
         val crossId = getCrossId(id)
 
@@ -302,7 +301,7 @@ internal class IntercrossDbHelper(ctx: Context) :
                     val cross = cursor.getString(cursor.getColumnIndexOrThrow(
                             IntercrossDbContract.IdEntry.COLUMN_NAME_CROSS)) ?: ""
                     crosses.add(cross)
-                } while(cursor.moveToNext())
+                } while (cursor.moveToNext())
             }
             cursor.close()
         } catch (e: SQLiteException) {

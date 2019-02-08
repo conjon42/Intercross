@@ -12,25 +12,13 @@ class AdapterEntry {
 
     constructor()
 
-    constructor(first: String, second: String, third: String) {
-        this.first = first
-        this.second = second
-        this.third = third
-    }
-
     constructor(first: String, second: String) {
         this.first = first
         this.second = second
     }
 
-    constructor(first: String){
+    constructor(first: String) {
         this.first = first
     }
 
-    fun clear() {
-        first = String()
-        second = String()
-        third = String()
-        id = -1
-    }
 }

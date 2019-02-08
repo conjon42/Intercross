@@ -5,7 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.transition.Explode
 import android.view.MenuItem
 import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
@@ -43,13 +42,13 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        when (item.itemId) {
+        return when (item.itemId) {
             android.R.id.home -> {
                 setResult(Activity.RESULT_OK)
                 supportFinishAfterTransition()
-                return true
+                true
             }
-            else -> return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
@@ -97,11 +96,14 @@ class SettingsActivity : AppCompatActivity() {
     override fun onBackPressed() {
         supportFinishAfterTransition()
     }
+
     companion object {
-        val BLANK_MALE_ID = "org.phenoapps.intercross.BLANK_MALE_ID"
-        val CROSS_ORDER = "org.phenoapps.intercross.CROSS_ORDER"
-        var PERSON = "org.phenoapps.intercross.PERSON"
-        val PATTERN = "org.phenoapps.intercross.LABEL_PATTERN"
-        val BT_ID = "org.phenoapps.intercross.BLUETOOTH_ID"
+        private const val packageName = "org.phenoapps.intercross"
+        const val BLANK_MALE_ID = "$packageName.BLANK_MALE_ID"
+        const val CROSS_ORDER = "$packageName.CROSS_ORDER"
+        const val PERSON = "$packageName.PERSON"
+        const val PATTERN = "$packageName.LABEL_PATTERN"
+        const val BT_ID = "$packageName.BLUETOOTH_ID"
+        const val AUDIO_ENABLED = "$packageName.AUDIO_ENABLED"
     }
 }

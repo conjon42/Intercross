@@ -7,12 +7,13 @@ import android.preference.PreferenceManager
 import android.widget.Toast
 import com.zebra.sdk.comm.BluetoothConnection
 import com.zebra.sdk.comm.ConnectionException
+import com.zebra.sdk.printer.SGD
 import com.zebra.sdk.printer.ZebraPrinterFactory
 import com.zebra.sdk.printer.ZebraPrinterLanguageUnknownException
-import com.zebra.sdk.printer.SGD
 
 
-class PrintThread(private val ctx: Context, val template: String, val code: String) : Runnable {
+class PrintThread(private val ctx: Context,
+                  private val template: String, private val code: String) : Runnable {
 
     override fun run() {
 

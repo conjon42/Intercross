@@ -1,6 +1,5 @@
 package org.phenoapps.intercross
 
-import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
@@ -13,9 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
 import org.phenoapps.intercross.IntercrossActivity.Companion.CROSS_ID
-import org.phenoapps.intercross.IntercrossActivity.Companion.CROSS_INFO_REQ
 import java.util.*
-import kotlin.collections.HashMap
 
 class SummaryActivity : AppCompatActivity() {
 
@@ -42,7 +39,7 @@ class SummaryActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setTitle("Unique Crosses")
+        title = "Unique Crosses"
 
         setContentView(R.layout.activity_count)
 
@@ -52,19 +49,19 @@ class SummaryActivity : AppCompatActivity() {
             it.setHomeButtonEnabled(true)
         }
 
-        mNavView = findViewById(R.id.nvView) as NavigationView
+        mNavView = findViewById(R.id.nvView)
 
         // Setup drawer view
         setupDrawer()
 
-        mRecyclerView = findViewById(R.id.recyclerView) as RecyclerView
+        mRecyclerView = findViewById(R.id.recyclerView)
 
         mRecyclerView.layoutManager = LinearLayoutManager(this)
 
         mRecyclerView.adapter = mAdapter
 
 
-        var result = mDbHelper.getParentCounts()
+        val result = mDbHelper.getParentCounts()
         //sort
         result.sortBy { it.third }
         //remove dups
@@ -84,6 +81,7 @@ class SummaryActivity : AppCompatActivity() {
             ViewAdapter.Binder<AdapterEntry> {
 
         private var firstText: TextView = itemView.findViewById(R.id.crossTextView) as TextView
+
         init {
             itemView.setOnClickListener {
                 val crossName = firstText.text.toString()
@@ -92,13 +90,14 @@ class SummaryActivity : AppCompatActivity() {
                 })
             }
         }
+
         override fun bind(data: AdapterEntry) {
             firstText.text = data.first
         }
     }
 
     private fun setupDrawer() {
-        val dl = findViewById(org.phenoapps.intercross.R.id.drawer_layout) as DrawerLayout
+        val dl = findViewById<DrawerLayout>(R.id.drawer_layout)
         dl.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
     }
 

@@ -30,7 +30,7 @@ class ScanActivity : AppCompatActivity() {
             lastText = result.text
             barcodeScannerView!!.setStatusText(result.text)
 
-            val imageView = findViewById(org.phenoapps.intercross.R.id.barcodePreview) as ImageView
+            val imageView = findViewById<ImageView>(R.id.barcodePreview)
             imageView.setImageBitmap(result.getBitmapWithResultPoints(Color.GREEN))
 
             val i = Intent()
@@ -51,7 +51,7 @@ class ScanActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContentView(org.phenoapps.intercross.R.layout.activity_capture)
-        barcodeScannerView = findViewById(org.phenoapps.intercross.R.id.zxing_barcode_scanner) as DecoratedBarcodeView
+        barcodeScannerView = findViewById(R.id.zxing_barcode_scanner)
         barcodeScannerView!!.barcodeView.cameraSettings.isContinuousFocusEnabled = true
         barcodeScannerView!!.barcodeView.cameraSettings.isBarcodeSceneModeEnabled = true
         barcodeScannerView!!.decodeContinuous(callback)
@@ -67,13 +67,13 @@ class ScanActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        when (item.itemId) {
+        return when (item.itemId) {
             android.R.id.home -> {
                 setResult(Activity.RESULT_OK)
                 finish()
-                return true
+                true
             }
-            else -> return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
     }
 

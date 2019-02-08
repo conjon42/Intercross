@@ -5,8 +5,7 @@
     android:background="@color/colorPrimaryDark"
     android:gravity="center_vertical"
     android:orientation="vertical"
-    android:padding="10dp"
-    android:theme="@style/ThemeOverlay.AppCompat">
+    android:padding="10dp">
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
