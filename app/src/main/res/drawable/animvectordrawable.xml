@@ -1,8 +1,0 @@
-<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:drawable="@drawable/ic_baseline_mail_24px"
-    tools:targetApi="lollipop">
-    <target
-        android:name="rotationGroup"
-        android:animation="@animator/rotation"/>
-</animated-vector>

@@ -114,7 +114,7 @@
             android:layout_height="128dp"
             android:layout_marginTop="24dp"
             android:layout_marginBottom="40dp"
-            android:background="@drawable/ic_baseline_print_24px"
+            android:background="@drawable/ic_simple_print"
             android:text="@string/print"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -134,7 +134,7 @@
             app:layout_constraintEnd_toStartOf="@+id/editText"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:srcCompat="@drawable/ic_baseline_looks_one_24px" />
+            app:srcCompat="@drawable/ic_simple_one" />
 
         <ImageView
             android:id="@+id/imageView3"
@@ -148,7 +148,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/imageView2"
             app:layout_constraintVertical_bias="0.518"
-            app:srcCompat="@drawable/ic_baseline_looks_two_24px" />
+            app:srcCompat="@drawable/ic_simple_two" />
 
         <TextView
             android:id="@+id/textView2"
@@ -171,7 +171,7 @@
             app:layout_constraintBottom_toBottomOf="@+id/printButton"
             app:layout_constraintStart_toEndOf="@+id/printButton"
             app:layout_constraintTop_toTopOf="@+id/printButton"
-            app:srcCompat="@drawable/animvectordrawable" />
+            app:srcCompat="@drawable/anim_simple_send_data" />
     </androidx.constraintlayout.widget.ConstraintLayout>
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nvView"

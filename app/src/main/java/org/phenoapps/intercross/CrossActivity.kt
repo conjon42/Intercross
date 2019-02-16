@@ -88,11 +88,11 @@ class CrossActivity : AppCompatActivity() {
         findViewById<ImageView>(R.id.crossTypeImageView)
                 .setImageDrawable(when (polType) {
                     "Self-Pollinated" -> ContextCompat.getDrawable(this,
-                            R.drawable.ic_human_female)
+                            R.drawable.ic_cross_self)
                     "Biparental" -> ContextCompat.getDrawable(this,
-                            R.drawable.ic_human_male_female)
+                            R.drawable.ic_cross_biparental)
                     else -> ContextCompat.getDrawable(this,
-                            R.drawable.ic_human_female_female)
+                            R.drawable.ic_cross_open_pollinated)
                 })
         findViewById<TextView>(R.id.crossTextView).text = mCrossId
         findViewById<TextView>(R.id.dateTextView).text = mTimestamp

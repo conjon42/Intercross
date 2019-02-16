@@ -2,31 +2,27 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/nav_settings"
-        android:icon="@drawable/ic_settings"
+        android:icon="@drawable/ic_nav_settings"
         android:title="@string/title_activity_preference" />
     <item
         android:id="@+id/nav_summary"
-        android:icon="@drawable/ic_cross_count"
+        android:icon="@drawable/ic_nav_cross_count"
         android:title="@string/summary" />
     <item
         android:id="@+id/nav_export"
-        android:icon="@drawable/ic_export"
+        android:icon="@drawable/ic_nav_export"
         android:title="@string/export_crosses" />
     <item
         android:id="@+id/nav_delete_entries"
-        android:icon="@drawable/ic_baseline_delete_24px"
+        android:icon="@drawable/ic_nav_delete"
         android:title="@string/delete_entries" />
     <item
         android:id="@+id/nav_simple_print"
-        android:icon="@drawable/ic_action_print"
+        android:icon="@drawable/ic_setting_print_connect"
         android:title="@string/simple_print" />
     <item
         android:id="@+id/nav_about"
         android:icon="@drawable/ic_about"
         android:title="@string/about" />
 
-    <item
-        android:id="@+id/nav_intro"
-        android:icon="@drawable/ic_help"
-        android:title="@string/intro" />
 </menu>

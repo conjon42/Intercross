@@ -2,35 +2,35 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="Profile">
         <EditTextPreference
-            android:icon="@drawable/ic_person"
+            android:icon="@drawable/ic_setting_person"
             android:key="org.phenoapps.intercross.PERSON"
             android:title="Person" />
 
         <EditTextPreference
-            android:icon="@drawable/ic_location"
+            android:icon="@drawable/ic_setting_location"
             android:key="org.phenoapps.intercross.LOCATION"
             android:title="Location" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Workflow">
         <CheckBoxPreference
-            android:icon="@drawable/ic_baseline_audiotrack_24px"
+            android:defaultValue="false"
+            android:icon="@drawable/ic_setting_sound"
             android:key="org.phenoapps.intercross.AUDIO_ENABLED"
-            android:title="Audio Notifications"
-            android:defaultValue="false" />
+            android:title="Audio Notifications" />
         <ListPreference
             android:defaultValue="0"
             android:entries="@array/cross_order_array"
             android:entryValues="@array/cross_order_array_values"
-            android:icon="@drawable/ic_cross_order"
+            android:icon="@drawable/ic_setting_cross_order"
             android:key="org.phenoapps.intercross.CROSS_ORDER"
             android:summary="%s"
             android:title="@string/cross_mode" />
         <CheckBoxPreference
-            android:icon="@drawable/ic_human_male"
+            android:icon="@drawable/ic_setting_male_blank"
             android:key="org.phenoapps.intercross.BLANK_MALE_ID"
             android:title="Allow Blank Male ID" />
         <Preference
-            android:icon="@drawable/ic_baseline_receipt_24px"
+            android:icon="@drawable/ic_setting_pattern_create"
             android:key="org.phenoapps.intercross.CREATE_PATTERN"
             android:title="Create Pattern for Cross IDs">
             <intent
@@ -40,21 +40,21 @@
         </Preference>
         <CheckBoxPreference
             android:enabled="false"
-            android:icon="@drawable/ic_baseline_receipt_24px"
+            android:icon="@drawable/ic_setting_auto_generate"
             android:key="org.phenoapps.intercross.LABEL_PATTERN"
             android:title="Auto Generate Cross IDs" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Printing">
         <EditTextPreference
-            android:icon="@drawable/ic_bluetooth"
+            android:icon="@drawable/ic_setting_bluetooth_id"
             android:key="org.phenoapps.intercross.BLUETOOTH_ID"
             android:title="Bluetooth ID" />
         <Preference
-            android:icon="@drawable/ic_action_print"
+            android:icon="@drawable/ic_setting_print_connect"
             android:key="org.phenoapps.intercross.PRINTER_SETUP"
             android:title="Zebra Print Connect" />
         <Preference
-            android:icon="@drawable/ic_import"
+            android:icon="@drawable/ic_setting_import_zpl"
             android:key="org.phenoapps.intercross.ZPL_IMPORT"
             android:title="ZPL Import">
             <intent

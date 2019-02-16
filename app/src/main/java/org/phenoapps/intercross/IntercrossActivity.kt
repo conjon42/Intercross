@@ -113,11 +113,11 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             itemView.findViewById<ImageView>(R.id.crossTypeImageView)
                     .setImageDrawable(when (pol) {
                         "Self-Pollinated" -> ContextCompat.getDrawable(this@IntercrossActivity,
-                                R.drawable.ic_human_female)
+                                R.drawable.ic_cross_self)
                         "Biparental" -> ContextCompat.getDrawable(this@IntercrossActivity,
-                                R.drawable.ic_human_male_female)
+                                R.drawable.ic_cross_biparental)
                         else -> ContextCompat.getDrawable(this@IntercrossActivity,
-                                R.drawable.ic_human_female_female)
+                                R.drawable.ic_cross_open_pollinated)
                     })
         }
 
@@ -387,10 +387,10 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
         //change save button fill percentage using corresponding xml shapes
         mSaveButton.background = ContextCompat.getDrawable(this,
                 when (numFilled) {
-                    0 -> R.drawable.save_button_empty
-                    1 -> R.drawable.save_button_third
-                    2 -> R.drawable.save_button_two_thirds
-                    else -> R.drawable.save_button_full
+                    0 -> R.drawable.button_save_empty
+                    1 -> R.drawable.button_save_third
+                    2 -> R.drawable.button_save_two_thirds
+                    else -> R.drawable.button_save_full
                 })
 
         return ((male.isNotEmpty() || mAllowBlankMale) && female.isNotEmpty()
@@ -539,36 +539,29 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
     @SuppressLint("SetTextI18n", "InflateParams")
     private fun askIfSamePerson() {
 
-        val v = findViewById<ConstraintLayout>(R.id.constraint_layout_parent)
-        v.requestFocus()
+        findViewById<ConstraintLayout>(R.id.constraint_layout_parent).requestFocus()
 
-        val view = layoutInflater.inflate(R.layout.person_check_layout, null)
-        val person = PreferenceManager.getDefaultSharedPreferences(this@IntercrossActivity)
-                .getString(SettingsActivity.PERSON, "Guillaume")
-
-        view.findViewById<TextView>(R.id.textView).text = "Is this still $person?"
 
         val builder = AlertDialog.Builder(this).apply {
 
-            setNegativeButton("Yes") { _, _ ->
-                //welcome back
-            }
-
-            setPositiveButton("Change Person") { _, _ ->
+            setNegativeButton("Change Person") { _, _ ->
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     startActivity(Intent(this@IntercrossActivity, SettingsActivity::class.java))
                 } else startActivity(Intent(this@IntercrossActivity, SettingsActivity::class.java))
                 overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
             }
 
-            setView(view)
-
-            setCancelable(false)
-
+            setPositiveButton("Yes") { _, _ ->
+                //welcome back
+            }
         }
 
+        builder.setTitle("Is this still " +
+                "${PreferenceManager.getDefaultSharedPreferences(this@IntercrossActivity)
+                        .getString(SettingsActivity.PERSON, "Guillaume")}?")
         builder.show()
     }
+
 
     private fun askUserExportFileName() {
 
@@ -810,8 +803,6 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             R.id.nav_about -> showAboutDialog()
             R.id.nav_simple_print ->
                 startActivity(Intent(this, SimplePrintActivity::class.java))
-            R.id.nav_intro ->
-                startActivity(Intent(this, IntroActivity::class.java))
             R.id.nav_delete_entries -> askUserDeleteEntries()
         }
 
