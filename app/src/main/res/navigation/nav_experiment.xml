@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    app:startDestination="@+id/experiment_fragment">
+
+    <fragment
+        android:id="@+id/experiment_fragment"
+        android:name="edu.ksu.wheatgenetics.survey.fragments.ExperimentListFragment"
+        android:label="Experiments"
+        tools:layout="@layout/fragment_experiment">
+
+        <action
+            android:id="@+id/action_experiment_fragment_to_sample_list_fragment"
+            app:destination="@id/sample_list_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
+
+        <action
+            android:id="@+id/action_experiment_fragment_to_satellite_plot_fragment"
+            app:destination="@id/satellite_plot_fragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/satellite_plot_fragment"
+        android:name="edu.ksu.wheatgenetics.survey.fragments.SatViewFragment"
+        android:label="Satellite Plot"
+        tools:layout="@layout/fragment_satellite_plot"/>
+
+    <fragment
+        android:id="@+id/sample_list_fragment"
+        android:name="edu.ksu.wheatgenetics.survey.fragments.SampleListFragment"
+        android:label="Samples"
+        tools:layout="@layout/fragment_list_sample">
+
+        <argument
+            android:name="experiment"
+            app:argType="edu.ksu.wheatgenetics.survey.data.Experiment" />
+
+        <action
+            android:id="@+id/action_sample_list_fragment_to_sample_fragment"
+            app:destination="@id/sample_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
+
+        <action
+            android:id="@+id/action_sample_list_fragment_to_map_fragment"
+            app:destination="@id/fragment_map"/>
+        <action
+            android:id="@+id/action_sample_list_fragment_to_satellite_plot_fragment"
+            app:destination="@id/satellite_plot_fragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragment_map"
+        android:name="edu.ksu.wheatgenetics.survey.fragments.SampleMapFragment"
+        android:label="Maps"
+        tools:layout="@layout/fragment_map_plots">
+        <argument
+            android:name="experiment"
+            app:argType="edu.ksu.wheatgenetics.survey.data.Experiment" />
+        <action
+            android:id="@+id/action_fragment_map_to_satellite_plot_fragment"
+            app:destination="@id/satellite_plot_fragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/sample_fragment"
+        android:name="edu.ksu.wheatgenetics.survey.fragments.SampleFragment"
+        android:label="Sample"
+        tools:layout="@layout/fragment_sample">
+    </fragment>
+</navigation>

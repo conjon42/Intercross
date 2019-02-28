@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Survey</string>
+    <string name="title_activity_maps">Survey</string>
+
+    <string name="drawer_open">Open</string>
+    <string name="drawer_close">Close</string>
+
+    <string name="default_person">Default</string>
+    <string name="default_experiment">DefaultExperiment</string>
+
+    <string name="no_location_found">No location found.</string>
+
+    <string name="survey">Survey</string>
+</resources>
