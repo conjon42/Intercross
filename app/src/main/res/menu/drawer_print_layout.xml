@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_print"
-        android:icon="@drawable/ic_setting_print_connect"
+        android:icon="@drawable/ic_cross_print"
         android:title="@string/zebra_bluetooth_print"
         app:showAsAction="ifRoom" />
 </menu>

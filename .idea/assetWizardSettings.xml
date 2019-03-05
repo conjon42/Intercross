@@ -146,7 +146,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/av/ic_repeat_black_24dp.xml" />
+                                      <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/action/ic_print_black_24dp.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -156,8 +156,8 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="color" value="343434" />
-                            <entry key="outputName" value="ic_cross_order" />
+                            <entry key="color" value="ffffff" />
+                            <entry key="outputName" value="ic_cross_print" />
                             <entry key="sourceFile" value="C:\Users\Trevor\Downloads\baseline-audiotrack-24px.svg" />
                           </map>
                         </option>

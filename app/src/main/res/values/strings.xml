@@ -43,7 +43,6 @@
     <string name="first_step">First Step, enter a value to encode</string>
     <string name="second_step_send_to_bluetooth_printer">Second step, send to bluetooth printer</string>
     <string name="sent_message">Sent message</string>
-    <string name="parental_combinations">Parental Combinations</string>
     <string name="count">Count</string>
     <string name="prefix">Prefix</string>
     <string name="suffix">Suffix</string>

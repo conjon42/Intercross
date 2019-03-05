@@ -130,7 +130,7 @@ class SummaryActivity : AppCompatActivity() {
         override fun onClick(v: View) {
 
             val builder = AlertDialog.Builder(this@SummaryActivity)
-            builder.setTitle("List of children (click for more information)")
+            builder.setTitle("Crosses")
             val layout = RecyclerView(this@SummaryActivity)
             builder.setView(layout)
             val crosses = mDbHelper.getCrosses(firstText.text.toString(),
