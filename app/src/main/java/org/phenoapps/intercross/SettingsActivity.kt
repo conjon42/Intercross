@@ -105,5 +105,8 @@ class SettingsActivity : AppCompatActivity() {
         const val PATTERN = "$packageName.LABEL_PATTERN"
         const val BT_ID = "$packageName.BLUETOOTH_ID"
         const val AUDIO_ENABLED = "$packageName.AUDIO_ENABLED"
+        const val UUID_ENABLED = "$packageName.UUID_ENABLED"
+        const val AUTO_ENABLED = "$packageName.AUTO_ENABLED"
+
     }
 }

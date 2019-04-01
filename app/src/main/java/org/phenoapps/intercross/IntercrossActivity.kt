@@ -16,6 +16,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.preference.PreferenceManager
+import android.provider.Settings
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
@@ -127,11 +128,12 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
             intent.putExtra(CROSS_ID, firstText.text)
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(
-                        this@IntercrossActivity, itemView, "cross")
-                        .toBundle())
-            } else startActivity(intent)
+            //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+               // startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(
+                //        this@IntercrossActivity, itemView, "cross")
+                //        .toBundle())
+            //} else
+            startActivity(intent)
 
         }
     }
@@ -299,11 +301,11 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             false
         })
 
+        val p = PreferenceManager.getDefaultSharedPreferences(this)
         //if auto generation is enabled save after the second text is submitted
         mSecondEditText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
             if (i == EditorInfo.IME_ACTION_DONE) {
-                if (PreferenceManager.getDefaultSharedPreferences(this@IntercrossActivity)
-                                ?.getBoolean(SettingsActivity.PATTERN, false) == false) {
+                if (!(p.getBoolean(SettingsActivity.PATTERN, false) || p.getBoolean(SettingsActivity.UUID_ENABLED, false))) {
                     mCrossEditText.requestFocus()
                 } else {
                     saveToDB()
@@ -347,6 +349,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
         val pref = PreferenceManager.getDefaultSharedPreferences(this)
         val isAutoPattern = pref.getBoolean(SettingsActivity.PATTERN, false)
+        val isUUID = pref.getBoolean(SettingsActivity.UUID_ENABLED, false)
 
         if (isAutoPattern) {
             val prefix = pref.getString("LABEL_PATTERN_PREFIX", "")
@@ -354,6 +357,8 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             val num = pref.getInt("LABEL_PATTERN_MID", 0)
             val pad = pref.getInt("LABEL_PATTERN_PAD", 0)
             mCrossEditText.setText("$prefix${num.toString().padStart(pad, '0')}$suffix")
+        } else if (isUUID) {
+            mCrossEditText.setText(UUID.randomUUID().toString())
         }
 
         findViewById<ConstraintLayout>(R.id.constraint_layout_parent).requestFocus()
@@ -446,20 +451,27 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
         val pref = PreferenceManager.getDefaultSharedPreferences(this)
         val isAutoPattern = pref.getBoolean(SettingsActivity.PATTERN, false)
+        val isUUID = pref.getBoolean(SettingsActivity.UUID_ENABLED, false)
 
         var prefix = String()
         var suffix = String()
         var num = 0
         var pad = 0
-        if (isAutoPattern) {
-            prefix = pref.getString("LABEL_PATTERN_PREFIX", "") ?: ""
-            suffix = pref.getString("LABEL_PATTERN_SUFFIX", "") ?: ""
-            num = pref.getInt("LABEL_PATTERN_MID", 0)
-            pad = pref.getInt("LABEL_PATTERN_PAD", 0)
-            cross = "$prefix${num.toString().padStart(pad, '0')}$suffix"
-            val edit = pref.edit()
-            edit.putInt("LABEL_PATTERN_MID", num + 1)
-            edit.apply()
+
+        when {
+            isAutoPattern -> {
+                prefix = pref.getString("LABEL_PATTERN_PREFIX", "") ?: ""
+                suffix = pref.getString("LABEL_PATTERN_SUFFIX", "") ?: ""
+                num = pref.getInt("LABEL_PATTERN_MID", 0)
+                pad = pref.getInt("LABEL_PATTERN_PAD", 0)
+                cross = "$prefix${num.toString().padStart(pad, '0')}$suffix"
+                val edit = pref.edit()
+                edit.putInt("LABEL_PATTERN_MID", num + 1)
+                edit.apply()
+            }
+            isUUID -> {
+                cross = mCrossEditText.text.toString()
+            }
         }
 
         if (mCrossOrder == 0) {
@@ -471,6 +483,12 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
         }
 
         if ((male.isNotEmpty() || mAllowBlankMale) && female.isNotEmpty() && cross.isNotEmpty()) {
+
+            //if names match then notify the user
+            //todo ask trevor what type of error
+            if (male == cross || female == cross) {
+                Toast.makeText(this, "Parent and cross names are matching.", Toast.LENGTH_SHORT).show()
+            }
 
             val pollinationType = when {
                 male.isBlank() -> "Open Pollinated"
@@ -505,6 +523,8 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             mSecondEditText.text.clear()
             if (isAutoPattern) {
                 mCrossEditText.setText("$prefix${(num + 1).toString().padStart(pad, '0')}$suffix")
+            } else if (isUUID) {
+                mCrossEditText.setText(UUID.randomUUID().toString())
             } else mCrossEditText.text.clear()
 
             mFirstEditText.requestFocus()
@@ -521,6 +541,32 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             mRecyclerView.scrollToPosition(0)
 
             ringNotification(success = true)
+
+            val isAutoPrinting = pref.getBoolean(SettingsActivity.AUTO_ENABLED, false)
+
+            if (isAutoPrinting) {
+                val id = mDbHelper.getRowId(cross)
+
+                val time = mDbHelper.getTimestampById(id)
+                //uses bluetooth utility to send the default ZPL template and fields
+                BluetoothUtil().variablePrint(this,
+                        "^XA"
+                                + "^MNA"
+                                + "^MMT,N"
+                                + "^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS"
+                                + "^FWR"
+                                + "^FO100,25^A0,25,20^FN1^FS"
+                                + "^FO200,25^A0N,25,20"
+                                + "^BQ,2,6" +
+                                "^FN2^FS"
+                                + "^FO450,25^A0,25,20^FN3^FS^XZ",
+
+                        "^XA"
+                                + "^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF"
+                                + "^FN1^FD" + cross + "^FS"
+                                + "^FN2^FDQA," + cross + "^FS"
+                                + "^FN3^FD" + time + "^FS^XZ")
+            }
         }
     }
 

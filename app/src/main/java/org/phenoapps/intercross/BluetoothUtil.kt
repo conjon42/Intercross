@@ -18,65 +18,52 @@ class BluetoothUtil {
     //operation that uses the provided context to prompt the user for a paired bluetooth device
     private fun choose(ctx: Context, f: () -> Unit) {
 
-        //check for bluetooth id updates in the settings
-        val pref = PreferenceManager.getDefaultSharedPreferences(ctx)
-        val btId = pref.getString(SettingsActivity.BT_ID, "")
+        /*Filter out some classes of bluetooth devices
+        mBluetoothAdapter.bondedDevices.forEach {
+            when(it?.bluetoothClass?.majorDeviceClass) {
+                //BluetoothClass.Device.Major.AUDIO_VIDEO -> Log.d("BTAUDIO_VIDEO", it?.bluetoothClass.toString())
+                BluetoothClass.Device.Major.COMPUTER -> Log.d("BTCOMPUTER", it.bluetoothClass.toString())
+                //BluetoothClass.Device.Major.HEALTH -> Log.d("BTHEALTH", it?.bluetoothClass.toString())
+                BluetoothClass.Device.Major.IMAGING -> Log.d("BTIMAGING", it.bluetoothClass.toString())
+                BluetoothClass.Device.Major.MISC -> Log.d("BTMISC", it.bluetoothClass.toString())
+                BluetoothClass.Device.Major.NETWORKING -> Log.d("BTNETWORKING", it.bluetoothClass.toString())
+                BluetoothClass.Device.Major.PERIPHERAL -> Log.d("BTPERIPHERAL", it.bluetoothClass.toString())
+                BluetoothClass.Device.Major.PHONE -> Log.d("BTPHONE", it.bluetoothClass.toString())
+                //BluetoothClass.Device.Major.TOY -> Log.d("BTTOY", it?.bluetoothClass.toString())
+                BluetoothClass.Device.Major.UNCATEGORIZED -> Log.d("BTUNCATEGORIZED", it.bluetoothClass.toString())
+                BluetoothClass.Device.Major.WEARABLE -> Log.d("BTWEARABLE", it.bluetoothClass.toString())
+            }
+        }*/
 
-        //if the user has not previously chosen a bluetooth device, they must choose one
-        if ((btId ?: "").isBlank()) {
+        val pairedDevices = mBluetoothAdapter.bondedDevices
 
-            /*Filter out some classes of bluetooth devices
-            mBluetoothAdapter.bondedDevices.forEach {
-                when(it?.bluetoothClass?.majorDeviceClass) {
-                    //BluetoothClass.Device.Major.AUDIO_VIDEO -> Log.d("BTAUDIO_VIDEO", it?.bluetoothClass.toString())
-                    BluetoothClass.Device.Major.COMPUTER -> Log.d("BTCOMPUTER", it.bluetoothClass.toString())
-                    //BluetoothClass.Device.Major.HEALTH -> Log.d("BTHEALTH", it?.bluetoothClass.toString())
-                    BluetoothClass.Device.Major.IMAGING -> Log.d("BTIMAGING", it.bluetoothClass.toString())
-                    BluetoothClass.Device.Major.MISC -> Log.d("BTMISC", it.bluetoothClass.toString())
-                    BluetoothClass.Device.Major.NETWORKING -> Log.d("BTNETWORKING", it.bluetoothClass.toString())
-                    BluetoothClass.Device.Major.PERIPHERAL -> Log.d("BTPERIPHERAL", it.bluetoothClass.toString())
-                    BluetoothClass.Device.Major.PHONE -> Log.d("BTPHONE", it.bluetoothClass.toString())
-                    //BluetoothClass.Device.Major.TOY -> Log.d("BTTOY", it?.bluetoothClass.toString())
-                    BluetoothClass.Device.Major.UNCATEGORIZED -> Log.d("BTUNCATEGORIZED", it.bluetoothClass.toString())
-                    BluetoothClass.Device.Major.WEARABLE -> Log.d("BTWEARABLE", it.bluetoothClass.toString())
-                }
-            }*/
+        val input = RadioGroup(ctx)
 
-            val pairedDevices = mBluetoothAdapter.bondedDevices
+        pairedDevices.forEach {
+            val button = RadioButton(ctx)
+            button.text = it.name
+            input.addView(button)
+        }
 
-            val input = RadioGroup(ctx)
+        val builder = AlertDialog.Builder(ctx).apply {
 
-            pairedDevices.forEach {
-                val button = RadioButton(ctx)
-                button.text = it.name
-                input.addView(button)
+            setTitle("Choose bluetooth device to print from.")
+
+            setView(input)
+
+            setNegativeButton("Cancel") { _, _ ->
+
             }
 
-            val builder = AlertDialog.Builder(ctx).apply {
+            setPositiveButton("OK") { _, _ ->
 
-                setTitle("Choose bluetooth device to print from.")
+                if (input.checkedRadioButtonId == -1) return@setPositiveButton
 
-                setView(input)
-
-                setNegativeButton("Cancel") { _, _ ->
-
-                }
-
-                setPositiveButton("OK") { _, _ ->
-
-                    if (input.checkedRadioButtonId == -1) return@setPositiveButton
-
-                    val edit = pref.edit()
-                    edit.putString(SettingsActivity.BT_ID,
-                            input.findViewById<RadioButton>(input.checkedRadioButtonId).text.toString())
-                    edit.apply()
-
-                    f()
-                }
+                f()
             }
+        }
 
-            builder.show()
-        } else f()
+        builder.show()
     }
 
     //main function to be called, will ask user to choose bluetooth device from radio group, and then print

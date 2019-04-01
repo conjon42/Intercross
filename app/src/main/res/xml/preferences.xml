@@ -14,6 +14,11 @@
     <PreferenceCategory android:title="Workflow">
         <CheckBoxPreference
             android:defaultValue="false"
+            android:icon="@drawable/ic_clear"
+            android:key="org.phenoapps.intercross.UUID_ENABLED"
+            android:title="Enable UUIDs for cross IDs"/>
+        <CheckBoxPreference
+            android:defaultValue="false"
             android:icon="@drawable/ic_setting_sound"
             android:key="org.phenoapps.intercross.AUDIO_ENABLED"
             android:title="Audio Notifications" />
@@ -45,10 +50,6 @@
             android:title="Auto Generate Cross IDs" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Printing">
-        <EditTextPreference
-            android:icon="@drawable/ic_setting_bluetooth_id"
-            android:key="org.phenoapps.intercross.BLUETOOTH_ID"
-            android:title="Bluetooth ID" />
         <Preference
             android:icon="@drawable/ic_setting_print_connect"
             android:key="org.phenoapps.intercross.PRINTER_SETUP"
@@ -62,5 +63,9 @@
                 android:targetClass="org.phenoapps.intercross.ImportZPLActivity"
                 android:targetPackage="org.phenoapps.intercross" />
         </Preference>
+        <CheckBoxPreference
+            android:icon="@drawable/ic_clear"
+            android:key="org.phenoapps.intercross.AUTO_ENABLED"
+            android:title="Automatically print label after cross is saved"/>
     </PreferenceCategory>
 </PreferenceScreen>

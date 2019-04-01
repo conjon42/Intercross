@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
 import org.phenoapps.intercross.IntercrossDbContract.SQL_CREATE_ENTRIES
+import org.phenoapps.intercross.IntercrossDbContract.SQL_CREATE_FAUX_TABLE
 import org.phenoapps.intercross.IntercrossDbContract.TABLE_NAME
 
 internal class IntercrossDbHelper(ctx: Context) :
@@ -19,6 +20,7 @@ internal class IntercrossDbHelper(ctx: Context) :
      */
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(SQL_CREATE_ENTRIES)
+        db.execSQL(SQL_CREATE_FAUX_TABLE)
     }
 
     /**
@@ -46,6 +48,7 @@ internal class IntercrossDbHelper(ctx: Context) :
      */
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         db.execSQL(IntercrossDbContract.SQL_DELETE_ENTRIES)
+        db.execSQL(IntercrossDbContract.SQL_DELETE_FAUX_TABLE)
         onCreate(db)
     }
 
@@ -342,6 +345,42 @@ internal class IntercrossDbHelper(ctx: Context) :
             writableDatabase.endTransaction()
         }
     }
+
+    fun insertFauxId(entry: ContentValues) {
+        writableDatabase.beginTransaction()
+        try {
+            writableDatabase.insert("FAUX_TABLE", null, entry)
+            writableDatabase.setTransactionSuccessful()
+        } catch (e: SQLiteException) {
+            e.printStackTrace()
+        } finally {
+            writableDatabase.endTransaction()
+        }
+    }
+
+    fun getPollenGroups(): List<String> {
+        val array = ArrayList<String>()
+        try {
+            val cursor = readableDatabase.query("FAUX_TABLE",
+                    arrayOf("name"),
+                    null, null, null, null, null)
+
+            if (cursor.moveToFirst()) {
+                cursor.columnNames.forEach { header ->
+                    header?.let {
+                        val colVal = cursor.getString(
+                                cursor.getColumnIndexOrThrow(it)) ?: String()
+                        if (it == "name") array.add(colVal)
+                    }
+                }
+            }
+            cursor.close()
+        } catch (e: SQLiteException) {
+            e.printStackTrace()
+        }
+        return array
+    }
+
 
     fun getMainPageEntries(): ArrayList<AdapterEntry> {
 

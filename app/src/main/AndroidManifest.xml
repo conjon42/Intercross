@@ -31,7 +31,11 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".SimplePrintActivity"/>
+        <activity android:name=".SimplePrintActivity"
+            android:configChanges="keyboardHidden|screenSize|keyboard"
+            android:windowSoftInputMode="adjustPan">
+        </activity>
+
         <activity android:name=".CrossPatternActivity"
             android:windowSoftInputMode="adjustNothing" />
         <activity android:name=".ScanActivity" />

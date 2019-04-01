@@ -16,6 +16,11 @@ internal object IntercrossDbContract {
 
     const val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS " + IdEntry.TABLE_NAME
 
+    const val SQL_CREATE_FAUX_TABLE =
+            "CREATE TABLE FAUX_MALE(_id INTEGER PRIMARY KEY, group Text, names TEXT)"
+
+    const val SQL_DELETE_FAUX_TABLE = "DROP TABLE IF EXISTS FAUX_TABLE"
+
     internal class IdEntry : BaseColumns {
         companion object {
             const val TABLE_NAME = "INTERCROSS"
