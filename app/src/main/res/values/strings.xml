@@ -64,6 +64,6 @@
     <string name="summary">Summary</string>
     <string name="export_crosses">Export Crosses</string>
     <string name="delete_entries">Delete Entries</string>
-    <string name="simple_print">Simple Print</string>
+    <string name="simple_print">Pollen Manager</string>
     <string name="intro">Intro</string>
 </resources>

@@ -23,18 +23,14 @@ class GroupPrintActivity : AppCompatActivity() {
     private val imageView: ImageView by lazy {
         findViewById<ImageView>(R.id.imageView)
     }
-    private val msgImageView: ImageView by lazy {
-        findViewById<ImageView>(R.id.msgImageView)
-    }
-    private val mPrintButton: Button by lazy {
-        findViewById<Button>(R.id.printButton)
-    }
     private val mAddButton: Button by lazy {
         findViewById<Button>(R.id.addButton)
     }
     private val mRecyclerView: RecyclerView by lazy {
         findViewById<RecyclerView>(R.id.recyclerView)
     }
+
+    private lateinit var mGroup: String
 
     private var animationEnd = true
 
@@ -77,11 +73,21 @@ class GroupPrintActivity : AppCompatActivity() {
             setPositiveButton("OK") { _, _ ->
                 val value = input.text.toString()
                 if (value.isNotEmpty()) {
-                    mEntries.add(AdapterEntry(value))
-                    mAdapter.notifyDataSetChanged()
-                    mDbHelper.insertFauxId(ContentValues().apply {
-                        put("group", value)
+                    var ids = ArrayList<String>()
+                    mEntries.forEach { entry -> ids.add(entry.first) }
+                    ids.add(value)
+                    mDbHelper.insertFauxId(mGroup, ContentValues().apply {
+                        put("names", ids.joinToString(","))
                     })
+                    mEntries.clear()
+
+                    val names = mDbHelper.getNamesByGroup(mGroup)
+                    if (names.contains(",")) {
+                        names.split(",").forEach {
+                            mEntries.add(AdapterEntry(it))
+                        }
+                    } else if (names.isNotBlank()) mEntries.add(AdapterEntry(names))
+                    mAdapter.notifyDataSetChanged()
                 }
             }
         }
@@ -116,7 +122,7 @@ class GroupPrintActivity : AppCompatActivity() {
             }
         })*/
 
-        mPrintButton.setOnClickListener {
+        /*mPrintButton.setOnClickListener {
 
             if (mAdapter.listItems.isNotEmpty()) {
 
@@ -190,8 +196,8 @@ class GroupPrintActivity : AppCompatActivity() {
                                         + "^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF"
                                         + "^FN1^FD" + "A" + "^FS"
                                         + "^FN2^FDQA," + "B" + "^FS^XZ")
-            }
-        }
+            }*/
+        //}
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -200,7 +206,7 @@ class GroupPrintActivity : AppCompatActivity() {
 
         title = "Pollen Manager"
 
-        setContentView(R.layout.activity_simple_print_old)
+        setContentView(R.layout.activity_add_group_ids)
 
         supportActionBar?.let {
             it.themedContext
@@ -220,6 +226,20 @@ class GroupPrintActivity : AppCompatActivity() {
         mAddButton.setOnClickListener {
             askUserForName()
         }
+
+        if (intent.hasExtra("group")) {
+            mGroup = intent.getStringExtra("group")
+        }
+
+
+        val names = mDbHelper.getNamesByGroup(mGroup)
+        if (names.contains(",")) {
+            names.split(",").forEach {
+                if (it.isNotBlank()) mEntries.add(AdapterEntry(it))
+            }
+        } else if (names.isNotBlank()) mEntries.add(AdapterEntry(names))
+
+        mAdapter.notifyDataSetChanged()
     }
 
     private fun setupDrawer() {

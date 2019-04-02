@@ -5,10 +5,9 @@ import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.transition.Explode
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
-import android.view.Window
+import android.view.*
+import android.view.animation.Animation
+import android.view.animation.ScaleAnimation
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast

@@ -346,17 +346,68 @@ internal class IntercrossDbHelper(ctx: Context) :
         }
     }
 
-    fun insertFauxId(entry: ContentValues) {
-        writableDatabase.beginTransaction()
+    fun getNamesByGroup(group: String): String {
+        var names = String()
         try {
-            writableDatabase.insert("FAUX_TABLE", null, entry)
-            writableDatabase.setTransactionSuccessful()
+            val cursor = readableDatabase.query("FAUX",
+                    arrayOf("names"), "g=?", arrayOf(group), null, null, null)
+            if (cursor.moveToFirst()) {
+                do {
+                    val n = cursor.getString(cursor.getColumnIndexOrThrow("names")) ?: ""
+                    names = n
+                } while (cursor.moveToNext())
+            }
+            cursor.close()
         } catch (e: SQLiteException) {
             e.printStackTrace()
-        } finally {
-            writableDatabase.endTransaction()
+        }
+        return names
+    }
+
+    fun getGroups(): List<String> {
+        val groups = ArrayList<String>()
+        try {
+            val cursor = readableDatabase.query("FAUX",
+                    arrayOf("g"), null, null, null, null, null)
+            if (cursor.moveToFirst()) {
+                do {
+                    val g = cursor.getString(cursor.getColumnIndexOrThrow(
+                            "g")) ?: ""
+                    groups.add(g)
+                } while (cursor.moveToNext())
+            }
+            cursor.close()
+        } catch (e: SQLiteException) {
+            e.printStackTrace()
+        }
+        return groups
+    }
+
+    fun insertFauxId(group: String, entry: ContentValues) {
+        if(!getGroups().contains(group)) {
+            writableDatabase.beginTransaction()
+            try {
+                writableDatabase.insert("FAUX", null, entry)
+                writableDatabase.setTransactionSuccessful()
+            } catch (e: SQLiteException) {
+                e.printStackTrace()
+            } finally {
+                writableDatabase.endTransaction()
+            }
+        } else {
+            writableDatabase.beginTransaction()
+            try {
+                writableDatabase.update("FAUX", entry, "g=?", arrayOf(group))
+                writableDatabase.setTransactionSuccessful()
+                //writableDatabase.updateWithOnConflict("FAUX", entry, null, null, SQLiteDatabase.CONFLICT_REPLACE)
+            } catch (e: SQLiteException) {
+                e.printStackTrace()
+            } finally {
+                writableDatabase.endTransaction()
+            }
         }
     }
+
 
     fun getPollenGroups(): List<String> {
         val array = ArrayList<String>()

@@ -16,7 +16,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.preference.PreferenceManager
-import android.provider.Settings
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
@@ -848,7 +847,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             R.id.nav_export -> askUserExportFileName()
             R.id.nav_about -> showAboutDialog()
             R.id.nav_simple_print ->
-                startActivity(Intent(this, SimplePrintActivity::class.java))
+                startActivity(Intent(this, PollenManager::class.java))
             R.id.nav_delete_entries -> askUserDeleteEntries()
         }
 

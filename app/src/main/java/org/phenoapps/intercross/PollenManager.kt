@@ -1,9 +1,7 @@
 package org.phenoapps.intercross
 
-import android.animation.Animator
 import android.content.ContentValues
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.text.InputType
 import android.view.MenuItem
@@ -17,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
 import java.util.*
 
-class SimplePrintActivity : AppCompatActivity() {
+class PollenManager : AppCompatActivity() {
 
     private val mDbHelper: IntercrossDbHelper = IntercrossDbHelper(this)
 
@@ -50,7 +48,7 @@ class SimplePrintActivity : AppCompatActivity() {
 
         init {
             itemView.setOnClickListener {
-                startActivity(Intent(this@SimplePrintActivity, GroupPrintActivity::class.java).apply {
+                startActivity(Intent(this@PollenManager, GroupPrintActivity::class.java).apply {
                     putExtra("group", firstText.text.toString())
                 })
             }
@@ -77,9 +75,14 @@ class SimplePrintActivity : AppCompatActivity() {
                 if (value.isNotEmpty()) {
                     mEntries.add(AdapterEntry(value))
                     mAdapter.notifyDataSetChanged()
-                    mDbHelper.insertFauxId(ContentValues().apply {
-                        put("group", value)
+                    mDbHelper.insertFauxId(value, ContentValues().apply {
+                        put("g", value)
                     })
+                    mEntries.clear()
+                    mDbHelper.getGroups().forEach {
+                        mEntries.add(AdapterEntry(it))
+                    }
+                    mAdapter.notifyDataSetChanged()
                 }
             }
         }
@@ -95,7 +98,7 @@ class SimplePrintActivity : AppCompatActivity() {
 
         title = "Pollen Manager"
 
-        setContentView(R.layout.activity_simple_print)
+        setContentView(R.layout.activity_manage_pollen)
 
         supportActionBar?.let {
             it.themedContext
@@ -115,6 +118,12 @@ class SimplePrintActivity : AppCompatActivity() {
         mAddButton.setOnClickListener {
             askUserForName()
         }
+
+        mDbHelper.getGroups().forEach {
+            mEntries.add(AdapterEntry(it))
+        }
+
+        mAdapter.notifyDataSetChanged()
     }
 
     private fun setupDrawer() {
