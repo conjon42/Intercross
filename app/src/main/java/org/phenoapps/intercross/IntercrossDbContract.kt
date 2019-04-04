@@ -21,6 +21,11 @@ internal object IntercrossDbContract {
 
     const val SQL_DELETE_FAUX_TABLE = "DROP TABLE IF EXISTS FAUX"
 
+    const val SQL_CREATE_WISH_TABLE =
+            "CREATE TABLE WISH(femaleID TEXT, femaleName TEXT, maleID TEXT, maleName TEXT, numberCrosses INTEGER)"
+
+    const val SQL_DELETE_WISH_TABLE = "DROP TABLE IF EXISTS WISH"
+
     internal class IdEntry : BaseColumns {
         companion object {
             const val TABLE_NAME = "INTERCROSS"

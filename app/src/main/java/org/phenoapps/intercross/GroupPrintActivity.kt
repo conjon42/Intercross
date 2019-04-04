@@ -1,14 +1,10 @@
 package org.phenoapps.intercross
 
-import android.animation.Animator
 import android.content.ContentValues
-import android.os.Build
 import android.os.Bundle
-import android.text.InputType
 import android.view.MenuItem
 import android.view.View
 import android.widget.*
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -58,7 +54,7 @@ class GroupPrintActivity : AppCompatActivity() {
     inner class ViewHolder internal constructor(itemView: View) :
             RecyclerView.ViewHolder(itemView), ViewAdapter.Binder<AdapterEntry> {
 
-        private var firstText: TextView = itemView.findViewById(R.id.crossTextView) as TextView
+        private var firstText: TextView = itemView.findViewById(R.id.maleTextView) as TextView
 
         override fun bind(data: AdapterEntry) {
 
@@ -121,6 +117,7 @@ class GroupPrintActivity : AppCompatActivity() {
 
         mAddButton.setOnClickListener {
             val value = mEditText.text.toString()
+
             if (value.isNotEmpty() && (mEntries.filter { it.first == value }).isEmpty()) {
                 var ids = ArrayList<String>()
                 mEntries.forEach { entry -> ids.add(entry.first) }

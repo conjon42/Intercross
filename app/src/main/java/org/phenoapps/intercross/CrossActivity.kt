@@ -6,8 +6,6 @@ import android.os.Bundle
 import android.preference.PreferenceManager
 import android.transition.Explode
 import android.view.*
-import android.view.animation.Animation
-import android.view.animation.ScaleAnimation
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -93,7 +91,7 @@ class CrossActivity : AppCompatActivity() {
                     else -> ContextCompat.getDrawable(this,
                             R.drawable.ic_cross_open_pollinated)
                 })
-        findViewById<TextView>(R.id.crossTextView).text = mCrossId
+        findViewById<TextView>(R.id.maleTextView).text = mCrossId
         findViewById<TextView>(R.id.dateTextView).text = mTimestamp
         if (mTimestamp == "-1") findViewById<TextView>(R.id.dateTextView).text = ""
 
@@ -152,7 +150,7 @@ class CrossActivity : AppCompatActivity() {
             RecyclerView.ViewHolder(itemView), ViewAdapter.Binder<AdapterEntry> {
 
         private val firstView: TextView by lazy {
-            itemView.findViewById<TextView>(R.id.crossTextView)
+            itemView.findViewById<TextView>(R.id.maleTextView)
         }
         private var mEntry: AdapterEntry = AdapterEntry()
 

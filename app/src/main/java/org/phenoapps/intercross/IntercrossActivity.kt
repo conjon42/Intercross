@@ -94,7 +94,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
     inner class ViewHolder internal constructor(itemView: View) :
             RecyclerView.ViewHolder(itemView), ViewAdapter.Binder<AdapterEntry> {
 
-        private var firstText: TextView = itemView.findViewById(R.id.crossTextView) as TextView
+        private var firstText: TextView = itemView.findViewById(R.id.maleTextView) as TextView
         private var secondText: TextView = itemView.findViewById(R.id.dateTextView) as TextView
 
         init {
@@ -608,6 +608,14 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
     }
 
 
+    private fun askUserImportWishList() {
+
+        startActivityForResult(Intent.createChooser(Intent(Intent.ACTION_GET_CONTENT).apply {
+            type = "*/*"
+        }, "Choose file to import")
+                , 543)
+    }
+
     private fun askUserExportFileName() {
 
         if (isExternalStorageWritable()) {
@@ -849,6 +857,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             R.id.nav_simple_print ->
                 startActivity(Intent(this, PollenManager::class.java))
             R.id.nav_delete_entries -> askUserDeleteEntries()
+            R.id.nav_import_wish_list -> askUserImportWishList()
         }
 
         val dl = findViewById<DrawerLayout>(R.id.drawer_layout)

@@ -10,7 +10,7 @@
     tools:layout_editor_absoluteY="81dp">
 
     <TextView
-        android:id="@+id/crossTextView"
+        android:id="@+id/maleTextView"
         android:layout_width="0dp"
         android:layout_height="32dp"
         android:layout_marginStart="8dp"

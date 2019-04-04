@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
 import org.phenoapps.intercross.IntercrossDbContract.SQL_CREATE_ENTRIES
 import org.phenoapps.intercross.IntercrossDbContract.SQL_CREATE_FAUX_TABLE
+import org.phenoapps.intercross.IntercrossDbContract.SQL_CREATE_WISH_TABLE
 import org.phenoapps.intercross.IntercrossDbContract.TABLE_NAME
 
 internal class IntercrossDbHelper(ctx: Context) :
@@ -21,6 +22,7 @@ internal class IntercrossDbHelper(ctx: Context) :
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(SQL_CREATE_ENTRIES)
         db.execSQL(SQL_CREATE_FAUX_TABLE)
+        db.execSQL(SQL_CREATE_WISH_TABLE)
     }
 
     /**
@@ -49,6 +51,7 @@ internal class IntercrossDbHelper(ctx: Context) :
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         db.execSQL(IntercrossDbContract.SQL_DELETE_ENTRIES)
         db.execSQL(IntercrossDbContract.SQL_DELETE_FAUX_TABLE)
+        db.execSQL(IntercrossDbContract.SQL_CREATE_WISH_TABLE)
         onCreate(db)
     }
 
@@ -526,10 +529,23 @@ internal class IntercrossDbHelper(ctx: Context) :
             do {
                 val values = ArrayList<String>()
                 for (i in headers.indices) {
-                    val colVal = cursor.getString(
-                            cursor.getColumnIndexOrThrow(headers[i])
-                    )
-                    values.add(colVal ?: "none")
+                    when(headers[i]) {
+                        "male" -> {
+                            val m = cursor.getString(cursor.getColumnIndexOrThrow("male"))
+                            val names = getNamesByGroup(m)
+                            if (names.contains(",")) values.add("{${names}}")
+                            else if (names.isBlank()) {
+                                values.add(m)
+                            } else values.add(names)
+
+                        }
+                        else -> {
+                            val colVal = cursor.getString(
+                                    cursor.getColumnIndexOrThrow(headers[i])
+                            )
+                            values.add(colVal ?: "none")
+                        }
+                    }
                 }
                 data.add(values.joinToString(","))
             } while (cursor.moveToNext())

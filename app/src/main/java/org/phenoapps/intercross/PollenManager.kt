@@ -3,11 +3,9 @@ package org.phenoapps.intercross
 import android.content.ContentValues
 import android.content.Intent
 import android.os.Bundle
-import android.text.InputType
 import android.view.MenuItem
 import android.view.View
 import android.widget.*
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -46,7 +44,7 @@ class PollenManager : AppCompatActivity() {
     inner class ViewHolder internal constructor(itemView: View) :
             RecyclerView.ViewHolder(itemView), ViewAdapter.Binder<AdapterEntry> {
 
-        private var firstText: TextView = itemView.findViewById(R.id.crossTextView) as TextView
+        private var firstText: TextView = itemView.findViewById(R.id.maleTextView) as TextView
 
         init {
             itemView.setOnClickListener {

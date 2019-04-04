@@ -9,7 +9,7 @@
     app:barrierAllowsGoneWidgets="false"
     tools:layout_editor_absoluteY="81dp">
     <TextView
-        android:id="@+id/crossTextView"
+        android:id="@+id/maleTextView"
         android:layout_width="205dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
@@ -19,7 +19,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
     <TextView
-        android:id="@+id/secondTextView"
+        android:id="@+id/femaleTextView"
         android:layout_width="205dp"
         android:layout_height="39dp"
         android:layout_marginStart="8dp"
@@ -27,7 +27,7 @@
         android:padding="4dp"
         android:textSize="20sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/crossTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/maleTextView" />
 
     <TextView
         android:id="@+id/thirdTextView"
@@ -41,6 +41,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/crossTextView"
+        app:layout_constraintStart_toEndOf="@+id/maleTextView"
         app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

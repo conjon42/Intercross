@@ -14,7 +14,7 @@ import com.google.android.material.navigation.NavigationView
 import org.phenoapps.intercross.IntercrossActivity.Companion.CROSS_ID
 import java.util.*
 
-class SummaryActivity : AppCompatActivity() {
+class WishListActivity : AppCompatActivity() {
 
     private lateinit var mRecyclerView: RecyclerView
 
@@ -23,7 +23,7 @@ class SummaryActivity : AppCompatActivity() {
     private val mAdapter = object : ViewAdapter<AdapterEntry>(mEntries) {
 
         override fun getLayoutId(position: Int, obj: AdapterEntry): Int {
-            return R.layout.count_row
+            return R.layout.wish_cross_row
         }
 
         override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
@@ -39,7 +39,7 @@ class SummaryActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        title = "Unique Crosses"
+        title = "Wish List"
 
         setContentView(R.layout.activity_count)
 
@@ -85,7 +85,7 @@ class SummaryActivity : AppCompatActivity() {
         init {
             itemView.setOnClickListener {
                 val crossName = firstText.text.toString()
-                startActivity(Intent(this@SummaryActivity, CrossActivity::class.java).apply {
+                startActivity(Intent(this@WishListActivity, CrossActivity::class.java).apply {
                     putExtra(CROSS_ID, crossName)
                 })
             }
@@ -129,9 +129,9 @@ class SummaryActivity : AppCompatActivity() {
 
         override fun onClick(v: View) {
 
-            val builder = AlertDialog.Builder(this@SummaryActivity)
+            val builder = AlertDialog.Builder(this@WishListActivity)
             builder.setTitle("Crosses")
-            val layout = RecyclerView(this@SummaryActivity)
+            val layout = RecyclerView(this@WishListActivity)
             builder.setView(layout)
             val crosses = mDbHelper.getCrosses(firstText.text.toString(),
                     secondText.text.toString())
@@ -149,7 +149,7 @@ class SummaryActivity : AppCompatActivity() {
                 }
             }
             layout.adapter = adapter
-            layout.layoutManager = LinearLayoutManager(this@SummaryActivity)
+            layout.layoutManager = LinearLayoutManager(this@WishListActivity)
             builder.show()
         }
     }
