@@ -25,7 +25,9 @@ class PollenManager : AppCompatActivity() {
     private val mRecyclerView: RecyclerView by lazy {
         findViewById<RecyclerView>(R.id.recyclerView)
     }
-
+    private val mEditText: EditText by lazy {
+        findViewById<EditText>(R.id.editText)
+    }
     private lateinit var mNavView: NavigationView
 
     private val mEntries = ArrayList<AdapterEntry>()
@@ -60,38 +62,6 @@ class PollenManager : AppCompatActivity() {
         }
     }
 
-    private fun askUserForName() {
-
-        val input = EditText(this).apply {
-            inputType = InputType.TYPE_CLASS_TEXT
-        }
-
-        val builder = AlertDialog.Builder(this).apply {
-
-            setView(input)
-
-            setPositiveButton("OK") { _, _ ->
-                val value = input.text.toString()
-                if (value.isNotEmpty()) {
-                    mEntries.add(AdapterEntry(value))
-                    mAdapter.notifyDataSetChanged()
-                    mDbHelper.insertFauxId(value, ContentValues().apply {
-                        put("g", value)
-                    })
-                    mEntries.clear()
-                    mDbHelper.getGroups().forEach {
-                        mEntries.add(AdapterEntry(it))
-                    }
-                    mAdapter.notifyDataSetChanged()
-                }
-            }
-        }
-
-        builder.setTitle("Create a group pollen id.")
-        builder.show()
-
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -116,7 +86,20 @@ class PollenManager : AppCompatActivity() {
         mRecyclerView.layoutManager = LinearLayoutManager(this)
 
         mAddButton.setOnClickListener {
-            askUserForName()
+            val value = mEditText.text.toString()
+            if (value.isNotEmpty()) {
+                //mEntries.add(AdapterEntry(value))
+                //mAdapter.notifyDataSetChanged()
+                mDbHelper.insertFauxId(value, ContentValues().apply {
+                    put("g", value)
+                })
+                mEntries.clear()
+                mDbHelper.getGroups().forEach {
+                    mEntries.add(AdapterEntry(it))
+                }
+                mAdapter.notifyDataSetChanged()
+                mEditText.text.clear()
+            }
         }
 
         mDbHelper.getGroups().forEach {

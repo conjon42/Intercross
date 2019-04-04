@@ -14,6 +14,10 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.MultiFormatWriter
+import com.google.zxing.WriterException
+import com.journeyapps.barcodescanner.BarcodeEncoder
 import java.util.*
 
 class GroupPrintActivity : AppCompatActivity() {
@@ -29,7 +33,9 @@ class GroupPrintActivity : AppCompatActivity() {
     private val mRecyclerView: RecyclerView by lazy {
         findViewById<RecyclerView>(R.id.recyclerView)
     }
-
+    private val mEditText: EditText by lazy {
+        findViewById<EditText>(R.id.editText)
+    }
     private lateinit var mGroup: String
 
     private var animationEnd = true
@@ -60,144 +66,30 @@ class GroupPrintActivity : AppCompatActivity() {
         }
     }
 
-    private fun askUserForName() {
-
-        val input = EditText(this).apply {
-            inputType = InputType.TYPE_CLASS_TEXT
-        }
-
-        val builder = AlertDialog.Builder(this).apply {
-
-            setView(input)
-
-            setPositiveButton("OK") { _, _ ->
-                val value = input.text.toString()
-                if (value.isNotEmpty()) {
-                    var ids = ArrayList<String>()
-                    mEntries.forEach { entry -> ids.add(entry.first) }
-                    ids.add(value)
-                    mDbHelper.insertFauxId(mGroup, ContentValues().apply {
-                        put("names", ids.joinToString(","))
-                    })
-                    mEntries.clear()
-
-                    val names = mDbHelper.getNamesByGroup(mGroup)
-                    if (names.contains(",")) {
-                        names.split(",").forEach {
-                            mEntries.add(AdapterEntry(it))
-                        }
-                    } else if (names.isNotBlank()) mEntries.add(AdapterEntry(names))
-                    mAdapter.notifyDataSetChanged()
-                }
-            }
-        }
-
-        builder.setTitle("Add a name for group pollen id.")
-        builder.show()
-
-    }
-
     override fun onStart() {
         super.onStart()
 
-        /*mEditText.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(p0: Editable?) {
-                try {
-                    val text = mEditText.text.toString()
-                    if (text.isNotBlank()) {
-                        val bitMatrix = MultiFormatWriter().encode(text,
-                                BarcodeFormat.QR_CODE, imageView.measuredWidth, imageView.measuredHeight)
-                        val bitmap = BarcodeEncoder().createBitmap(bitMatrix)
-                        imageView.setImageBitmap(bitmap)
-                    }
-                } catch (e: WriterException) {
-                    e.printStackTrace()
-                }
-            }
+        imageView.setOnClickListener {
+            val names = mDbHelper.getNamesByGroup(mGroup)
 
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-            }
-
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-            }
-        })*/
-
-        /*mPrintButton.setOnClickListener {
-
-            if (mAdapter.listItems.isNotEmpty()) {
-
-                //start animation to fling a letter
-                if (animationEnd && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-
-                    animationEnd = false
-
-                    msgImageView.visibility = View.VISIBLE
-
-                    (msgImageView).animate()
-                            .translationXBy(200.0f)
-                            .rotationBy(360f)
-                            .scaleX(2.0f)
-                            .scaleY(2.0f)
-                            .setDuration(500)
-                            .alpha(0f)
-                            .setListener(object : Animator.AnimatorListener {
-                                override fun onAnimationRepeat(p0: Animator?) {
-                                }
-
-                                override fun onAnimationEnd(p0: Animator?) {
-                                    msgImageView.visibility = View.INVISIBLE
-                                    (msgImageView).animate()
-                                            .translationXBy(-200.0f)
-                                            .scaleX(1f)
-                                            .scaleY(1f)
-                                            .setDuration(0)
-                                            .setListener(object : Animator.AnimatorListener {
-                                                override fun onAnimationRepeat(p0: Animator?) {
-                                                }
-
-                                                override fun onAnimationEnd(p0: Animator?) {
-                                                    animationEnd = true
-                                                }
-
-                                                override fun onAnimationCancel(p0: Animator?) {
-                                                }
-
-                                                override fun onAnimationStart(p0: Animator?) {
-                                                }
-
-                                            })
-                                            .alpha(1f)
-
-                                }
-
-                                override fun onAnimationCancel(p0: Animator?) {
-                                }
-
-                                override fun onAnimationStart(p0: Animator?) {
-                                    //msgImageView.visibility = View.VISIBLE
-                                }
-
-                            })
-                }
-
-                //send print job to bluetooth device
-                BluetoothUtil()
-                        .variablePrint(this@GroupPrintActivity, "^XA"
-                                + "^MNA"
-                                + "^MMT,N"
-                                + "^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS"
-                                + "^FWR"
-                                + "^FO100,25^A0,25,20^FN1^FS"
-                                + "^FO200,25^A0N,25,20"
-                                + "^BQ,2,6" +
-                                "^FN2^FS"
-                                + "^FO450,25^A0,25,20^FN3^FS^XZ",
-                                "^XA"
-                                        + "^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF"
-                                        + "^FN1^FD" + "A" + "^FS"
-                                        + "^FN2^FDQA," + "B" + "^FS^XZ")
-            }*/
-        //}
+            //TODO test printing
+            //send print job to bluetooth device
+            BluetoothUtil()
+                    .variablePrint(this@GroupPrintActivity, "^XA"
+                            + "^MNA"
+                            + "^MMT,N"
+                            + "^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS"
+                            + "^FWR"
+                            + "^FO100,25^A0,25,20^FN1^FS"
+                            + "^FO200,25^A0N,25,20"
+                            + "^BQ,2,6" +
+                            "^FN2^FS"
+                            + "^FO450,25^A0,25,20^FN3^FS^XZ",
+                            "^XA"
+                                    + "^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF"
+                                    + "^FN1^FD$names^FS"
+                                    + "^FN2^FDQA,$names^FS^XZ")
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -219,18 +111,39 @@ class GroupPrintActivity : AppCompatActivity() {
         // Setup drawer view
         setupDrawer()
 
+        if (intent.hasExtra("group")) {
+            mGroup = intent.getStringExtra("group")
+        }
+
         mRecyclerView.adapter = mAdapter
 
         mRecyclerView.layoutManager = LinearLayoutManager(this)
 
         mAddButton.setOnClickListener {
-            askUserForName()
-        }
+            val value = mEditText.text.toString()
+            if (value.isNotEmpty() && (mEntries.filter { it.first == value }).isEmpty()) {
+                var ids = ArrayList<String>()
+                mEntries.forEach { entry -> ids.add(entry.first) }
+                ids.add(value)
+                mDbHelper.insertFauxId(mGroup, ContentValues().apply {
+                    put("names", ids.joinToString(","))
+                })
+                mEntries.clear()
 
-        if (intent.hasExtra("group")) {
-            mGroup = intent.getStringExtra("group")
-        }
+                val names = mDbHelper.getNamesByGroup(mGroup)
+                if (names.contains(",")) {
+                    names.split(",").forEach {
+                        mEntries.add(AdapterEntry(it))
+                    }
+                } else if (names.isNotBlank()) mEntries.add(AdapterEntry(names))
 
+                updateBitmap(names)
+
+                mEditText.text.clear()
+
+                mAdapter.notifyDataSetChanged()
+            }
+        }
 
         val names = mDbHelper.getNamesByGroup(mGroup)
         if (names.contains(",")) {
@@ -238,8 +151,30 @@ class GroupPrintActivity : AppCompatActivity() {
                 if (it.isNotBlank()) mEntries.add(AdapterEntry(it))
             }
         } else if (names.isNotBlank()) mEntries.add(AdapterEntry(names))
+        updateBitmap(names)
 
         mAdapter.notifyDataSetChanged()
+    }
+
+    private fun updateBitmap(names: String) {
+        try {
+
+            val text = names
+            if (text.isNotBlank()) {
+                val bitMatrix = when {
+                    imageView.width == 0 -> {
+                        MultiFormatWriter().encode(text,
+                                BarcodeFormat.QR_CODE, 100, 100)
+                    }
+                    else -> MultiFormatWriter().encode(text,
+                            BarcodeFormat.QR_CODE, imageView.width, imageView.height)
+                }
+                val bitmap = BarcodeEncoder().createBitmap(bitMatrix)
+                imageView.setImageBitmap(bitmap)
+            }
+        } catch (e: WriterException) {
+            e.printStackTrace()
+        }
     }
 
     private fun setupDrawer() {
