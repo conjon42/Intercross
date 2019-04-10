@@ -335,7 +335,7 @@ internal class IntercrossDbHelper(ctx: Context) :
         return cols
     }
 
-    fun insertEntry(entry: ContentValues) {
+    fun insert(table: String, entry: ContentValues) {
 
         writableDatabase.beginTransaction()
 

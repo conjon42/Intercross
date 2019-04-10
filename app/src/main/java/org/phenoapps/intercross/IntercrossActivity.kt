@@ -12,10 +12,12 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.media.MediaPlayer
 import android.media.MediaScannerConnection
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.preference.PreferenceManager
+import android.provider.DocumentsContract
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
@@ -43,10 +45,8 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
+import org.apache.poi.ss.usermodel.WorkbookFactory
+import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.Arrays.asList
@@ -515,7 +515,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
             entry.put("person", person)
 
-            mDbHelper.insertEntry(entry)
+            mDbHelper.insert(IntercrossDbContract.TABLE_NAME, entry)
 
             //clear fields
             mFirstEditText.text.clear()
@@ -611,9 +611,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
     private fun askUserImportWishList() {
 
         startActivityForResult(Intent.createChooser(Intent(Intent.ACTION_GET_CONTENT).apply {
-            type = "*/*"
-        }, "Choose file to import")
-                , 543)
+            type = "*/*" }, "Choose file to import"), FILE_CHOOSER_REQ)
     }
 
     private fun askUserExportFileName() {
@@ -799,9 +797,79 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
                                 })
                             }
                         }
+                        FILE_CHOOSER_REQ -> {
+
+                            intent.data?.let {
+                                val fileUri = it.path ?: ""
+                                val fileName =
+                                        if (fileUri.lastIndexOf('/') != -1) {
+                                            fileUri.substring(fileUri.lastIndexOf('/') + 1)
+                                        } else ""
+                                val filePath = getPath(it)
+                                val lastDot = fileUri.lastIndexOf(".")
+                                when (fileUri.substring(lastDot + 1)) {
+                                    "xlsx", "xls" -> {
+                                        val workbook = WorkbookFactory.create(File(filePath))
+                                        if (workbook.numberOfSheets > 0) {
+                                            val rows = workbook.getSheetAt(0).rowIterator()
+                                            val headerRow = rows.next()
+                                            val headers = ArrayList<String>()
+                                            val headerCells = headerRow.cellIterator()
+                                            headerCells.asSequence().forEachIndexed { index, cell ->
+                                                headers.add(index, cell.stringCellValue)
+                                            }
+
+                                            val entry = ContentValues()
+                                            while (rows.hasNext()) {
+                                                rows.next().cellIterator().asSequence().forEachIndexed { index, cell ->
+                                                    entry.put(headers[index], cell.stringCellValue)
+                                                }
+                                                val rowId = mDbHelper.insert("WISH", entry)
+                                                entry.clear()
+                                            }
+                                        }
+                                    }
+                                    "csv" -> {
+                                        parseTextFile(it, ",")
+                                    }
+                                    "tsv" -> {
+                                        parseTextFile(it, "\t")
+                                    } else -> {
+                                        Toast.makeText(this, "File import must be CSV, TSV, XLS, or XLSX", Toast.LENGTH_LONG).show()
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
+        }
+    }
+
+    private fun parseTextFile(it: Uri, delim: String) {
+        try {
+            val stream = contentResolver.openInputStream(it)
+            stream?.let {
+                val reader = BufferedReader(InputStreamReader(it))
+                val headers = reader.readLine()
+                        .replace("\\s+", "").split(delim)
+
+                val entry = ContentValues()
+                reader.lineSequence().forEachIndexed { index, line ->
+                    val row = line.split(delim)
+                    if (row.isNotEmpty() && row.size <= headers.size) {
+                        row.forEachIndexed { i, s ->
+                            entry.put(headers[i], s)
+                        }
+                        val rowId = mDbHelper.insert("WISH", entry)
+                        entry.clear()
+                    }
+                }
+            }
+        } catch (fo: FileNotFoundException) {
+            fo.printStackTrace()
+        } catch (io: IOException) {
+            io.printStackTrace()
         }
     }
 
@@ -964,6 +1032,35 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
         }
     }
 
+    private fun getPath(uri: Uri?): String {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            when {
+                DocumentsContract.isDocumentUri(this, uri) -> {
+                    return when (uri?.authority) {
+                        "com.android.externalstorage.documents" -> {
+                            val docId = DocumentsContract.getDocumentId(uri).split(":")
+                            if (docId.isNotEmpty() && "primary" == docId[0].toLowerCase()) {
+                                "${Environment.getExternalStorageDirectory()}/${docId[1]}"
+                            } else ""
+                        }
+                        "com.android.providers.downloads.documents" -> {
+                            val docId = DocumentsContract.getDocumentId(uri)
+                            if (docId.isNotEmpty() && docId.startsWith("raw:")) {
+                                docId.replaceFirst("raw:", "")
+                            } else ""
+                        }
+                        else -> ""
+                    }
+                }
+                "file" == (uri?.scheme ?: "").toLowerCase() -> {
+                    return uri?.path ?: ""
+                }
+            }
+        }
+        return String()
+    }
+
     private fun ringNotification(success: Boolean) {
         if (PreferenceManager.getDefaultSharedPreferences(this)
                         .getBoolean(SettingsActivity.AUDIO_ENABLED, false)) {
@@ -1001,6 +1098,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
         private const val CAMERA_SEARCH_REQ = 101
         private const val CAMERA_INTENT_SCAN = 102
         private const val CAMERA_INTENT_SEARCH = 105
+        private const val FILE_CHOOSER_REQ = 106
 
         const val REQUEST_WRITE_PERMISSION = 200
         const val IMPORT_ZPL = 500
