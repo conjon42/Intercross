@@ -17,6 +17,10 @@
         android:icon="@drawable/ic_nav_delete"
         android:title="@string/delete_entries" />
     <item
+        android:id="@+id/nav_wish_list"
+        android:icon="@drawable/ic_clear"
+        android:title="Wish List"/>
+    <item
         android:id="@+id/nav_import_wish_list"
         android:icon="@drawable/ic_clear"
         android:title="Import Wish List" />

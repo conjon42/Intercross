@@ -13,46 +13,22 @@ import org.phenoapps.intercross.IntercrossDbContract.TABLE_NAME
 internal class IntercrossDbHelper(ctx: Context) :
         SQLiteOpenHelper(ctx, DATABASE_NAME, null, DATABASE_VERSION) {
 
-    /**
-     * Called when the database is created for the first time. This is where the
-     * creation of tables and the initial population of the tables should happen.
-     *
-     * @param db The database.
-     */
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(SQL_CREATE_ENTRIES)
         db.execSQL(SQL_CREATE_FAUX_TABLE)
         db.execSQL(SQL_CREATE_WISH_TABLE)
     }
 
-    /**
-     * Called when the database needs to be upgraded. The implementation
-     * should use this method to drop tables, add tables, or do anything else it
-     * needs to upgrade to the new schema version.
-     *
-     *
-     *
-     *
-     * The SQLite ALTER TABLE documentation can be found
-     * [here](http://sqlite.org/lang_altertable.html). If you add new columns
-     * you can use ALTER TABLE to insert them into a live table. If you rename or remove columns
-     * you can use ALTER TABLE to rename the old table, then create the new table and then
-     * populate the new table with the contents of the old table.
-     *
-     *
-     * This method executes within a transaction.  If an exception is thrown, all changes
-     * will automatically be rolled back.
-     *
-     *
-     * @param db         The database.
-     * @param oldVersion The old database version.
-     * @param newVersion The new database version.
-     */
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         db.execSQL(IntercrossDbContract.SQL_DELETE_ENTRIES)
         db.execSQL(IntercrossDbContract.SQL_DELETE_FAUX_TABLE)
-        db.execSQL(IntercrossDbContract.SQL_CREATE_WISH_TABLE)
+        db.execSQL(IntercrossDbContract.SQL_DELETE_WISH_TABLE)
         onCreate(db)
+    }
+
+    fun resetWishList() {
+        writableDatabase.execSQL(IntercrossDbContract.SQL_DELETE_WISH_TABLE)
+        writableDatabase.execSQL(SQL_CREATE_WISH_TABLE)
     }
 
     fun getParentCounts(): ArrayList<AdapterEntry> {
@@ -340,13 +316,49 @@ internal class IntercrossDbHelper(ctx: Context) :
         writableDatabase.beginTransaction()
 
         try {
-            writableDatabase.insert(IntercrossDbContract.IdEntry.TABLE_NAME, null, entry)
+            writableDatabase.insert(table, null, entry)
             writableDatabase.setTransactionSuccessful()
         } catch (e: SQLiteException) {
             e.printStackTrace()
         } finally {
             writableDatabase.endTransaction()
         }
+    }
+
+    fun getWishList(): List<Array<Any>> {
+        val wishes = ArrayList<Array<Any>>()
+        try {
+            val cursor = readableDatabase.query("WISH",
+                    null,null,null, null, null, null)
+            if (cursor.moveToFirst()) {
+                do {
+                    //femaleID TEXT, femaleName TEXT, maleID TEXT, maleName TEXT, numberCrosses INTEGER)"
+                    var femaleID = String()
+                    var femaleName = String()
+                    var maleID = String()
+                    var maleName = String()
+                    var numCrosses = 0
+
+                    cursor.columnNames.forEach { header ->
+                        when (header) {
+                            "femaleID" -> femaleID = cursor.getString(cursor.getColumnIndexOrThrow("femaleID")) ?: ""
+                            "femaleName" -> femaleName = cursor.getString(cursor.getColumnIndexOrThrow("femaleName")) ?: ""
+                            "maleID" -> maleID = cursor.getString(cursor.getColumnIndexOrThrow("maleID")) ?: ""
+                            "maleName" -> maleName = cursor.getString(cursor.getColumnIndexOrThrow("maleName")) ?: ""
+                            "numberCrosses" -> numCrosses = cursor.getInt(cursor.getColumnIndexOrThrow("numberCrosses"))
+
+                        }
+                    }
+                    wishes.add(arrayOf(femaleID, femaleName, maleID, maleName, numCrosses))
+
+                } while (cursor.moveToNext())
+            }
+
+            cursor.close()
+        } catch (e: SQLiteException) {
+            e.printStackTrace()
+        }
+        return wishes
     }
 
     fun getNamesByGroup(group: String): String {
@@ -561,7 +573,7 @@ internal class IntercrossDbHelper(ctx: Context) :
     }
 
     companion object {
-        private const val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 5
         private const val DATABASE_NAME = "IntercrossReader.db"
     }
 }

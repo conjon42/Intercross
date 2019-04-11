@@ -797,47 +797,48 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
                                 })
                             }
                         }
-                        FILE_CHOOSER_REQ -> {
+                    }
+                }
 
-                            intent.data?.let {
-                                val fileUri = it.path ?: ""
-                                val fileName =
-                                        if (fileUri.lastIndexOf('/') != -1) {
-                                            fileUri.substring(fileUri.lastIndexOf('/') + 1)
-                                        } else ""
-                                val filePath = getPath(it)
-                                val lastDot = fileUri.lastIndexOf(".")
-                                when (fileUri.substring(lastDot + 1)) {
-                                    "xlsx", "xls" -> {
-                                        val workbook = WorkbookFactory.create(File(filePath))
-                                        if (workbook.numberOfSheets > 0) {
-                                            val rows = workbook.getSheetAt(0).rowIterator()
-                                            val headerRow = rows.next()
-                                            val headers = ArrayList<String>()
-                                            val headerCells = headerRow.cellIterator()
-                                            headerCells.asSequence().forEachIndexed { index, cell ->
-                                                headers.add(index, cell.stringCellValue)
-                                            }
+                if (requestCode == FILE_CHOOSER_REQ) {
 
-                                            val entry = ContentValues()
-                                            while (rows.hasNext()) {
-                                                rows.next().cellIterator().asSequence().forEachIndexed { index, cell ->
-                                                    entry.put(headers[index], cell.stringCellValue)
-                                                }
-                                                val rowId = mDbHelper.insert("WISH", entry)
-                                                entry.clear()
-                                            }
+                    intent.data?.let {
+                        val fileUri = it.path ?: ""
+                        val fileName =
+                                if (fileUri.lastIndexOf('/') != -1) {
+                                    fileUri.substring(fileUri.lastIndexOf('/') + 1)
+                                } else ""
+                        val filePath = getPath(it)
+                        val lastDot = fileUri.lastIndexOf(".")
+                        when (fileUri.substring(lastDot + 1)) {
+                            "xlsx", "xls" -> {
+                                val workbook = WorkbookFactory.create(File(filePath))
+                                if (workbook.numberOfSheets > 0) {
+                                    val rows = workbook.getSheetAt(0).rowIterator()
+                                    val headerRow = rows.next()
+                                    val headers = ArrayList<String>()
+                                    val headerCells = headerRow.cellIterator()
+                                    headerCells.asSequence().forEachIndexed { index, cell ->
+                                        headers.add(index, cell.stringCellValue)
+                                    }
+
+                                    val entry = ContentValues()
+                                    while (rows.hasNext()) {
+                                        rows.next().cellIterator().asSequence().forEachIndexed { index, cell ->
+                                            entry.put(headers[index], cell.stringCellValue)
                                         }
-                                    }
-                                    "csv" -> {
-                                        parseTextFile(it, ",")
-                                    }
-                                    "tsv" -> {
-                                        parseTextFile(it, "\t")
-                                    } else -> {
-                                        Toast.makeText(this, "File import must be CSV, TSV, XLS, or XLSX", Toast.LENGTH_LONG).show()
+                                        val rowId = mDbHelper.insert("WISH", entry)
+                                        entry.clear()
                                     }
                                 }
+                            }
+                            "csv" -> {
+                                parseTextFile(it, ",")
+                            }
+                            "tsv" -> {
+                                parseTextFile(it, "\t")
+                            } else -> {
+                                Toast.makeText(this, "File import must be CSV, TSV, XLS, or XLSX", Toast.LENGTH_LONG).show()
                             }
                         }
                     }
@@ -848,22 +849,31 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
     private fun parseTextFile(it: Uri, delim: String) {
         try {
+            mDbHelper.resetWishList()
             val stream = contentResolver.openInputStream(it)
             stream?.let {
                 val reader = BufferedReader(InputStreamReader(it))
-                val headers = reader.readLine()
-                        .replace("\\s+", "").split(delim)
+                val headers = reader.readLine().split(delim)
 
                 val entry = ContentValues()
-                reader.lineSequence().forEachIndexed { index, line ->
-                    val row = line.split(delim)
-                    if (row.isNotEmpty() && row.size <= headers.size) {
-                        row.forEachIndexed { i, s ->
-                            entry.put(headers[i], s)
+
+                reader.readLines().forEachIndexed { index, line ->
+                    //if (index > 0) {
+                        val row = line.split(delim)
+                        if (row.isNotEmpty() && row.size <= headers.size) {
+
+                            entry.put("femaleID", row[0])
+                            entry.put("femaleName", row[1])
+                            entry.put("maleID", row[2])
+                            entry.put("maleName", row[3])
+                            entry.put("numberCrosses", row[4].toInt())
+
+                            //val cursor = mDbHelper.readableDatabase.query("WISH", null, null, null, null, null, null, null)
+                            //cursor.close()
+                            val rowId = mDbHelper.insert("WISH", entry)
+                            entry.clear()
                         }
-                        val rowId = mDbHelper.insert("WISH", entry)
-                        entry.clear()
-                    }
+                    //}
                 }
             }
         } catch (fo: FileNotFoundException) {
@@ -926,6 +936,11 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
                 startActivity(Intent(this, PollenManager::class.java))
             R.id.nav_delete_entries -> askUserDeleteEntries()
             R.id.nav_import_wish_list -> askUserImportWishList()
+            R.id.nav_wish_list ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    startActivity(Intent(this, WishListActivity::class.java),
+                            ActivityOptions.makeSceneTransitionAnimation(this@IntercrossActivity).toBundle())
+                } else startActivity(Intent(this, WishListActivity::class.java))
         }
 
         val dl = findViewById<DrawerLayout>(R.id.drawer_layout)

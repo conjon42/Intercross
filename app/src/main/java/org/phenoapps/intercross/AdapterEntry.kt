@@ -8,6 +8,8 @@ class AdapterEntry {
 
     var third: String = String()
 
+    var completed: Boolean = false
+
     var id: Int = -1
 
     constructor()
@@ -19,6 +21,12 @@ class AdapterEntry {
 
     constructor(first: String) {
         this.first = first
+    }
+
+    constructor(s: String, s1: String, s2: String) {
+        this.first = s
+        this.second = s1
+        this.third = s2
     }
 
 }

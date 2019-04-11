@@ -18,12 +18,20 @@ class WishListActivity : AppCompatActivity() {
 
     private lateinit var mRecyclerView: RecyclerView
 
+    private val mWishCountTextView by lazy { findViewById<TextView>(R.id.textView) }
+
     private val mEntries = ArrayList<AdapterEntry>()
 
     private val mAdapter = object : ViewAdapter<AdapterEntry>(mEntries) {
 
-        override fun getLayoutId(position: Int, obj: AdapterEntry): Int {
-            return R.layout.wish_cross_row
+        override fun getLayoutId(position: Int, obj: AdapterEntry): Int = when {
+
+            obj.first.isNotEmpty() && obj.second.isNotEmpty() && obj.third.isNotEmpty() -> {
+                R.layout.wish_cross_complete
+            }
+            else -> {
+                R.layout.wish_cross_incomplete
+            }
         }
 
         override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
@@ -41,7 +49,7 @@ class WishListActivity : AppCompatActivity() {
 
         title = "Wish List"
 
-        setContentView(R.layout.activity_count)
+        setContentView(R.layout.activity_wish_list)
 
         supportActionBar?.let {
             it.themedContext
@@ -49,10 +57,10 @@ class WishListActivity : AppCompatActivity() {
             it.setHomeButtonEnabled(true)
         }
 
-        mNavView = findViewById(R.id.nvView)
+        //mNavView = findViewById(R.id.nvView)
 
         // Setup drawer view
-        setupDrawer()
+        //setupDrawer()
 
         mRecyclerView = findViewById(R.id.recyclerView)
 
@@ -61,39 +69,28 @@ class WishListActivity : AppCompatActivity() {
         mRecyclerView.adapter = mAdapter
 
 
-        val result = mDbHelper.getParentCounts()
-        //sort
-        result.sortBy { it.third }
-        //remove dups
-        //result.distinctBy {it.first + it.second}.
-        result.asReversed().forEach {
-            var unique = true
-            mEntries.forEach { entry ->
-                if (entry.first == it.first && entry.second == it.second) {
-                    unique = false
-                }
-            }
-            if (unique) mEntries.add(it)
-        }
-    }
-
-    inner class InnerViewHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView),
-            ViewAdapter.Binder<AdapterEntry> {
-
-        private var firstText: TextView = itemView.findViewById(R.id.maleTextView) as TextView
-
-        init {
-            itemView.setOnClickListener {
-                val crossName = firstText.text.toString()
-                startActivity(Intent(this@WishListActivity, CrossActivity::class.java).apply {
-                    putExtra(CROSS_ID, crossName)
-                })
+        val result = mDbHelper.getWishList()
+        var wishCount = 0
+        var completedCount = 0
+        result.forEach { wishcross ->
+            if (wishcross.size == 5) {
+                val femaleID = wishcross[0] as String
+                val femaleName = wishcross[1] as String
+                val maleID = wishcross[2] as String
+                val maleName = wishcross[3] as String
+                val numCrosses = wishcross[4] as Int
+                val crosses = mDbHelper.getCrosses(femaleID, maleID)
+                wishCount += numCrosses
+                //if (crosses.isNotEmpty()) {
+                //    wishCount++
+                completedCount += crosses.size % numCrosses //TODO check if modular div is what we want
+                mEntries.add(AdapterEntry(femaleName, maleName, "${crosses.size}/$numCrosses"))
+                //} else {
+                //    mEntries.add(AdapterEntry(wishcross[1], wishcross[3]))
+                //}
             }
         }
-
-        override fun bind(data: AdapterEntry) {
-            firstText.text = data.first
-        }
+        mWishCountTextView.text = "${completedCount}/${wishCount}crosses"
     }
 
     private fun setupDrawer() {
@@ -110,47 +107,18 @@ class WishListActivity : AppCompatActivity() {
     }
 
     inner class ViewHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView),
-            ViewAdapter.Binder<AdapterEntry>, View.OnClickListener {
+            ViewAdapter.Binder<AdapterEntry> {
 
-        private var firstText: TextView = itemView.findViewById(R.id.maleTextView) as TextView
-        private var secondText: TextView = itemView.findViewById(R.id.femaleTextView) as TextView
-        private var countText: TextView = itemView.findViewById(R.id.thirdTextView) as TextView
-
-        init {
-            itemView.setOnClickListener(this)
-        }
 
         override fun bind(data: AdapterEntry) {
 
-            firstText.text = data.first
-            secondText.text = data.second
-            countText.text = data.third
-        }
-
-        override fun onClick(v: View) {
-
-            val builder = AlertDialog.Builder(this@WishListActivity)
-            builder.setTitle("Crosses")
-            val layout = RecyclerView(this@WishListActivity)
-            builder.setView(layout)
-            val crosses = mDbHelper.getCrosses(firstText.text.toString(),
-                    secondText.text.toString())
-            val entries = ArrayList<AdapterEntry>()
-            crosses.forEach {
-                entries.add(AdapterEntry(it, ""))
+            if (data.first.isNotEmpty() && data.second.isNotEmpty()) {
+                itemView.findViewById<TextView>(R.id.textView).text = data.first
+                itemView.findViewById<TextView>(R.id.textView1).text = data.second
             }
-            val adapter: ViewAdapter<AdapterEntry> = object : ViewAdapter<AdapterEntry>(entries) {
-                override fun getLayoutId(position: Int, obj: AdapterEntry): Int {
-                    return R.layout.simple_row
-                }
-
-                override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
-                    return InnerViewHolder(view)
-                }
+            if (data.third.isNotEmpty()) {
+                itemView.findViewById<TextView>(R.id.textView2).text = data.third
             }
-            layout.adapter = adapter
-            layout.layoutManager = LinearLayoutManager(this@WishListActivity)
-            builder.show()
         }
     }
 }

@@ -35,7 +35,7 @@
             android:configChanges="keyboardHidden|screenSize|keyboard"
             android:windowSoftInputMode="adjustPan">
         </activity>
-
+        <activity android:name=".WishListActivity"/>
         <activity android:name=".GroupPrintActivity" />
         <activity android:name=".CrossPatternActivity"
             android:windowSoftInputMode="adjustNothing" />
