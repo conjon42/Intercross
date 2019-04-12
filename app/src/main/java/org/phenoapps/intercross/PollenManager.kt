@@ -24,7 +24,7 @@ class PollenManager : AppCompatActivity() {
         findViewById<RecyclerView>(R.id.recyclerView)
     }
     private val mEditText: EditText by lazy {
-        findViewById<EditText>(R.id.editText)
+        findViewById<EditText>(R.id.editText3)
     }
     private lateinit var mNavView: NavigationView
 

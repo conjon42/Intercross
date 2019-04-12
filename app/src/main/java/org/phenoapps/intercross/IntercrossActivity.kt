@@ -282,8 +282,8 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
         mCrossEditText.addTextChangedListener(emptyGuard)
 
         val focusListener = View.OnFocusChangeListener { _, p1 ->
-            if (p1 && PreferenceManager.getDefaultSharedPreferences(this@IntercrossActivity)
-                            ?.getString(SettingsActivity.PERSON, "")?.isNotBlank() == false) {
+            if (p1 && (PreferenceManager.getDefaultSharedPreferences(this@IntercrossActivity)
+                            ?.getString(SettingsActivity.PERSON, "") ?: "").isBlank()) {
                 askUserForPerson()
             }
         }
@@ -1012,7 +1012,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
         super.onDestroy()
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     fun onAppForegrounded() {
         if ((PreferenceManager.getDefaultSharedPreferences(this@IntercrossActivity)
                         .getString(SettingsActivity.PERSON, "") ?: "").isNotBlank())

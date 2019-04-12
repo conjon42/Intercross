@@ -3,10 +3,15 @@ package org.phenoapps.intercross
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.MenuItem
 import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,6 +25,10 @@ class WishListActivity : AppCompatActivity() {
 
     private val mWishCountTextView by lazy { findViewById<TextView>(R.id.textView) }
 
+    private val mMaleEditText by lazy { findViewById<TextView>(R.id.editText2) }
+
+    private val mFemaleEditText by lazy { findViewById<TextView>(R.id.editText3) }
+
     private val mEntries = ArrayList<AdapterEntry>()
 
     private val mAdapter = object : ViewAdapter<AdapterEntry>(mEntries) {
@@ -32,6 +41,7 @@ class WishListActivity : AppCompatActivity() {
             else -> {
                 R.layout.wish_cross_incomplete
             }
+
         }
 
         override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
@@ -69,6 +79,39 @@ class WishListActivity : AppCompatActivity() {
         mRecyclerView.adapter = mAdapter
 
 
+        loadOverview()
+
+        arrayOf(mFemaleEditText, mMaleEditText).forEach {
+            it.addTextChangedListener(object : TextWatcher {
+                override fun afterTextChanged(p0: Editable?) {
+                }
+
+                override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                }
+
+                override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                    val f = mFemaleEditText.text.toString()
+                    val m = mMaleEditText.text.toString()
+
+                    Toast.makeText(this@WishListActivity, "Not working yet :)", Toast.LENGTH_LONG).show()
+                    /**val crosses = mDbHelper.getCrosses(mDbHelper.getRowId(f),mDbHelper.getRowId(m))
+                    if (crosses.isEmpty()) {
+                        loadOverview()
+                    } else {
+                        mEntries.clear()
+                        crosses.forEach {
+                            mEntries.add(AdapterEntry(it))
+                        }
+                        mAdapter.notifyDataSetChanged()
+
+                    }**/
+                }
+            })
+        }
+    }
+
+    private fun loadOverview() {
+        mEntries.clear()
         val result = mDbHelper.getWishList()
         var wishCount = 0
         var completedCount = 0
@@ -90,7 +133,9 @@ class WishListActivity : AppCompatActivity() {
                 //}
             }
         }
+        mAdapter.notifyDataSetChanged()
         mWishCountTextView.text = "${completedCount}/${wishCount}crosses"
+
     }
 
     private fun setupDrawer() {
@@ -111,7 +156,18 @@ class WishListActivity : AppCompatActivity() {
 
 
         override fun bind(data: AdapterEntry) {
+            val x = mDbHelper.getRowId(data.first)
+            //mDbHelper.getTimestampById(x)
 
+            /*itemView.findViewById<ImageView>(R.id.crossTypeImageView)
+                    .setImageDrawable(when (mDbHelper.getPollinationType(x)) {
+                        "Self-Pollinated" -> ContextCompat.getDrawable(this@IntercrossActivity,
+                                R.drawable.ic_cross_self)
+                        "Biparental" -> ContextCompat.getDrawable(this@IntercrossActivity,
+                                R.drawable.ic_cross_biparental)
+                        else -> ContextCompat.getDrawable(this@IntercrossActivity,
+                                R.drawable.ic_cross_open_pollinated)
+                    })*/
             if (data.first.isNotEmpty() && data.second.isNotEmpty()) {
                 itemView.findViewById<TextView>(R.id.textView).text = data.first
                 itemView.findViewById<TextView>(R.id.textView1).text = data.second
