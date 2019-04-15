@@ -33,16 +33,10 @@ class WishListActivity : AppCompatActivity() {
 
     private val mAdapter = object : ViewAdapter<AdapterEntry>(mEntries) {
 
-        override fun getLayoutId(position: Int, obj: AdapterEntry): Int = when {
+        override fun getLayoutId(position: Int, obj: AdapterEntry): Int = R.layout.wish_cross_complete
 
-            obj.first.isNotEmpty() && obj.second.isNotEmpty() && obj.third.isNotEmpty() -> {
-                R.layout.wish_cross_complete
-            }
-            else -> {
-                R.layout.wish_cross_incomplete
-            }
 
-        }
+
 
         override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
             return ViewHolder(view)
@@ -93,18 +87,19 @@ class WishListActivity : AppCompatActivity() {
                     val f = mFemaleEditText.text.toString()
                     val m = mMaleEditText.text.toString()
 
-                    Toast.makeText(this@WishListActivity, "Not working yet :)", Toast.LENGTH_LONG).show()
-                    /**val crosses = mDbHelper.getCrosses(mDbHelper.getRowId(f),mDbHelper.getRowId(m))
+                    //Toast.makeText(this@WishListActivity, "Not working yet :)", Toast.LENGTH_LONG).show()
+                    val crosses = mDbHelper.getCrosses(f,m)
                     if (crosses.isEmpty()) {
                         loadOverview()
                     } else {
+                        val size = mEntries.size
                         mEntries.clear()
-                        crosses.forEach {
-                            mEntries.add(AdapterEntry(it))
+                        mAdapter.notifyItemRangeRemoved(0,size)
+                        crosses.forEach {entry ->
+                            mEntries.add(AdapterEntry(entry))
+                            mAdapter.notifyItemInserted(mEntries.size - 1)
                         }
-                        mAdapter.notifyDataSetChanged()
-
-                    }**/
+                    }
                 }
             })
         }
@@ -122,11 +117,11 @@ class WishListActivity : AppCompatActivity() {
                 val maleID = wishcross[2] as String
                 val maleName = wishcross[3] as String
                 val numCrosses = wishcross[4] as Int
-                val crosses = mDbHelper.getCrosses(femaleID, maleID)
+                val crosses = mDbHelper.getCrosses(femaleName, maleName)
                 wishCount += numCrosses
                 //if (crosses.isNotEmpty()) {
                 //    wishCount++
-                completedCount += crosses.size % numCrosses //TODO check if modular div is what we want
+                completedCount += Math.min(crosses.size, numCrosses)
                 mEntries.add(AdapterEntry(femaleName, maleName, "${crosses.size}/$numCrosses"))
                 //} else {
                 //    mEntries.add(AdapterEntry(wishcross[1], wishcross[3]))
@@ -168,8 +163,14 @@ class WishListActivity : AppCompatActivity() {
                         else -> ContextCompat.getDrawable(this@IntercrossActivity,
                                 R.drawable.ic_cross_open_pollinated)
                     })*/
-            if (data.first.isNotEmpty() && data.second.isNotEmpty()) {
+            itemView.findViewById<TextView>(R.id.textView).text = ""
+            itemView.findViewById<TextView>(R.id.textView1).text = ""
+            itemView.findViewById<TextView>(R.id.textView2).text = ""
+
+            if (data.first.isNotEmpty()) {
                 itemView.findViewById<TextView>(R.id.textView).text = data.first
+            }
+            if (data.second.isNotEmpty()) {
                 itemView.findViewById<TextView>(R.id.textView1).text = data.second
             }
             if (data.third.isNotEmpty()) {
