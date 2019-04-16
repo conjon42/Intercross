@@ -53,6 +53,11 @@ import java.util.Arrays.asList
 
 internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
+    private var mOrientation: Int = 0
+
+    private val mButton: ImageButton by lazy {
+        findViewById<ImageButton>(R.id.button)
+    }
     private val mFirstEditText: EditText by lazy {
         findViewById<EditText>(R.id.firstText)
     }
@@ -243,6 +248,8 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
         super.onStart()
 
+        mOrientation = resources.configuration.orientation
+
         mRecyclerView.adapter = mAdapter
         mRecyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -326,6 +333,13 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
         mSaveButton.setOnClickListener {
             saveToDB()
+        }
+
+        mButton.setOnClickListener {
+            if (isCameraAllowed(CAMERA_SCAN_REQ)) {
+                startActivityForResult(Intent(this, ScanActivity::class.java),
+                        CAMERA_INTENT_SCAN)
+            }
         }
 
         (findViewById<Button>(R.id.clearButton)).setOnClickListener {
@@ -440,6 +454,8 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             putBoolean(COMPLETED_TUTORIAL, true)
             apply()
         }
+
+//        setSupportActionBar(findViewById(R.id.bottomAppBar))
     }
 
     private fun saveToDB() {
@@ -730,6 +746,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
         val inflater = menuInflater
         inflater.inflate(org.phenoapps.intercross.R.menu.activity_main_toolbar, m)
+
         return true
     }
 
@@ -742,10 +759,10 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
         when (item.itemId) {
             android.R.id.home -> dl.openDrawer(GravityCompat.START)
-            R.id.action_camera -> if (isCameraAllowed(CAMERA_SCAN_REQ)) {
+            /*R.id.action_camera -> if (isCameraAllowed(CAMERA_SCAN_REQ)) {
                 startActivityForResult(Intent(this, ScanActivity::class.java),
                         CAMERA_INTENT_SCAN)
-            }
+            }*/
             R.id.action_search -> if (isCameraAllowed(CAMERA_SEARCH_REQ)) {
                 startActivityForResult(Intent(this, ScanActivity::class.java),
                         CAMERA_INTENT_SEARCH)
@@ -1014,8 +1031,8 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     fun onAppForegrounded() {
-        if ((PreferenceManager.getDefaultSharedPreferences(this@IntercrossActivity)
-                        .getString(SettingsActivity.PERSON, "") ?: "").isNotBlank())
+        val pref = PreferenceManager.getDefaultSharedPreferences(this@IntercrossActivity)
+        if ((pref.getString(SettingsActivity.PERSON, "") ?: "").isNotBlank())
             askIfSamePerson()
     }
 

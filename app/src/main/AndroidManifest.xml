@@ -23,7 +23,7 @@
 
         <activity
             android:name=".IntercrossActivity"
-            android:configChanges="keyboardHidden|screenSize|keyboard"
+            android:configChanges="keyboardHidden|screenSize|keyboard|orientation"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

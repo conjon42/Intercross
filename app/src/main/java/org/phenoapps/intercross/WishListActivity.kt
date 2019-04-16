@@ -35,9 +35,6 @@ class WishListActivity : AppCompatActivity() {
 
         override fun getLayoutId(position: Int, obj: AdapterEntry): Int = R.layout.wish_cross_complete
 
-
-
-
         override fun getViewHolder(view: View, viewType: Int): RecyclerView.ViewHolder {
             return ViewHolder(view)
         }
