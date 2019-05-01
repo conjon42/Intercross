@@ -53,8 +53,6 @@ import java.util.Arrays.asList
 
 internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
-    private var mOrientation: Int = 0
-
     private val mButton: ImageButton by lazy {
         findViewById<ImageButton>(R.id.button)
     }
@@ -74,6 +72,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
         findViewById<Button>(R.id.saveButton)
     }
 
+    private lateinit var mFocused: View
     private lateinit var mNavView: NavigationView
 
     private var mAllowBlankMale: Boolean = false
@@ -146,8 +145,15 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
         key?.let {
             when (key) {
-                "org.phenoapps.intercross.LABEL_PATTERN_CREATED" -> {
-
+                "LABEL_PATTERN_MID" -> {
+                    if (pref?.getBoolean(SettingsActivity.PATTERN, false) == true) {
+                        val prefix = pref.getString("LABEL_PATTERN_PREFIX", "")
+                        val suffix = pref.getString("LABEL_PATTERN_SUFFIX", "")
+                        val num = pref.getInt("LABEL_PATTERN_MID", 0)
+                        val pad = pref.getInt("LABEL_PATTERN_PAD", 0)
+                        mCrossEditText.setText("$prefix${num.toString().padStart(pad, '0')}$suffix")
+                        mCrossEditText.isEnabled = false
+                    }
                 }
                 SettingsActivity.PATTERN -> {
                     when (pref?.getBoolean(key, true)) {
@@ -162,6 +168,10 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
                         false -> {
                             mCrossEditText.setText("")
                             mCrossEditText.isEnabled = true
+                            if (pref.getBoolean(SettingsActivity.UUID_ENABLED, false)) {
+                                mCrossEditText.setText(UUID.randomUUID().toString())
+                                mCrossEditText.isEnabled = false
+                            }
                         }
                     }
                 }
@@ -180,6 +190,25 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
                 SettingsActivity.BLANK_MALE_ID -> {
                     mAllowBlankMale = !mAllowBlankMale
                     findViewById<Button>(R.id.saveButton).isEnabled = isInputValid()
+                }
+                SettingsActivity.UUID_ENABLED -> {
+                    when (pref?.getBoolean(key, false)) {
+                        true -> {
+                            if (!pref.getBoolean(SettingsActivity.PATTERN, false))
+                                mCrossEditText.setText(UUID.randomUUID().toString())
+                        }
+                        false -> {
+                            if (pref.getBoolean(SettingsActivity.PATTERN, false)) {
+                                val prefix = pref.getString("LABEL_PATTERN_PREFIX", "")
+                                val suffix = pref.getString("LABEL_PATTERN_SUFFIX", "")
+                                val num = pref.getInt("LABEL_PATTERN_MID", 0)
+                                val pad = pref.getInt("LABEL_PATTERN_PAD", 0)
+                                mCrossEditText.setText("$prefix${num.toString().padStart(pad, '0')}$suffix")
+                                mCrossEditText.isEnabled = false
+                            }
+                            else mCrossEditText.setText("")
+                        }
+                    }
                 }
             }
         }
@@ -244,11 +273,71 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
         return false
     }
 
-    override fun onStart() {
+    private fun isInputValid(): Boolean {
 
-        super.onStart()
+        val pref = PreferenceManager.getDefaultSharedPreferences(this)
+        val auto = pref.getBoolean(SettingsActivity.PATTERN, false)
 
-        mOrientation = resources.configuration.orientation
+        val male: String
+        val female: String
+        val cross: String = mCrossEditText.text.toString()
+        if (mCrossOrder == 0) {
+            female = mFirstEditText.text.toString()
+            male = mSecondEditText.text.toString()
+        } else {
+            male = mFirstEditText.text.toString()
+            female = mSecondEditText.text.toString()
+        }
+
+        //calculate how how full the save button should be
+        var numFilled = 0
+        if (pref.getBoolean(SettingsActivity.BLANK_MALE_ID, false)) numFilled++
+        else if (male.isNotBlank()) numFilled++
+        if (female.isNotBlank()) numFilled++
+        if (cross.isNotBlank()) numFilled++
+
+        //change save button fill percentage using corresponding xml shapes
+        mSaveButton.background = ContextCompat.getDrawable(this,
+                when (numFilled) {
+                    0 -> R.drawable.button_save_empty
+                    1 -> R.drawable.button_save_third
+                    2 -> R.drawable.button_save_two_thirds
+                    else -> R.drawable.button_save_full
+                })
+
+        return ((male.isNotEmpty() || mAllowBlankMale) && female.isNotEmpty()
+                && (cross.isNotEmpty() || auto))
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+
+        super.onCreate(savedInstanceState)
+
+        setContentView(R.layout.activity_main)
+
+        val pref = PreferenceManager.getDefaultSharedPreferences(this)
+
+        mCrossOrder = pref?.getString(SettingsActivity.CROSS_ORDER, "0")?.toInt() ?: 0
+
+        pref.registerOnSharedPreferenceChangeListener(mPrefListener)
+
+        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+
+        //Show Tutorial Fragment for first-time users
+        pref.apply {
+            if (!getBoolean(COMPLETED_TUTORIAL, false)) {
+                startActivity(Intent(this@IntercrossActivity, IntroActivity::class.java))
+            }
+            if (getBoolean(SettingsActivity.PATTERN, false)) {
+                mCrossEditText.isEnabled = false
+            }
+            mAllowBlankMale = getBoolean(SettingsActivity.BLANK_MALE_ID, false)
+        }
+
+        pref.edit().apply {
+            putBoolean(COMPLETED_TUTORIAL, true)
+            apply()
+        }
 
         mRecyclerView.adapter = mAdapter
         mRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -289,8 +378,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
         mCrossEditText.addTextChangedListener(emptyGuard)
 
         val focusListener = View.OnFocusChangeListener { _, p1 ->
-            if (p1 && (PreferenceManager.getDefaultSharedPreferences(this@IntercrossActivity)
-                            ?.getString(SettingsActivity.PERSON, "") ?: "").isBlank()) {
+            if (p1 && (pref?.getString(SettingsActivity.PERSON, "") ?: "").isBlank()) {
                 askUserForPerson()
             }
         }
@@ -301,17 +389,20 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
         mFirstEditText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
             if (i == EditorInfo.IME_ACTION_DONE) {
-                mSecondEditText.requestFocus()
+                when {
+                    mCrossOrder == 0 && mAllowBlankMale -> saveToDB()
+                    else -> mSecondEditText.requestFocus()
+                }
                 return@OnEditorActionListener true
             }
             false
         })
 
-        val p = PreferenceManager.getDefaultSharedPreferences(this)
         //if auto generation is enabled save after the second text is submitted
         mSecondEditText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
             if (i == EditorInfo.IME_ACTION_DONE) {
-                if (!(p.getBoolean(SettingsActivity.PATTERN, false) || p.getBoolean(SettingsActivity.UUID_ENABLED, false))) {
+                if (!(pref.getBoolean(SettingsActivity.PATTERN, false)
+                                || pref.getBoolean(SettingsActivity.UUID_ENABLED, false))) {
                     mCrossEditText.requestFocus()
                 } else {
                     saveToDB()
@@ -337,6 +428,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
         mButton.setOnClickListener {
             if (isCameraAllowed(CAMERA_SCAN_REQ)) {
+                mFocused = currentFocus
                 startActivityForResult(Intent(this, ScanActivity::class.java),
                         CAMERA_INTENT_SCAN)
             }
@@ -360,102 +452,25 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             }
         }
 
-        val pref = PreferenceManager.getDefaultSharedPreferences(this)
-        val isAutoPattern = pref.getBoolean(SettingsActivity.PATTERN, false)
+        val isAutoPattern = pref.getBoolean("org.phenoapps.intercross.LABEL_PATTERN", false)
         val isUUID = pref.getBoolean(SettingsActivity.UUID_ENABLED, false)
 
         if (isAutoPattern) {
             val prefix = pref.getString("LABEL_PATTERN_PREFIX", "")
             val suffix = pref.getString("LABEL_PATTERN_SUFFIX", "")
             val num = pref.getInt("LABEL_PATTERN_MID", 0)
+            val auto = pref.getBoolean("LABEL_PATTERN_AUTO", false)
             val pad = pref.getInt("LABEL_PATTERN_PAD", 0)
             mCrossEditText.setText("$prefix${num.toString().padStart(pad, '0')}$suffix")
+
         } else if (isUUID) {
             mCrossEditText.setText(UUID.randomUUID().toString())
         }
 
-        findViewById<ConstraintLayout>(R.id.constraint_layout_parent).requestFocus()
+        mFirstEditText.requestFocus()
+        //findViewById<ConstraintLayout>(R.id.constraint_layout_parent).requestFocus()
 
         loadSQLToLocal()
-    }
-
-    private fun isInputValid(): Boolean {
-
-        val pref = PreferenceManager.getDefaultSharedPreferences(this)
-        val auto = pref.getBoolean(SettingsActivity.PATTERN, false)
-
-        val male: String
-        val female: String
-        val cross: String = mCrossEditText.text.toString()
-        if (mCrossOrder == 0) {
-            female = mFirstEditText.text.toString()
-            male = mSecondEditText.text.toString()
-        } else {
-            male = mFirstEditText.text.toString()
-            female = mSecondEditText.text.toString()
-        }
-
-        //calculate how how full the save button should be
-        var numFilled = 0
-        if (pref.getBoolean(SettingsActivity.BLANK_MALE_ID, false)) numFilled++
-        else if (male.isNotBlank()) numFilled++
-        if (female.isNotBlank()) numFilled++
-        if (cross.isNotBlank()) numFilled++
-
-        //change save button fill percentage using corresponding xml shapes
-        mSaveButton.background = ContextCompat.getDrawable(this,
-                when (numFilled) {
-                    0 -> R.drawable.button_save_empty
-                    1 -> R.drawable.button_save_third
-                    2 -> R.drawable.button_save_two_thirds
-                    else -> R.drawable.button_save_full
-                })
-
-        return ((male.isNotEmpty() || mAllowBlankMale) && female.isNotEmpty()
-                && (cross.isNotEmpty() || auto))
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-
-        // Check if we're running on Android 5.0 or higher
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            with(window) {
-                requestFeature(Window.FEATURE_CONTENT_TRANSITIONS)
-                //exitTransition  = Explode()
-            }
-        } else {
-            // Swap without transition
-        }
-
-        super.onCreate(savedInstanceState)
-
-        setContentView(R.layout.activity_main)
-
-        val sharedPref = PreferenceManager.getDefaultSharedPreferences(this)
-
-        mCrossOrder = sharedPref?.getString(SettingsActivity.CROSS_ORDER, "0")?.toInt() ?: 0
-
-        sharedPref.registerOnSharedPreferenceChangeListener(mPrefListener)
-
-        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
-
-        //Show Tutorial Fragment for first-time users
-        PreferenceManager.getDefaultSharedPreferences(this).apply {
-            if (!getBoolean(COMPLETED_TUTORIAL, false)) {
-                startActivity(Intent(this@IntercrossActivity, IntroActivity::class.java))
-            }
-            if (getBoolean(SettingsActivity.PATTERN, false)) {
-                mCrossEditText.isEnabled = false
-            }
-            mAllowBlankMale = getBoolean(SettingsActivity.BLANK_MALE_ID, false)
-        }
-
-        PreferenceManager.getDefaultSharedPreferences(this).edit().apply {
-            putBoolean(COMPLETED_TUTORIAL, true)
-            apply()
-        }
-
-//        setSupportActionBar(findViewById(R.id.bottomAppBar))
     }
 
     private fun saveToDB() {
@@ -594,7 +609,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             mEntries.add(entry)
         }
 
-        mAdapter.notifyDataSetChanged()
+        mAdapter.notifyItemInserted(mEntries.size)
     }
 
     @SuppressLint("SetTextI18n", "InflateParams")
@@ -785,21 +800,49 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
                     when (requestCode) {
                         CAMERA_INTENT_SCAN -> {
-                            asList(mFirstEditText, mSecondEditText, mCrossEditText)
-                                    .forEach { et ->
-                                        if (et.hasFocus()) {
-                                            et.setText(intent.getStringExtra(CAMERA_RETURN_ID))
-                                            when (it) {
-                                                mFirstEditText -> mSecondEditText.requestFocus()
-                                                mSecondEditText -> mCrossEditText.requestFocus()
-                                                mCrossEditText -> {
-                                                    saveToDB()
+                            (mFocused as? TextView)?.let {
+                                it.text = intent.getStringExtra(CAMERA_RETURN_ID)
+                                when (it) {
+                                    mFirstEditText -> {
+                                        if (mCrossOrder == 0 && mAllowBlankMale) {
+                                            saveToDB()
+                                        } else {
+                                            mFocused = mSecondEditText
+                                            mSecondEditText.requestFocus()
+                                            if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("org.phenoapps.intercross.CAMERA_AUTO_OPEN", false)) {
+                                                if (isCameraAllowed(CAMERA_INTENT_SCAN)) {
+                                                    startActivityForResult(Intent(this, ScanActivity::class.java),
+                                                            CAMERA_INTENT_SCAN)
                                                 }
-                                                else -> Log.d("Focus", "Unexpected request focus.")
                                             }
-                                            return
                                         }
                                     }
+                                    mSecondEditText -> {
+                                        val pref = PreferenceManager.getDefaultSharedPreferences(this)
+                                        val isAutoPattern = pref.getBoolean(SettingsActivity.PATTERN, false)
+                                        val isUUID = pref.getBoolean(SettingsActivity.UUID_ENABLED, false)
+                                        if (!isAutoPattern && !isUUID) {
+                                            mFocused = mCrossEditText
+                                            mCrossEditText.requestFocus()
+                                            if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("org.phenoapps.intercross.CAMERA_AUTO_OPEN", false)) {
+                                                if (isCameraAllowed(CAMERA_INTENT_SCAN)) {
+                                                    startActivityForResult(Intent(this, ScanActivity::class.java),
+                                                            CAMERA_INTENT_SCAN)
+                                                }
+                                            }
+                                        }
+                                        else {
+                                            saveToDB()
+                                        }
+                                    }
+                                    mCrossEditText -> {
+                                        saveToDB()
+                                    }
+                                    else -> Log.d("Focus", "Unexpected request focus.")
+                                }
+                                return
+                            }
+
                         }
                         CAMERA_INTENT_SEARCH -> {
 
@@ -942,12 +985,8 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             R.id.nav_summary -> {
                 startActivity(Intent(this@IntercrossActivity, SummaryActivity::class.java))
             }
-            R.id.nav_settings ->
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    startActivity(Intent(this, SettingsActivity::class.java),
-                            ActivityOptions.makeSceneTransitionAnimation(this@IntercrossActivity).toBundle())
-                } else startActivity(Intent(this, SettingsActivity::class.java))
-            R.id.nav_export -> askUserExportFileName()
+            R.id.nav_settings -> startActivity(Intent(this, SettingsActivity::class.java))
+           R.id.nav_export -> askUserExportFileName()
             R.id.nav_about -> showAboutDialog()
             R.id.nav_simple_print ->
                 startActivity(Intent(this, PollenManager::class.java))
@@ -1133,6 +1172,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
         private const val FILE_CHOOSER_REQ = 106
 
         const val REQUEST_WRITE_PERMISSION = 200
+        const val REQUEST_NEW_PATTERN = 201
         const val IMPORT_ZPL = 500
 
         //extras

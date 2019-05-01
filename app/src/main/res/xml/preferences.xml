@@ -48,6 +48,11 @@
             android:icon="@drawable/ic_setting_auto_generate"
             android:key="org.phenoapps.intercross.LABEL_PATTERN"
             android:title="Auto Generate Cross IDs" />
+        <CheckBoxPreference
+            android:enabled="true"
+            android:icon="@drawable/ic_setting_auto_generate"
+            android:key="org.phenoapps.intercross.CAMERA_AUTO_OPEN"
+            android:title="Reopen camera after barcode scan" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Printing">
         <Preference

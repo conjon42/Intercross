@@ -47,28 +47,24 @@ class CrossPatternActivity : AppCompatActivity(), LifecycleObserver {
 
         mRadioGroup = findViewById(R.id.radioGroup)
 
-        mRadioGroup.check(R.id.startFromRadioButton)
-
         mPrefixEditText.setText(pref.getString("LABEL_PATTERN_PREFIX", ""))
         mSuffixEditText.setText(pref.getString("LABEL_PATTERN_SUFFIX", ""))
-        val initialNum = pref.getInt("LABEL_PATTERN_MID", -1)
-        if (initialNum == -1) mNumberEditText.setText("")
-        else mNumberEditText.setText(initialNum.toString())
-        val initialPad = pref.getInt("LABEL_PATTERN_PAD", -1)
-        if (initialPad == -1) mPadEditText.setText("")
-        else mPadEditText.setText(initialPad.toString())
 
         mRadioGroup.setOnCheckedChangeListener { _, i ->
+
+            val edit = pref.edit()
+                    edit.putBoolean("LABEL_PATTERN_AUTO", R.id.autoRadioButton == mRadioGroup.checkedRadioButtonId)
             when (i) {
                 R.id.autoRadioButton -> {
-                    mNumberEditText.setText("0001")
+                    mNumberEditText.setText("1")
                     mNumberEditText.isEnabled = false
                 }
                 R.id.startFromRadioButton -> {
-                    //mNumberEditText.setText("")
+                    mNumberEditText.setText("")
                     mNumberEditText.isEnabled = true
                 }
             }
+            edit.apply()
         }
 
         val watcher: TextWatcher = object : TextWatcher {
@@ -85,6 +81,7 @@ class CrossPatternActivity : AppCompatActivity(), LifecycleObserver {
                 if (!pad.isEmpty()) padValue = pad.toInt()
                 mPatternText.text =
                         "${mPrefixEditText.text}${mNumberEditText.text.padStart(padValue, '0')}${mSuffixEditText.text}"
+
             }
         }
 
@@ -97,12 +94,23 @@ class CrossPatternActivity : AppCompatActivity(), LifecycleObserver {
         mSuffixEditText.addTextChangedListener(watcher)
         mPadEditText.addTextChangedListener(watcher)
 
+        if (pref.getBoolean("LABEL_PATTERN_AUTO", false)) {
+            mRadioGroup.check(R.id.autoRadioButton)
+        } else mRadioGroup.check(R.id.startFromRadioButton)
+
+        val initialNum = pref.getInt("LABEL_PATTERN_MID", -1)
+        if (initialNum == -1) mNumberEditText.setText("")
+        else mNumberEditText.setText(initialNum.toString())
+        val initialPad = pref.getInt("LABEL_PATTERN_PAD", -1)
+        if (initialPad == -1) mPadEditText.setText("")
+        else mPadEditText.setText(initialPad.toString())
+
+
         mSaveButton.setOnClickListener {
-            //val i = Intent()
 
             val newPad = mPadEditText.text.toString()
             var midNum = mNumberEditText.text.toString()
-            if (midNum.isBlank()) midNum = "0001"
+            if (midNum.isBlank()) midNum = "1"
             pad = if (newPad.isBlank()) "0"
             else newPad
 
@@ -110,11 +118,12 @@ class CrossPatternActivity : AppCompatActivity(), LifecycleObserver {
             edit.putString("LABEL_PATTERN_PREFIX", mPrefixEditText.text.toString())
             edit.putString("LABEL_PATTERN_SUFFIX", mSuffixEditText.text.toString())
             edit.putInt("LABEL_PATTERN_MID", midNum.toInt())
-            edit.putBoolean("LABEL_PATTERN_AUTO", mRadioGroup.checkedRadioButtonId == R.id.autoRadioButton)
             edit.putInt("LABEL_PATTERN_PAD", pad.toInt())
-
+            edit.putBoolean("LABEL_PATTERN_AUTO", mRadioGroup.checkedRadioButtonId == R.id.autoRadioButton)
             edit.putBoolean("LABEL_PATTERN_CREATED", true)
             edit.apply()
+
+            edit.putBoolean("LABEL_PATTERN_NEW", !PreferenceManager.getDefaultSharedPreferences(this@CrossPatternActivity).getBoolean("LABEL_PATTERN_NEW", true))
 
             finish()
         }
@@ -134,7 +143,7 @@ class CrossPatternActivity : AppCompatActivity(), LifecycleObserver {
 
                 var pad = mPadEditText.text.toString()
                 var midNum = mNumberEditText.text.toString()
-                if (midNum.isBlank()) midNum = "0001"
+                if (midNum.isBlank()) midNum = "1"
                 if (pad.isBlank()) pad = "0"
 
                 val edit = PreferenceManager.getDefaultSharedPreferences(this@CrossPatternActivity).edit()
@@ -144,6 +153,7 @@ class CrossPatternActivity : AppCompatActivity(), LifecycleObserver {
                 edit.putBoolean("LABEL_PATTERN_AUTO", mRadioGroup.checkedRadioButtonId == R.id.autoRadioButton)
                 edit.putInt("LABEL_PATTERN_PAD", pad.toInt())
 
+                edit.putBoolean("LABEL_PATTERN_NEW", !PreferenceManager.getDefaultSharedPreferences(this@CrossPatternActivity).getBoolean("LABEL_PATTERN_NEW", false))
                 edit.putBoolean("LABEL_PATTERN_CREATED", true)
                 edit.apply()
 

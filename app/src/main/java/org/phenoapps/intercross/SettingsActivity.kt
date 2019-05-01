@@ -16,16 +16,6 @@ class SettingsActivity : AppCompatActivity() {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
 
-        // Check if we're running on Android 5.0 or higher
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            with(window) {
-                requestFeature(Window.FEATURE_CONTENT_TRANSITIONS)
-                //exitTransition  = Explode()
-            }
-        } else {
-            // Swap without transition
-        }
-
         super.onCreate(savedInstanceState)
 
         supportActionBar?.apply {
@@ -56,7 +46,7 @@ class SettingsActivity : AppCompatActivity() {
 
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
 
-            setPreferencesFromResource(org.phenoapps.intercross.R.xml.preferences, rootKey)
+            setPreferencesFromResource(R.xml.preferences, rootKey)
 
             val printSetup = findPreference<androidx.preference.Preference>("org.phenoapps.intercross.PRINTER_SETUP")
             printSetup.setOnPreferenceClickListener {
