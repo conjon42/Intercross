@@ -518,84 +518,85 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
             //todo ask trevor what type of error
             if (male == cross || female == cross) {
                 Toast.makeText(this, "Parent and cross names are matching.", Toast.LENGTH_SHORT).show()
-            }
+            } else {
 
-            val pollinationType = when {
-                male.isBlank() -> "Open Pollinated"
-                male != female -> "Biparental"
-                else -> "Self-Pollinated"
-            }
+                val pollinationType = when {
+                    male.isBlank() -> "Open Pollinated"
+                    male != female -> "Biparental"
+                    else -> "Self-Pollinated"
+                }
 
-            val crossCount = mDbHelper.getCrosses(female, male).size + 1
+                val crossCount = mDbHelper.getCrosses(female, male).size + 1
 
-            val entry = ContentValues()
+                val entry = ContentValues()
 
-            entry.put("male", if (male.isBlank()) "blank" else male)
-            entry.put("female", female)
-            entry.put("cross_id", cross)
-            entry.put("cross_type", pollinationType)
-            entry.put("cross_count", crossCount)
-            entry.put("cross_name", "$female/$male-$crossCount")
+                entry.put("male", if (male.isBlank()) "blank" else male)
+                entry.put("female", female)
+                entry.put("cross_id", cross)
+                entry.put("cross_type", pollinationType)
+                entry.put("cross_count", crossCount)
+                entry.put("cross_name", "$female/$male-$crossCount")
 
-            val c = Calendar.getInstance()
-            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:SS", Locale.getDefault())
-            val sdfShort = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            val person: String = pref?.getString(SettingsActivity.PERSON, "None") ?: "None"
+                val c = Calendar.getInstance()
+                val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:SS", Locale.getDefault())
+                val sdfShort = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val person: String = pref?.getString(SettingsActivity.PERSON, "None") ?: "None"
 
-            entry.put("timestamp", sdf.format(c.time).toString())
+                entry.put("timestamp", sdf.format(c.time).toString())
 
-            entry.put("person", person)
+                entry.put("person", person)
 
-            mDbHelper.insert(IntercrossDbContract.TABLE_NAME, entry)
+                mDbHelper.insert(IntercrossDbContract.TABLE_NAME, entry)
 
-            //clear fields
-            mFirstEditText.text.clear()
-            mSecondEditText.text.clear()
-            if (isAutoPattern) {
-                mCrossEditText.setText("$prefix${(num + 1).toString().padStart(pad, '0')}$suffix")
-            } else if (isUUID) {
-                mCrossEditText.setText(UUID.randomUUID().toString())
-            } else mCrossEditText.text.clear()
+                //clear fields
+                mFirstEditText.text.clear()
+                mSecondEditText.text.clear()
+                if (isAutoPattern) {
+                    mCrossEditText.setText("$prefix${(num + 1).toString().padStart(pad, '0')}$suffix")
+                } else if (isUUID) {
+                    mCrossEditText.setText(UUID.randomUUID().toString())
+                } else mCrossEditText.text.clear()
 
-            mFirstEditText.requestFocus()
+                mFirstEditText.requestFocus()
 
-            //add new items to the top
-            val index = 0
-            mEntries.add(index, AdapterEntry().apply {
-                first = cross
-                second = sdfShort.format(c.time).toString()
-            })
+                //add new items to the top
+                val index = 0
+                mEntries.add(index, AdapterEntry().apply {
+                    first = cross
+                    second = sdfShort.format(c.time).toString()
+                })
 
-            mAdapter.notifyItemInserted(index)
+                mAdapter.notifyItemInserted(index)
 
-            mRecyclerView.scrollToPosition(0)
+                mRecyclerView.scrollToPosition(0)
 
-            ringNotification(success = true)
+                ringNotification(success = true)
 
-            val isAutoPrinting = pref.getBoolean(SettingsActivity.AUTO_ENABLED, false)
+                val isAutoPrinting = pref.getBoolean(SettingsActivity.AUTO_ENABLED, false)
 
-            if (isAutoPrinting) {
-                val id = mDbHelper.getRowId(cross)
+                if (isAutoPrinting) {
+                    val id = mDbHelper.getRowId(cross)
 
-                val time = mDbHelper.getTimestampById(id)
-                //uses bluetooth utility to send the default ZPL template and fields
-                BluetoothUtil().variablePrint(this,
-                        "^XA"
-                                + "^MNA"
-                                + "^MMT,N"
-                                + "^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS"
-                                + "^FWR"
-                                + "^FO100,25^A0,25,20^FN1^FS"
-                                + "^FO200,25^A0N,25,20"
-                                + "^BQ,2,6" +
-                                "^FN2^FS"
-                                + "^FO450,25^A0,25,20^FN3^FS^XZ",
+                    val time = mDbHelper.getTimestampById(id)
+                    //uses bluetooth utility to send the default ZPL template and fields
+                    BluetoothUtil().variablePrint(this,
+                            "^XA"
+                                    + "^MNA"
+                                    + "^MMT,N"
+                                    + "^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS"
+                                    + "^FWR"
+                                    + "^FO100,25^A0,25,20^FN1^FS"
+                                    + "^FO200,25^A0N,25,20"
+                                    + "^BQ,2,6" +
+                                    "^FN2^FS"
+                                    + "^FO450,25^A0,25,20^FN3^FS^XZ",
 
-                        "^XA"
-                                + "^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF"
-                                + "^FN1^FD" + cross + "^FS"
-                                + "^FN2^FDQA," + cross + "^FS"
-                                + "^FN3^FD" + time + "^FS^XZ")
+                            "^XA"
+                                    + "^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF"
+                                    + "^FN1^FD" + cross + "^FS"
+                                    + "^FN2^FDQA," + cross + "^FS"
+                                    + "^FN3^FD" + time + "^FS^XZ")
+                }
             }
         }
     }

@@ -6,4 +6,9 @@
         android:icon="@drawable/ic_cross_print"
         android:title="@string/zebra_bluetooth_print"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_note"
+        android:icon="@drawable/ic_clear"
+        android:title="Take Note"
+        app:showAsAction="ifRoom"/>
 </menu>

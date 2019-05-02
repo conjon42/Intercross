@@ -5,6 +5,17 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
+import org.phenoapps.intercross.IntercrossDbContract.IdEntry.Companion.COLUMN_NAME_CROSS
+import org.phenoapps.intercross.IntercrossDbContract.IdEntry.Companion.COLUMN_NAME_CROSS_COUNT
+import org.phenoapps.intercross.IntercrossDbContract.IdEntry.Companion.COLUMN_NAME_CROSS_NAME
+import org.phenoapps.intercross.IntercrossDbContract.IdEntry.Companion.COLUMN_NAME_DATE
+import org.phenoapps.intercross.IntercrossDbContract.IdEntry.Companion.COLUMN_NAME_FEMALE
+import org.phenoapps.intercross.IntercrossDbContract.IdEntry.Companion.COLUMN_NAME_ID
+import org.phenoapps.intercross.IntercrossDbContract.IdEntry.Companion.COLUMN_NAME_LOCATION
+import org.phenoapps.intercross.IntercrossDbContract.IdEntry.Companion.COLUMN_NAME_MALE
+import org.phenoapps.intercross.IntercrossDbContract.IdEntry.Companion.COLUMN_NAME_NOTE
+import org.phenoapps.intercross.IntercrossDbContract.IdEntry.Companion.COLUMN_NAME_POLLINATION_TYPE
+import org.phenoapps.intercross.IntercrossDbContract.IdEntry.Companion.COLUMN_NAME_USER
 import org.phenoapps.intercross.IntercrossDbContract.SQL_CREATE_ENTRIES
 import org.phenoapps.intercross.IntercrossDbContract.SQL_CREATE_FAUX_TABLE
 import org.phenoapps.intercross.IntercrossDbContract.SQL_CREATE_WISH_TABLE
@@ -323,6 +334,43 @@ internal class IntercrossDbHelper(ctx: Context) :
         } finally {
             writableDatabase.endTransaction()
         }
+    }
+
+    fun updateNote(entry: ContentValues) {
+        writableDatabase.beginTransaction()
+        try {
+            writableDatabase.update(TABLE_NAME, entry, null, null)
+            writableDatabase.setTransactionSuccessful()
+        } catch (e: SQLiteException) {
+            e.printStackTrace()
+        } finally {
+            writableDatabase.endTransaction()
+        }
+    }
+
+    fun getRow(id: Int): IntercrossDbContract.Columns? {
+        val cursor = readableDatabase.query(IntercrossDbContract.IdEntry.TABLE_NAME,
+                null, "_id=?", arrayOf(id.toString()), null, null, null)
+        if (cursor.moveToFirst()) {
+            val columns = IntercrossDbContract.Columns()
+            cursor.columnNames.forEach { header ->
+                when (header) {
+                    COLUMN_NAME_ID -> columns.id = cursor.getInt(cursor.getColumnIndexOrThrow(header))
+                    COLUMN_NAME_CROSS_NAME -> columns.crossName = cursor.getString(cursor.getColumnIndex(COLUMN_NAME_CROSS_NAME))
+                    COLUMN_NAME_CROSS -> columns.cross = cursor.getString(cursor.getColumnIndex(COLUMN_NAME_CROSS))
+                    COLUMN_NAME_CROSS_COUNT -> columns.crossCount = cursor.getInt(cursor.getColumnIndex(COLUMN_NAME_CROSS_COUNT))
+                    COLUMN_NAME_POLLINATION_TYPE -> columns.polType = cursor.getString(cursor.getColumnIndex(COLUMN_NAME_POLLINATION_TYPE))
+                    COLUMN_NAME_MALE -> columns.male = cursor.getString(cursor.getColumnIndex(COLUMN_NAME_MALE))
+                    COLUMN_NAME_FEMALE -> columns.female = cursor.getString(cursor.getColumnIndex(COLUMN_NAME_FEMALE))
+                    COLUMN_NAME_LOCATION -> columns.location = cursor.getString(cursor.getColumnIndex(COLUMN_NAME_LOCATION)) ?: ""
+                    COLUMN_NAME_DATE -> columns.date = cursor.getString(cursor.getColumnIndex(COLUMN_NAME_DATE))
+                    COLUMN_NAME_NOTE -> columns.note = cursor.getString(cursor.getColumnIndex(COLUMN_NAME_NOTE)) ?: ""
+                }
+            }
+            return columns
+        }
+        cursor.close()
+        return null
     }
 
     fun getWishList(): List<Array<Any>> {

@@ -12,7 +12,7 @@ internal object IntercrossDbContract {
                     "${IdEntry.COLUMN_NAME_MALE} TEXT, ${IdEntry.COLUMN_NAME_USER}," +
                     "${IdEntry.COLUMN_NAME_DATE} TEXT, ${IdEntry.COLUMN_NAME_LOCATION} TEXT," +
                     "${IdEntry.COLUMN_NAME_POLLINATION_TYPE} TEXT, ${IdEntry.COLUMN_NAME_CROSS_COUNT} INTEGER," +
-                    "${IdEntry.COLUMN_NAME_CROSS_NAME} TEXT)"
+                    "${IdEntry.COLUMN_NAME_CROSS_NAME} TEXT, ${IdEntry.COLUMN_NAME_NOTE})"
 
     const val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS " + IdEntry.TABLE_NAME
 
@@ -25,6 +25,12 @@ internal object IntercrossDbContract {
             "CREATE TABLE WISH(_id INTEGER PRIMARY KEY AUTOINCREMENT, femaleID TEXT, femaleName TEXT, maleID TEXT, maleName TEXT, numberCrosses INTEGER)"
 
     const val SQL_DELETE_WISH_TABLE = "DROP TABLE IF EXISTS WISH"
+
+    //TODO add location
+    data class Columns(var id: Int = -1, var male: String = "", var female: String = "",
+                       var cross: String ="", var user: String = "", var date: String = "",
+                       var location: String ="", var polType: String="", var crossCount: Int=0,
+                       var crossName: String="", var note: String="")
 
     internal class IdEntry : BaseColumns {
         companion object {
@@ -39,10 +45,12 @@ internal object IntercrossDbContract {
             const val COLUMN_NAME_POLLINATION_TYPE = "cross_type"
             const val COLUMN_NAME_CROSS_COUNT = "cross_count"
             const val COLUMN_NAME_CROSS_NAME = "cross_name"
+            const val COLUMN_NAME_NOTE = "note"
 
             val COLUMNS = arrayOf(COLUMN_NAME_ID, COLUMN_NAME_MALE, COLUMN_NAME_FEMALE,
                     COLUMN_NAME_CROSS, COLUMN_NAME_USER, COLUMN_NAME_DATE, COLUMN_NAME_LOCATION,
-                    COLUMN_NAME_POLLINATION_TYPE, COLUMN_NAME_CROSS_COUNT, COLUMN_NAME_CROSS_NAME)
+                    COLUMN_NAME_POLLINATION_TYPE, COLUMN_NAME_CROSS_COUNT, COLUMN_NAME_CROSS_NAME,
+                    COLUMN_NAME_NOTE)
         }
     }
 

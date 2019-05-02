@@ -1,19 +1,33 @@
 package org.phenoapps.intercross
 
+import android.content.ContentValues
 import android.content.Intent
+import android.database.Cursor
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.preference.PreferenceManager
+import android.text.InputType
 import android.transition.Explode
 import android.view.*
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.intercross.IntercrossActivity.Companion.CROSS_ID
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 class CrossActivity : AppCompatActivity() {
 
@@ -26,6 +40,8 @@ class CrossActivity : AppCompatActivity() {
 
     private val mParentEntries = ArrayList<AdapterEntry>()
     private val mChildrenEntries = ArrayList<AdapterEntry>()
+
+    private lateinit var mRow: IntercrossDbContract.Columns
 
     private val mDbHelper = IntercrossDbHelper(this)
 
@@ -73,12 +89,16 @@ class CrossActivity : AppCompatActivity() {
 
         val id = mDbHelper.getRowId(mCrossId)
 
+        mDbHelper.getRow(id)?.let {
+            mRow = it
+        }
+
         mTimestamp = mDbHelper.getTimestampById(id)
         mPerson = mDbHelper.getPersonById(id)
 
         crossEntry.findViewById<TextView>(R.id.personTextView).apply {
             visibility = View.VISIBLE
-            text = mPerson
+            text = "$mPerson\n${mRow.note}"
         }
 
         val polType = mDbHelper.getPollinationType(id)
@@ -178,9 +198,54 @@ class CrossActivity : AppCompatActivity() {
         return true
     }
 
+    private fun askForNote() {
+
+        val input = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_TEXT
+        }
+
+        val builder = AlertDialog.Builder(this).apply {
+
+            setView(input)
+
+            setPositiveButton("OK") { _, _ ->
+                val value = input.text.toString()
+                if (value.isNotEmpty()) {
+                    val entry = ContentValues()
+                    entry.put(IntercrossDbContract.IdEntry.COLUMN_NAME_CROSS,mRow.cross)
+                    entry.put(IntercrossDbContract.IdEntry.COLUMN_NAME_CROSS_COUNT, mRow.crossCount)
+                    entry.put(IntercrossDbContract.IdEntry.COLUMN_NAME_CROSS_NAME, mRow.crossName)
+                    entry.put(IntercrossDbContract.IdEntry.COLUMN_NAME_DATE, mRow.date)
+                    entry.put(IntercrossDbContract.IdEntry.COLUMN_NAME_FEMALE, mRow.female)
+                    entry.put(IntercrossDbContract.IdEntry.COLUMN_NAME_ID, mRow.id)
+                    entry.put(IntercrossDbContract.IdEntry.COLUMN_NAME_LOCATION, mRow.location)
+                    entry.put(IntercrossDbContract.IdEntry.COLUMN_NAME_MALE, mRow.male)
+                    entry.put(IntercrossDbContract.IdEntry.COLUMN_NAME_NOTE, value)
+                    entry.put(IntercrossDbContract.IdEntry.COLUMN_NAME_POLLINATION_TYPE, mRow.polType)
+                    entry.put(IntercrossDbContract.IdEntry.COLUMN_NAME_USER, mRow.user)
+
+                    mDbHelper.updateNote(entry)
+
+                    val crossEntry = findViewById<View>(R.id.crossEntry)
+
+                    crossEntry.findViewById<TextView>(R.id.personTextView).apply {
+                        visibility = View.VISIBLE
+                        text = "$mPerson\n$value"
+                    }
+                }
+            }
+        }
+
+        builder.setTitle("Add a note for this cross.")
+        builder.show()
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
         when (item.itemId) {
+            R.id.action_note -> {
+                askForNote()
+            }
             R.id.action_print -> {
                 if (mCode.isNotBlank()) {
                     if (mCode.contains("DFR:")) {
