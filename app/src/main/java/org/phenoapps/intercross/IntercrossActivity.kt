@@ -114,7 +114,7 @@ internal class IntercrossActivity : AppCompatActivity(), LifecycleObserver {
 
             val cross = mDbHelper.getRowId(mObj.first)
             val pol = mDbHelper.getPollinationType(cross)
-            itemView.findViewById<ImageView>(R.id.crossTypeImageView)
+            (itemView.findViewById(R.id.crossTypeImageView) as ImageView)
                     .setImageDrawable(when (pol) {
                         "Self-Pollinated" -> ContextCompat.getDrawable(this@IntercrossActivity,
                                 R.drawable.ic_cross_self)

@@ -365,6 +365,7 @@ internal class IntercrossDbHelper(ctx: Context) :
                     COLUMN_NAME_LOCATION -> columns.location = cursor.getString(cursor.getColumnIndex(COLUMN_NAME_LOCATION)) ?: ""
                     COLUMN_NAME_DATE -> columns.date = cursor.getString(cursor.getColumnIndex(COLUMN_NAME_DATE))
                     COLUMN_NAME_NOTE -> columns.note = cursor.getString(cursor.getColumnIndex(COLUMN_NAME_NOTE)) ?: ""
+                    COLUMN_NAME_USER -> columns.user = cursor.getString(cursor.getColumnIndex(COLUMN_NAME_USER)) ?: ""
                 }
             }
             return columns

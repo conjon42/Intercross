@@ -12,7 +12,7 @@ internal object IntercrossDbContract {
                     "${IdEntry.COLUMN_NAME_MALE} TEXT, ${IdEntry.COLUMN_NAME_USER}," +
                     "${IdEntry.COLUMN_NAME_DATE} TEXT, ${IdEntry.COLUMN_NAME_LOCATION} TEXT," +
                     "${IdEntry.COLUMN_NAME_POLLINATION_TYPE} TEXT, ${IdEntry.COLUMN_NAME_CROSS_COUNT} INTEGER," +
-                    "${IdEntry.COLUMN_NAME_CROSS_NAME} TEXT, ${IdEntry.COLUMN_NAME_NOTE})"
+                    "${IdEntry.COLUMN_NAME_CROSS_NAME} TEXT, ${IdEntry.COLUMN_NAME_NOTE} TEXT)"
 
     const val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS " + IdEntry.TABLE_NAME
 

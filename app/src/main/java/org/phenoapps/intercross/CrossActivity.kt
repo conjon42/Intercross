@@ -96,7 +96,7 @@ class CrossActivity : AppCompatActivity() {
         mTimestamp = mDbHelper.getTimestampById(id)
         mPerson = mDbHelper.getPersonById(id)
 
-        crossEntry.findViewById<TextView>(R.id.personTextView).apply {
+        (crossEntry.findViewById(R.id.personTextView) as TextView).apply {
             visibility = View.VISIBLE
             text = "$mPerson\n${mRow.note}"
         }
@@ -170,7 +170,7 @@ class CrossActivity : AppCompatActivity() {
             RecyclerView.ViewHolder(itemView), ViewAdapter.Binder<AdapterEntry> {
 
         private val firstView: TextView by lazy {
-            itemView.findViewById<TextView>(R.id.maleTextView)
+            itemView.findViewById(R.id.maleTextView) as TextView
         }
         private var mEntry: AdapterEntry = AdapterEntry()
 
@@ -228,7 +228,7 @@ class CrossActivity : AppCompatActivity() {
 
                     val crossEntry = findViewById<View>(R.id.crossEntry)
 
-                    crossEntry.findViewById<TextView>(R.id.personTextView).apply {
+                    (crossEntry.findViewById(R.id.personTextView) as TextView).apply {
                         visibility = View.VISIBLE
                         text = "$mPerson\n$value"
                     }

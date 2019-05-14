@@ -49,7 +49,7 @@ class SettingsActivity : AppCompatActivity() {
             setPreferencesFromResource(R.xml.preferences, rootKey)
 
             val printSetup = findPreference<androidx.preference.Preference>("org.phenoapps.intercross.PRINTER_SETUP")
-            printSetup.setOnPreferenceClickListener {
+            printSetup?.setOnPreferenceClickListener {
                 val intent = activity?.packageManager
                         ?.getLaunchIntentForPackage("com.zebra.printersetup")
                 when (intent) {
@@ -69,7 +69,7 @@ class SettingsActivity : AppCompatActivity() {
             val pref = PreferenceManager.getDefaultSharedPreferences(activity)
             if (pref.getBoolean("LABEL_PATTERN_CREATED", false)) {
                 val patternCreated = findPreference<androidx.preference.Preference>(SettingsActivity.PATTERN)
-                patternCreated.isEnabled = true
+                patternCreated?.isEnabled = true
             }
         }
 
@@ -78,7 +78,7 @@ class SettingsActivity : AppCompatActivity() {
             val pref = PreferenceManager.getDefaultSharedPreferences(activity)
             if (pref.getBoolean("LABEL_PATTERN_CREATED", false)) {
                 val patternCreated = findPreference<androidx.preference.Preference>(SettingsActivity.PATTERN)
-                patternCreated.isEnabled = true
+                patternCreated?.isEnabled = true
             }
         }
     }
