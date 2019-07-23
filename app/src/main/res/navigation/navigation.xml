@@ -3,16 +3,16 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    app:startDestination="@+id/experiment_fragment">
+    app:startDestination="@+id/events_fragment">
 
     <fragment
-        android:id="@+id/experiment_fragment"
-        android:name="edu.ksu.wheatgenetics.survey.fragments.ExperimentListFragment"
+        android:id="@+id/events_fragment"
+        android:name="edu.ksu.wheatgenetics.survey.fragments.EventsListFragment"
         android:label="Experiments"
-        tools:layout="@layout/fragment_experiment">
+        tools:layout="@layout/fragment_events">
 
         <action
-            android:id="@+id/action_experiment_fragment_to_sample_list_fragment"
+            android:id="@+id/action_events_fragment_to_sample_list_fragment"
             app:destination="@id/sample_list_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
@@ -36,9 +36,9 @@
         android:label="Samples"
         tools:layout="@layout/fragment_list_sample">
 
-        <argument
-            android:name="experiment"
-            app:argType="edu.ksu.wheatgenetics.survey.data.Experiment" />
+        <!--<argument
+            android:name="Events"
+            app:argType="edu.ksu.wheatgenetics.survey.data.Events" />-->
 
         <action
             android:id="@+id/action_sample_list_fragment_to_sample_fragment"

@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
 
         mDrawerLayout = binding.drawerLayout
 
-        mNavController = Navigation.findNavController(this, R.id.experiment_nav_fragment)
+        mNavController = Navigation.findNavController(this, R.id.nav_fragment)
 
         if (isExternalStorageWritable()) {
             mSurveyDirectory = File(Environment.getExternalStorageDirectory().path + "/Survey")

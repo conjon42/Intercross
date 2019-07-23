@@ -21,11 +21,7 @@ import edu.ksu.wheatgenetics.survey.GeoNavService
 import edu.ksu.wheatgenetics.survey.NmeaParser
 import edu.ksu.wheatgenetics.survey.R
 import edu.ksu.wheatgenetics.survey.adapters.SampleAdapter
-import edu.ksu.wheatgenetics.survey.data.Experiment
-import edu.ksu.wheatgenetics.survey.data.ExperimentRepository
-import edu.ksu.wheatgenetics.survey.data.SampleRepository
-import edu.ksu.wheatgenetics.survey.data.SurveyDatabase
-import edu.ksu.wheatgenetics.survey.databinding.FragmentListSampleBinding
+import edu.ksu.wheatgenetics.survey.data.*
 import edu.ksu.wheatgenetics.survey.viewmodels.SampleListViewModel
 import kotlin.concurrent.fixedRateTimer
 
@@ -35,9 +31,9 @@ class SampleListFragment: Fragment() {
     private lateinit var mViewModel: SampleListViewModel
 
     //a data binding class that contains the layout views
-    private lateinit var mBinding: FragmentListSampleBinding
+    //private lateinit var mBinding: FragmentListSampleBinding
 
-    private lateinit var mExperiment: Experiment
+    private lateinit var mEvents: Events
 
     private var parser = NmeaParser()
 
@@ -76,32 +72,26 @@ class SampleListFragment: Fragment() {
             handler.obtainMessage().sendToTarget()
         }
 
-        mExperiment = SampleListFragmentArgs.fromBundle(arguments!!).experiment
-        mBinding = edu.ksu.wheatgenetics.survey.databinding.FragmentListSampleBinding
-                .inflate(inflater, container, false)
+        //mEvents = SampleListFragmentArgs.fromBundle(arguments!!).events
 
-        mAdapter = SampleAdapter(mBinding.root.context)
-
-        mBinding.recyclerView.adapter = mAdapter
-
-        mViewModel = ViewModelProviders.of(this,
+        /*mViewModel = ViewModelProviders.of(this,
             object : ViewModelProvider.NewInstanceFactory() {
 
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                return SampleListViewModel(mExperiment.id, SampleRepository.getInstance(
+                return SampleListViewModel(mEvents.id, SampleRepository.getInstance(
                         SurveyDatabase.getInstance(requireContext()).sampleDao()),
                         ExperimentRepository.getInstance(SurveyDatabase.getInstance(requireContext()).experimentDao())) as T
             }
-        }).get(SampleListViewModel::class.java)
+        }).get(SampleListViewModel::class.java)*
 
         mViewModel.samples.observe(viewLifecycleOwner, Observer {samples ->
             samples.let {
                 mAdapter.submitList(samples.asReversed())
             }
-        })
+        })*/
 
-        mBinding.submitSample.setOnClickListener {
+        /*mBinding.submitSample.setOnClickListener {
             val input = EditText(requireContext()).apply {
                 inputType = InputType.TYPE_CLASS_TEXT
                 hint = "Sample"
@@ -117,8 +107,8 @@ class SampleListFragment: Fragment() {
                             && mBinding.lngTextView.text.isNotBlank()) {
                         //TODO ADD PERSON
 
-                        mViewModel.addSample(mExperiment, value, mBinding.latTextView.text.toString().toDouble(),
-                                mBinding.lngTextView.text.toString().toDouble(), "CHANEY")
+                        /*mViewModel.addSample(mEvents, value, mBinding.latTextView.text.toString().toDouble(),
+                                mBinding.lngTextView.text.toString().toDouble(), "CHANEY")*/
                         Snackbar.make(it,
                                 "New sample $value added.", Snackbar.LENGTH_SHORT).show()
                     } else {
@@ -129,9 +119,10 @@ class SampleListFragment: Fragment() {
                 setTitle("Enter a new experiment name")
             }
             builder.show()
-        }
+        }*/
 
-        return mBinding.root
+        return null
+        //return mBinding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -141,28 +132,28 @@ class SampleListFragment: Fragment() {
        // return super.onCreateOptionsMenu(menu, inflater)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+   /* override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_map_locations -> {
                 findNavController().navigate(
                         SampleListFragmentDirections
-                                .actionSampleListFragmentToMapFragment(mExperiment))
+                                .actionSampleListFragmentToMapFragment(mEvents))
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
-    }
+    }*/
 
     private val handler = Handler {
 
-        mBinding.latTextView.text = parser.latitude
+       /* mBinding.latTextView.text = parser.latitude
         mBinding.lngTextView.text = parser.longitude
         mBinding.accTextView.text = parser.fix
         mBinding.spdTextView.text = parser.speed
         mBinding.utcTextView.text = parser.utc
         mBinding.brgTextView.text = parser.bearing
         mBinding.satTextView.text = parser.satellites
-        mBinding.altTextView.text = parser.altitude
+        mBinding.altTextView.text = parser.altitude*/
          true
     }
 }

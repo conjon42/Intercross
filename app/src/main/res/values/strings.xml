@@ -11,4 +11,7 @@
     <string name="no_location_found">No location found.</string>
 
     <string name="survey">Survey</string>
+    <string name="cross_id">Cross ID:</string>
+    <string name="save_text">Save</string>
+
 </resources>

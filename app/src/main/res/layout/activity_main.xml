@@ -16,9 +16,9 @@
         <fragment
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/experiment_nav_fragment"
+            android:id="@+id/nav_fragment"
             android:name="androidx.navigation.fragment.NavHostFragment"
-            app:navGraph="@navigation/nav_experiment"
+            app:navGraph="@navigation/navigation"
             app:defaultNavHost="true" />
 
         <com.google.android.material.navigation.NavigationView
