@@ -1,0 +1,169 @@
+package org.phenoapps.intercross.fragments
+
+import android.app.Activity.RESULT_OK
+import android.content.Intent
+import android.os.Bundle
+import android.view.*
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.tabs.TabLayout
+import org.phenoapps.intercross.R
+import org.phenoapps.intercross.adapters.ParentsAdapter
+import org.phenoapps.intercross.data.*
+import org.phenoapps.intercross.databinding.FragmentParentsBinding
+import org.phenoapps.intercross.util.FileUtil
+import org.phenoapps.intercross.viewmodels.EventsListViewModel
+import org.phenoapps.intercross.viewmodels.ParentsViewModel
+import org.phenoapps.intercross.viewmodels.SettingsViewModel
+
+class ParentsFragment: Fragment() {
+
+    private lateinit var mBinding: FragmentParentsBinding
+
+    private lateinit var mEventsViewModel: EventsListViewModel
+
+    private lateinit var mParentsViewModel: ParentsViewModel
+
+    private lateinit var mSettingsViewModel: SettingsViewModel
+
+    private lateinit var mEvents: List<Events>
+
+    private lateinit var mMales: List<Parents>
+    private lateinit var mFemales: List<Parents>
+    private lateinit var mAdapter: ParentsAdapter
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, i: Intent?) {
+        super.onActivityResult(requestCode, resultCode, i)
+        if (requestCode == 101 && resultCode == RESULT_OK) {
+            i?.data?.let {
+                val lines = FileUtil(requireContext()).parseUri(it)
+                if (lines.isNotEmpty()) {
+                    val headerLine = lines[0]
+                    val headers = headerLine.split(",")
+                    val numCols = headers.size
+                    if (numCols == 4) { //lines = id,maleName,type,order
+                        (lines - lines[0]).forEach {
+                            val row = it.split(",")
+                            if (row.size == numCols) {
+                                mParentsViewModel.addParents(
+                                        row[0], row[1], row[2], row[3]
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onCreateView(
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
+    ): View? {
+
+        mAdapter = ParentsAdapter()
+
+        mBinding = FragmentParentsBinding
+                .inflate(inflater, container, false)
+
+        mBinding.recyclerView.adapter = mAdapter
+        mBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        mBinding.importButton.setOnClickListener {
+            mParentsViewModel.delete(*(mMales + mFemales).toTypedArray())
+            startActivityForResult(Intent.createChooser(Intent(Intent.ACTION_GET_CONTENT).apply {
+                type = "*/*" }, "Choose file to import"), 101)
+        }
+
+        mSettingsViewModel = ViewModelProviders.of(this,
+                object : ViewModelProvider.NewInstanceFactory() {
+                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return SettingsViewModel(SettingsRepository.getInstance(
+                                IntercrossDatabase.getInstance(requireContext()).settingsDao())) as T
+                    }
+                }).get(SettingsViewModel::class.java)
+
+        mEventsViewModel = ViewModelProviders.of(this,
+                object : ViewModelProvider.NewInstanceFactory() {
+                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return EventsListViewModel(EventsRepository.getInstance(
+                                IntercrossDatabase.getInstance(requireContext()).eventsDao())) as T
+                    }
+                }).get(EventsListViewModel::class.java)
+
+        mParentsViewModel = ViewModelProviders.of(this,
+                object : ViewModelProvider.NewInstanceFactory() {
+                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return ParentsViewModel(ParentsRepository.getInstance(
+                                IntercrossDatabase.getInstance(requireContext()).parentsDao())) as T
+                    }
+                }).get(ParentsViewModel::class.java)
+
+        mBinding.tabLayout2.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {
+            }
+
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                tab?.let {
+                    when(it.text) {
+                        "Female" -> {
+                            mAdapter.submitList(mFemales)
+                        }
+                        "Male" -> {
+                            mAdapter.submitList(mMales)
+                        }
+                    }
+                }
+            }
+
+        })
+
+        //print selected button TODO
+        mBinding.button3.setOnClickListener {
+            (mMales + mFemales).forEachIndexed { index, p ->
+                if (p.isSelected) {
+                    Snackbar.make(mBinding.root, "Printing ${p.parentName}", Snackbar.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        mParentsViewModel.parents.observe(viewLifecycleOwner, Observer {
+            it?.let {
+
+                //get uniques
+                val males = it.filter { p -> p.parentType == "male" }.toSet()
+                val females = it.filter { p -> p.parentType == "female" }.toSet()
+
+                mMales = males.toList()
+                mFemales = females.toList()
+
+                when (mBinding.tabLayout2.selectedTabPosition) {
+                    0 -> {
+                        mAdapter.submitList(mFemales)
+                    }
+                    else -> mAdapter.submitList(mMales)
+                }
+            }
+        })
+
+        return mBinding.root
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.activity_main_toolbar, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+}

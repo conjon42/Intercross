@@ -3,77 +3,79 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    app:startDestination="@+id/events_fragment">
+    app:startDestination="@+id/events_fragment"
+    android:id="@+id/main_graph">
 
     <fragment
         android:id="@+id/events_fragment"
-        android:name="edu.ksu.wheatgenetics.survey.fragments.EventsListFragment"
-        android:label="Experiments"
+        android:name="org.phenoapps.intercross.fragments.EventsFragment"
+        android:label="Events"
         tools:layout="@layout/fragment_events">
 
         <action
-            android:id="@+id/action_events_fragment_to_sample_list_fragment"
-            app:destination="@id/sample_list_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"/>
-
+            android:id="@+id/action_to_barcode_scan_fragment"
+            app:destination="@id/barcode_scan_fragment"/>
         <action
-            android:id="@+id/action_experiment_fragment_to_satellite_plot_fragment"
-            app:destination="@id/satellite_plot_fragment"/>
+            android:id="@+id/action_to_event"
+            app:destination="@id/event_fragment"/>
     </fragment>
 
     <fragment
-        android:id="@+id/satellite_plot_fragment"
-        android:name="edu.ksu.wheatgenetics.survey.fragments.SatViewFragment"
-        android:label="Satellite Plot"
-        tools:layout="@layout/fragment_satellite_plot"/>
-
-    <fragment
-        android:id="@+id/sample_list_fragment"
-        android:name="edu.ksu.wheatgenetics.survey.fragments.SampleListFragment"
-        android:label="Samples"
-        tools:layout="@layout/fragment_list_sample">
-
-        <!--<argument
-            android:name="Events"
-            app:argType="edu.ksu.wheatgenetics.survey.data.Events" />-->
+        android:id="@+id/barcode_scan_fragment"
+        android:name="org.phenoapps.intercross.fragments.BarcodeScanFragment"
+        android:label="Barcode Scan"
+        tools:layout="@layout/fragment_barcode_scan">
 
         <action
-            android:id="@+id/action_sample_list_fragment_to_sample_fragment"
-            app:destination="@id/sample_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"/>
-
-        <action
-            android:id="@+id/action_sample_list_fragment_to_map_fragment"
-            app:destination="@id/fragment_map"/>
-        <action
-            android:id="@+id/action_sample_list_fragment_to_satellite_plot_fragment"
-            app:destination="@id/satellite_plot_fragment" />
-
+            android:id="@+id/action_to_event_fragment"
+            app:destination="@id/event_fragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/fragment_map"
-        android:name="edu.ksu.wheatgenetics.survey.fragments.SampleMapFragment"
-        android:label="Maps"
-        tools:layout="@layout/fragment_map_plots">
+        android:id="@+id/event_fragment"
+        android:name="org.phenoapps.intercross.fragments.EventFragment"
+        android:label="Event"
+        tools:layout="@layout/fragment_event">
         <argument
-            android:name="experiment"
-            app:argType="edu.ksu.wheatgenetics.survey.data.Experiment" />
+            android:name="events"
+            app:argType="org.phenoapps.intercross.data.Events"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/event_fragment"/>
         <action
-            android:id="@+id/action_fragment_map_to_satellite_plot_fragment"
-            app:destination="@id/satellite_plot_fragment" />
+            android:id="@+id/action_event_fragment_self"
+            app:argType="org.phenoapps.intercross.data.Events"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/event_fragment"
+            app:destination="@id/event_fragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/sample_fragment"
-        android:name="edu.ksu.wheatgenetics.survey.fragments.SampleFragment"
-        android:label="Sample"
-        tools:layout="@layout/fragment_sample">
+        android:id="@+id/parents_fragment"
+        android:name="org.phenoapps.intercross.fragments.ParentsFragment"
+        android:label="Parents"
+        tools:layout="@layout/fragment_parents">
     </fragment>
+
+    <fragment
+        android:id="@+id/settings_fragment"
+        android:name="org.phenoapps.intercross.fragments.SettingsFragment"
+        android:label="Settings">
+        <action
+            android:id="@+id/action_to_pattern_fragment"
+            app:destination="@id/pattern_fragment"
+            app:launchSingleTop="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/pattern_fragment"
+        android:name="org.phenoapps.intercross.fragments.PatternFragment"
+        android:label="Patterns"
+        tools:layout="@layout/fragment_pattern">
+    </fragment>
+
+    <action
+        android:id="@+id/global_action_to_settings_fragment"
+        app:destination="@id/settings_fragment"
+        app:launchSingleTop="true"
+        app:popUpTo="@id/settings_fragment"/>
 </navigation>

@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:paddingLeft="15dp"
             android:textSize="30sp"
-            android:text="Survey"
+            android:text="Intercross"
             android:textColor="@android:color/white"
             android:textStyle="bold" />
     </androidx.appcompat.widget.LinearLayoutCompat>

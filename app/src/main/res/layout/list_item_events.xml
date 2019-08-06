@@ -7,14 +7,16 @@
             type="android.view.View.OnClickListener"/>
         <variable
             name="viewModel"
-            type="edu.ksu.wheatgenetics.survey.viewmodels.EventsViewModel"/>
+            type="org.phenoapps.intercross.viewmodels.EventsViewModel"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/linearLayout3"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:onClickListener="@{clickListener}"
+        android:background="@android:drawable/editbox_background_normal">
 
         <ImageView
             android:id="@+id/crossTypeImageView"
@@ -42,9 +44,8 @@
             app:layout_constraintEnd_toStartOf="@+id/crossTypeImageView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-
         <TextView
-            android:id="@+id/dateTextView2"
+            android:id="@+id/dateTextView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -72,7 +73,6 @@
             app:layout_constraintEnd_toStartOf="@+id/crossTypeImageView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/nameTextView" />
-
-
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 </layout>

@@ -2,13 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_connect_bluetooth"
-        android:icon="@drawable/ic_bluetooth_connect"
-        android:title="Connect to bluetooth device"
+        android:id="@+id/action_search_barcode"
+        android:icon="@drawable/ic_toolbar_search"
+        android:title="Search with barcode scanner."
         app:showAsAction="ifRoom"/>
     <item
-        android:id="@+id/action_map_locations"
-        android:icon="@drawable/ic_map"
-        android:title="Map locations."
+        android:id="@+id/action_continuous_barcode"
+        android:icon="@drawable/ic_barcode_scan"
+        android:title="Continuous scan and submit."
         app:showAsAction="ifRoom"/>
 </menu>

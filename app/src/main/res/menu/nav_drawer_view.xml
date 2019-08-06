@@ -2,23 +2,24 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/nav_plot_satellites"
-        android:icon="@drawable/ic_satellite_variant"
-        android:title="Plot Satellites" />
-    <item
-        android:id="@+id/nav_settings"
+        android:id="@+id/action_nav_settings"
         android:icon="@drawable/navbar_settings"
         android:title="Settings" />
-
+    <item
+        android:id="@+id/action_nav_parents"
+        android:icon="@drawable/navbar_export"
+        android:title="Parents" />
     <item
         android:id="@+id/action_navbar_export"
         android:icon="@drawable/navbar_export"
         android:title="Export" />
-
+    <item
+        android:id="@+id/action_import"
+        android:icon="@drawable/ic_about"
+        android:title="Import" />
     <item
         android:icon="@drawable/ic_about"
         android:title="About" />
-
     <item
         android:icon="@drawable/ic_help"
         android:title="Intro" />
