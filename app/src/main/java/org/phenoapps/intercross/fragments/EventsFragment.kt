@@ -24,6 +24,7 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
 import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
+import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.viewmodels.CrossSharedViewModel
 import org.phenoapps.intercross.viewmodels.EventsListViewModel
 import org.phenoapps.intercross.viewmodels.SettingsViewModel
@@ -149,10 +150,12 @@ class EventsFragment : Fragment() {
         mSharedViewModel.lastScan.observe(viewLifecycleOwner, Observer {
             it?.let {
                 if (it.isNotEmpty()) {
+
                     if ((firstText.text ?: "").isEmpty()) firstText.setText(it)
-                    else if ((secondText.text
-                                    ?: "").isEmpty() && !mAllowBlank) secondText.setText(it)
+                    else if ((secondText.text ?: "").isEmpty()) secondText.setText(it)
                     else if ((editTextCross.text ?: "").isEmpty()) editTextCross.setText(it)
+
+                    mSharedViewModel.lastScan.value = ""
 
                     if (isInputValid()) {
                         mSharedViewModel.lastScan.value = ""
@@ -218,6 +221,7 @@ class EventsFragment : Fragment() {
                         mOrder == 0 && mAllowBlank && (mBinding.firstText.text ?: "").isNotEmpty()
                                 && (mSettings.isPattern || mSettings.isUUID) ->
                             askUserNewExperimentName()
+                        mOrder == 1 && mAllowBlank -> secondText.requestFocus()
                         mAllowBlank && (mBinding.firstText.text ?: "").isNotEmpty() &&
                                 !(mSettings.isPattern || mSettings.isUUID) -> editTextCross.requestFocus()
                         (firstText.text ?: "").isNotEmpty() -> secondText.requestFocus()
@@ -391,6 +395,7 @@ class EventsFragment : Fragment() {
                     if (first.isNotEmpty() && (second.isNotEmpty() || mAllowBlank)) {
                         mEventsListViewModel.addCrossEvent(mBinding.editTextCross.text.toString(),
                                 mBinding.firstText.text.toString(), mBinding.secondText.text.toString())
+                        FileUtil(requireContext()).ringNotification(true)
                         checkWishlist(first.toString(), second.toString(), value)
                     } else Snackbar.make(mBinding.root,
                             "Parents must be defined.", Snackbar.LENGTH_SHORT).show()
@@ -401,16 +406,22 @@ class EventsFragment : Fragment() {
                             ((mBinding.firstText.text ?: "").isNotEmpty() || mAllowBlank)) {
                         mEventsListViewModel.addCrossEvent(mBinding.editTextCross.text.toString(),
                                 mBinding.secondText.text.toString(), mBinding.firstText.text.toString())
+                        FileUtil(requireContext()).ringNotification(true)
                         checkWishlist(second.toString(), first.toString(), value)
                     }
-                    else Snackbar.make(mBinding.root,
-                            "Parents must be defined.", Snackbar.LENGTH_SHORT).show()
+                    else {
+                        Snackbar.make(mBinding.root,
+                                "Parents must be defined.", Snackbar.LENGTH_SHORT).show()
+                        //FileUtil(requireContext()).ringNotification(false)
+                    }
                 }
             }
 
         } else {
             Snackbar.make(mBinding.root,
                     "You must enter a cross name.", Snackbar.LENGTH_LONG).show()
+            //FileUtil(requireContext()).ringNotification(false)
+
         }
     }
 
@@ -449,7 +460,7 @@ class EventsFragment : Fragment() {
                 mBinding.editTextCross.setText(UUID.randomUUID().toString())
             }
         }
-        if (current >= min) {
+        if (current >= min && min != 0) {
             Snackbar.make(mBinding.root, "Wishlist complete for $f and $m : $current/$min", Snackbar.LENGTH_LONG).show()
         } else Snackbar.make(mBinding.root,
                "New Cross Event! $x added.", Snackbar.LENGTH_SHORT).show()

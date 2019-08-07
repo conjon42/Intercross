@@ -1,16 +1,46 @@
 package org.phenoapps.intercross.util
 
 import android.content.Context
+import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.preference.PreferenceManager
 import android.provider.DocumentsContract
 import org.apache.poi.ss.usermodel.WorkbookFactory
+import org.phenoapps.intercross.fragments.SettingsFragment
 import java.io.*
 
 class FileUtil(val ctx: Context) {
 
-    fun getPath(uri: Uri?): String {
+    fun ringNotification(success: Boolean) {
+
+        if (PreferenceManager.getDefaultSharedPreferences(ctx)
+                        .getBoolean(SettingsFragment.AUDIO_ENABLED, false)) {
+            try {
+                when (success) {
+                    true -> {
+                        val chimePlayer = MediaPlayer.create(ctx, ctx.resources.getIdentifier("plonk", "raw", ctx.packageName))
+                        chimePlayer.start()
+                        chimePlayer.setOnCompletionListener {
+                            chimePlayer.release()
+                        }
+                    }
+                    false -> {
+                        val chimePlayer = MediaPlayer.create(ctx, ctx.resources.getIdentifier("error", "raw", ctx.packageName))
+                        chimePlayer.start()
+                        chimePlayer.setOnCompletionListener {
+                            chimePlayer.release()
+                        }
+                    }
+                }
+            } catch (e: IllegalStateException) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun getPath(uri: Uri?): String {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             when {

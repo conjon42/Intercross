@@ -10,17 +10,22 @@
         android:icon="@drawable/navbar_export"
         android:title="Parents" />
     <item
-        android:id="@+id/action_navbar_export"
+        android:id="@+id/action_nav_summary"
+        android:icon="@drawable/ic_about"
+        android:title="Summary" />
+    <item
+        android:id="@+id/action_nav_export"
         android:icon="@drawable/navbar_export"
         android:title="Export" />
     <item
-        android:id="@+id/action_import"
+        android:id="@+id/action_nav_import"
         android:icon="@drawable/ic_about"
         android:title="Import" />
     <item
         android:icon="@drawable/ic_about"
         android:title="About" />
     <item
-        android:icon="@drawable/ic_help"
+        android:id="@+id/action_nav_intro"
+        android:icon="@drawable/ic_about"
         android:title="Intro" />
 </menu>

@@ -12,7 +12,7 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.Parents
 import org.phenoapps.intercross.databinding.ListItemParentsBinding
 
-class ParentsAdapter()
+class ParentsAdapter
     : ListAdapter<Parents, ParentsAdapter.ViewHolder>(ParentsDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

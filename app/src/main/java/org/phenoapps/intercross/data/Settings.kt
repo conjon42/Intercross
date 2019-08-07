@@ -27,5 +27,7 @@ data class Settings (
 
     var allowBlank: Boolean = false,
 
-    var order: Int = 0
+    var order: Int = 0,
+
+    var collectData: Boolean = true
 )

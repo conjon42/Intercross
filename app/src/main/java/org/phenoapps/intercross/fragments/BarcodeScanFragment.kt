@@ -25,6 +25,7 @@ import com.journeyapps.barcodescanner.DecoratedBarcodeView
 import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.databinding.FragmentBarcodeScanBinding
+import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.viewmodels.CrossSharedViewModel
 import org.phenoapps.intercross.viewmodels.EventsListViewModel
 import org.phenoapps.intercross.viewmodels.SettingsViewModel
@@ -168,7 +169,10 @@ class BarcodeScanFragment: Fragment() {
                                     (mSharedViewModel.female.value ?: "").isEmpty() -> {
                                         mSharedViewModel.female.value = result.text.toString()
                                         mBinding.female.setImageBitmap(result.getBitmapWithResultPoints(Color.RED))
-                                        if (mAllowBlank && (mSettings.isUUID || mSettings.isPattern)) submitCross()
+                                        if (mAllowBlank && (mSettings.isUUID || mSettings.isPattern)) {
+                                            FileUtil(requireContext()).ringNotification(true)
+                                            submitCross()
+                                        }
                                         else Handler().postDelayed({
                                             mBarcodeScanner.barcodeView.decodeSingle(mCallback)
                                         }, 2000)
@@ -176,7 +180,10 @@ class BarcodeScanFragment: Fragment() {
                                     ((mSharedViewModel.male.value ?: "").isEmpty() && !mAllowBlank) -> {
                                         mSharedViewModel.male.value = result.text.toString()
                                         mBinding.male.setImageBitmap(result.getBitmapWithResultPoints(Color.BLUE))
-                                        if (mSettings.isUUID || mSettings.isPattern) submitCross()
+                                        if (mSettings.isUUID || mSettings.isPattern) {
+                                            FileUtil(requireContext()).ringNotification(true)
+                                            submitCross()
+                                        }
                                         else Handler().postDelayed({
                                             mBarcodeScanner.barcodeView.decodeSingle(mCallback)
                                         }, 2000)
@@ -185,20 +192,43 @@ class BarcodeScanFragment: Fragment() {
                                     ((mSharedViewModel.name.value ?: "").isEmpty() && !(mSettings.isUUID || mSettings.isPattern)) -> {
                                         mSharedViewModel.name.value = result.text.toString()
                                         mBinding.cross.setImageBitmap(result.getBitmapWithResultPoints(Color.GREEN))
+                                        FileUtil(requireContext()).ringNotification(true)
                                         submitCross()
                                     }
-                                    else -> submitCross()
+                                    else -> {
+                                        FileUtil(requireContext()).ringNotification(true)
+                                        submitCross()
+                                    }
                                 }
-                                //TODO finish male side
                                 1 -> when {
-                                    ((mSharedViewModel.male.value ?: "").isEmpty() && !mAllowBlank) -> {
+                                    !mAllowBlank && (mSharedViewModel.male.value ?: "").isEmpty() -> {
                                         mSharedViewModel.male.value = result.text.toString()
+                                        mBinding.male.setImageBitmap(result.getBitmapWithResultPoints(Color.BLUE))
+                                        Handler().postDelayed({
+                                            mBarcodeScanner.barcodeView.decodeSingle(mCallback)
+                                        }, 2000)
                                     }
                                     (mSharedViewModel.female.value ?: "").isEmpty() -> {
                                         mSharedViewModel.female.value = result.text.toString()
+                                        mBinding.female.setImageBitmap(result.getBitmapWithResultPoints(Color.RED))
+                                        if (mSettings.isUUID || mSettings.isPattern) {
+                                            FileUtil(requireContext()).ringNotification(true)
+                                            submitCross()
+                                        }
+                                        else Handler().postDelayed({
+                                            mBarcodeScanner.barcodeView.decodeSingle(mCallback)
+                                        }, 2000)
+
                                     }
-                                    ((mSharedViewModel.name.value ?: "").isEmpty() && !(mSettings.isUUID || mSettings.isPattern)) -> {
+                                    (mSharedViewModel.name.value ?: "").isEmpty() && !(mSettings.isUUID || mSettings.isPattern) -> {
                                         mSharedViewModel.name.value = result.text.toString()
+                                        mBinding.cross.setImageBitmap(result.getBitmapWithResultPoints(Color.GREEN))
+                                        FileUtil(requireContext()).ringNotification(true)
+                                        submitCross()
+                                    }
+                                    else -> {
+                                        FileUtil(requireContext()).ringNotification(true)
+                                        submitCross()
                                     }
                                 }
 
@@ -270,7 +300,7 @@ class BarcodeScanFragment: Fragment() {
             }
         }
 
-        if (current >= min) {
+        if (current >= min && min != 0) {
             Snackbar.make(mBinding.root, "Wishlist complete for $f and $m : $current/$min", Snackbar.LENGTH_LONG).show()
         } else Snackbar.make(mBinding.root,
                 "New Cross Event! $x added.", Snackbar.LENGTH_SHORT).show()

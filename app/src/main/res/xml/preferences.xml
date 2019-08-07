@@ -10,13 +10,14 @@
             android:icon="@drawable/ic_setting_location"
             android:key="org.phenoapps.intercross.LOCATION"
             android:title="Location" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="Workflow">
+
         <CheckBoxPreference
-            android:defaultValue="false"
-            android:icon="@drawable/ic_setting_sound"
-            android:key="org.phenoapps.intercross.AUDIO_ENABLED"
-            android:title="Audio Notifications" />
+            android:icon="@drawable/ic_about"
+            android:key="org.phenoapps.intercross.COLLECT_INFO"
+            android:title="Collect Additional Info"
+            android:defaultValue="true" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Naming">
         <ListPreference
             android:defaultValue="0"
             android:entries="@array/cross_order_array"
@@ -34,6 +35,13 @@
             android:key="org.phenoapps.intercross.CREATE_PATTERN"
             android:title="Create Pattern for Cross IDs">
         </Preference>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Workflow">
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_setting_sound"
+            android:key="org.phenoapps.intercross.AUDIO_ENABLED"
+            android:title="Audio Notifications" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Printing">
         <Preference

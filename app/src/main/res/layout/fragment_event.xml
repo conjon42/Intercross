@@ -55,7 +55,7 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/dateTextView"
+                android:id="@+id/countTextView"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -134,27 +134,30 @@
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
-            android:layout_width="395dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
-            android:visibility="@{model.allowBlank ? View.VISIBLE : View.INVISIBLE}"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toTopOf="@+id/button2"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/maleName">
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent">
 
             <com.google.android.material.tabs.TabItem
+                android:id="@+id/flowers"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Flowers" />
 
             <com.google.android.material.tabs.TabItem
+                android:id="@+id/fruits"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Fruits" />
 
             <com.google.android.material.tabs.TabItem
+                android:id="@+id/seeds"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Seeds" />
@@ -163,35 +166,31 @@
         <EditText
             android:id="@+id/countEditText"
             android:layout_width="0dp"
-            android:layout_height="64dp"
+            android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
             android:ems="10"
+            android:hint="Count:"
             android:inputType="number"
             android:textSize="24sp"
+            app:layout_constraintBottom_toTopOf="@+id/tabLayout"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tabLayout" />
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent" />
 
-        <EditText
-            android:id="@+id/dateEditText"
+        <Button
+            android:id="@+id/button2"
             android:layout_width="0dp"
-            android:layout_height="64dp"
+            android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
-            android:layout_marginBottom="16dp"
-            android:editable="false"
-            android:ems="10"
-            android:inputType="date"
-            android:text="Date"
-            android:textSize="24sp"
+            android:layout_marginBottom="8dp"
+            android:text="Submit"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/countEditText" />
+            app:layout_constraintStart_toStartOf="parent" />
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

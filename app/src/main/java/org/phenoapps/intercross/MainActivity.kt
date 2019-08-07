@@ -8,6 +8,7 @@ import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.preference.PreferenceManager
 import android.view.MenuItem
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -24,6 +25,7 @@ import com.google.android.material.navigation.NavigationView
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.databinding.ActivityMainBinding
+import org.phenoapps.intercross.fragments.SettingsFragment
 import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.viewmodels.WishlistViewModel
 import java.io.File
@@ -54,8 +56,16 @@ class MainActivity : AppCompatActivity() {
         return false
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onCreate(savedInstanceState: Bundle?) {
+
+        super.onCreate(savedInstanceState)
+
+        val binding: ActivityMainBinding = DataBindingUtil.setContentView(this@MainActivity,
+                R.layout.activity_main)
+
+        mDrawerLayout = binding.drawerLayout
+
+        mNavController = Navigation.findNavController(this@MainActivity, R.id.nav_fragment)
 
         mDrawerToggle = object : ActionBarDrawerToggle(this, mDrawerLayout,
                 R.string.drawer_open, R.string.drawer_close) {
@@ -80,40 +90,36 @@ class MainActivity : AppCompatActivity() {
                     mNavController.navigate(R.id.global_action_to_settings_fragment)
                 }
                 R.id.action_nav_parents -> {
-                    mNavController.navigate(R.id.parents_fragment)
+                    mNavController.navigate(R.id.global_action_to_parents_fragment)
                 }
-                R.id.action_import -> {
+                R.id.action_nav_import -> {
                     mWishListViewModel.deleteAll()
                     startActivityForResult(Intent.createChooser(Intent(Intent.ACTION_GET_CONTENT).apply {
                         type = "*/*" }, "Choose file to import"), REQ_FILE_IMPORT)
+                }
+                R.id.action_nav_intro -> {
+                    startActivity(Intent(this@MainActivity, IntroActivity::class.java))
+                }
+                R.id.action_nav_summary -> {
+                    mNavController.navigate(R.id.global_action_to_summary_fragment)
                 }
             }
             mDrawerLayout.closeDrawers()
             true
         }
 
-    }
+        //Show Tutorial Fragment for first-time users
+        val pref = PreferenceManager.getDefaultSharedPreferences(this)
+        pref.apply {
+            if (!getBoolean(SettingsFragment.TUTORIAL, false)) {
+                startActivity(Intent(this@MainActivity, IntroActivity::class.java))
+            }
+        }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-
-        super.onCreate(savedInstanceState)
-
-        mWishListViewModel = ViewModelProviders.of(this,
-            object : ViewModelProvider.NewInstanceFactory() {
-                override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                    @Suppress("UNCHECKED_CAST")
-                    return WishlistViewModel(WishlistRepository.getInstance(
-                            IntercrossDatabase.getInstance(this@MainActivity).wishlistDao())) as T
-
-                }
-            }).get(WishlistViewModel::class.java)
-
-        val binding: ActivityMainBinding = DataBindingUtil.setContentView(this,
-                R.layout.activity_main)
-
-        mDrawerLayout = binding.drawerLayout
-
-        mNavController = Navigation.findNavController(this, R.id.nav_fragment)
+        pref.edit().apply{
+            putBoolean(SettingsFragment.TUTORIAL, true)
+            apply()
+        }
 
         if (isExternalStorageWritable()) {
             mDirectory = File(Environment.getExternalStorageDirectory().path + "/Intercross")
@@ -121,6 +127,17 @@ class MainActivity : AppCompatActivity() {
                 mDirectory.mkdirs()
             }
         }
+
+        mWishListViewModel = ViewModelProviders.of(this@MainActivity,
+                object : ViewModelProvider.NewInstanceFactory() {
+                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return WishlistViewModel(WishlistRepository.getInstance(
+                                IntercrossDatabase.getInstance(this@MainActivity).wishlistDao())) as T
+
+                    }
+                }).get(WishlistViewModel::class.java)
+
     }
 
    /* override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -170,6 +187,7 @@ class MainActivity : AppCompatActivity() {
                 if (lines.isNotEmpty()) {
                     val headerLine = lines[0]
                     val headers = headerLine.split(",")
+                    //TODO verify headers are correct
                     val numCols = headers.size
                     if (numCols == 7) { //lines = fid,mid,fname,mname,type,min,max
                         (lines - lines[0]).forEach {
@@ -193,6 +211,7 @@ class MainActivity : AppCompatActivity() {
         const val REQ_EXT_STORAGE = 101
         const val REQ_CAMERA = 102
         const val REQ_FILE_IMPORT = 103
+
     }
 
 }

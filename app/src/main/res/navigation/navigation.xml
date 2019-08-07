@@ -32,6 +32,13 @@
     </fragment>
 
     <fragment
+        android:id="@+id/summary_fragment"
+        android:name="org.phenoapps.intercross.fragments.SummaryFragment"
+        android:label="Summary"
+        tools:layout="@layout/fragment_summary">
+    </fragment>
+
+    <fragment
         android:id="@+id/event_fragment"
         android:name="org.phenoapps.intercross.fragments.EventFragment"
         android:label="Event"
@@ -78,4 +85,14 @@
         app:destination="@id/settings_fragment"
         app:launchSingleTop="true"
         app:popUpTo="@id/settings_fragment"/>
+    <action
+        android:id="@+id/global_action_to_parents_fragment"
+        app:destination="@id/parents_fragment"
+        app:launchSingleTop="true"
+        app:popUpTo="@id/parents_fragment"/>
+    <action
+        android:id="@+id/global_action_to_summary_fragment"
+        app:destination="@id/summary_fragment"
+        app:launchSingleTop="true"
+        app:popUpTo="@id/summary_fragment"/>
 </navigation>

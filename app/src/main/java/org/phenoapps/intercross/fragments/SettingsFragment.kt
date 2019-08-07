@@ -25,4 +25,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
     }
+
+    companion object {
+        const val TUTORIAL = "org.phenoapps.intercross.TUTORIAL"
+        const val AUDIO_ENABLED = "org.phenoapps.intercross.AUDIO_ENABLED"
+        const val COLLECT_INFO = "org.phenoapps.intercross.COLLECT_INFO"
+
+    }
 }

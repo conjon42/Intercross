@@ -15,4 +15,15 @@
     <string name="suffix">suffix</string>
     <string name="prefix">prefix</string>
 
+    <!-- Intro Strings -->
+    <string name="intro_title_1">Welcome to Intercross!</string>
+    <string name="intro_title_2">Barcodes</string>
+    <string name="intro_title_3">Print labels</string>
+    <string name="intro_title_4">Export data</string>
+
+    <string name="intro_body_1">Track your crosses and various phenotypes.</string>
+    <string name="intro_body_2">After you give Intercross permission to access your device\'s camera you can start scanning barcodes.</string>
+    <string name="intro_body_3">Print barcodes with your Zebra bluetooth printer.</string>
+    <string name="intro_body_4">Crosses can be exported to a local file.</string>
+
 </resources>

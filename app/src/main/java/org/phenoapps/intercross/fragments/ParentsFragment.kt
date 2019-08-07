@@ -16,6 +16,7 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.ParentsAdapter
 import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.databinding.FragmentParentsBinding
+import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.viewmodels.EventsListViewModel
 import org.phenoapps.intercross.viewmodels.ParentsViewModel
@@ -131,13 +132,17 @@ class ParentsFragment: Fragment() {
 
         })
 
-        //print selected button TODO
         mBinding.button3.setOnClickListener {
-            (mMales + mFemales).forEachIndexed { index, p ->
-                if (p.isSelected) {
-                    Snackbar.make(mBinding.root, "Printing ${p.parentName}", Snackbar.LENGTH_SHORT).show()
-                }
+
+            val events = ArrayList<Events>()
+            (mMales + mFemales).forEach {
+                if (it.isSelected) events.add(
+                        Events(0, it.parentDbId, 0, "none", "none"))
             }
+            if (events.isNotEmpty()) {
+                BluetoothUtil().templatePrint(requireContext(), events.toTypedArray())
+            }
+
         }
 
         mParentsViewModel.parents.observe(viewLifecycleOwner, Observer {
@@ -160,10 +165,5 @@ class ParentsFragment: Fragment() {
         })
 
         return mBinding.root
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.activity_main_toolbar, menu)
-        super.onCreateOptionsMenu(menu, inflater)
     }
 }

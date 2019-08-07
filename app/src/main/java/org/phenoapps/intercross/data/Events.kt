@@ -12,12 +12,17 @@ import java.time.format.DateTimeFormatter
 data class Events(var eid: Int, var eventDbId: String, var eventValue: Int,
                   var femaleObsUnitDbId: String, var maleOBsUnitDbId: String): Parcelable {
 
-    @ColumnInfo(name = "id") @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
+    @PrimaryKey(autoGenerate = true)
     var id: Int = 0
 
     var date = LocalDateTime.now().format(DateTimeFormatter.ofPattern(
             "yyyy-MM-dd HH:mm:ss.SSS"
     ))
+
+    var flowers = 0
+    var fruits = 0
+    var seeds = 0
 
     constructor(parcel: Parcel) : this(
             parcel.readInt(),
@@ -27,6 +32,9 @@ data class Events(var eid: Int, var eventDbId: String, var eventValue: Int,
             parcel.readString()) {
         id = parcel.readInt()
         date = parcel.readString()
+        flowers = parcel.readInt()
+        fruits = parcel.readInt()
+        seeds = parcel.readInt()
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -37,6 +45,9 @@ data class Events(var eid: Int, var eventDbId: String, var eventValue: Int,
         parcel.writeString(maleOBsUnitDbId)
         parcel.writeInt(id)
         parcel.writeString(date)
+        parcel.writeInt(flowers)
+        parcel.writeInt(fruits)
+        parcel.writeInt(seeds)
     }
 
     override fun describeContents(): Int {
@@ -53,28 +64,3 @@ data class Events(var eid: Int, var eventDbId: String, var eventValue: Int,
         }
     }
 }
-/*package org.phenoapps.intercross.data
-
-import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Update
-
-@Dao
-interface SampleDao {
-    @Query("SELECT * FROM samples WHERE :eid = eid")
-    fun getAll(eid: Int): LiveData<List<Sample>>
-
-    @Query("SELECT * from samples WHERE :eid = eid and plot = :plot")
-    fun getPlot(eid: Int, plot: String): LiveData<List<Sample>>
-
-    @Query("SELECT plot from samples WHERE :eid = eid")
-    fun getPlotNames(eid: Int): LiveData<List<String>>
-
-    @Update
-    fun updateSamples(vararg s: Sample): Int
-
-    @Insert
-    fun insert(s: Sample): Long
-}*/
