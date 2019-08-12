@@ -1,5 +1,7 @@
 package org.phenoapps.intercross.fragments
 
+import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.text.Editable
@@ -7,8 +9,11 @@ import android.text.TextWatcher
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
@@ -18,8 +23,12 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_events.*
+import org.phenoapps.intercross.IntroActivity
+import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
 import org.phenoapps.intercross.data.*
@@ -35,22 +44,17 @@ class EventsFragment : Fragment() {
 
     private lateinit var mBinding: FragmentEventsBinding
 
+    private lateinit var mDrawerLayout: DrawerLayout
+    private lateinit var mDrawerToggle: ActionBarDrawerToggle
     private lateinit var mAdapter: EventsAdapter
-
     private lateinit var mEventsListViewModel: EventsListViewModel
-
     private lateinit var mSharedViewModel: CrossSharedViewModel
-
     private lateinit var mSettingsViewModel: SettingsViewModel
-
     private lateinit var mWishlistViewModel: WishlistViewModel
-
     private lateinit var mWishlist: List<Wishlist>
-
+    private lateinit var mFocused: View
     private var mSettings = Settings()
-
     private var mAllowBlank = false
-
     private var mOrder = 0
 
 
@@ -198,8 +202,9 @@ class EventsFragment : Fragment() {
             }
         }
 
-        val focusListener = View.OnFocusChangeListener { _, p1 ->
-            if (p1 && (PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val focusListener = View.OnFocusChangeListener { v, hasFocus ->
+            if (hasFocus) mFocused = v
+            if (hasFocus && (PreferenceManager.getDefaultSharedPreferences(requireContext())
                             .getString("org.phenoapps.intercross.PERSON", "") ?: "").isBlank()) {
                 askUserForPerson()
             }
@@ -291,7 +296,6 @@ class EventsFragment : Fragment() {
                 }
             }
         }
-
 
         return mBinding.root
     }

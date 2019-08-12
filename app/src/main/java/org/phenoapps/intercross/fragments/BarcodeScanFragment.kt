@@ -22,6 +22,7 @@ import com.google.zxing.ResultPoint
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.DecoratedBarcodeView
+import kotlinx.android.synthetic.main.fragment_event.view.*
 import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.databinding.FragmentBarcodeScanBinding
@@ -127,6 +128,15 @@ class BarcodeScanFragment: Fragment() {
         mBinding =
                 FragmentBarcodeScanBinding.inflate(inflater, container, false)
 
+        arguments?.let {
+            mBinding.zxingBarcodeScanner.setStatusText(
+                when (it.getString("mode")) {
+                    "search" -> "Search"
+                    "continuous" -> "Continuous"
+                    else -> "Single"
+                })
+        }
+
         val orderKey = "org.phenoapps.intercross.CROSS_ORDER"
         val blankKey = "org.phenoapps.intercross.BLANK_MALE_ID"
         val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
@@ -146,16 +156,20 @@ class BarcodeScanFragment: Fragment() {
                 if (result.text == null) return // || result.text == lastText) return
 
                 lastText = result.text
+                mBinding.zxingBarcodeScanner.statusView.text = "Single Mode"
 
                 //binding.zxingBarcodeScanner.setStatusText(result.text)
 
                 arguments?.let {
                     when(it.getString("mode")) {
                         "single" -> {
+                            mBinding.zxingBarcodeScanner.setStatusText("Single")
                             mSharedViewModel.lastScan.value = result.text.toString()
                             findNavController().popBackStack()
                         }
                         "search" -> {
+                            mBinding.zxingBarcodeScanner.setStatusText("Search Mode")
+
                             //mSharedViewModel.lastScan.value = result.text.toString()
                             mEvents.forEach { event ->
                                 if (event.eventDbId == result.text.toString()) {
@@ -164,6 +178,8 @@ class BarcodeScanFragment: Fragment() {
                             }
                         }
                         "continuous" -> {
+                            mBinding.zxingBarcodeScanner.setStatusText("Continuous Mode")
+
                             when (mOrder) {
                                 0 -> when {
                                     (mSharedViewModel.female.value ?: "").isEmpty() -> {

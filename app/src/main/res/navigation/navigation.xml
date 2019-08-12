@@ -45,14 +45,10 @@
         tools:layout="@layout/fragment_event">
         <argument
             android:name="events"
-            app:argType="org.phenoapps.intercross.data.Events"
-            app:launchSingleTop="true"
-            app:popUpTo="@id/event_fragment"/>
+            app:argType="org.phenoapps.intercross.data.Events"/>
         <action
             android:id="@+id/action_event_fragment_self"
             app:argType="org.phenoapps.intercross.data.Events"
-            app:launchSingleTop="true"
-            app:popUpTo="@id/event_fragment"
             app:destination="@id/event_fragment" />
     </fragment>
 

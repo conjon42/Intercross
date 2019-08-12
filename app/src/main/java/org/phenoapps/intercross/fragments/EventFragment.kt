@@ -43,6 +43,7 @@ class EventFragment: Fragment() {
             savedInstanceState: Bundle?
     ): View? {
 
+
         setHasOptionsMenu(true)
 
         arguments?.getParcelable<Events>("events")?.let {
