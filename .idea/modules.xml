@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/IntercrossJETPACK.iml" filepath="$PROJECT_DIR$/IntercrossJETPACK.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ZSDK_ANDROID_API/ZSDK_ANDROID_API.iml" filepath="$PROJECT_DIR$/ZSDK_ANDROID_API/ZSDK_ANDROID_API.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

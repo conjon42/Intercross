@@ -49,6 +49,17 @@ class SummaryAdapter(
 
             with(binding) {
                 viewModel = SummaryViewModel(data)
+                data.f?.let {
+                    femaleClick = Navigation.createNavigateOnClickListener(R.id.global_action_to_event_fragment, Bundle().apply {
+                        putParcelable("events", it)
+                    })
+                }
+                data.m?.let {
+                    maleClick = Navigation.createNavigateOnClickListener(R.id.global_action_to_event_fragment, Bundle().apply {
+                        putParcelable("events", it)
+                    })
+                }
+
                 executePendingBindings()
             }
         }
@@ -58,10 +69,10 @@ class SummaryAdapter(
 private class SummaryDiffCallback : DiffUtil.ItemCallback<SummaryFragment.SummaryData>() {
 
     override fun areItemsTheSame(oldItem: SummaryFragment.SummaryData, newItem: SummaryFragment.SummaryData): Boolean {
-        return oldItem.name == newItem.name
+        return oldItem.event.id == newItem.event.id
     }
 
     override fun areContentsTheSame(oldItem: SummaryFragment.SummaryData, newItem: SummaryFragment.SummaryData): Boolean {
-        return oldItem.name == newItem.name
+        return  oldItem.event.id == newItem.event.id
     }
 }

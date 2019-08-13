@@ -2,7 +2,9 @@ package org.phenoapps.intercross.fragments
 
 import android.app.Activity.RESULT_OK
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -12,6 +14,8 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
+import org.phenoapps.intercross.MainActivity
+import org.phenoapps.intercross.MainActivity.Companion.REQ_FILE_IMPORT
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.ParentsAdapter
 import org.phenoapps.intercross.data.*
@@ -40,7 +44,7 @@ class ParentsFragment: Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, i: Intent?) {
         super.onActivityResult(requestCode, resultCode, i)
-        if (requestCode == 101 && resultCode == RESULT_OK) {
+        if (requestCode == REQ_FILE_IMPORT && resultCode == RESULT_OK) {
             i?.data?.let {
                 val lines = FileUtil(requireContext()).parseUri(it)
                 if (lines.isNotEmpty()) {
@@ -78,8 +82,13 @@ class ParentsFragment: Fragment() {
 
         mBinding.importButton.setOnClickListener {
             mParentsViewModel.delete(*(mMales + mFemales).toTypedArray())
-            startActivityForResult(Intent.createChooser(Intent(Intent.ACTION_GET_CONTENT).apply {
-                type = "*/*" }, "Choose file to import"), 101)
+
+            val uri = Uri.parse(Environment.getExternalStorageDirectory().path
+                    + "/Intercross/Import/Parents/")
+            startActivityForResult(Intent.createChooser(Intent(Intent.ACTION_GET_CONTENT)
+                    .apply {
+                        setDataAndType(uri, "*/*")
+                    }, "Choose parents to import"), REQ_FILE_IMPORT)
         }
 
         mSettingsViewModel = ViewModelProviders.of(this,

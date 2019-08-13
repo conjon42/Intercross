@@ -91,4 +91,8 @@
         app:destination="@id/summary_fragment"
         app:launchSingleTop="true"
         app:popUpTo="@id/summary_fragment"/>
+    <action
+        android:id="@+id/global_action_to_event_fragment"
+        app:destination="@id/event_fragment"
+        />
 </navigation>

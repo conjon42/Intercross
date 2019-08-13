@@ -20,9 +20,10 @@ data class Events(var eid: Int, var eventDbId: String, var eventValue: Int,
             "yyyy-MM-dd HH:mm:ss.SSS"
     ))
 
-    var flowers = 0
-    var fruits = 0
-    var seeds = 0
+    //changed data columns to Strings to represent blank data
+    var flowers: String = "blank"
+    var fruits: String = "blank"
+    var seeds: String = "blank"
 
     constructor(parcel: Parcel) : this(
             parcel.readInt(),
@@ -32,9 +33,9 @@ data class Events(var eid: Int, var eventDbId: String, var eventValue: Int,
             parcel.readString()) {
         id = parcel.readInt()
         date = parcel.readString()
-        flowers = parcel.readInt()
-        fruits = parcel.readInt()
-        seeds = parcel.readInt()
+        flowers = parcel.readString()
+        fruits = parcel.readString()
+        seeds = parcel.readString()
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -45,13 +46,17 @@ data class Events(var eid: Int, var eventDbId: String, var eventValue: Int,
         parcel.writeString(maleOBsUnitDbId)
         parcel.writeInt(id)
         parcel.writeString(date)
-        parcel.writeInt(flowers)
-        parcel.writeInt(fruits)
-        parcel.writeInt(seeds)
+        parcel.writeString(flowers)
+        parcel.writeString(fruits)
+        parcel.writeString(seeds)
     }
 
     override fun describeContents(): Int {
         return 0
+    }
+
+    override fun toString(): String {
+        return "$eid,$eventDbId,$eventValue,$femaleObsUnitDbId,$maleOBsUnitDbId,$id,$date,$flowers,$fruits,$seeds"
     }
 
     companion object CREATOR : Parcelable.Creator<Events> {

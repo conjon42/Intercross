@@ -3,6 +3,7 @@ package org.phenoapps.intercross.fragments
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.os.Handler
 import android.preference.PreferenceManager
 import android.text.Editable
 import android.text.TextWatcher
@@ -156,15 +157,20 @@ class EventsFragment : Fragment() {
                 if (it.isNotEmpty()) {
 
                     if ((firstText.text ?: "").isEmpty()) firstText.setText(it)
-                    else if ((secondText.text ?: "").isEmpty()) secondText.setText(it)
-                    else if ((editTextCross.text ?: "").isEmpty()) editTextCross.setText(it)
+                    else if ((secondText.text ?: "").isEmpty()) {
+                        secondText.setText(it)
+                        if ((mSettings.isPattern || mSettings.isUUID)) askUserNewExperimentName()
+                    }
+                    else if ((editTextCross.text ?: "").isEmpty()) {
+                        editTextCross.setText(it)
+                        askUserNewExperimentName()
+                    }
 
                     mSharedViewModel.lastScan.value = ""
 
-                    if (isInputValid()) {
-                        mSharedViewModel.lastScan.value = ""
+                    /*if (isInputValid()) {
                         askUserNewExperimentName()
-                    }
+                    }*/
                 }
             }
         })
@@ -222,15 +228,7 @@ class EventsFragment : Fragment() {
 
             firstText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
                 if (i == EditorInfo.IME_ACTION_DONE) {
-                    when {
-                        mOrder == 0 && mAllowBlank && (mBinding.firstText.text ?: "").isNotEmpty()
-                                && (mSettings.isPattern || mSettings.isUUID) ->
-                            askUserNewExperimentName()
-                        mOrder == 1 && mAllowBlank -> secondText.requestFocus()
-                        mAllowBlank && (mBinding.firstText.text ?: "").isNotEmpty() &&
-                                !(mSettings.isPattern || mSettings.isUUID) -> editTextCross.requestFocus()
-                        (firstText.text ?: "").isNotEmpty() -> secondText.requestFocus()
-                    }
+                    if ((mBinding.firstText.text ?: "").isNotEmpty()) mBinding.secondText.requestFocus()
                     return@OnEditorActionListener true
                 }
                 false
@@ -335,7 +333,7 @@ class EventsFragment : Fragment() {
             female = mBinding.secondText.text.toString()
         }
 
-        //calculate how how full the save button should be
+        //calculate how full the save button should be
         var numFilled = 0
         if (mAllowBlank) numFilled++
         else if (male.isNotBlank()) numFilled++
@@ -397,10 +395,16 @@ class EventsFragment : Fragment() {
             when (mOrder) {
                 0 -> {
                     if (first.isNotEmpty() && (second.isNotEmpty() || mAllowBlank)) {
+                        var male = second.toString()
+                        if (male.isEmpty()) male = "blank"
                         mEventsListViewModel.addCrossEvent(mBinding.editTextCross.text.toString(),
-                                mBinding.firstText.text.toString(), mBinding.secondText.text.toString())
+                                mBinding.firstText.text.toString(), male)
                         FileUtil(requireContext()).ringNotification(true)
-                        checkWishlist(first.toString(), second.toString(), value)
+                        checkWishlist(first.toString(), male, value)
+
+                        Handler().postDelayed(Runnable {
+                            mBinding.recyclerView.scrollToPosition(0)
+                        }, 250)
                     } else Snackbar.make(mBinding.root,
                             "Parents must be defined.", Snackbar.LENGTH_SHORT).show()
 
@@ -408,10 +412,15 @@ class EventsFragment : Fragment() {
                 1 -> {
                     if ((mBinding.secondText.text ?: "").isNotEmpty() &&
                             ((mBinding.firstText.text ?: "").isNotEmpty() || mAllowBlank)) {
+                        var male = first.toString()
+                        if (male.isEmpty()) male = "blank"
                         mEventsListViewModel.addCrossEvent(mBinding.editTextCross.text.toString(),
-                                mBinding.secondText.text.toString(), mBinding.firstText.text.toString())
+                                mBinding.secondText.text.toString(), male)
+                        Handler().postDelayed(Runnable {
+                            mBinding.recyclerView.scrollToPosition(0)
+                        }, 250)
                         FileUtil(requireContext()).ringNotification(true)
-                        checkWishlist(second.toString(), first.toString(), value)
+                        checkWishlist(second.toString(), male, value)
                     }
                     else {
                         Snackbar.make(mBinding.root,
@@ -465,6 +474,7 @@ class EventsFragment : Fragment() {
             }
         }
         if (current >= min && min != 0) {
+            FileUtil(requireContext()).ringNotification(true)
             Snackbar.make(mBinding.root, "Wishlist complete for $f and $m : $current/$min", Snackbar.LENGTH_LONG).show()
         } else Snackbar.make(mBinding.root,
                "New Cross Event! $x added.", Snackbar.LENGTH_SHORT).show()

@@ -12,8 +12,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.tabs.TabLayout
-import kotlinx.android.synthetic.main.fragment_event.view.*
-import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.IntercrossDatabase
@@ -22,6 +20,11 @@ import org.phenoapps.intercross.databinding.FragmentEventBinding
 import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.viewmodels.EventsListViewModel
 import org.phenoapps.intercross.viewmodels.SettingsViewModel
+import android.content.Context.INPUT_METHOD_SERVICE
+import androidx.core.content.ContextCompat.getSystemService
+import android.content.Context
+import android.view.inputmethod.InputMethodManager
+
 
 class EventFragment: Fragment() {
 
@@ -45,6 +48,8 @@ class EventFragment: Fragment() {
 
 
         setHasOptionsMenu(true)
+
+        activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
         arguments?.getParcelable<Events>("events")?.let {
             mEvent = it
@@ -76,32 +81,42 @@ class EventFragment: Fragment() {
             searchForParents(mBinding.femaleName.text.toString())
         }
 
-        if (mEvent.flowers == 0) mBinding.tabLayout.getTabAt(0)?.select()
-        else if (mEvent.fruits == 0) mBinding.tabLayout.getTabAt(1)?.select()
+        if (mEvent.flowers == "blank") mBinding.tabLayout.getTabAt(0)?.select()
+        else if (mEvent.fruits == "blank") mBinding.tabLayout.getTabAt(1)?.select()
         else mBinding.tabLayout.getTabAt(2)?.select()
 
         updateCountEditText()
 
         mBinding.button2.setOnClickListener {
-            val x = mBinding.countEditText.text.toString().toIntOrNull() ?: 0
-            mEventsViewModel.update(mEvent.apply {
-                when (mBinding.tabLayout.selectedTabPosition) {
-                    0 -> flowers = x
-                    1 -> fruits = x
-                    2 -> seeds = x
-                }
-            })
+            val x = mBinding.countEditText.text.toString()
+            Thread {
+                mEventsViewModel.update(mEvent.apply {
+                    when (mBinding.tabLayout.selectedTabPosition) {
+                        0 -> flowers = x
+                        1 -> fruits = x
+                        2 -> seeds = x
+                    }
+                })
+            }.run()
         }
 
         mBinding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
 
             override fun onTabReselected(tab: TabLayout.Tab?) {
+                mBinding.countEditText.requestFocus()
+                mBinding.countEditText.setSelection(mBinding.countEditText.text.length)
+                (requireActivity().getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager)
+                        .showSoftInput(mBinding.countEditText, InputMethodManager.SHOW_FORCED)
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab?) {
             }
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 updateCountEditText()
+                mBinding.countEditText.requestFocus()
+                mBinding.countEditText.setSelection(mBinding.countEditText.text.length)
+                (requireActivity().getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager)
+                        .showSoftInput(mBinding.countEditText, InputMethodManager.SHOW_FORCED)
             }
         })
 
@@ -135,9 +150,9 @@ class EventFragment: Fragment() {
 
     private fun updateCountEditText() {
         mBinding.countEditText.setText(when (mBinding.tabLayout.selectedTabPosition) {
-            0 -> mEvent.flowers.toString()
-            1 -> mEvent.fruits.toString()
-            else -> mEvent.seeds.toString()
+            0 -> if (mEvent.flowers == "blank") "" else mEvent.flowers
+            1 -> if (mEvent.fruits == "blank") "" else mEvent.fruits
+            else -> if (mEvent.seeds == "blank") "" else mEvent.seeds
         } )
     }
 
@@ -153,14 +168,14 @@ class EventFragment: Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.print_toolbar, menu)
+        inflater.inflate(org.phenoapps.intercross.R.menu.print_toolbar, menu)
         super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
         when(item.itemId) {
-            R.id.action_print -> {
+            org.phenoapps.intercross.R.id.action_print -> {
                 BluetoothUtil().templatePrint(requireContext(), arrayOf(mEvent))
             }
         }

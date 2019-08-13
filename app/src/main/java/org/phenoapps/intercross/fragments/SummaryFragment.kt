@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.phenoapps.intercross.adapters.SummaryAdapter
+import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.databinding.FragmentSummaryBinding
@@ -25,7 +26,7 @@ class SummaryFragment : Fragment() {
 
     private lateinit var mAdapter: SummaryAdapter
 
-    data class SummaryData(var name: String, var count: Int)
+    data class SummaryData(var m: Events?, var f: Events?, var event: Events, var count: Int)
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -62,18 +63,26 @@ class SummaryFragment : Fragment() {
 
                 events.forEach { x ->
 
-                    var others = events - x
-                    var count = 1
-                    others.forEach { y ->
+                    var f: Events? = null
+                    var m: Events? = null
+                    var count = 0
+
+                    events.forEach { y ->
+
                         if (x.maleOBsUnitDbId == y.maleOBsUnitDbId
-                                && x.femaleObsUnitDbId == y.femaleObsUnitDbId) count++
+                                && x.femaleObsUnitDbId == y.femaleObsUnitDbId) {
+                            count++
+                        }
+
+                        if (x.maleOBsUnitDbId == y.eventDbId) m = y
+                        if (x.femaleObsUnitDbId == y.eventDbId) f = y
                     }
 
-                    summaryList.add(SummaryData("${x.femaleObsUnitDbId} and ${x.maleOBsUnitDbId}", count))
+                    summaryList.add(SummaryData(m, f, x, count))
                 }
 
                 mAdapter.submitList(
-                        summaryList.toSet().toList()
+                        summaryList.distinctBy { "${it.event.femaleObsUnitDbId}/${it.event.maleOBsUnitDbId}" }
                 )
             }
         })

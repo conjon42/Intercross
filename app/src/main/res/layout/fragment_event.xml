@@ -32,10 +32,10 @@
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_marginEnd="8dp"
-                android:src="@{events.maleOBsUnitDbId.equals(`blank`) ? @drawable/ic_cross_open : events.femaleObsUnitDbId.equals(events.maleOBsUnitDbId) ? @drawable/ic_cross_self : @drawable/ic_cross_biparental}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                android:src="@{events.maleOBsUnitDbId.equals(`blank`) ? @drawable/ic_cross_open : events.femaleObsUnitDbId.equals(events.maleOBsUnitDbId) ? @drawable/ic_cross_self : @drawable/ic_cross_biparental}"/>
 
             <TextView
                 android:id="@+id/nameTextView"
@@ -44,16 +44,15 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
+                android:text="@{events.eventDbId}"
                 android:ellipsize="end"
                 android:gravity="start"
                 android:maxLines="1"
-                android:text="@{events.eventDbId}"
                 android:textAlignment="viewStart"
                 android:textSize="18sp"
                 app:layout_constraintEnd_toStartOf="@+id/crossTypeImageView"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
-
             <TextView
                 android:id="@+id/countTextView"
                 android:layout_width="0dp"
@@ -62,8 +61,8 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
-                android:gravity="start"
                 android:text="@{events.date}"
+                android:gravity="start"
                 android:textSize="18sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/crossTypeImageView"
@@ -87,34 +86,22 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:text="Parents"
-            android:textSize="26sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/layout3" />
-
         <Button
             android:id="@+id/femaleName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:ellipsize="end"
             android:gravity="start"
             android:maxLines="1"
-            android:text="@{events.femaleObsUnitDbId}"
+            android:text="@{`F:` + events.femaleObsUnitDbId}"
             android:textAlignment="viewStart"
-            android:textSize="30sp"
+            android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView" />
+            app:layout_constraintTop_toBottomOf="@+id/layout3" />
 
         <Button
             android:id="@+id/maleName"
@@ -125,9 +112,9 @@
             android:ellipsize="end"
             android:gravity="start"
             android:maxLines="1"
-            android:text="@{events.maleOBsUnitDbId}"
+            android:text="@{`M:` + events.maleOBsUnitDbId}"
             android:textAlignment="viewStart"
-            android:textSize="30sp"
+            android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/femaleName" />
@@ -168,6 +155,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
             android:ems="10"
@@ -176,8 +164,10 @@
             android:textSize="24sp"
             app:layout_constraintBottom_toTopOf="@+id/tabLayout"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/maleName"
+            app:layout_constraintVertical_bias="1.0" />
 
         <Button
             android:id="@+id/button2"

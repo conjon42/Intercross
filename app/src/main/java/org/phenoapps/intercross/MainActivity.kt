@@ -6,6 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.media.MediaScannerConnection
+import android.media.MediaScannerConnection.scanFile
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
@@ -20,6 +23,7 @@ import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
@@ -27,13 +31,20 @@ import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.navigation.NavigationView
-import org.phenoapps.intercross.data.IntercrossDatabase
-import org.phenoapps.intercross.data.WishlistRepository
+import com.google.android.material.snackbar.Snackbar
+import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.databinding.ActivityMainBinding
 import org.phenoapps.intercross.fragments.SettingsFragment
 import org.phenoapps.intercross.util.FileUtil
+import org.phenoapps.intercross.viewmodels.EventsListViewModel
+import org.phenoapps.intercross.viewmodels.ParentsViewModel
 import org.phenoapps.intercross.viewmodels.WishlistViewModel
 import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class MainActivity : AppCompatActivity() {
 
@@ -41,6 +52,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mDrawerToggle: ActionBarDrawerToggle
 
     private lateinit var mWishListViewModel: WishlistViewModel
+
+    private lateinit var mEventsViewModel: EventsListViewModel
+    private lateinit var mEvents: List<Events>
+
+    private lateinit var mParentsViewModel: ParentsViewModel
 
     private lateinit var mBinding: ActivityMainBinding
 
@@ -87,8 +103,7 @@ class MainActivity : AppCompatActivity() {
                 R.string.drawer_open, R.string.drawer_close) {
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
                 super.onDrawerSlide(drawerView, slideOffset)
-                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+                closeKeyboard()
             }
         }
 
@@ -108,8 +123,39 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.action_nav_import -> {
                     mWishListViewModel.deleteAll()
-                    startActivityForResult(Intent.createChooser(Intent(Intent.ACTION_GET_CONTENT).apply {
-                        type = "*/*" }, "Choose file to import"), REQ_FILE_IMPORT)
+                    val uri = Uri.parse("${mDirectory.path}/Import/Wishlist/")
+                    startActivityForResult(Intent.createChooser(Intent(Intent.ACTION_GET_CONTENT)
+                            .apply {
+                                setDataAndType(uri, "*/*")
+                            }, "Choose wishlist to import"), REQ_FILE_IMPORT)
+                }
+                R.id.action_nav_export -> {
+                    val lineSeparator = System.getProperty("line.separator")
+
+                    try {
+                        val dir = File(mDirectory.path + "/Export/")
+                        dir.mkdir()
+                        val output = File(dir, "crosses_${LocalDateTime.now().format(DateTimeFormatter.ofPattern(
+                                "yyyy-MM-dd HH:mm:ss.SSS"))}.csv")
+                        val fstream = FileOutputStream(output)
+
+                        fstream.write("eid,eventDbId,eventValue,femaleObsUnitDbId,maleObsUnitDbId,id,date,flowers,fruits,seeds".toByteArray())
+                        fstream.write(lineSeparator.toByteArray())
+
+                        mEvents.forEachIndexed { i, e ->
+                            fstream.write(e.toString().toByteArray())
+                            fstream.write(lineSeparator?.toByteArray())
+                        }
+                        scanFile(this@MainActivity, output)
+                        fstream.flush()
+                        fstream.close()
+                    } catch (e: FileNotFoundException) {
+                        e.printStackTrace()
+                    } catch (io: IOException) {
+                        io.printStackTrace()
+                    } finally {
+                        Snackbar.make(mBinding.root, "File write successful!", Snackbar.LENGTH_SHORT).show()
+                    }
                 }
                 R.id.action_nav_intro -> {
                     startActivity(Intent(this@MainActivity, IntroActivity::class.java))
@@ -153,22 +199,66 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (isExternalStorageWritable()) {
+
             mDirectory = File(Environment.getExternalStorageDirectory().path + "/Intercross")
-            if (!mDirectory.isDirectory) {
-                mDirectory.mkdirs()
+            if (!mDirectory.isDirectory) mDirectory.mkdirs()
+
+            //will import example csv files (that are stored in the raw folder) into the import folder
+            val importDir = File(mDirectory.path + "/Import")
+            val exportDir = File(mDirectory.path + "/Export")
+            if (!importDir.isDirectory) importDir.mkdirs()
+            if (!exportDir.isDirectory) exportDir.mkdirs()
+            val wishImport = File(importDir.path + "/Wishlist")
+            if (!wishImport.isDirectory) wishImport.mkdirs()
+            val parentImport = File(importDir.path + "/Parents")
+            if (!parentImport.isDirectory) parentImport.mkdirs()
+            val exampleWish = File(wishImport.path + "/example.csv")
+            val exampleParents = File(parentImport.path + "/example.csv")
+            if (!exampleWish.isFile) {
+                val stream = resources.openRawResource(R.raw.wishlist_example)
+                exampleWish.writeBytes(stream.readBytes())
+                stream.close()
+            }
+            if (!exampleParents.isFile) {
+                val stream = resources.openRawResource(R.raw.parents_example)
+                exampleParents.writeBytes(stream.readBytes())
+                stream.close()
             }
         }
+
+        val db = IntercrossDatabase.getInstance(this)
+
+        mEventsViewModel = ViewModelProviders.of(this@MainActivity,
+                object : ViewModelProvider.NewInstanceFactory() {
+                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return EventsListViewModel(EventsRepository.getInstance(db.eventsDao())) as T
+                    }
+                }).get(EventsListViewModel::class.java)
 
         mWishListViewModel = ViewModelProviders.of(this@MainActivity,
                 object : ViewModelProvider.NewInstanceFactory() {
                     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
                         @Suppress("UNCHECKED_CAST")
-                        return WishlistViewModel(WishlistRepository.getInstance(
-                                IntercrossDatabase.getInstance(this@MainActivity).wishlistDao())) as T
+                        return WishlistViewModel(WishlistRepository.getInstance(db.wishlistDao())) as T
 
                     }
                 }).get(WishlistViewModel::class.java)
 
+        mParentsViewModel = ViewModelProviders.of(this@MainActivity,
+                object : ViewModelProvider.NewInstanceFactory() {
+                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return ParentsViewModel(ParentsRepository.getInstance(db.parentsDao())) as T
+
+                    }
+                }).get(ParentsViewModel::class.java)
+
+        mEventsViewModel.events.observe(this, Observer {
+            it?.let {
+                mEvents = it
+            }
+        })
         //change the hamburger toggle to a back button whenever the fragment is
         //not the main events fragment
         mNavController.addOnDestinationChangedListener { controller, destination, arguments ->
@@ -187,13 +277,24 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-   /* override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.activity_main_toolbar, menu)
-        return super.onCreateOptionsMenu(menu)
-    }*/
+    fun scanFile(ctx: Context, filePath: File) {
+        MediaScannerConnection.scanFile(ctx, arrayOf(filePath.absolutePath), null, null)
+    }
+
+    private fun closeKeyboard() {
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+    }
+
+    /* override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+         menuInflater.inflate(R.menu.activity_main_toolbar, menu)
+         return super.onCreateOptionsMenu(menu)
+     }*/
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
         val dl = findViewById<DrawerLayout>(R.id.drawer_layout)
+
+        closeKeyboard()
 
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true
@@ -249,8 +350,10 @@ class MainActivity : AppCompatActivity() {
                     val numCols = headers.size
                     if (numCols == 7) { //lines = fid,mid,fname,mname,type,min,max
                         (lines - lines[0]).forEach {
-                            val row = it.split(",")
+                            val row = it.split(",").map { it.trim() }
                             if (row.size == numCols) {
+                                mParentsViewModel.addParents(row[0], row[2], "female", "")
+                                mParentsViewModel.addParents(row[1], row[3], "male", "")
                                 mWishListViewModel.addWishlist(
                                         row[0], row[1], row[2], row[3], row[4], row[5].toIntOrNull() ?: 0, row[6].toIntOrNull() ?: 0
                                 )

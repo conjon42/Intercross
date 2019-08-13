@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+<layout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
+        <variable
+            name="femaleClick"
+            type="android.view.View.OnClickListener"/>
+        <variable
+            name="maleClick"
+            type="android.view.View.OnClickListener"/>
         <variable
             name="viewModel"
             type="org.phenoapps.intercross.viewmodels.SummaryViewModel"/>
@@ -15,35 +22,48 @@
         android:background="@android:drawable/editbox_background_normal">
 
         <TextView
-            android:id="@+id/nameTextView"
-            android:layout_width="wrap_content"
+            android:id="@+id/countText"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="8dp"
+            android:text="@{viewModel.count}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/maleParentText"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
             android:ellipsize="end"
             android:gravity="start"
             android:maxLines="1"
-            android:text="@{viewModel.name}"
+            android:onClickListener="@{maleClick}"
+            android:text="@{viewModel.male}"
             android:textAlignment="viewStart"
             android:textSize="18sp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/countText"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/countTextView"
-            android:layout_width="wrap_content"
+            android:id="@+id/femaleParentText"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
             android:gravity="start"
-            android:text="@{viewModel.count}"
+            android:text="@{viewModel.female}"
             android:textSize="18sp"
+            android:onClickListener="@{femaleClick}"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintEnd_toStartOf="@+id/countText"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/maleParentText" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

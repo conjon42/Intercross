@@ -185,15 +185,11 @@ class BarcodeScanFragment: Fragment() {
                                     (mSharedViewModel.female.value ?: "").isEmpty() -> {
                                         mSharedViewModel.female.value = result.text.toString()
                                         mBinding.female.setImageBitmap(result.getBitmapWithResultPoints(Color.RED))
-                                        if (mAllowBlank && (mSettings.isUUID || mSettings.isPattern)) {
-                                            FileUtil(requireContext()).ringNotification(true)
-                                            submitCross()
-                                        }
-                                        else Handler().postDelayed({
+                                        Handler().postDelayed({
                                             mBarcodeScanner.barcodeView.decodeSingle(mCallback)
                                         }, 2000)
                                     }
-                                    ((mSharedViewModel.male.value ?: "").isEmpty() && !mAllowBlank) -> {
+                                    ((mSharedViewModel.male.value ?: "").isEmpty()) -> {
                                         mSharedViewModel.male.value = result.text.toString()
                                         mBinding.male.setImageBitmap(result.getBitmapWithResultPoints(Color.BLUE))
                                         if (mSettings.isUUID || mSettings.isPattern) {
@@ -211,13 +207,9 @@ class BarcodeScanFragment: Fragment() {
                                         FileUtil(requireContext()).ringNotification(true)
                                         submitCross()
                                     }
-                                    else -> {
-                                        FileUtil(requireContext()).ringNotification(true)
-                                        submitCross()
-                                    }
                                 }
                                 1 -> when {
-                                    !mAllowBlank && (mSharedViewModel.male.value ?: "").isEmpty() -> {
+                                    (mSharedViewModel.male.value ?: "").isEmpty() -> {
                                         mSharedViewModel.male.value = result.text.toString()
                                         mBinding.male.setImageBitmap(result.getBitmapWithResultPoints(Color.BLUE))
                                         Handler().postDelayed({
@@ -239,10 +231,6 @@ class BarcodeScanFragment: Fragment() {
                                     (mSharedViewModel.name.value ?: "").isEmpty() && !(mSettings.isUUID || mSettings.isPattern) -> {
                                         mSharedViewModel.name.value = result.text.toString()
                                         mBinding.cross.setImageBitmap(result.getBitmapWithResultPoints(Color.GREEN))
-                                        FileUtil(requireContext()).ringNotification(true)
-                                        submitCross()
-                                    }
-                                    else -> {
                                         FileUtil(requireContext()).ringNotification(true)
                                         submitCross()
                                     }
@@ -317,6 +305,7 @@ class BarcodeScanFragment: Fragment() {
         }
 
         if (current >= min && min != 0) {
+            FileUtil(requireContext()).ringNotification(true)
             Snackbar.make(mBinding.root, "Wishlist complete for $f and $m : $current/$min", Snackbar.LENGTH_LONG).show()
         } else Snackbar.make(mBinding.root,
                 "New Cross Event! $x added.", Snackbar.LENGTH_SHORT).show()
@@ -339,12 +328,15 @@ class BarcodeScanFragment: Fragment() {
         }
         mBarcodeScanner.barcodeView.stopDecoding()
 
+        var male = mSharedViewModel.male.value ?: String()
+        if (male.isEmpty()) male = "blank"
+
         checkWishlist(mSharedViewModel.female.value ?: String(),
-                mSharedViewModel.male.value ?: String(),
+                male,
                 cross)
 
         mEventsListViewModel.addCrossEvent(cross,
-                mSharedViewModel.female.value ?: String(), mSharedViewModel.male.value ?: String())
+                mSharedViewModel.female.value ?: String(), male)
 
         mSharedViewModel.name.value = ""
         mSharedViewModel.female.value = ""
