@@ -29,6 +29,13 @@ class EventsListViewModel internal constructor(
         }
     }
 
+    fun addCrossEvent(event: Events) {
+
+        viewModelScope.launch {
+            repo.createEvent(event.id, event.eventDbId, event.eventValue, event.femaleObsUnitDbId, event.maleOBsUnitDbId)
+        }
+    }
+
     fun delete(vararg e: Events) {
         viewModelScope.launch {
             repo.delete(*e)

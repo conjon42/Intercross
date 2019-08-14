@@ -35,6 +35,7 @@ import org.phenoapps.intercross.adapters.EventsAdapter
 import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
 import org.phenoapps.intercross.util.FileUtil
+import org.phenoapps.intercross.util.SnackbarQueue
 import org.phenoapps.intercross.viewmodels.CrossSharedViewModel
 import org.phenoapps.intercross.viewmodels.EventsListViewModel
 import org.phenoapps.intercross.viewmodels.SettingsViewModel
@@ -44,7 +45,6 @@ import java.util.*
 class EventsFragment : Fragment() {
 
     private lateinit var mBinding: FragmentEventsBinding
-
     private lateinit var mDrawerLayout: DrawerLayout
     private lateinit var mDrawerToggle: ActionBarDrawerToggle
     private lateinit var mAdapter: EventsAdapter
@@ -54,6 +54,8 @@ class EventsFragment : Fragment() {
     private lateinit var mWishlistViewModel: WishlistViewModel
     private lateinit var mWishlist: List<Wishlist>
     private lateinit var mFocused: View
+    private lateinit var mSnackbar: SnackbarQueue
+
     private var mSettings = Settings()
     private var mAllowBlank = false
     private var mOrder = 0
@@ -103,6 +105,8 @@ class EventsFragment : Fragment() {
         mBinding = FragmentEventsBinding
                 .inflate(inflater, container, false)
 
+        mSnackbar = SnackbarQueue()
+
         mAdapter = EventsAdapter(mBinding.root.context)
 
         mBinding.recyclerView.adapter = mAdapter
@@ -129,7 +133,11 @@ class EventsFragment : Fragment() {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
 
-                mEventsListViewModel.delete(mAdapter.currentList[viewHolder.adapterPosition])
+                val event = mAdapter.currentList[viewHolder.adapterPosition]
+                mEventsListViewModel.delete(event)
+                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "${event.eventDbId}", "Undo") {
+                    mEventsListViewModel.addCrossEvent(event)
+                })
 
             }
         }).attachToRecyclerView(mBinding.recyclerView)
@@ -305,8 +313,7 @@ class EventsFragment : Fragment() {
         val builder = AlertDialog.Builder(requireContext()).apply {
 
             setNegativeButton("Cancel") { _, _ ->
-                Snackbar.make(mBinding.root,
-                        "Person must be set before crosses can be made.", Snackbar.LENGTH_SHORT).show()
+                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "Person must be set before crosses can be made."))
             }
 
             setPositiveButton("Set Person") { _, _ ->
@@ -405,9 +412,7 @@ class EventsFragment : Fragment() {
                         Handler().postDelayed(Runnable {
                             mBinding.recyclerView.scrollToPosition(0)
                         }, 250)
-                    } else Snackbar.make(mBinding.root,
-                            "Parents must be defined.", Snackbar.LENGTH_SHORT).show()
-
+                    } else mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "Parents must be defined."))
                 }
                 1 -> {
                     if ((mBinding.secondText.text ?: "").isNotEmpty() &&
@@ -423,18 +428,15 @@ class EventsFragment : Fragment() {
                         checkWishlist(second.toString(), male, value)
                     }
                     else {
-                        Snackbar.make(mBinding.root,
-                                "Parents must be defined.", Snackbar.LENGTH_SHORT).show()
+                        mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "Parents must be defined."))
                         //FileUtil(requireContext()).ringNotification(false)
                     }
                 }
             }
 
         } else {
-            Snackbar.make(mBinding.root,
-                    "You must enter a cross name.", Snackbar.LENGTH_LONG).show()
+            mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "You must enter a cross name."))
             //FileUtil(requireContext()).ringNotification(false)
-
         }
     }
 
@@ -475,16 +477,9 @@ class EventsFragment : Fragment() {
         }
         if (current >= min && min != 0) {
             FileUtil(requireContext()).ringNotification(true)
-            Snackbar.make(mBinding.root, "Wishlist complete for $f and $m : $current/$min", Snackbar.LENGTH_LONG).show()
-        } else Snackbar.make(mBinding.root,
-               "New Cross Event! $x added.", Snackbar.LENGTH_SHORT).show()
+            mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "Wishlist complete for $f and $m : $current/$min"))
+        } else mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "New Cross Event! $x added."))
 
         mBinding.firstText.requestFocus()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        //mBinding.editTextCross.setText("${mSettings.prefix}${mSettings.number.toString().padStart(mSettings.pad, '0')}${mSettings.suffix}")
-
     }
 }
