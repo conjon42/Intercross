@@ -46,6 +46,10 @@ class BarcodeScanFragment: IntercrossBaseFragment() {
 
     private var lastText: String? = null
 
+    var mOrder: Int = 0
+    var mAllowBlank: Boolean = false
+    var mCollectData = true
+
     private fun isCameraAllowed(): Boolean {
 
         if (checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
@@ -61,6 +65,21 @@ class BarcodeScanFragment: IntercrossBaseFragment() {
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View? {
+
+        val orderKey = "org.phenoapps.intercross.CROSS_ORDER"
+        val blankKey = "org.phenoapps.intercross.BLANK_MALE_ID"
+        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        mOrder = (pref.getString(orderKey, "0") ?: "0").toInt()
+        mAllowBlank = pref.getBoolean(blankKey, false)
+        mCollectData = pref.getBoolean(SettingsFragment.COLLECT_INFO, true)
+
+        pref.registerOnSharedPreferenceChangeListener { sharedPreferences, key ->
+            when(key) {
+                orderKey -> mOrder = (sharedPreferences.getString(key, "0") ?: "0").toInt()
+                blankKey -> mAllowBlank = sharedPreferences.getBoolean(key, false)
+                SettingsFragment.COLLECT_INFO -> mCollectData = sharedPreferences.getBoolean(key, true)
+            }
+        }
 
         isCameraAllowed()
 

@@ -22,27 +22,8 @@ open class IntercrossBaseFragment : Fragment() {
 
     lateinit var mSnackbar: SnackbarQueue
 
-    var mOrder: Int = 0
-    var mAllowBlank: Boolean = false
-    var mCollectData = true
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val orderKey = "org.phenoapps.intercross.CROSS_ORDER"
-        val blankKey = "org.phenoapps.intercross.BLANK_MALE_ID"
-        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
-        mOrder = (pref.getString(orderKey, "0") ?: "0").toInt()
-        mAllowBlank = pref.getBoolean(blankKey, false)
-        mCollectData = pref.getBoolean(SettingsFragment.COLLECT_INFO, true)
-
-        pref.registerOnSharedPreferenceChangeListener { sharedPreferences, key ->
-            when(key) {
-                orderKey -> mOrder = (sharedPreferences.getString(key, "0") ?: "0").toInt()
-                blankKey -> mAllowBlank = sharedPreferences.getBoolean(key, false)
-                SettingsFragment.COLLECT_INFO -> sharedPreferences.getBoolean(key, true)
-            }
-        }
 
         val db = IntercrossDatabase.getInstance(requireContext())
 

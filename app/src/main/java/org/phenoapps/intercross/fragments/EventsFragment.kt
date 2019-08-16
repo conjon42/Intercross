@@ -52,11 +52,30 @@ class EventsFragment : IntercrossBaseFragment() {
 
     private var mSettings = Settings()
 
+    var mOrder: Int = 0
+    var mAllowBlank: Boolean = false
+    var mCollectData = true
+
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View? {
+
+        val orderKey = "org.phenoapps.intercross.CROSS_ORDER"
+        val blankKey = "org.phenoapps.intercross.BLANK_MALE_ID"
+        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        mOrder = (pref.getString(orderKey, "0") ?: "0").toInt()
+        mAllowBlank = pref.getBoolean(blankKey, false)
+        mCollectData = pref.getBoolean(SettingsFragment.COLLECT_INFO, true)
+
+        pref.registerOnSharedPreferenceChangeListener { sharedPreferences, key ->
+            when(key) {
+                orderKey -> mOrder = (sharedPreferences.getString(key, "0") ?: "0").toInt()
+                blankKey -> mAllowBlank = sharedPreferences.getBoolean(key, false)
+                SettingsFragment.COLLECT_INFO -> mCollectData = sharedPreferences.getBoolean(key, true)
+            }
+        }
 
         mBinding = FragmentEventsBinding
                 .inflate(inflater, container, false)
@@ -82,9 +101,6 @@ class EventsFragment : IntercrossBaseFragment() {
 
             }
         }).attachToRecyclerView(mBinding.recyclerView)
-
-
-
 
         //setup UI
 
@@ -211,6 +227,7 @@ class EventsFragment : IntercrossBaseFragment() {
                 mWishlist = it
             }
         })
+
         mSharedViewModel.lastScan.observe(viewLifecycleOwner, Observer {
             it?.let {
                 if (it.isNotEmpty()) {
@@ -226,10 +243,6 @@ class EventsFragment : IntercrossBaseFragment() {
                     }
 
                     mSharedViewModel.lastScan.value = ""
-
-                    /*if (isInputValid()) {
-                        askUserNewExperimentName()
-                    }*/
                 }
             }
         })
@@ -338,12 +351,35 @@ class EventsFragment : IntercrossBaseFragment() {
 
         val value = mBinding.editTextCross.text.toString()
 
-        if (value.isNotEmpty()) {
+        lateinit var male: String
+        lateinit var female: String
+        when (mOrder) {
+            0 -> {
+                female = (mBinding.firstText.text ?: "").toString()
+                male = (mBinding.secondText.text ?: "").toString()
+            }
+            1 -> {
+                male = (mBinding.firstText.text ?: "").toString()
+                female = (mBinding.secondText.text ?: "").toString()
+            }
+        }
 
-            val first = (mBinding.firstText.text ?: "")
-            val second = (mBinding.secondText.text ?: "")
+        if (value.isNotEmpty() && (male.isNotEmpty() || mAllowBlank)) {
 
-            when (mOrder) {
+            if (male.isEmpty()) male = "blank"
+            //val first = (mBinding.firstText.text ?: "")
+            //val second = (mBinding.secondText.text ?: "")
+
+            mEventsListViewModel.addCrossEvent(value, female, male)
+
+            FileUtil(requireContext()).ringNotification(true)
+            checkWishlist(female, male, value)
+
+            Handler().postDelayed(Runnable {
+                mBinding.recyclerView.scrollToPosition(0)
+            }, 250)
+
+            /*when (mOrder) {
                 0 -> {
                     if (first.isNotEmpty() && (second.isNotEmpty() || mAllowBlank)) {
                         var male = second.toString()
@@ -375,8 +411,8 @@ class EventsFragment : IntercrossBaseFragment() {
                         mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "Parents must be defined."))
                         //FileUtil(requireContext()).ringNotification(false)
                     }
-                }
-            }
+                }*/
+            //}
 
         } else {
             mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "You must enter a cross name."))
