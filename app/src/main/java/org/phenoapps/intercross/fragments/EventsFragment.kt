@@ -42,33 +42,15 @@ import org.phenoapps.intercross.viewmodels.SettingsViewModel
 import org.phenoapps.intercross.viewmodels.WishlistViewModel
 import java.util.*
 
-class EventsFragment : Fragment() {
+class EventsFragment : IntercrossBaseFragment() {
 
     private lateinit var mBinding: FragmentEventsBinding
-    private lateinit var mDrawerLayout: DrawerLayout
-    private lateinit var mDrawerToggle: ActionBarDrawerToggle
     private lateinit var mAdapter: EventsAdapter
-    private lateinit var mEventsListViewModel: EventsListViewModel
-    private lateinit var mSharedViewModel: CrossSharedViewModel
-    private lateinit var mSettingsViewModel: SettingsViewModel
-    private lateinit var mWishlistViewModel: WishlistViewModel
+
     private lateinit var mWishlist: List<Wishlist>
     private lateinit var mFocused: View
-    private lateinit var mSnackbar: SnackbarQueue
 
     private var mSettings = Settings()
-    private var mAllowBlank = false
-    private var mOrder = 0
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        activity?.run {
-            with(ViewModelProviders.of(this)) {
-                mSharedViewModel = this.get(CrossSharedViewModel::class.java)
-            }
-        }
-    }
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -76,54 +58,13 @@ class EventsFragment : Fragment() {
             savedInstanceState: Bundle?
     ): View? {
 
-        mSettingsViewModel = ViewModelProviders.of(this,
-                object : ViewModelProvider.NewInstanceFactory() {
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return SettingsViewModel(SettingsRepository.getInstance(
-                                IntercrossDatabase.getInstance(requireContext()).settingsDao())) as T
-
-                    }
-                }).get(SettingsViewModel::class.java)
-
-        mWishlistViewModel = ViewModelProviders.of(this,
-                object : ViewModelProvider.NewInstanceFactory() {
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return WishlistViewModel(WishlistRepository.getInstance(
-                                IntercrossDatabase.getInstance(requireContext()).wishlistDao())) as T
-
-                    }
-                }).get(WishlistViewModel::class.java)
-
-        mWishlistViewModel.wishlist.observe(viewLifecycleOwner, Observer{
-            it?.let {
-                mWishlist = it
-            }
-        })
-
         mBinding = FragmentEventsBinding
                 .inflate(inflater, container, false)
-
-        mSnackbar = SnackbarQueue()
 
         mAdapter = EventsAdapter(mBinding.root.context)
 
         mBinding.recyclerView.adapter = mAdapter
 
-        val db = IntercrossDatabase.getInstance(requireContext())
-
-        mEventsListViewModel = ViewModelProviders.of(this,
-                object : ViewModelProvider.NewInstanceFactory() {
-
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return EventsListViewModel(
-                                EventsRepository.getInstance(db.eventsDao())) as T
-
-                    }
-                }
-        ).get(EventsListViewModel::class.java)
 
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
 
@@ -142,61 +83,10 @@ class EventsFragment : Fragment() {
             }
         }).attachToRecyclerView(mBinding.recyclerView)
 
-        mEventsListViewModel.events.observe(viewLifecycleOwner, Observer { result ->
-            result?.let {
-                mAdapter.submitList(it.reversed())
-            }
-        })
 
-        val orderKey = "org.phenoapps.intercross.CROSS_ORDER"
-        val blankKey = "org.phenoapps.intercross.BLANK_MALE_ID"
-        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
-        mOrder = (pref.getString(orderKey, "0") ?: "0").toInt()
-        mAllowBlank = pref.getBoolean(blankKey, false)
-        pref.registerOnSharedPreferenceChangeListener { sharedPreferences, key ->
-            when(key) {
-                orderKey -> mOrder = (sharedPreferences.getString(key, "0") ?: "0").toInt()
-                blankKey -> mAllowBlank = sharedPreferences.getBoolean(key, false)
-            }
-        }
 
-        mSharedViewModel.lastScan.observe(viewLifecycleOwner, Observer {
-            it?.let {
-                if (it.isNotEmpty()) {
 
-                    if ((firstText.text ?: "").isEmpty()) firstText.setText(it)
-                    else if ((secondText.text ?: "").isEmpty()) {
-                        secondText.setText(it)
-                        if ((mSettings.isPattern || mSettings.isUUID)) askUserNewExperimentName()
-                    }
-                    else if ((editTextCross.text ?: "").isEmpty()) {
-                        editTextCross.setText(it)
-                        askUserNewExperimentName()
-                    }
-
-                    mSharedViewModel.lastScan.value = ""
-
-                    /*if (isInputValid()) {
-                        askUserNewExperimentName()
-                    }*/
-                }
-            }
-        })
-
-        mSettingsViewModel.settings.observe(viewLifecycleOwner, Observer {
-            it?.let {
-                mSettings = it
-                when {
-                    mSettings.isPattern -> {
-                        mBinding.editTextCross.setText("${mSettings.prefix}${mSettings.number.toString().padStart(mSettings.pad, '0')}${mSettings.suffix}")
-                    }
-                    mSettings.isUUID -> {
-                        mBinding.editTextCross.setText(UUID.randomUUID().toString())
-                    }
-                    else -> mBinding.editTextCross.setText("")
-                }
-            }
-        })
+        //setup UI
 
         setHasOptionsMenu(true)
 
@@ -303,7 +193,61 @@ class EventsFragment : Fragment() {
             }
         }
 
+        startObservers()
+
         return mBinding.root
+    }
+
+    private fun startObservers() {
+
+        mEventsListViewModel.events.observe(viewLifecycleOwner, Observer { result ->
+            result?.let {
+                mAdapter.submitList(it.reversed())
+            }
+        })
+
+        mWishlistViewModel.wishlist.observe(viewLifecycleOwner, Observer{
+            it?.let {
+                mWishlist = it
+            }
+        })
+        mSharedViewModel.lastScan.observe(viewLifecycleOwner, Observer {
+            it?.let {
+                if (it.isNotEmpty()) {
+
+                    if ((firstText.text ?: "").isEmpty()) firstText.setText(it)
+                    else if ((secondText.text ?: "").isEmpty()) {
+                        secondText.setText(it)
+                        if ((mSettings.isPattern || mSettings.isUUID)) askUserNewExperimentName()
+                    }
+                    else if ((editTextCross.text ?: "").isEmpty()) {
+                        editTextCross.setText(it)
+                        askUserNewExperimentName()
+                    }
+
+                    mSharedViewModel.lastScan.value = ""
+
+                    /*if (isInputValid()) {
+                        askUserNewExperimentName()
+                    }*/
+                }
+            }
+        })
+
+        mSettingsViewModel.settings.observe(viewLifecycleOwner, Observer {
+            it?.let {
+                mSettings = it
+                when {
+                    mSettings.isPattern -> {
+                        mBinding.editTextCross.setText("${mSettings.prefix}${mSettings.number.toString().padStart(mSettings.pad, '0')}${mSettings.suffix}")
+                    }
+                    mSettings.isUUID -> {
+                        mBinding.editTextCross.setText(UUID.randomUUID().toString())
+                    }
+                    else -> mBinding.editTextCross.setText("")
+                }
+            }
+        })
     }
 
     private fun askUserForPerson() {

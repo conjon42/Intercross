@@ -26,17 +26,9 @@ import org.phenoapps.intercross.viewmodels.EventsListViewModel
 import org.phenoapps.intercross.viewmodels.ParentsViewModel
 import org.phenoapps.intercross.viewmodels.SettingsViewModel
 
-class ParentsFragment: Fragment() {
+class ParentsFragment: IntercrossBaseFragment() {
 
     private lateinit var mBinding: FragmentParentsBinding
-
-    private lateinit var mEventsViewModel: EventsListViewModel
-
-    private lateinit var mParentsViewModel: ParentsViewModel
-
-    private lateinit var mSettingsViewModel: SettingsViewModel
-
-    private lateinit var mEvents: List<Events>
 
     private lateinit var mMales: List<Parents>
     private lateinit var mFemales: List<Parents>
@@ -90,33 +82,6 @@ class ParentsFragment: Fragment() {
                         setDataAndType(uri, "*/*")
                     }, "Choose parents to import"), REQ_FILE_IMPORT)
         }
-
-        mSettingsViewModel = ViewModelProviders.of(this,
-                object : ViewModelProvider.NewInstanceFactory() {
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return SettingsViewModel(SettingsRepository.getInstance(
-                                IntercrossDatabase.getInstance(requireContext()).settingsDao())) as T
-                    }
-                }).get(SettingsViewModel::class.java)
-
-        mEventsViewModel = ViewModelProviders.of(this,
-                object : ViewModelProvider.NewInstanceFactory() {
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return EventsListViewModel(EventsRepository.getInstance(
-                                IntercrossDatabase.getInstance(requireContext()).eventsDao())) as T
-                    }
-                }).get(EventsListViewModel::class.java)
-
-        mParentsViewModel = ViewModelProviders.of(this,
-                object : ViewModelProvider.NewInstanceFactory() {
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return ParentsViewModel(ParentsRepository.getInstance(
-                                IntercrossDatabase.getInstance(requireContext()).parentsDao())) as T
-                    }
-                }).get(ParentsViewModel::class.java)
 
         mBinding.tabLayout2.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
 

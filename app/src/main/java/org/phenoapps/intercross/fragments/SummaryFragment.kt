@@ -18,9 +18,7 @@ import org.phenoapps.intercross.databinding.FragmentSummaryBinding
 import org.phenoapps.intercross.viewmodels.EventsListViewModel
 
 
-class SummaryFragment : Fragment() {
-
-    private lateinit var mEventsListViewModel: EventsListViewModel
+class SummaryFragment : IntercrossBaseFragment() {
 
     private lateinit var mBinding: FragmentSummaryBinding
 
@@ -36,20 +34,6 @@ class SummaryFragment : Fragment() {
 
         mBinding = FragmentSummaryBinding
                 .inflate(inflater, container, false)
-
-        val db = IntercrossDatabase.getInstance(requireContext())
-
-        mEventsListViewModel = ViewModelProviders.of(this,
-                object : ViewModelProvider.NewInstanceFactory() {
-
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return EventsListViewModel(
-                                EventsRepository.getInstance(db.eventsDao())) as T
-
-                    }
-                }
-        ).get(EventsListViewModel::class.java)
 
         mBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
 

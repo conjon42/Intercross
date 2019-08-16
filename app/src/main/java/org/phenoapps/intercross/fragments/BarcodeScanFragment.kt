@@ -33,33 +33,18 @@ import org.phenoapps.intercross.viewmodels.SettingsViewModel
 import org.phenoapps.intercross.viewmodels.WishlistViewModel
 import java.util.*
 
-class BarcodeScanFragment: Fragment() {
+class BarcodeScanFragment: IntercrossBaseFragment() {
 
-    private lateinit var mSharedViewModel: CrossSharedViewModel
-
-    private lateinit var mSettingsViewModel: SettingsViewModel
 
     private lateinit var mBarcodeScanner: DecoratedBarcodeView
-
-    private lateinit var mEventsListViewModel: EventsListViewModel
-
-    private lateinit var mWishlistViewModel: WishlistViewModel
-
     private lateinit var mBinding: FragmentBarcodeScanBinding
-
     private lateinit var mCallback: BarcodeCallback
 
     private lateinit var mWishlist: List<Wishlist>
-
     private var mEvents = ArrayList<Events>()
-
     private var mSettings = Settings()
 
     private var lastText: String? = null
-
-    private var mOrder = 0
-
-    private var mAllowBlank = false
 
     private fun isCameraAllowed(): Boolean {
 
@@ -71,59 +56,13 @@ class BarcodeScanFragment: Fragment() {
         return false
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        activity?.run {
-            with(ViewModelProviders.of(this)) {
-                mSharedViewModel = this.get(CrossSharedViewModel::class.java)
-            }
-        }
-        isCameraAllowed()
-    }
-
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View? {
 
-        mWishlistViewModel = ViewModelProviders.of(this,
-                object : ViewModelProvider.NewInstanceFactory() {
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return WishlistViewModel(WishlistRepository.getInstance(
-                                IntercrossDatabase.getInstance(requireContext()).wishlistDao())) as T
-
-                    }
-                }).get(WishlistViewModel::class.java)
-
-        mWishlistViewModel.wishlist.observe(viewLifecycleOwner, Observer{
-            it?.let {
-                mWishlist = it
-            }
-        })
-
-        mSettingsViewModel = ViewModelProviders.of(this,
-                object : ViewModelProvider.NewInstanceFactory() {
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return SettingsViewModel(SettingsRepository.getInstance(
-                                IntercrossDatabase.getInstance(requireContext()).settingsDao())) as T
-
-                    }
-                }).get(SettingsViewModel::class.java)
-
-        mEventsListViewModel = ViewModelProviders.of(this,
-                object : ViewModelProvider.NewInstanceFactory() {
-
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return EventsListViewModel(EventsRepository.getInstance(
-                                IntercrossDatabase.getInstance(requireContext()).eventsDao())) as T
-
-                    }
-                }
-        ).get(EventsListViewModel::class.java)
+        isCameraAllowed()
 
         mBinding =
                 FragmentBarcodeScanBinding.inflate(inflater, container, false)
@@ -135,18 +74,6 @@ class BarcodeScanFragment: Fragment() {
                     "continuous" -> "Continuous"
                     else -> "Single"
                 })
-        }
-
-        val orderKey = "org.phenoapps.intercross.CROSS_ORDER"
-        val blankKey = "org.phenoapps.intercross.BLANK_MALE_ID"
-        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
-        mOrder = (pref.getString(orderKey, "0") ?: "0").toInt()
-        mAllowBlank = pref.getBoolean(blankKey, false)
-        pref.registerOnSharedPreferenceChangeListener { sharedPreferences, key ->
-            when(key) {
-                orderKey -> mOrder = (sharedPreferences.getString(key, "0") ?: "0").toInt()
-                blankKey -> mAllowBlank = sharedPreferences.getBoolean(key, false)
-            }
         }
 
         mCallback = object : BarcodeCallback {
@@ -250,22 +177,6 @@ class BarcodeScanFragment: Fragment() {
 
         }
 
-        mSettingsViewModel.settings.observe(viewLifecycleOwner, Observer {
-            it?.let {
-                mSettings = it
-            }
-        })
-
-        mEventsListViewModel.events.observe(viewLifecycleOwner, Observer {
-            it?.let {
-                mEvents = ArrayList(it)
-            }
-        })
-
-        mSharedViewModel.name.value = ""
-        mSharedViewModel.female.value = ""
-        mSharedViewModel.male.value = ""
-
         mBarcodeScanner = mBinding.zxingBarcodeScanner
 
         mBarcodeScanner.barcodeView.apply {
@@ -281,7 +192,34 @@ class BarcodeScanFragment: Fragment() {
             decodeSingle(mCallback)
         }
 
+        startObservers()
+
         return mBinding.root
+    }
+
+    private fun startObservers() {
+
+        mWishlistViewModel.wishlist.observe(viewLifecycleOwner, Observer{
+            it?.let {
+                mWishlist = it
+            }
+        })
+
+        mSettingsViewModel.settings.observe(viewLifecycleOwner, Observer {
+            it?.let {
+                mSettings = it
+            }
+        })
+
+        mEventsListViewModel.events.observe(viewLifecycleOwner, Observer {
+            it?.let {
+                mEvents = ArrayList(it)
+            }
+        })
+
+        mSharedViewModel.name.value = ""
+        mSharedViewModel.female.value = ""
+        mSharedViewModel.male.value = ""
     }
 
     private fun checkWishlist(f: String, m: String, x: String) {

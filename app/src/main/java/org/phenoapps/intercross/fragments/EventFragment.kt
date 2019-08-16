@@ -26,26 +26,18 @@ import android.content.Context
 import android.view.inputmethod.InputMethodManager
 
 
-class EventFragment: Fragment() {
+class EventFragment: IntercrossBaseFragment() {
 
     private lateinit var mBinding: FragmentEventBinding
 
-    private lateinit var mEventsViewModel: EventsListViewModel
-
-    private lateinit var mSettingsViewModel: SettingsViewModel
-
     private lateinit var mEvents: List<Events>
-
     private lateinit var mEvent: Events
-
-    private var mCollectData = true
 
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View? {
-
 
         setHasOptionsMenu(true)
 
@@ -54,9 +46,6 @@ class EventFragment: Fragment() {
         arguments?.getParcelable<Events>("events")?.let {
             mEvent = it
         }
-
-        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
-        mCollectData = pref.getBoolean(SettingsFragment.COLLECT_INFO, true)
 
         mBinding = FragmentEventBinding
                 .inflate(inflater, container, false)
@@ -90,7 +79,7 @@ class EventFragment: Fragment() {
         mBinding.button2.setOnClickListener {
             val x = mBinding.countEditText.text.toString()
             Thread {
-                mEventsViewModel.update(mEvent.apply {
+                mEventsListViewModel.update(mEvent.apply {
                     when (mBinding.tabLayout.selectedTabPosition) {
                         0 -> flowers = x
                         1 -> fruits = x
@@ -120,32 +109,18 @@ class EventFragment: Fragment() {
             }
         })
 
-        mSettingsViewModel = ViewModelProviders.of(this,
-                object : ViewModelProvider.NewInstanceFactory() {
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return SettingsViewModel(SettingsRepository.getInstance(
-                                IntercrossDatabase.getInstance(requireContext()).settingsDao())) as T
-                    }
-                }).get(SettingsViewModel::class.java)
+        startObservers()
 
-        mEventsViewModel = ViewModelProviders.of(this,
-                object : ViewModelProvider.NewInstanceFactory() {
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return EventsListViewModel(EventsRepository.getInstance(
-                                IntercrossDatabase.getInstance(requireContext()).eventsDao())) as T
-                    }
-                }).get(EventsListViewModel::class.java)
+        return mBinding.root
+    }
 
-        mEventsViewModel.events.observe(viewLifecycleOwner, Observer {
+    private fun startObservers() {
+        mEventsListViewModel.events.observe(viewLifecycleOwner, Observer {
             it?.let {
                 mEvents = it
                 updateCountEditText()
             }
         })
-
-        return mBinding.root
     }
 
     private fun updateCountEditText() {

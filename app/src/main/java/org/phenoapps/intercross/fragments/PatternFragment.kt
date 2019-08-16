@@ -18,11 +18,9 @@ import org.phenoapps.intercross.databinding.FragmentPatternBinding
 import org.phenoapps.intercross.viewmodels.*
 import java.util.*
 
-class PatternFragment: Fragment() {
+class PatternFragment: IntercrossBaseFragment() {
 
     private lateinit var mBinding: FragmentPatternBinding
-
-    private lateinit var mSettingsViewModel: SettingsViewModel
 
     private lateinit var mSettings: Settings
 
@@ -40,17 +38,6 @@ class PatternFragment: Fragment() {
 
         mBinding = FragmentPatternBinding
                 .inflate(inflater, container, false)
-
-        mSettingsViewModel = ViewModelProviders.of(this,
-                object : ViewModelProvider.NewInstanceFactory() {
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return SettingsViewModel(SettingsRepository.getInstance(
-                                IntercrossDatabase.getInstance(requireContext()).settingsDao())) as T
-
-                    }
-                }).get(SettingsViewModel::class.java)
-
 
         mSettingsViewModel.settings.observe(viewLifecycleOwner, Observer {
             it?.let {
