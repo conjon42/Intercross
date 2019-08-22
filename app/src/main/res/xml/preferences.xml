@@ -7,17 +7,16 @@
             android:title="Person" />
 
         <EditTextPreference
-            android:icon="@drawable/ic_setting_location"
+            android:icon="@drawable/ic_setting_experiment"
             android:key="org.phenoapps.intercross.LOCATION"
             android:title="Location" />
-
-        <CheckBoxPreference
-            android:icon="@drawable/ic_about"
-            android:key="org.phenoapps.intercross.COLLECT_INFO"
-            android:title="Collect Additional Info"
-            android:defaultValue="true" />
     </PreferenceCategory>
+
     <PreferenceCategory android:title="Naming">
+        <CheckBoxPreference
+            android:icon="@drawable/ic_setting_male_blank"
+            android:key="org.phenoapps.intercross.BLANK_MALE_ID"
+            android:title="Allow blank male ID" />
         <ListPreference
             android:defaultValue="0"
             android:entries="@array/cross_order_array"
@@ -25,23 +24,25 @@
             android:icon="@drawable/ic_setting_cross_order"
             android:key="org.phenoapps.intercross.CROSS_ORDER"
             android:summary="%s"
-            android:title="Cross Mode" />
-        <CheckBoxPreference
-            android:icon="@drawable/ic_setting_male_blank"
-            android:key="org.phenoapps.intercross.BLANK_MALE_ID"
-            android:title="Allow Blank Male ID" />
+            android:title="Cross order" />
         <Preference
             android:icon="@drawable/ic_setting_pattern_create"
             android:key="org.phenoapps.intercross.CREATE_PATTERN"
-            android:title="Create Pattern for Cross IDs">
-        </Preference>
+            android:title="Create cross ID pattern" />
     </PreferenceCategory>
+
     <PreferenceCategory android:title="Workflow">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:icon="@drawable/ic_setting_additional_info"
+            android:key="org.phenoapps.intercross.COLLECT_INFO"
+            android:title="Collect additional information" />
+
         <CheckBoxPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_setting_sound"
             android:key="org.phenoapps.intercross.AUDIO_ENABLED"
-            android:title="Audio Notifications" />
+            android:title="Audio notifications" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Printing">
         <Preference
