@@ -82,9 +82,9 @@ class BarcodeScanFragment: IntercrossBaseFragment() {
         arguments?.let {
             mBinding.zxingBarcodeScanner.setStatusText(
                 when (it.getString("mode")) {
-                    "search" -> "Search"
-                    "continuous" -> "Continuous"
-                    else -> "Single"
+                    "search" -> "Search by barcode"
+                    "continuous" -> "Scan infinite barcodes"
+                    else -> "Scan a single barcode"
                 })
         }
 

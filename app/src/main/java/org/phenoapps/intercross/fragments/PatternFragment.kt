@@ -90,7 +90,7 @@ class PatternFragment: IntercrossBaseFragment() {
         mBinding.radioGroup2.setOnCheckedChangeListener { group, checkedId ->
             when (checkedId) {
                 R.id.uuidButton -> {
-                    mBinding.fragmentPatternInput.visibility = View.INVISIBLE
+                    mBinding.fragmentPatternInput.visibility = View.GONE
                     mBinding.codeTextView.text = mLastUUID
 
                 }
@@ -101,7 +101,7 @@ class PatternFragment: IntercrossBaseFragment() {
                     }
                 }
                 R.id.noneButton -> {
-                    mBinding.fragmentPatternInput.visibility = View.INVISIBLE
+                    mBinding.fragmentPatternInput.visibility = View.GONE
                     mBinding.codeTextView.text = ""
                 }
             }

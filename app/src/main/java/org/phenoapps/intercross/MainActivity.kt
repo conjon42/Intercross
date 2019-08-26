@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
     //location to save data
     private lateinit var mDirectory: File
 
-    private fun isExternalStorageWritable(): Boolean  {
+    private fun isExternalStorageWritable(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                 return Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()
@@ -193,7 +193,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        pref.edit().apply{
+        pref.edit().apply {
             putBoolean(SettingsFragment.TUTORIAL, true)
             apply()
         }
@@ -355,7 +355,8 @@ class MainActivity : AppCompatActivity() {
                                 mParentsViewModel.addParents(row[0], row[2], "female", "")
                                 mParentsViewModel.addParents(row[1], row[3], "male", "")
                                 mWishListViewModel.addWishlist(
-                                        row[0], row[1], row[2], row[3], row[4], row[5].toIntOrNull() ?: 0, row[6].toIntOrNull() ?: 0
+                                        row[0], row[1], row[2], row[3], row[4], row[5].toIntOrNull()
+                                        ?: 0, row[6].toIntOrNull() ?: 0
                                 )
                             }
                         }

@@ -1,35 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
     <item
-        android:id="@+id/action_nav_settings"
-        android:icon="@drawable/navbar_settings"
-        android:title="Settings" />
+        android:id="@+id/action_nav_import"
+        android:icon="@drawable/ic_nv_import"
+        android:title="Import" />
     <item
         android:id="@+id/action_nav_parents"
-        android:icon="@drawable/navbar_export"
+        android:icon="@drawable/ic_nv_parents"
         android:title="Parents" />
     <item
         android:id="@+id/action_nav_summary"
-        android:icon="@drawable/ic_about"
+        android:icon="@drawable/ic_nv_summary"
         android:title="Summary" />
     <item
         android:id="@+id/action_nav_export"
-        android:icon="@drawable/navbar_export"
+        android:icon="@drawable/ic_nv_export"
         android:title="Export" />
     <item
-        android:id="@+id/action_nav_import"
-        android:icon="@drawable/ic_about"
-        android:title="Import" />
-    <item
-        android:id="@+id/action_nav_pollen_manager"
-        android:icon="@drawable/ic_about"
-        android:title="Pollen Manager" />
-    <item
-        android:icon="@drawable/ic_about"
+        android:icon="@drawable/ic_nv_about"
         android:title="About" />
     <item
+        android:id="@+id/action_nav_settings"
+        android:icon="@drawable/ic_nv_settings"
+        android:title="Settings" />
+    <item
         android:id="@+id/action_nav_intro"
-        android:icon="@drawable/ic_about"
-        android:title="Intro" />
+        android:icon="@drawable/ic_nv_about"
+        android:title="Intro"
+        android:visible="false" />
 </menu>
