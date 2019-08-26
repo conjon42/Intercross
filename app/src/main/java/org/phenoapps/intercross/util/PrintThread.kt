@@ -3,7 +3,6 @@ package org.phenoapps.intercross.util
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.os.Looper
-import android.preference.PreferenceManager
 import android.widget.Toast
 import com.zebra.sdk.comm.BluetoothConnection
 import com.zebra.sdk.comm.ConnectionException
@@ -11,18 +10,31 @@ import com.zebra.sdk.printer.SGD
 import com.zebra.sdk.printer.ZebraPrinterFactory
 import com.zebra.sdk.printer.ZebraPrinterLanguageUnknownException
 import org.phenoapps.intercross.data.Events
+import org.phenoapps.intercross.data.Pollen
 
 
-class PrintThread(private val ctx: Context,
-                  private val template: String, private val events: Array<Events>,
-                  private val btName: String) : Runnable {
+class PrintThread(private val ctx: Context, private val template: String,
+                  private val btName: String) : Thread() {
+
+    var mMode = 0
+    lateinit var mEvents: Array<Events>
+    lateinit var mPollen: Pollen
+
+    fun printEvents(events: Array<Events>) {
+        mEvents = events
+        mMode = 0
+        start()
+    }
+
+    fun printPollen(pollen: Pollen) {
+        mPollen = pollen
+        mMode = 1
+        start()
+    }
 
     override fun run() {
 
         Looper.prepare()
-
-        //val pref = PreferenceManager.getDefaultSharedPreferences(ctx)
-        //val btId = pref.getString(SettingsActivity.BT_ID, "") ?: ""
 
         if (btName.isBlank()) {
             Toast.makeText(ctx, "No bluetooth device paired.", Toast.LENGTH_SHORT).show()
@@ -45,12 +57,30 @@ class PrintThread(private val ctx: Context,
                         getPrinterStatus(bc)
                         if (printerStatus.isReadyToPrint) {
 
-                            events.forEach {
-                                if (template.isNotBlank()) {
-                                    printer.sendCommand(template)
+                            when (mMode) {
+                                0 -> {
+                                    mEvents.forEach {
+                                        if (template.isNotBlank()) {
+                                            printer.sendCommand(template)
+                                        }
+                                        printer.sendCommand("^XA^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF" +
+                                                "^FN1^FD${it.eventDbId}^FS" +
+                                                "^FN2^FDQA,${it.eventDbId}^FS" +
+                                                "^FN3^FD${it.date}^FS^XZ")
+                                    }
                                 }
-                                printer.sendCommand("^XA^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FN1^FD${it.eventDbId}^FS^FN2^FDQA,${it.eventDbId}^FS^FN3^FD${it.date}^FS^XZ")
+                                1 -> {
+                                    //TODO implement Pollen print
+                                    if (template.isNotBlank()) {
+                                        printer.sendCommand(template)
+                                    }
+                                    printer.sendCommand("^XA^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF" +
+                                            "^FN1^FD${mPollen.id}^FS" +
+                                            "^FN2^FDQA,${mPollen.pid}^FS" +
+                                            "^FN3^FD${mPollen.pid}^FS^XZ")
+                                }
                             }
+
 
                             /*printer.printImage(new ZebraImageAndroid(BitmapFactory.decodeResource(getApplicationContext().getResources(),
                     R.drawable.intercross_small)), 75,500,-1,-1,false);*/

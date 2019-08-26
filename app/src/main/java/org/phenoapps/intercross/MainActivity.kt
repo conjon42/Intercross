@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.media.MediaScannerConnection
-import android.media.MediaScannerConnection.scanFile
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -22,14 +21,12 @@ import androidx.core.app.ActivityCompat
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
-import androidx.navigation.fragment.findNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import org.phenoapps.intercross.data.*
@@ -120,6 +117,9 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.action_nav_parents -> {
                     mNavController.navigate(R.id.global_action_to_parents_fragment)
+                }
+                R.id.action_nav_pollen_manager -> {
+                    mNavController.navigate(MainGraphDirections.globalActionToPollenManagerFragment())
                 }
                 R.id.action_nav_import -> {
                     mWishListViewModel.deleteAll()

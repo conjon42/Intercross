@@ -1,7 +1,5 @@
 package org.phenoapps.intercross.fragments
 
-import android.content.Intent
-import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Handler
 import android.preference.PreferenceManager
@@ -10,36 +8,21 @@ import android.text.TextWatcher
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
-import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
-import androidx.core.view.GravityCompat
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.navigation.NavigationView
-import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_events.*
-import org.phenoapps.intercross.IntroActivity
-import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
-import org.phenoapps.intercross.data.*
+import org.phenoapps.intercross.data.Settings
+import org.phenoapps.intercross.data.Wishlist
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
 import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.util.SnackbarQueue
-import org.phenoapps.intercross.viewmodels.CrossSharedViewModel
-import org.phenoapps.intercross.viewmodels.EventsListViewModel
-import org.phenoapps.intercross.viewmodels.SettingsViewModel
-import org.phenoapps.intercross.viewmodels.WishlistViewModel
 import java.util.*
 
 class EventsFragment : IntercrossBaseFragment() {
@@ -378,41 +361,6 @@ class EventsFragment : IntercrossBaseFragment() {
             Handler().postDelayed(Runnable {
                 mBinding.recyclerView.scrollToPosition(0)
             }, 250)
-
-            /*when (mOrder) {
-                0 -> {
-                    if (first.isNotEmpty() && (second.isNotEmpty() || mAllowBlank)) {
-                        var male = second.toString()
-                        if (male.isEmpty()) male = "blank"
-                        mEventsListViewModel.addCrossEvent(mBinding.editTextCross.text.toString(),
-                                mBinding.firstText.text.toString(), male)
-                        FileUtil(requireContext()).ringNotification(true)
-                        checkWishlist(first.toString(), male, value)
-
-                        Handler().postDelayed(Runnable {
-                            mBinding.recyclerView.scrollToPosition(0)
-                        }, 250)
-                    } else mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "Parents must be defined."))
-                }
-                1 -> {
-                    if ((mBinding.secondText.text ?: "").isNotEmpty() &&
-                            ((mBinding.firstText.text ?: "").isNotEmpty() || mAllowBlank)) {
-                        var male = first.toString()
-                        if (male.isEmpty()) male = "blank"
-                        mEventsListViewModel.addCrossEvent(mBinding.editTextCross.text.toString(),
-                                mBinding.secondText.text.toString(), male)
-                        Handler().postDelayed(Runnable {
-                            mBinding.recyclerView.scrollToPosition(0)
-                        }, 250)
-                        FileUtil(requireContext()).ringNotification(true)
-                        checkWishlist(second.toString(), male, value)
-                    }
-                    else {
-                        mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "Parents must be defined."))
-                        //FileUtil(requireContext()).ringNotification(false)
-                    }
-                }*/
-            //}
 
         } else {
             mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "You must enter a cross name."))

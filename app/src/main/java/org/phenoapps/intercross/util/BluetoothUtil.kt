@@ -3,11 +3,11 @@ package org.phenoapps.intercross.util
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import android.preference.PreferenceManager
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import androidx.appcompat.app.AlertDialog
 import org.phenoapps.intercross.data.Events
+import org.phenoapps.intercross.data.Pollen
 
 
 //Bluetooth Utility class for printing ZPL code and choosing bluetooth devices to print from.
@@ -88,12 +88,17 @@ class BluetoothUtil {
         } else f()
     }
 
+    val template = "^XA^MNA^MMT,N^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS^FWR^FO100,25^A0,25,20^FN1^FS^FO200,25^A0N,25,20^BQ,2,6^FN2^FS^FO450,25^A0,25,20^FN3^FS^XZ"
+
     fun templatePrint(ctx: Context, events: Array<Events>) {
         choose(ctx) {
-            Thread(PrintThread(ctx,
-                    "^XA^MNA^MMT,N^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS^FWR^FO100,25^A0,25,20^FN1^FS^FO200,25^A0N,25,20^BQ,2,6^FN2^FS^FO450,25^A0,25,20^FN3^FS^XZ",
+            PrintThread(ctx, template, mBtName).printEvents(events)
+        }
+    }
 
-                    events, mBtName)).start()
+    fun templatePrint(ctx: Context, pollen: Pollen) {
+        choose(ctx) {
+            PrintThread(ctx, template, mBtName).printPollen(pollen)
         }
     }
 }

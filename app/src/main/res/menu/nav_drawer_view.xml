@@ -22,6 +22,10 @@
         android:icon="@drawable/ic_about"
         android:title="Import" />
     <item
+        android:id="@+id/action_nav_pollen_manager"
+        android:icon="@drawable/ic_about"
+        android:title="Pollen Manager" />
+    <item
         android:icon="@drawable/ic_about"
         android:title="About" />
     <item

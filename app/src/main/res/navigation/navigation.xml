@@ -76,6 +76,23 @@
         tools:layout="@layout/fragment_pattern">
     </fragment>
 
+    <fragment
+        android:id="@+id/pollen_manager_fragment"
+        android:name="org.phenoapps.intercross.fragments.PollenManagerFragment"
+        android:label="Pollen Manager"
+        tools:layout="@layout/fragment_pollen_manager">
+        <action
+            android:id="@+id/action_to_pollen_fragment"
+            app:destination="@+id/pollen_fragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/pollen_fragment"
+        android:name="org.phenoapps.intercross.fragments.PollenFragment"
+        android:label="Pollen"
+        tools:layout="@layout/fragment_pollen">
+    </fragment>
+
     <action
         android:id="@+id/global_action_to_settings_fragment"
         app:destination="@id/settings_fragment"
@@ -93,6 +110,8 @@
         app:popUpTo="@id/summary_fragment"/>
     <action
         android:id="@+id/global_action_to_event_fragment"
-        app:destination="@id/event_fragment"
-        />
+        app:destination="@id/event_fragment" />
+    <action
+        android:id="@+id/global_action_to_pollen_manager_fragment"
+        app:destination="@id/pollen_manager_fragment" />
 </navigation>

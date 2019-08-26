@@ -11,26 +11,19 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.checkSelfPermission
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.google.zxing.ResultPoint
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.DecoratedBarcodeView
-import kotlinx.android.synthetic.main.fragment_event.view.*
 import org.phenoapps.intercross.MainActivity
-import org.phenoapps.intercross.data.*
+import org.phenoapps.intercross.data.Events
+import org.phenoapps.intercross.data.Settings
+import org.phenoapps.intercross.data.Wishlist
 import org.phenoapps.intercross.databinding.FragmentBarcodeScanBinding
 import org.phenoapps.intercross.util.FileUtil
-import org.phenoapps.intercross.viewmodels.CrossSharedViewModel
-import org.phenoapps.intercross.viewmodels.EventsListViewModel
-import org.phenoapps.intercross.viewmodels.SettingsViewModel
-import org.phenoapps.intercross.viewmodels.WishlistViewModel
 import java.util.*
 
 class BarcodeScanFragment: IntercrossBaseFragment() {

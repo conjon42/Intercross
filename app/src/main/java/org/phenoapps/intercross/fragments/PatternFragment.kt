@@ -7,15 +7,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.data.*
+import org.phenoapps.intercross.data.Settings
 import org.phenoapps.intercross.databinding.FragmentPatternBinding
-import org.phenoapps.intercross.viewmodels.*
+import org.phenoapps.intercross.viewmodels.PatternViewModel
 import java.util.*
 
 class PatternFragment: IntercrossBaseFragment() {

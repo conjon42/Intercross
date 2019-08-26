@@ -6,7 +6,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.phenoapps.intercross.data.*
+import org.phenoapps.intercross.data.Wishlist
+import org.phenoapps.intercross.data.WishlistRepository
 
 class WishlistViewModel internal constructor(
         private val repo: WishlistRepository

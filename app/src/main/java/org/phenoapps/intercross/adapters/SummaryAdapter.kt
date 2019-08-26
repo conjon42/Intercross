@@ -3,7 +3,6 @@ package org.phenoapps.intercross.adapters
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.Navigation
@@ -11,11 +10,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.data.Events
-import org.phenoapps.intercross.databinding.ListItemEventsBinding
 import org.phenoapps.intercross.databinding.ListItemSummaryBinding
 import org.phenoapps.intercross.fragments.SummaryFragment
-import org.phenoapps.intercross.viewmodels.EventsViewModel
 import org.phenoapps.intercross.viewmodels.SummaryViewModel
 
 class SummaryAdapter(

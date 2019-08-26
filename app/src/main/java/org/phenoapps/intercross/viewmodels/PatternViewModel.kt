@@ -3,6 +3,7 @@ package org.phenoapps.intercross.viewmodels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
+//shared view model
 class PatternViewModel(uuid: Boolean = false, a: Boolean = false, s: String = "", pre: String = "", n: Int = 0, p: Int = 3) : ViewModel() {
 
     val uuid: MutableLiveData<Boolean> by lazy {

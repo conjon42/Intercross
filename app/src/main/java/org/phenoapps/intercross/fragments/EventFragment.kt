@@ -1,29 +1,16 @@
 package org.phenoapps.intercross.fragments
 
+import android.content.Context.INPUT_METHOD_SERVICE
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.*
-import androidx.fragment.app.Fragment
+import android.view.inputmethod.InputMethodManager
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.tabs.TabLayout
 import org.phenoapps.intercross.data.Events
-import org.phenoapps.intercross.data.EventsRepository
-import org.phenoapps.intercross.data.IntercrossDatabase
-import org.phenoapps.intercross.data.SettingsRepository
 import org.phenoapps.intercross.databinding.FragmentEventBinding
 import org.phenoapps.intercross.util.BluetoothUtil
-import org.phenoapps.intercross.viewmodels.EventsListViewModel
-import org.phenoapps.intercross.viewmodels.SettingsViewModel
-import android.content.Context.INPUT_METHOD_SERVICE
-import androidx.core.content.ContextCompat.getSystemService
-import android.content.Context
-import android.view.inputmethod.InputMethodManager
 
 
 class EventFragment: IntercrossBaseFragment() {

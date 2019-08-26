@@ -5,26 +5,19 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import android.view.*
-import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
-import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.MainActivity.Companion.REQ_FILE_IMPORT
-import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.ParentsAdapter
-import org.phenoapps.intercross.data.*
+import org.phenoapps.intercross.data.Events
+import org.phenoapps.intercross.data.Parents
 import org.phenoapps.intercross.databinding.FragmentParentsBinding
 import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.FileUtil
-import org.phenoapps.intercross.viewmodels.EventsListViewModel
-import org.phenoapps.intercross.viewmodels.ParentsViewModel
-import org.phenoapps.intercross.viewmodels.SettingsViewModel
 
 class ParentsFragment: IntercrossBaseFragment() {
 
