@@ -18,11 +18,17 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_events.*
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
+import org.phenoapps.intercross.data.EventName
+import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.data.Settings
 import org.phenoapps.intercross.data.Wishlist
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
+import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.util.SnackbarQueue
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.util.*
 
 class EventsFragment : IntercrossBaseFragment() {
@@ -79,7 +85,7 @@ class EventsFragment : IntercrossBaseFragment() {
                 val event = mAdapter.currentList[viewHolder.adapterPosition]
                 mEventsListViewModel.delete(event)
                 mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "${event.eventDbId}", "Undo") {
-                    mEventsListViewModel.addCrossEvent(event)
+                    mEventsListViewModel.addCrossEvent(event.apply { id = null })
                 })
 
             }
@@ -199,7 +205,7 @@ class EventsFragment : IntercrossBaseFragment() {
 
     private fun startObservers() {
 
-        mEventsListViewModel.events.observe(viewLifecycleOwner, Observer { result ->
+        mEventsListViewModel.crosses.observe(viewLifecycleOwner, Observer { result ->
             result?.let {
                 mAdapter.submitList(it.reversed())
             }
@@ -353,7 +359,11 @@ class EventsFragment : IntercrossBaseFragment() {
             //val first = (mBinding.firstText.text ?: "")
             //val second = (mBinding.secondText.text ?: "")
 
-            mEventsListViewModel.addCrossEvent(value, female, male)
+
+            //TODO add person
+            mEventsListViewModel.addCrossEvent(
+                    Events(null, value, EventName.POLLINATION.itemType, female, male, null, DateUtil().getTime(), ""))
+
 
             FileUtil(requireContext()).ringNotification(true)
             checkWishlist(female, male, value)

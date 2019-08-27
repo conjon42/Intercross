@@ -1,6 +1,7 @@
 package org.phenoapps.intercross.fragments
 
 import android.os.Bundle
+import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -61,6 +62,7 @@ open class IntercrossBaseFragment : Fragment() {
 
                     }
                 }).get(WishlistViewModel::class.java)
+
         mEventsListViewModel = ViewModelProviders.of(this,
                 object : ViewModelProvider.NewInstanceFactory() {
 

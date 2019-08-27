@@ -8,9 +8,11 @@ import android.view.inputmethod.InputMethodManager
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.tabs.TabLayout
+import org.phenoapps.intercross.data.EventName
 import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.databinding.FragmentEventBinding
 import org.phenoapps.intercross.util.BluetoothUtil
+import org.phenoapps.intercross.util.DateUtil
 
 
 class EventFragment: IntercrossBaseFragment() {
@@ -18,6 +20,9 @@ class EventFragment: IntercrossBaseFragment() {
     private lateinit var mBinding: FragmentEventBinding
 
     private lateinit var mEvents: List<Events>
+    private var mHarvests: Int? = null
+    private var mThreshes: Int? = null
+    private var mFlowers: Int? = null
     private lateinit var mEvent: Events
 
     var mOrder: Int = 0
@@ -30,6 +35,7 @@ class EventFragment: IntercrossBaseFragment() {
             savedInstanceState: Bundle?
     ): View? {
 
+        //TODO add shared prefs to base fragment interface
         val orderKey = "org.phenoapps.intercross.CROSS_ORDER"
         val blankKey = "org.phenoapps.intercross.BLANK_MALE_ID"
         val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
@@ -76,28 +82,25 @@ class EventFragment: IntercrossBaseFragment() {
             searchForParents(mBinding.femaleName.text.toString())
         }
 
-        if (mEvent.flowers == "blank") mBinding.tabLayout.getTabAt(0)?.select()
-        else if (mEvent.fruits == "blank") mBinding.tabLayout.getTabAt(1)?.select()
-        else mBinding.tabLayout.getTabAt(2)?.select()
-
-        updateCountEditText()
-
         mBinding.button2.setOnClickListener {
             val x = mBinding.countEditText.text.toString()
-            Thread {
-                mEventsListViewModel.update(mEvent.apply {
+            x.toIntOrNull()?.let { x ->
+                Thread {
                     when (mBinding.tabLayout.selectedTabPosition) {
-                        0 -> flowers = x
-                        1 -> fruits = x
-                        2 -> seeds = x
+                        0 -> mEventsListViewModel.updateFlowers(mEvent, x)
+                        1 -> mEventsListViewModel.updateFruits(mEvent, x)
+                        2 -> mEventsListViewModel.updateSeeds(mEvent, x)
                     }
-                })
-            }.run()
+                    updateCountEditText()
+
+                }.run()
+            }
         }
 
         mBinding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
 
             override fun onTabReselected(tab: TabLayout.Tab?) {
+                updateCountEditText()
                 mBinding.countEditText.requestFocus()
                 mBinding.countEditText.setSelection(mBinding.countEditText.text.length)
                 (requireActivity().getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager)
@@ -121,9 +124,28 @@ class EventFragment: IntercrossBaseFragment() {
     }
 
     private fun startObservers() {
+
         mEventsListViewModel.events.observe(viewLifecycleOwner, Observer {
             it?.let {
                 mEvents = it
+                //updateCountEditText()
+            }
+        })
+        mEventsListViewModel.getPollination(mEvent).observe(viewLifecycleOwner, Observer {
+            it?.let {
+                mFlowers = it.eventValue
+                updateCountEditText()
+            }
+        })
+        mEventsListViewModel.getHarvest(mEvent).observe(viewLifecycleOwner, Observer {
+            it?.let {
+                mHarvests = it.eventValue
+                updateCountEditText()
+            }
+        })
+        mEventsListViewModel.getThresh(mEvent).observe(viewLifecycleOwner, Observer {
+            it?.let {
+                mThreshes = it.eventValue
                 updateCountEditText()
             }
         })
@@ -131,9 +153,9 @@ class EventFragment: IntercrossBaseFragment() {
 
     private fun updateCountEditText() {
         mBinding.countEditText.setText(when (mBinding.tabLayout.selectedTabPosition) {
-            0 -> if (mEvent.flowers == "blank") "" else mEvent.flowers
-            1 -> if (mEvent.fruits == "blank") "" else mEvent.fruits
-            else -> if (mEvent.seeds == "blank") "" else mEvent.seeds
+            0 -> (mFlowers ?: "None").toString()
+            1 -> (mHarvests ?: "None").toString()
+            else -> (mThreshes ?: "None").toString()
         } )
     }
 

@@ -19,10 +19,12 @@ import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.DecoratedBarcodeView
 import org.phenoapps.intercross.MainActivity
+import org.phenoapps.intercross.data.EventName
 import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.data.Settings
 import org.phenoapps.intercross.data.Wishlist
 import org.phenoapps.intercross.databinding.FragmentBarcodeScanBinding
+import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.FileUtil
 import java.util.*
 
@@ -285,8 +287,8 @@ class BarcodeScanFragment: IntercrossBaseFragment() {
                 male,
                 cross)
 
-        mEventsListViewModel.addCrossEvent(cross,
-                mSharedViewModel.female.value ?: String(), male)
+        mEventsListViewModel.addCrossEvent(Events(null, cross, EventName.POLLINATION.itemType,
+                mSharedViewModel.female.value ?: String(), male, null, DateUtil().getTime(), ""))
 
         mSharedViewModel.name.value = ""
         mSharedViewModel.female.value = ""

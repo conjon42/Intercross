@@ -66,7 +66,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
                 android:gravity="start"
-                android:text="@{events.date}"
+                android:text="@{events.toString()}"
                 android:textSize="18sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/crossTypeImageView"

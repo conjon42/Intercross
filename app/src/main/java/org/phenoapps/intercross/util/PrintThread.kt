@@ -66,7 +66,7 @@ class PrintThread(private val ctx: Context, private val template: String,
                                         printer.sendCommand("^XA^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF" +
                                                 "^FN1^FD${it.eventDbId}^FS" +
                                                 "^FN2^FDQA,${it.eventDbId}^FS" +
-                                                "^FN3^FD${it.date}^FS^XZ")
+                                                "^FN3^FD${it.eventDbId}^FS^XZ") //todo replace with Date
                                     }
                                 }
                                 1 -> {

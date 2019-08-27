@@ -232,7 +232,8 @@ class MainActivity : AppCompatActivity() {
                 object : ViewModelProvider.NewInstanceFactory() {
                     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
                         @Suppress("UNCHECKED_CAST")
-                        return EventsListViewModel(EventsRepository.getInstance(db.eventsDao())) as T
+                        return EventsListViewModel(
+                                EventsRepository.getInstance(db.eventsDao())) as T
                     }
                 }).get(EventsListViewModel::class.java)
 

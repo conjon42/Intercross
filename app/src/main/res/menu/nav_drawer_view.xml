@@ -9,6 +9,10 @@
         android:icon="@drawable/ic_nv_parents"
         android:title="Parents" />
     <item
+        android:id="@+id/action_nav_pollen_manager"
+        android:icon="@drawable/ic_nv_parents"
+        android:title="Pollen Manager" />
+    <item
         android:id="@+id/action_nav_summary"
         android:icon="@drawable/ic_nv_summary"
         android:title="Summary" />

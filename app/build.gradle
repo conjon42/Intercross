@@ -75,7 +75,7 @@ dependencies {
     androidTestImplementation "androidx.test.espresso:espresso-intents:$rootProject.espressoVersion"
     androidTestImplementation "androidx.test.uiautomator:uiautomator:$rootProject.uiAutomatorVersion"
     testImplementation "junit:junit:$rootProject.junitVersion"
-    implementation files('C:/Users/Trevor/Documents/Android/Intercross/libs/ZSDK_ANDROID_API.jar')
+    implementation files('C:/Users/Chaney/StudioProjects/IntercrossJETPACK/libs/ZSDK_ANDROID_API.jar')
 }
 repositories {
     mavenCentral()

@@ -13,10 +13,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
 import org.phenoapps.intercross.MainActivity.Companion.REQ_FILE_IMPORT
 import org.phenoapps.intercross.adapters.ParentsAdapter
+import org.phenoapps.intercross.data.EventName
 import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.data.Parents
 import org.phenoapps.intercross.databinding.FragmentParentsBinding
 import org.phenoapps.intercross.util.BluetoothUtil
+import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.FileUtil
 
 class ParentsFragment: IntercrossBaseFragment() {
@@ -103,8 +105,10 @@ class ParentsFragment: IntercrossBaseFragment() {
 
             val events = ArrayList<Events>()
             (mMales + mFemales).forEach {
+                //add person TODO
                 if (it.isSelected) events.add(
-                        Events(0, it.parentDbId, 0, "none", "none"))
+                        Events(null, it.parentDbId, EventName.POLLINATION.itemType,
+                                "none", "none", null, DateUtil().getTime(), ""))
             }
             if (events.isNotEmpty()) {
                 BluetoothUtil().templatePrint(requireContext(), events.toTypedArray())

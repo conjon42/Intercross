@@ -5,7 +5,8 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Events::class, Parents::class, Wishlist::class, Settings::class, Pollen::class, PollenGroup::class], version = 6)
+@Database(entities = [Events::class, Parents::class,
+    Wishlist::class, Settings::class, Pollen::class, PollenGroup::class], version = 8)
 abstract class IntercrossDatabase : RoomDatabase() {
     abstract fun eventsDao(): EventsDao
     abstract fun parentsDao(): ParentsDao

@@ -3,6 +3,7 @@ package org.phenoapps.intercross.util
 import android.os.Handler
 import android.view.View
 import com.google.android.material.snackbar.Snackbar
+import java.lang.IllegalArgumentException
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -24,6 +25,7 @@ class SnackbarQueue {
         val task = object : TimerTask() {
 
             override fun run() {
+
                 if (mQueue.isNotEmpty() && !isShowing) {
                     isShowing = true
                     val job = mQueue.removeAt(0)
@@ -32,11 +34,11 @@ class SnackbarQueue {
                         job.action()
                     }
                     mSnack.show()
-                    mHandler.postDelayed({isShowing=false}, 1000)
+                    mHandler.postDelayed({isShowing=false}, 500)
                 }
             }
-
         }
+
         Timer().scheduleAtFixedRate(task, 0, 1000)
 
     }

@@ -6,12 +6,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import org.phenoapps.intercross.data.EventName
 import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.data.EventsRepository
 
 class EventsListViewModel internal constructor(
-        private val repo: EventsRepository
-) : ViewModel() {
+        private val repo: EventsRepository) : ViewModel() {
 
     private val viewModelJob = Job()
 
@@ -20,29 +20,51 @@ class EventsListViewModel internal constructor(
 
     val events: LiveData<List<Events>> = repo.getAll()
 
-    /** eventDbId is the generated or user-entered cross ID **/
-    fun addCrossEvent(eventDbId: String, femaleId: String, maleId: String) {
+    val crosses: LiveData<List<Events>> = repo.getCrosses()
 
-        viewModelScope.launch {
-            repo.createEvent(0, eventDbId, 0, femaleId, maleId)
-        }
-    }
+    fun getHarvest(e: Events): LiveData<Events> = repo.getHarvest(e)
+    fun getThresh(e: Events): LiveData<Events> = repo.getThresh(e)
+    fun getPollination(e: Events): LiveData<Events> = repo.getPollination(e)
+
 
     fun addCrossEvent(event: Events) {
 
         viewModelScope.launch {
-            repo.createEvent(event.id, event.eventDbId, event.eventValue, event.femaleObsUnitDbId, event.maleOBsUnitDbId)
+            repo.createCrossEvent(event)
         }
     }
 
-    fun delete(vararg e: Events) {
+    fun updateFlowers(event: Events, x: Int) {
+
         viewModelScope.launch {
-            repo.delete(*e)
+            repo.updateFlowers(event, x)
         }
     }
-    fun update(vararg e: Events) {
+
+    fun updateFruits(event: Events, x: Int) {
+
         viewModelScope.launch {
-            repo.update(*e)
+            repo.updateFruit(event, x)
+        }
+    }
+
+    fun updateSeeds(event: Events, x: Int) {
+
+        viewModelScope.launch {
+            repo.updateSeed(event, x)
+        }
+    }
+
+    fun addEvent(event: Events) {
+
+        viewModelScope.launch {
+            repo.insert(event)
+        }
+    }
+
+    fun delete(e: Events) {
+        viewModelScope.launch {
+            repo.delete(e)
         }
     }
 }

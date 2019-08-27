@@ -2,14 +2,42 @@ package org.phenoapps.intercross.data
 
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
+import org.phenoapps.intercross.util.DateUtil
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
-class EventsRepository private constructor(
-        private val eventsDao: EventsDao
-) {
-    suspend fun createEvent(eventId: Int, eventDbId: String, eventValue: Int,
-                            femaleId: String, maleId: String) {
+class EventsRepository private constructor(private val eventsDao: EventsDao) {
+
+    suspend fun createCrossEvent(e: Events) {
         withContext(IO) {
-            eventsDao.insert(Events(eventId, eventDbId, eventValue, femaleId, maleId))
+            eventsDao.insert(e.apply { eventName = EventName.POLLINATION.itemType })
+            eventsDao.insert(e.apply { eventName = EventName.HARVEST.itemType })
+            eventsDao.insert(e.apply { eventName = EventName.THRESH.itemType })
+        }
+    }
+
+    suspend fun insert(e: Events) {
+        withContext(IO) {
+            eventsDao.insert(e)
+        }
+    }
+
+    suspend fun updateFlowers(e: Events, x: Int) {
+        withContext(IO) {
+            eventsDao.updateFlower(e.eventDbId, x, e.femaleObsUnitDbId, e.maleOBsUnitDbId)
+        }
+    }
+
+    suspend fun updateFruit(e: Events, x: Int) {
+        withContext(IO) {
+            eventsDao.updateFruit(e.eventDbId, x, e.femaleObsUnitDbId, e.maleOBsUnitDbId)
+        }
+    }
+
+    suspend fun updateSeed(e: Events, x: Int) {
+        withContext(IO) {
+            eventsDao.updateSeed(e.eventDbId, x, e.femaleObsUnitDbId, e.maleOBsUnitDbId)
         }
     }
 
@@ -19,13 +47,23 @@ class EventsRepository private constructor(
         }
     }
 
-    suspend fun delete(vararg e: Events?) {
+    suspend fun delete(e: Events) {
         withContext(IO) {
-            eventsDao.delete(*e)
+            eventsDao.delete(e.apply { eventName = EventName.POLLINATION.itemType })
+            eventsDao.delete(e.apply { eventName = EventName.HARVEST.itemType })
+            eventsDao.delete(e.apply { eventName = EventName.THRESH.itemType })
         }
     }
 
     fun getAll() = eventsDao.getAll()
+
+    fun getCrosses() = eventsDao.getCrosses()
+
+    fun getThresh(e: Events) = eventsDao.getThresh(e.eventDbId)
+
+    fun getHarvest(e: Events) = eventsDao.getHarvest(e.eventDbId)
+
+    fun getPollination(e: Events) = eventsDao.getPollination(e.eventDbId)
 
     companion object {
         @Volatile private var instance: EventsRepository? = null
