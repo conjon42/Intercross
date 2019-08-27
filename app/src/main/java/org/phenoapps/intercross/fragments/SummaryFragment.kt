@@ -6,27 +6,23 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.SummaryAdapter
 import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.databinding.FragmentSummaryBinding
 
 
-class SummaryFragment : IntercrossBaseFragment() {
+class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.fragment_summary) {
 
-    private lateinit var mBinding: FragmentSummaryBinding
+    //private lateinit var mBinding: FragmentSummaryBinding
 
     private lateinit var mAdapter: SummaryAdapter
 
     data class SummaryData(var m: Events?, var f: Events?, var event: Events, var count: Int)
 
-    override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
-    ): View? {
-
-        mBinding = FragmentSummaryBinding
-                .inflate(inflater, container, false)
+    override fun afterCreateView() {
+        //mBinding = FragmentSummaryBinding
+        //        .inflate(inflater, container, false)
 
         mBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
@@ -63,7 +59,7 @@ class SummaryFragment : IntercrossBaseFragment() {
                 )
             }
         })
-
-        return mBinding.root
     }
+
+
 }

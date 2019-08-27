@@ -10,12 +10,14 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.databinding.ViewDataBinding
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_events.*
+import kotlinx.android.synthetic.main.list_item_parents.*
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
 import org.phenoapps.intercross.data.EventName
@@ -31,9 +33,9 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.*
 
-class EventsFragment : IntercrossBaseFragment() {
+class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fragment_events) {
 
-    private lateinit var mBinding: FragmentEventsBinding
+    //private lateinit var mBinding: FragmentEventsBinding
     private lateinit var mAdapter: EventsAdapter
 
     private lateinit var mWishlist: List<Wishlist>
@@ -45,11 +47,12 @@ class EventsFragment : IntercrossBaseFragment() {
     var mAllowBlank: Boolean = false
     var mCollectData = true
 
-    override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
-    ): View? {
+    override fun afterCreateView() {
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+
+        super.onActivityCreated(savedInstanceState)
 
         val orderKey = "org.phenoapps.intercross.CROSS_ORDER"
         val blankKey = "org.phenoapps.intercross.BLANK_MALE_ID"
@@ -66,12 +69,12 @@ class EventsFragment : IntercrossBaseFragment() {
             }
         }
 
-        mBinding = FragmentEventsBinding
-                .inflate(inflater, container, false)
+        //mBinding = FragmentEventsBinding
+        //        .inflate(inflater, container, false)
 
         mAdapter = EventsAdapter(mBinding.root.context)
 
-        mBinding.recyclerView.adapter = mAdapter
+        recyclerView.adapter = mAdapter
 
 
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
@@ -103,7 +106,7 @@ class EventsFragment : IntercrossBaseFragment() {
             }
 
             override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
-                mBinding.saveButton.isEnabled = isInputValid()
+                saveButton.isEnabled = isInputValid()
             }
 
             override fun afterTextChanged(editable: Editable) {
@@ -119,88 +122,85 @@ class EventsFragment : IntercrossBaseFragment() {
             }
         }
 
-        with(mBinding) {
 
-            secondText.addTextChangedListener(emptyGuard)
-            firstText.addTextChangedListener(emptyGuard)
-            editTextCross.addTextChangedListener(emptyGuard)
+        secondText.addTextChangedListener(emptyGuard)
+        firstText.addTextChangedListener(emptyGuard)
+        editTextCross.addTextChangedListener(emptyGuard)
 
-            firstText.onFocusChangeListener = focusListener
-            secondText.onFocusChangeListener = focusListener
-            editTextCross.onFocusChangeListener = focusListener
+        firstText.onFocusChangeListener = focusListener
+        secondText.onFocusChangeListener = focusListener
+        editTextCross.onFocusChangeListener = focusListener
 
-            firstText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
-                if (i == EditorInfo.IME_ACTION_DONE) {
-                    if ((mBinding.firstText.text ?: "").isNotEmpty()) mBinding.secondText.requestFocus()
-                    return@OnEditorActionListener true
-                }
-                false
-            })
+        firstText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
+            if (i == EditorInfo.IME_ACTION_DONE) {
+                if ((firstText.text ?: "").isNotEmpty()) secondText.requestFocus()
+                return@OnEditorActionListener true
+            }
+            false
+        })
 
-            //if auto generation is enabled save after the second text is submitted
-            secondText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
-                if (i == EditorInfo.IME_ACTION_DONE) {
-                    if (!(mSettings.isPattern || mSettings.isUUID) && (secondText.text ?: "").isNotEmpty()) {
-                        editTextCross.requestFocus()
-                    } else {
-                        askUserNewExperimentName()
-                    }
-                    return@OnEditorActionListener true
-                }
-                false
-            })
-
-            editTextCross.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
-                if (i == EditorInfo.IME_ACTION_DONE) {
+        //if auto generation is enabled save after the second text is submitted
+        secondText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
+            if (i == EditorInfo.IME_ACTION_DONE) {
+                if (!(mSettings.isPattern || mSettings.isUUID) && (secondText.text ?: "").isNotEmpty()) {
+                    editTextCross.requestFocus()
+                } else {
                     askUserNewExperimentName()
-                    return@OnEditorActionListener true
                 }
-                false
-            })
+                return@OnEditorActionListener true
+            }
+            false
+        })
 
-            saveButton.isEnabled = isInputValid()
+        editTextCross.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
+            if (i == EditorInfo.IME_ACTION_DONE) {
+                askUserNewExperimentName()
+                return@OnEditorActionListener true
+            }
+            false
+        })
 
-            mBinding.button.setOnClickListener {
+        saveButton.isEnabled = isInputValid()
 
-                if ((PreferenceManager.getDefaultSharedPreferences(requireContext())
-                                .getString("org.phenoapps.intercross.PERSON", "") ?: "").isBlank()) {
-                    askUserForPerson()
-                } else
+        button.setOnClickListener {
+
+            if ((PreferenceManager.getDefaultSharedPreferences(requireContext())
+                            .getString("org.phenoapps.intercross.PERSON", "") ?: "").isBlank()) {
+                askUserForPerson()
+            } else
                 findNavController().navigate(R.id.barcode_scan_fragment,
                         Bundle().apply {
                             putString("mode", "single")
                         }
                 )
+        }
+
+        saveButton.setOnClickListener {
+            askUserNewExperimentName()
+        }
+
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        clearButton.setOnClickListener {
+            //editTextCross.setText("")
+            firstText.setText("")
+            secondText.setText("")
+            firstText.requestFocus()
+        }
+
+        when (mOrder) {
+            0 -> {
+                firstText.hint = "Female ID:"
+                secondText.hint = "Male ID:"
             }
-
-            saveButton.setOnClickListener {
-                askUserNewExperimentName()
-            }
-
-            mBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-
-            clearButton.setOnClickListener {
-                //editTextCross.setText("")
-                firstText.setText("")
-                secondText.setText("")
-                firstText.requestFocus()
-            }
-
-            when (mOrder) {
-                0 -> {
-                    firstText.hint = "Female ID:"
-                    secondText.hint = "Male ID:"
-                }
-                1 -> {
-                    firstText.hint = "Male ID:"
-                    secondText.hint = "Female ID:"
-                }
+            1 -> {
+                firstText.hint = "Male ID:"
+                secondText.hint = "Female ID:"
             }
         }
 
-        startObservers()
 
-        return mBinding.root
+        startObservers()
     }
 
     private fun startObservers() {
@@ -241,12 +241,12 @@ class EventsFragment : IntercrossBaseFragment() {
                 mSettings = it
                 when {
                     mSettings.isPattern -> {
-                        mBinding.editTextCross.setText("${mSettings.prefix}${mSettings.number.toString().padStart(mSettings.pad, '0')}${mSettings.suffix}")
+                        editTextCross.setText("${mSettings.prefix}${mSettings.number.toString().padStart(mSettings.pad, '0')}${mSettings.suffix}")
                     }
                     mSettings.isUUID -> {
-                        mBinding.editTextCross.setText(UUID.randomUUID().toString())
+                        editTextCross.setText(UUID.randomUUID().toString())
                     }
-                    else -> mBinding.editTextCross.setText("")
+                    else -> editTextCross.setText("")
                 }
             }
         })

@@ -1,17 +1,23 @@
 package org.phenoapps.intercross.fragments
 
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import org.phenoapps.intercross.data.*
+import org.phenoapps.intercross.databinding.FragmentEventsBinding
 import org.phenoapps.intercross.util.SnackbarQueue
 import org.phenoapps.intercross.viewmodels.*
+import kotlin.reflect.KClass
 
 //base fragment class that loads all db viewmodels
-open class IntercrossBaseFragment : Fragment() {
+abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId: Int) : Fragment() {
 
     lateinit var mEventsListViewModel: EventsListViewModel
     lateinit var mSettingsViewModel: SettingsViewModel
@@ -21,6 +27,22 @@ open class IntercrossBaseFragment : Fragment() {
     lateinit var mSharedViewModel: CrossSharedViewModel
 
     lateinit var mSnackbar: SnackbarQueue
+
+    lateinit var mBinding: T
+
+    abstract fun afterCreateView()
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+
+        mBinding = DataBindingUtil.inflate<T>(inflater, layoutId, container, false)
+
+        with(mBinding) {
+            afterCreateView()
+        }
+
+        return mBinding.root
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

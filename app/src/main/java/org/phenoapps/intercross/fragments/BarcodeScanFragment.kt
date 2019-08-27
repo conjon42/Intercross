@@ -19,6 +19,7 @@ import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.DecoratedBarcodeView
 import org.phenoapps.intercross.MainActivity
+import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.EventName
 import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.data.Settings
@@ -28,11 +29,11 @@ import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.FileUtil
 import java.util.*
 
-class BarcodeScanFragment: IntercrossBaseFragment() {
+class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.id.barcode_scan_fragment) {
 
 
     private lateinit var mBarcodeScanner: DecoratedBarcodeView
-    private lateinit var mBinding: FragmentBarcodeScanBinding
+    //private lateinit var mBinding: FragmentBarcodeScanBinding
     private lateinit var mCallback: BarcodeCallback
 
     private lateinit var mWishlist: List<Wishlist>
@@ -55,12 +56,7 @@ class BarcodeScanFragment: IntercrossBaseFragment() {
         return false
     }
 
-    override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
-    ): View? {
-
+    override fun afterCreateView() {
         val orderKey = "org.phenoapps.intercross.CROSS_ORDER"
         val blankKey = "org.phenoapps.intercross.BLANK_MALE_ID"
         val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
@@ -78,16 +74,16 @@ class BarcodeScanFragment: IntercrossBaseFragment() {
 
         isCameraAllowed()
 
-        mBinding =
-                FragmentBarcodeScanBinding.inflate(inflater, container, false)
+        //mBinding =
+        //        FragmentBarcodeScanBinding.inflate(inflater, container, false)
 
         arguments?.let {
             mBinding.zxingBarcodeScanner.setStatusText(
-                when (it.getString("mode")) {
-                    "search" -> "Search by barcode"
-                    "continuous" -> "Scan infinite barcodes"
-                    else -> "Scan a single barcode"
-                })
+                    when (it.getString("mode")) {
+                        "search" -> "Search by barcode"
+                        "continuous" -> "Scan infinite barcodes"
+                        else -> "Scan a single barcode"
+                    })
         }
 
         mCallback = object : BarcodeCallback {
@@ -207,8 +203,6 @@ class BarcodeScanFragment: IntercrossBaseFragment() {
         }
 
         startObservers()
-
-        return mBinding.root
     }
 
     private fun startObservers() {

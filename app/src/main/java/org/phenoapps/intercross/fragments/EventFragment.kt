@@ -8,6 +8,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.tabs.TabLayout
+import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.EventName
 import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.databinding.FragmentEventBinding
@@ -15,9 +16,9 @@ import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.DateUtil
 
 
-class EventFragment: IntercrossBaseFragment() {
+class EventFragment: IntercrossBaseFragment<FragmentEventBinding>(R.layout.fragment_event) {
 
-    private lateinit var mBinding: FragmentEventBinding
+    //private lateinit var mBinding: FragmentEventBinding
 
     private lateinit var mEvents: List<Events>
     private var mHarvests: Int? = null
@@ -29,11 +30,7 @@ class EventFragment: IntercrossBaseFragment() {
     var mAllowBlank: Boolean = false
     var mCollectData = true
 
-    override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
-    ): View? {
+    override fun afterCreateView() {
 
         //TODO add shared prefs to base fragment interface
         val orderKey = "org.phenoapps.intercross.CROSS_ORDER"
@@ -59,8 +56,8 @@ class EventFragment: IntercrossBaseFragment() {
             mEvent = it
         }
 
-        mBinding = FragmentEventBinding
-                .inflate(inflater, container, false)
+        //mBinding = FragmentEventBinding
+         //       .inflate(inflater, container, false)
 
         if (mCollectData) {
             //mBinding.dateEditText.visibility = View.VISIBLE
@@ -119,8 +116,6 @@ class EventFragment: IntercrossBaseFragment() {
         })
 
         startObservers()
-
-        return mBinding.root
     }
 
     private fun startObservers() {

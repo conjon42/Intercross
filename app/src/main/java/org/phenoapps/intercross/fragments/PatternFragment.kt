@@ -14,9 +14,9 @@ import org.phenoapps.intercross.databinding.FragmentPatternBinding
 import org.phenoapps.intercross.viewmodels.PatternViewModel
 import java.util.*
 
-class PatternFragment: IntercrossBaseFragment() {
+class PatternFragment: IntercrossBaseFragment<FragmentPatternBinding>(R.layout.fragment_pattern) {
 
-    private lateinit var mBinding: FragmentPatternBinding
+    //private lateinit var mBinding: FragmentPatternBinding
 
     private lateinit var mSettings: Settings
 
@@ -24,16 +24,12 @@ class PatternFragment: IntercrossBaseFragment() {
 
     private var mLastUUID: String = UUID.randomUUID().toString()
 
-    override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
-    ): View? {
+    override fun afterCreateView() {
 
         activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
-        mBinding = FragmentPatternBinding
-                .inflate(inflater, container, false)
+        //mBinding = FragmentPatternBinding
+           //     .inflate(inflater, container, false)
 
         mSettingsViewModel.settings.observe(viewLifecycleOwner, Observer {
             it?.let {
@@ -137,9 +133,8 @@ class PatternFragment: IntercrossBaseFragment() {
                 }
             })
         }
-
-        return mBinding.root
     }
+
 
     private fun buildSettings() = (if (::mSettings.isInitialized) mSettings else Settings()).apply {
         var n = mBinding.numberEditText.text.toString()

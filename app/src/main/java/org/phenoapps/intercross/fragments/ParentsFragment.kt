@@ -12,6 +12,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
 import org.phenoapps.intercross.MainActivity.Companion.REQ_FILE_IMPORT
+import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.ParentsAdapter
 import org.phenoapps.intercross.data.EventName
 import org.phenoapps.intercross.data.Events
@@ -21,9 +22,9 @@ import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.FileUtil
 
-class ParentsFragment: IntercrossBaseFragment() {
+class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.id.parents_fragment) {
 
-    private lateinit var mBinding: FragmentParentsBinding
+    //private lateinit var mBinding: FragmentParentsBinding
 
     private lateinit var mMales: List<Parents>
     private lateinit var mFemales: List<Parents>
@@ -53,16 +54,12 @@ class ParentsFragment: IntercrossBaseFragment() {
         }
     }
 
-    override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
-    ): View? {
+    override fun afterCreateView() {
 
         mAdapter = ParentsAdapter()
 
-        mBinding = FragmentParentsBinding
-                .inflate(inflater, container, false)
+        //mBinding = FragmentParentsBinding
+         //       .inflate(inflater, container, false)
 
         mBinding.recyclerView.adapter = mAdapter
         mBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -135,6 +132,5 @@ class ParentsFragment: IntercrossBaseFragment() {
             }
         })
 
-        return mBinding.root
     }
 }
