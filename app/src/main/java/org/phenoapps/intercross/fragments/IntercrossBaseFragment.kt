@@ -1,15 +1,21 @@
 package org.phenoapps.intercross.fragments
 
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Adapter
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
+import org.phenoapps.intercross.adapters.EventsAdapter
 import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
 import org.phenoapps.intercross.util.SnackbarQueue
@@ -30,22 +36,49 @@ abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId:
 
     lateinit var mBinding: T
 
-    abstract fun afterCreateView()
+    var mSettings = Settings()
+
+    var mOrder: Int = 0
+    var mAllowBlank: Boolean = false
+    var mCollectData = true
+
+    //lateinit var mAdapter: ListAdapter<*,*>
+
+    abstract fun T.afterCreateView()
+
+    /*infix fun <VH : RecyclerView.ViewHolder> RecyclerView.lists(adapter: ListAdapter<*,VH>) {
+
+        //mAdapter = adapter
+        this.layoutManager = LinearLayoutManager(requireContext())
+        this.adapter = adapter
+    }*/
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         mBinding = DataBindingUtil.inflate<T>(inflater, layoutId, container, false)
-
-        with(mBinding) {
+        return with(mBinding) {
             afterCreateView()
+            root
         }
-
-        return mBinding.root
-
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val orderKey = "org.phenoapps.intercross.CROSS_ORDER"
+        val blankKey = "org.phenoapps.intercross.BLANK_MALE_ID"
+        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        mOrder = (pref.getString(orderKey, "0") ?: "0").toInt()
+        mAllowBlank = pref.getBoolean(blankKey, false)
+        mCollectData = pref.getBoolean(SettingsFragment.COLLECT_INFO, true)
+
+        pref.registerOnSharedPreferenceChangeListener { sharedPreferences, key ->
+            when(key) {
+                orderKey -> mOrder = (sharedPreferences.getString(key, "0") ?: "0").toInt()
+                blankKey -> mAllowBlank = sharedPreferences.getBoolean(key, false)
+                SettingsFragment.COLLECT_INFO -> mCollectData = sharedPreferences.getBoolean(key, true)
+            }
+        }
 
         val db = IntercrossDatabase.getInstance(requireContext())
 

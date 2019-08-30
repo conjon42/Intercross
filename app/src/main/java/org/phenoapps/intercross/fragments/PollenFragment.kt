@@ -17,7 +17,7 @@ class PollenFragment : IntercrossBaseFragment<FragmentPollenBinding>(R.layout.fr
 
     private lateinit var mAdapter: EventsAdapter
 
-    override fun afterCreateView() {
+    override fun FragmentPollenBinding.afterCreateView() {
         //activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
         val pollen = arguments?.getParcelable<PollenGroup>("pollen")

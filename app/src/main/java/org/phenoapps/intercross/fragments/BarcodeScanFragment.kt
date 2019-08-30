@@ -29,7 +29,7 @@ import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.FileUtil
 import java.util.*
 
-class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.id.barcode_scan_fragment) {
+class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.layout.fragment_barcode_scan) {
 
 
     private lateinit var mBarcodeScanner: DecoratedBarcodeView
@@ -38,13 +38,8 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
     private lateinit var mWishlist: List<Wishlist>
     private var mEvents = ArrayList<Events>()
-    private var mSettings = Settings()
 
     private var lastText: String? = null
-
-    var mOrder: Int = 0
-    var mAllowBlank: Boolean = false
-    var mCollectData = true
 
     private fun isCameraAllowed(): Boolean {
 
@@ -56,34 +51,17 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
         return false
     }
 
-    override fun afterCreateView() {
-        val orderKey = "org.phenoapps.intercross.CROSS_ORDER"
-        val blankKey = "org.phenoapps.intercross.BLANK_MALE_ID"
-        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
-        mOrder = (pref.getString(orderKey, "0") ?: "0").toInt()
-        mAllowBlank = pref.getBoolean(blankKey, false)
-        mCollectData = pref.getBoolean(SettingsFragment.COLLECT_INFO, true)
-
-        pref.registerOnSharedPreferenceChangeListener { sharedPreferences, key ->
-            when(key) {
-                orderKey -> mOrder = (sharedPreferences.getString(key, "0") ?: "0").toInt()
-                blankKey -> mAllowBlank = sharedPreferences.getBoolean(key, false)
-                SettingsFragment.COLLECT_INFO -> mCollectData = sharedPreferences.getBoolean(key, true)
-            }
-        }
+    override fun FragmentBarcodeScanBinding.afterCreateView() {
 
         isCameraAllowed()
 
-        //mBinding =
-        //        FragmentBarcodeScanBinding.inflate(inflater, container, false)
-
         arguments?.let {
-            mBinding.zxingBarcodeScanner.setStatusText(
-                    when (it.getString("mode")) {
-                        "search" -> "Search by barcode"
-                        "continuous" -> "Scan infinite barcodes"
-                        else -> "Scan a single barcode"
-                    })
+            zxingBarcodeScanner.setStatusText(
+                when (it.getString("mode")) {
+                    "search" -> "Search by barcode"
+                    "continuous" -> "Scan infinite barcodes"
+                    else -> "Scan a single barcode"
+                })
         }
 
         mCallback = object : BarcodeCallback {
@@ -93,19 +71,19 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                 if (result.text == null) return // || result.text == lastText) return
 
                 lastText = result.text
-                mBinding.zxingBarcodeScanner.statusView.text = "Single Mode"
+                zxingBarcodeScanner.statusView.text = "Single Mode"
 
                 //binding.zxingBarcodeScanner.setStatusText(result.text)
 
                 arguments?.let {
                     when(it.getString("mode")) {
                         "single" -> {
-                            mBinding.zxingBarcodeScanner.setStatusText("Single")
+                            zxingBarcodeScanner.setStatusText("Single")
                             mSharedViewModel.lastScan.value = result.text.toString()
                             findNavController().popBackStack()
                         }
                         "search" -> {
-                            mBinding.zxingBarcodeScanner.setStatusText("Search Mode")
+                            zxingBarcodeScanner.setStatusText("Search Mode")
 
                             //mSharedViewModel.lastScan.value = result.text.toString()
                             mEvents.forEach { event ->
@@ -115,20 +93,20 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                             }
                         }
                         "continuous" -> {
-                            mBinding.zxingBarcodeScanner.setStatusText("Continuous Mode")
+                            zxingBarcodeScanner.setStatusText("Continuous Mode")
 
                             when (mOrder) {
                                 0 -> when {
                                     (mSharedViewModel.female.value ?: "").isEmpty() -> {
                                         mSharedViewModel.female.value = result.text.toString()
-                                        mBinding.female.setImageBitmap(result.getBitmapWithResultPoints(Color.RED))
+                                        female.setImageBitmap(result.getBitmapWithResultPoints(Color.RED))
                                         Handler().postDelayed({
                                             mBarcodeScanner.barcodeView.decodeSingle(mCallback)
                                         }, 2000)
                                     }
                                     ((mSharedViewModel.male.value ?: "").isEmpty()) -> {
                                         mSharedViewModel.male.value = result.text.toString()
-                                        mBinding.male.setImageBitmap(result.getBitmapWithResultPoints(Color.BLUE))
+                                        male.setImageBitmap(result.getBitmapWithResultPoints(Color.BLUE))
                                         if (mSettings.isUUID || mSettings.isPattern) {
                                             FileUtil(requireContext()).ringNotification(true)
                                             submitCross()
@@ -140,7 +118,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                                     }
                                     ((mSharedViewModel.name.value ?: "").isEmpty() && !(mSettings.isUUID || mSettings.isPattern)) -> {
                                         mSharedViewModel.name.value = result.text.toString()
-                                        mBinding.cross.setImageBitmap(result.getBitmapWithResultPoints(Color.GREEN))
+                                        cross.setImageBitmap(result.getBitmapWithResultPoints(Color.GREEN))
                                         FileUtil(requireContext()).ringNotification(true)
                                         submitCross()
                                     }
@@ -148,14 +126,14 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                                 1 -> when {
                                     (mSharedViewModel.male.value ?: "").isEmpty() -> {
                                         mSharedViewModel.male.value = result.text.toString()
-                                        mBinding.male.setImageBitmap(result.getBitmapWithResultPoints(Color.BLUE))
+                                        male.setImageBitmap(result.getBitmapWithResultPoints(Color.BLUE))
                                         Handler().postDelayed({
                                             mBarcodeScanner.barcodeView.decodeSingle(mCallback)
                                         }, 2000)
                                     }
                                     (mSharedViewModel.female.value ?: "").isEmpty() -> {
                                         mSharedViewModel.female.value = result.text.toString()
-                                        mBinding.female.setImageBitmap(result.getBitmapWithResultPoints(Color.RED))
+                                        female.setImageBitmap(result.getBitmapWithResultPoints(Color.RED))
                                         if (mSettings.isUUID || mSettings.isPattern) {
                                             FileUtil(requireContext()).ringNotification(true)
                                             submitCross()
@@ -167,7 +145,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                                     }
                                     (mSharedViewModel.name.value ?: "").isEmpty() && !(mSettings.isUUID || mSettings.isPattern) -> {
                                         mSharedViewModel.name.value = result.text.toString()
-                                        mBinding.cross.setImageBitmap(result.getBitmapWithResultPoints(Color.GREEN))
+                                        cross.setImageBitmap(result.getBitmapWithResultPoints(Color.GREEN))
                                         FileUtil(requireContext()).ringNotification(true)
                                         submitCross()
                                     }
@@ -187,7 +165,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
         }
 
-        mBarcodeScanner = mBinding.zxingBarcodeScanner
+        mBarcodeScanner = zxingBarcodeScanner
 
         mBarcodeScanner.barcodeView.apply {
 

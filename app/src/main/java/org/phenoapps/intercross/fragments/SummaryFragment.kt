@@ -14,21 +14,17 @@ import org.phenoapps.intercross.databinding.FragmentSummaryBinding
 
 class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.fragment_summary) {
 
-    //private lateinit var mBinding: FragmentSummaryBinding
-
     private lateinit var mAdapter: SummaryAdapter
 
     data class SummaryData(var m: Events?, var f: Events?, var event: Events, var count: Int)
 
-    override fun afterCreateView() {
-        //mBinding = FragmentSummaryBinding
-        //        .inflate(inflater, container, false)
+    override fun FragmentSummaryBinding.afterCreateView() {
 
-        mBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         mAdapter = SummaryAdapter(requireContext())
 
-        mBinding.recyclerView.adapter = mAdapter
+        recyclerView.adapter = mAdapter
 
         mEventsListViewModel.events.observe(viewLifecycleOwner, Observer { events ->
             events.let {

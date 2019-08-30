@@ -18,35 +18,13 @@ import org.phenoapps.intercross.util.DateUtil
 
 class EventFragment: IntercrossBaseFragment<FragmentEventBinding>(R.layout.fragment_event) {
 
-    //private lateinit var mBinding: FragmentEventBinding
-
     private lateinit var mEvents: List<Events>
     private var mHarvests: Int? = null
     private var mThreshes: Int? = null
     private var mFlowers: Int? = null
     private lateinit var mEvent: Events
 
-    var mOrder: Int = 0
-    var mAllowBlank: Boolean = false
-    var mCollectData = true
-
-    override fun afterCreateView() {
-
-        //TODO add shared prefs to base fragment interface
-        val orderKey = "org.phenoapps.intercross.CROSS_ORDER"
-        val blankKey = "org.phenoapps.intercross.BLANK_MALE_ID"
-        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
-        mOrder = (pref.getString(orderKey, "0") ?: "0").toInt()
-        mAllowBlank = pref.getBoolean(blankKey, false)
-        mCollectData = pref.getBoolean(SettingsFragment.COLLECT_INFO, true)
-
-        pref.registerOnSharedPreferenceChangeListener { sharedPreferences, key ->
-            when(key) {
-                orderKey -> mOrder = (sharedPreferences.getString(key, "0") ?: "0").toInt()
-                blankKey -> mAllowBlank = sharedPreferences.getBoolean(key, false)
-                SettingsFragment.COLLECT_INFO -> mCollectData = sharedPreferences.getBoolean(key, true)
-            }
-        }
+    override fun FragmentEventBinding.afterCreateView() {
 
         setHasOptionsMenu(true)
 
@@ -56,34 +34,31 @@ class EventFragment: IntercrossBaseFragment<FragmentEventBinding>(R.layout.fragm
             mEvent = it
         }
 
-        //mBinding = FragmentEventBinding
-         //       .inflate(inflater, container, false)
-
         if (mCollectData) {
             //mBinding.dateEditText.visibility = View.VISIBLE
-            mBinding.countEditText.visibility = View.VISIBLE
-            mBinding.tabLayout.visibility = View.VISIBLE
+            countEditText.visibility = View.VISIBLE
+            tabLayout.visibility = View.VISIBLE
         } else {
             //mBinding.dateEditText.visibility = View.INVISIBLE
-            mBinding.countEditText.visibility = View.INVISIBLE
-            mBinding.tabLayout.visibility = View.INVISIBLE
+            countEditText.visibility = View.INVISIBLE
+            tabLayout.visibility = View.INVISIBLE
         }
 
-        mBinding.events = mEvent
+        events = mEvent
 
-        mBinding.maleName.setOnClickListener {
+        maleName.setOnClickListener {
             searchForParents(mBinding.maleName.text.toString())
         }
 
-        mBinding.femaleName.setOnClickListener {
+        femaleName.setOnClickListener {
             searchForParents(mBinding.femaleName.text.toString())
         }
 
-        mBinding.button2.setOnClickListener {
-            val x = mBinding.countEditText.text.toString()
+        button2.setOnClickListener {
+            val x = countEditText.text.toString()
             x.toIntOrNull()?.let { x ->
                 Thread {
-                    when (mBinding.tabLayout.selectedTabPosition) {
+                    when (tabLayout.selectedTabPosition) {
                         0 -> mEventsListViewModel.updateFlowers(mEvent, x)
                         1 -> mEventsListViewModel.updateFruits(mEvent, x)
                         2 -> mEventsListViewModel.updateSeeds(mEvent, x)
@@ -94,24 +69,24 @@ class EventFragment: IntercrossBaseFragment<FragmentEventBinding>(R.layout.fragm
             }
         }
 
-        mBinding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
 
             override fun onTabReselected(tab: TabLayout.Tab?) {
                 updateCountEditText()
-                mBinding.countEditText.requestFocus()
-                mBinding.countEditText.setSelection(mBinding.countEditText.text.length)
+                countEditText.requestFocus()
+                countEditText.setSelection(countEditText.text.length)
                 (requireActivity().getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager)
-                        .showSoftInput(mBinding.countEditText, InputMethodManager.SHOW_FORCED)
+                        .showSoftInput(countEditText, InputMethodManager.SHOW_FORCED)
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab?) {
             }
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 updateCountEditText()
-                mBinding.countEditText.requestFocus()
-                mBinding.countEditText.setSelection(mBinding.countEditText.text.length)
+                countEditText.requestFocus()
+                countEditText.setSelection(countEditText.text.length)
                 (requireActivity().getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager)
-                        .showSoftInput(mBinding.countEditText, InputMethodManager.SHOW_FORCED)
+                        .showSoftInput(countEditText, InputMethodManager.SHOW_FORCED)
             }
         })
 

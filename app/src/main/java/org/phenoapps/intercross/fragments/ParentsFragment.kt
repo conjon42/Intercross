@@ -54,7 +54,7 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.id.paren
         }
     }
 
-    override fun afterCreateView() {
+    override fun FragmentParentsBinding.afterCreateView() {
 
         mAdapter = ParentsAdapter()
 

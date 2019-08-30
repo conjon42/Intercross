@@ -16,15 +16,11 @@ import java.util.*
 
 class PatternFragment: IntercrossBaseFragment<FragmentPatternBinding>(R.layout.fragment_pattern) {
 
-    //private lateinit var mBinding: FragmentPatternBinding
-
-    private lateinit var mSettings: Settings
-
     private var mLastUsed: String = "0"
 
     private var mLastUUID: String = UUID.randomUUID().toString()
 
-    override fun afterCreateView() {
+    override fun FragmentPatternBinding.afterCreateView() {
 
         activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
@@ -136,7 +132,7 @@ class PatternFragment: IntercrossBaseFragment<FragmentPatternBinding>(R.layout.f
     }
 
 
-    private fun buildSettings() = (if (::mSettings.isInitialized) mSettings else Settings()).apply {
+    private fun buildSettings() = mSettings.apply {
         var n = mBinding.numberEditText.text.toString()
         var p = mBinding.padEditText.text.toString()
         if(n.isEmpty()) n = "0"

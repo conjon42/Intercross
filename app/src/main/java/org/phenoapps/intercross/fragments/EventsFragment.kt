@@ -16,8 +16,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.fragment_events.*
-import kotlinx.android.synthetic.main.list_item_parents.*
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
 import org.phenoapps.intercross.data.EventName
@@ -28,54 +26,48 @@ import org.phenoapps.intercross.databinding.FragmentEventsBinding
 import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.util.SnackbarQueue
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import java.util.*
 
 class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fragment_events) {
 
-    //private lateinit var mBinding: FragmentEventsBinding
     private lateinit var mAdapter: EventsAdapter
 
     private lateinit var mWishlist: List<Wishlist>
     private lateinit var mFocused: View
 
-    private var mSettings = Settings()
+    override fun FragmentEventsBinding.afterCreateView() {
 
-    var mOrder: Int = 0
-    var mAllowBlank: Boolean = false
-    var mCollectData = true
+        setupRecyclerView()
 
-    override fun afterCreateView() {
-    }
+        setupTextInput()
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        setupButtons()
 
-        super.onActivityCreated(savedInstanceState)
+        setHasOptionsMenu(true)
 
-        val orderKey = "org.phenoapps.intercross.CROSS_ORDER"
-        val blankKey = "org.phenoapps.intercross.BLANK_MALE_ID"
-        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
-        mOrder = (pref.getString(orderKey, "0") ?: "0").toInt()
-        mAllowBlank = pref.getBoolean(blankKey, false)
-        mCollectData = pref.getBoolean(SettingsFragment.COLLECT_INFO, true)
-
-        pref.registerOnSharedPreferenceChangeListener { sharedPreferences, key ->
-            when(key) {
-                orderKey -> mOrder = (sharedPreferences.getString(key, "0") ?: "0").toInt()
-                blankKey -> mAllowBlank = sharedPreferences.getBoolean(key, false)
-                SettingsFragment.COLLECT_INFO -> mCollectData = sharedPreferences.getBoolean(key, true)
+        when (mOrder) {
+            0 -> {
+                firstText.hint = "Female ID:"
+                secondText.hint = "Male ID:"
+            }
+            1 -> {
+                firstText.hint = "Male ID:"
+                secondText.hint = "Female ID:"
             }
         }
 
-        //mBinding = FragmentEventsBinding
-        //        .inflate(inflater, container, false)
+        startObservers()
+    }
 
-        mAdapter = EventsAdapter(mBinding.root.context)
+    private fun FragmentEventsBinding.setupRecyclerView() {
+
+        //recyclerView lists EventsAdapter(requireContext())
+
+        mAdapter = EventsAdapter(root.context)
+
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         recyclerView.adapter = mAdapter
-
 
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
 
@@ -87,16 +79,15 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 val event = mAdapter.currentList[viewHolder.adapterPosition]
                 mEventsListViewModel.delete(event)
-                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "${event.eventDbId}", "Undo") {
+                mSnackbar.push(SnackbarQueue.SnackJob(root, "${event.eventDbId}", "Undo") {
                     mEventsListViewModel.addCrossEvent(event.apply { id = null })
                 })
 
             }
-        }).attachToRecyclerView(mBinding.recyclerView)
+        }).attachToRecyclerView(recyclerView)
+    }
 
-        //setup UI
-
-        setHasOptionsMenu(true)
+    private fun FragmentEventsBinding.setupTextInput() {
 
         //single text watcher class to check if all fields are non-empty to enable the save button
         val emptyGuard = object : TextWatcher {
@@ -121,7 +112,6 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                 askUserForPerson()
             }
         }
-
 
         secondText.addTextChangedListener(emptyGuard)
         firstText.addTextChangedListener(emptyGuard)
@@ -160,6 +150,10 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             false
         })
 
+    }
+
+    private fun FragmentEventsBinding.setupButtons() {
+
         saveButton.isEnabled = isInputValid()
 
         button.setOnClickListener {
@@ -179,7 +173,6 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             askUserNewExperimentName()
         }
 
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         clearButton.setOnClickListener {
             //editTextCross.setText("")
@@ -187,23 +180,127 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             secondText.setText("")
             firstText.requestFocus()
         }
+    }
 
+    private fun FragmentEventsBinding.isInputValid(): Boolean {
+
+        val male: String
+        val female: String
+        val cross: String = editTextCross.text.toString()
+        if (mOrder == 0) {
+            female = firstText.text.toString()
+            male = secondText.text.toString()
+        } else {
+            male = firstText.text.toString()
+            female = secondText.text.toString()
+        }
+
+        //calculate how full the save button should be
+        var numFilled = 0
+        if (mAllowBlank) numFilled++
+        else if (male.isNotBlank()) numFilled++
+        if (female.isNotBlank()) numFilled++
+        if (cross.isNotBlank()) numFilled++
+
+        //change save button fill percentage using corresponding xml shapes
+        saveButton.background = ContextCompat.getDrawable(requireContext(),
+                when (numFilled) {
+                    0,1,2 -> R.drawable.button_save_empty
+                    //1 -> R.drawable.button_save_third
+                    //2 -> R.drawable.button_save_two_thirds
+                    else -> R.drawable.button_save_full
+                })
+
+        return ((male.isNotEmpty() || mAllowBlank) && female.isNotEmpty()
+                && (cross.isNotEmpty() || (mSettings.isUUID || mSettings.isPattern)))
+    }
+
+    private fun FragmentEventsBinding.askUserNewExperimentName() {
+
+        val value = editTextCross.text.toString()
+
+        lateinit var male: String
+        lateinit var female: String
         when (mOrder) {
             0 -> {
-                firstText.hint = "Female ID:"
-                secondText.hint = "Male ID:"
+                female = (firstText.text ?: "").toString()
+                male = (secondText.text ?: "").toString()
             }
             1 -> {
-                firstText.hint = "Male ID:"
-                secondText.hint = "Female ID:"
+                male = (firstText.text ?: "").toString()
+                female = (secondText.text ?: "").toString()
             }
         }
 
+        if (value.isNotEmpty() && (male.isNotEmpty() || mAllowBlank)) {
 
-        startObservers()
+            if (male.isEmpty()) male = "blank"
+            //val first = (mBinding.firstText.text ?: "")
+            //val second = (mBinding.secondText.text ?: "")
+
+
+            //TODO add person
+            mEventsListViewModel.addCrossEvent(
+                    Events(null, value, EventName.POLLINATION.itemType, female, male, null, DateUtil().getTime(), ""))
+
+
+            FileUtil(requireContext()).ringNotification(true)
+            checkWishlist(female, male, value)
+
+            Handler().postDelayed(Runnable {
+                recyclerView.scrollToPosition(0)
+            }, 250)
+
+        } else {
+            mSnackbar.push(SnackbarQueue.SnackJob(root, "You must enter a cross name."))
+            //FileUtil(requireContext()).ringNotification(false)
+        }
     }
 
-    private fun startObservers() {
+    private fun FragmentEventsBinding.checkWishlist(f: String, m: String, x: String) {
+
+        var isOnList = false
+        var min = 0
+        var current = 0
+        mWishlist.forEach {
+            if (it.femaleDbId == f && it.maleDbId == m) {
+                isOnList = true
+                min = it.wishMin
+                current++
+            }
+        }
+        if (isOnList) {
+            mAdapter.currentList.forEach {
+                if (it.femaleObsUnitDbId == f && it.maleOBsUnitDbId == m) {
+                    current++
+                }
+            }
+        }
+
+        firstText.setText("")
+        secondText.setText("")
+        editTextCross.setText("")
+
+        when {
+            mSettings.isPattern -> {
+                mSettings.number += 1
+                mSettingsViewModel.update(mSettings)
+                editTextCross.setText("${mSettings.prefix}${mSettings.number.toString().padStart(mSettings.pad, '0')}${mSettings.suffix}")
+
+            }
+            mSettings.isUUID -> {
+                editTextCross.setText(UUID.randomUUID().toString())
+            }
+        }
+        if (current >= min && min != 0) {
+            FileUtil(requireContext()).ringNotification(true)
+            mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "Wishlist complete for $f and $m : $current/$min"))
+        } else mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "New Cross Event! $x added."))
+
+        firstText.requestFocus()
+    }
+
+    private fun FragmentEventsBinding.startObservers() {
 
         mEventsListViewModel.crosses.observe(viewLifecycleOwner, Observer { result ->
             result?.let {
@@ -273,39 +370,6 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         builder.show()
     }
 
-    private fun isInputValid(): Boolean {
-
-        val male: String
-        val female: String
-        val cross: String = mBinding.editTextCross.text.toString()
-        if (mOrder == 0) {
-            female = mBinding.firstText.text.toString()
-            male = mBinding.secondText.text.toString()
-        } else {
-            male = mBinding.firstText.text.toString()
-            female = mBinding.secondText.text.toString()
-        }
-
-        //calculate how full the save button should be
-        var numFilled = 0
-        if (mAllowBlank) numFilled++
-        else if (male.isNotBlank()) numFilled++
-        if (female.isNotBlank()) numFilled++
-        if (cross.isNotBlank()) numFilled++
-
-        //change save button fill percentage using corresponding xml shapes
-        mBinding.saveButton.background = ContextCompat.getDrawable(requireContext(),
-            when (numFilled) {
-                0,1,2 -> R.drawable.button_save_empty
-                //1 -> R.drawable.button_save_third
-                //2 -> R.drawable.button_save_two_thirds
-                else -> R.drawable.button_save_full
-            })
-
-        return ((male.isNotEmpty() || mAllowBlank) && female.isNotEmpty()
-                && (cross.isNotEmpty() || (mSettings.isUUID || mSettings.isPattern)))
-    }
-
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.activity_main_toolbar, menu)
         super.onCreateOptionsMenu(menu, inflater)
@@ -316,9 +380,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         when(item.itemId) {
             R.id.action_search_barcode -> {
                 findNavController().navigate(R.id.barcode_scan_fragment,
-                    Bundle().apply {
-                        putString("mode", "search")
-                    }
+                        Bundle().apply {
+                            putString("mode", "search")
+                        }
                 )
             }
             R.id.action_continuous_barcode -> {
@@ -326,98 +390,13 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                                 .getString("org.phenoapps.intercross.PERSON", "") ?: "").isBlank()) {
                     askUserForPerson()
                 } else
-                findNavController().navigate(R.id.barcode_scan_fragment,
-                    Bundle().apply {
-                        putString("mode", "continuous")
-                    }
-                )
+                    findNavController().navigate(R.id.barcode_scan_fragment,
+                            Bundle().apply {
+                                putString("mode", "continuous")
+                            }
+                    )
             }
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    private fun askUserNewExperimentName() {
-
-        val value = mBinding.editTextCross.text.toString()
-
-        lateinit var male: String
-        lateinit var female: String
-        when (mOrder) {
-            0 -> {
-                female = (mBinding.firstText.text ?: "").toString()
-                male = (mBinding.secondText.text ?: "").toString()
-            }
-            1 -> {
-                male = (mBinding.firstText.text ?: "").toString()
-                female = (mBinding.secondText.text ?: "").toString()
-            }
-        }
-
-        if (value.isNotEmpty() && (male.isNotEmpty() || mAllowBlank)) {
-
-            if (male.isEmpty()) male = "blank"
-            //val first = (mBinding.firstText.text ?: "")
-            //val second = (mBinding.secondText.text ?: "")
-
-
-            //TODO add person
-            mEventsListViewModel.addCrossEvent(
-                    Events(null, value, EventName.POLLINATION.itemType, female, male, null, DateUtil().getTime(), ""))
-
-
-            FileUtil(requireContext()).ringNotification(true)
-            checkWishlist(female, male, value)
-
-            Handler().postDelayed(Runnable {
-                mBinding.recyclerView.scrollToPosition(0)
-            }, 250)
-
-        } else {
-            mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "You must enter a cross name."))
-            //FileUtil(requireContext()).ringNotification(false)
-        }
-    }
-
-    private fun checkWishlist(f: String, m: String, x: String) {
-
-        var isOnList = false
-        var min = 0
-        var current = 0
-        mWishlist.forEach {
-            if (it.femaleDbId == f && it.maleDbId == m) {
-                isOnList = true
-                min = it.wishMin
-                current++
-            }
-        }
-        if (isOnList) {
-            mAdapter.currentList.forEach {
-                if (it.femaleObsUnitDbId == f && it.maleOBsUnitDbId == m) {
-                    current++
-                }
-            }
-        }
-
-        mBinding.firstText.setText("")
-        mBinding.secondText.setText("")
-        mBinding.editTextCross.setText("")
-
-        when {
-            mSettings.isPattern -> {
-                mSettings.number += 1
-                mSettingsViewModel.update(mSettings)
-                mBinding.editTextCross.setText("${mSettings.prefix}${mSettings.number.toString().padStart(mSettings.pad, '0')}${mSettings.suffix}")
-
-            }
-            mSettings.isUUID -> {
-                mBinding.editTextCross.setText(UUID.randomUUID().toString())
-            }
-        }
-        if (current >= min && min != 0) {
-            FileUtil(requireContext()).ringNotification(true)
-            mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "Wishlist complete for $f and $m : $current/$min"))
-        } else mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "New Cross Event! $x added."))
-
-        mBinding.firstText.requestFocus()
     }
 }
