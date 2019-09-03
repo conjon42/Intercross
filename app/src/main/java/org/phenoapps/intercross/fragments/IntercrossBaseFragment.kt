@@ -1,20 +1,24 @@
 package org.phenoapps.intercross.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Adapter
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.*
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
 import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
@@ -23,7 +27,7 @@ import org.phenoapps.intercross.viewmodels.*
 import kotlin.reflect.KClass
 
 //base fragment class that loads all db viewmodels
-abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId: Int) : Fragment() {
+abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId: Int) : Fragment(), LifecycleObserver  {
 
     lateinit var mEventsListViewModel: EventsListViewModel
     lateinit var mSettingsViewModel: SettingsViewModel
@@ -80,6 +84,8 @@ abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId:
             }
         }
 
+        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+
         val db = IntercrossDatabase.getInstance(requireContext())
 
         activity?.run {
@@ -132,5 +138,41 @@ abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId:
 
         mSnackbar = SnackbarQueue()
 
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    fun onAppForegrounded() {
+        //TODO
+        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
+       // if ((pref.getString("org.phenoapps.intercross.PERSON", "") ?: "").isNotBlank())
+            //askIfSamePerson()
+    }
+
+    fun closeKeyboard() {
+        activity?.let {
+            val imm = it.getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(it.currentFocus?.windowToken, 0)
+        }
+    }
+
+    private fun askIfSamePerson() {
+
+        val builder = AlertDialog.Builder(requireContext()).apply {
+
+            setNegativeButton("Change Person") { _, _ ->
+                findNavController().navigate(R.id.settings_fragment, Bundle().apply {
+                    putString("org.phenoapps.intercross.ASK_PERSON", "true")
+                })
+            }
+
+            setPositiveButton("Yes") { _, _ ->
+                //welcome back
+            }
+        }
+
+        builder.setTitle("Is this still " +
+                "${PreferenceManager.getDefaultSharedPreferences(requireContext())
+                        .getString("org.phenoapps.intercross.PERSON", "Guillaume")}?")
+        builder.show()
     }
 }

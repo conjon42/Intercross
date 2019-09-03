@@ -16,7 +16,9 @@ import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
@@ -27,12 +29,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.databinding.ActivityMainBinding
 import org.phenoapps.intercross.fragments.SettingsFragment
 import org.phenoapps.intercross.util.FileUtil
+import org.phenoapps.intercross.util.SnackbarQueue
 import org.phenoapps.intercross.viewmodels.EventsListViewModel
 import org.phenoapps.intercross.viewmodels.ParentsViewModel
 import org.phenoapps.intercross.viewmodels.WishlistViewModel
@@ -44,6 +48,8 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var mSnackbar: SnackbarQueue
 
     private lateinit var mDrawerLayout: DrawerLayout
     private lateinit var mDrawerToggle: ActionBarDrawerToggle
@@ -79,6 +85,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
+
+        mSnackbar = SnackbarQueue()
 
         mBinding = DataBindingUtil.setContentView(this@MainActivity,
                 R.layout.activity_main)

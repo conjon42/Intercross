@@ -4,7 +4,11 @@ import android.content.Context.INPUT_METHOD_SERVICE
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.view.*
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.tabs.TabLayout
@@ -46,6 +50,14 @@ class EventFragment: IntercrossBaseFragment<FragmentEventBinding>(R.layout.fragm
 
         events = mEvent
 
+        countEditText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
+            if (i == EditorInfo.IME_ACTION_DONE) {
+                submitValues()
+                return@OnEditorActionListener true
+            }
+            false
+        })
+
         maleName.setOnClickListener {
             searchForParents(mBinding.maleName.text.toString())
         }
@@ -55,18 +67,7 @@ class EventFragment: IntercrossBaseFragment<FragmentEventBinding>(R.layout.fragm
         }
 
         button2.setOnClickListener {
-            val x = countEditText.text.toString()
-            x.toIntOrNull()?.let { x ->
-                Thread {
-                    when (tabLayout.selectedTabPosition) {
-                        0 -> mEventsListViewModel.updateFlowers(mEvent, x)
-                        1 -> mEventsListViewModel.updateFruits(mEvent, x)
-                        2 -> mEventsListViewModel.updateSeeds(mEvent, x)
-                    }
-                    updateCountEditText()
-
-                }.run()
-            }
+            submitValues()
         }
 
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
@@ -91,6 +92,23 @@ class EventFragment: IntercrossBaseFragment<FragmentEventBinding>(R.layout.fragm
         })
 
         startObservers()
+    }
+
+    private fun FragmentEventBinding.submitValues() {
+        val x = countEditText.text.toString()
+        x.toIntOrNull()?.let { x ->
+            Thread {
+                when (tabLayout.selectedTabPosition) {
+                    0 -> mEventsListViewModel.updateFlowers(mEvent, x)
+                    1 -> mEventsListViewModel.updateFruits(mEvent, x)
+                    2 -> mEventsListViewModel.updateSeeds(mEvent, x)
+                }
+                updateCountEditText()
+
+            }.run()
+
+            closeKeyboard()
+        }
     }
 
     private fun startObservers() {
@@ -141,14 +159,14 @@ class EventFragment: IntercrossBaseFragment<FragmentEventBinding>(R.layout.fragm
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(org.phenoapps.intercross.R.menu.print_toolbar, menu)
+        inflater.inflate(R.menu.print_toolbar, menu)
         super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
         when(item.itemId) {
-            org.phenoapps.intercross.R.id.action_print -> {
+            R.id.action_print -> {
                 BluetoothUtil().templatePrint(requireContext(), arrayOf(mEvent))
             }
         }
