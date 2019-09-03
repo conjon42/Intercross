@@ -10,8 +10,8 @@
 
         <EditTextPreference
             android:icon="@drawable/ic_setting_experiment"
-            android:key="org.phenoapps.intercross.LOCATION"
-            android:title="Location" />
+            android:key="org.phenoapps.intercross.EXPERIMENT"
+            android:title="Experiment" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Naming"

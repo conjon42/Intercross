@@ -97,7 +97,7 @@
                 android:layout_marginTop="8dp"
                 android:ems="10"
                 android:hint="@string/prefix"
-                android:inputType="textNoSuggestions"
+                android:inputType="textNoSuggestions|textVisiblePassword"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -110,7 +110,7 @@
                 android:layout_marginEnd="16dp"
                 android:ems="10"
                 android:hint="@string/suffix"
-                android:inputType="textNoSuggestions"
+                android:inputType="textNoSuggestions|textVisiblePassword"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
