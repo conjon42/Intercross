@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="Profile">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory android:title="Profile"
+        app:iconSpaceReserved="false">
         <EditTextPreference
             android:icon="@drawable/ic_setting_person"
             android:key="org.phenoapps.intercross.PERSON"
@@ -12,7 +14,8 @@
             android:title="Location" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Naming">
+    <PreferenceCategory android:title="Naming"
+        app:iconSpaceReserved="false">
         <CheckBoxPreference
             android:icon="@drawable/ic_setting_male_blank"
             android:key="org.phenoapps.intercross.BLANK_MALE_ID"
@@ -31,7 +34,8 @@
             android:title="Create cross ID pattern" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Workflow">
+    <PreferenceCategory android:title="Workflow"
+        app:iconSpaceReserved="false">
         <CheckBoxPreference
             android:defaultValue="true"
             android:icon="@drawable/ic_setting_additional_info"
@@ -44,7 +48,8 @@
             android:key="org.phenoapps.intercross.AUDIO_ENABLED"
             android:title="Audio notifications" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="Printing">
+    <PreferenceCategory android:title="Printing"
+        app:iconSpaceReserved="false">
         <Preference
             android:icon="@drawable/ic_setting_print_connect"
             android:key="org.phenoapps.intercross.PRINTER_SETUP"
