@@ -15,6 +15,7 @@ import android.preference.PreferenceManager
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -109,6 +110,17 @@ class MainActivity : AppCompatActivity() {
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
                 super.onDrawerSlide(drawerView, slideOffset)
                 closeKeyboard()
+            }
+
+            override fun onDrawerOpened(drawerView: View) {
+                super.onDrawerOpened(drawerView)
+                //update the person viewed under "Intercross" each time the drawer opens
+                findViewById<NavigationView>(R.id.nvView).getHeaderView(0).apply {
+                    findViewById<TextView>(R.id.navUserTextView)
+                            .text = PreferenceManager
+                            .getDefaultSharedPreferences(this@MainActivity)
+                            .getString("org.phenoapps.intercross.PERSON", "Trevor")
+                }
             }
         }
 
