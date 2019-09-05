@@ -5,12 +5,14 @@ import android.os.Handler
 import android.preference.PreferenceManager
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.databinding.ViewDataBinding
+import androidx.lifecycle.*
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -28,14 +30,18 @@ import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.util.SnackbarQueue
 import java.util.*
 
-class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fragment_events) {
+class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fragment_events), LifecycleObserver {
 
     private lateinit var mAdapter: EventsAdapter
 
     private lateinit var mWishlist: List<Wishlist>
     private lateinit var mFocused: View
 
+    private var mLastOpened: Long = 0L
+
     override fun FragmentEventsBinding.afterCreateView() {
+
+        ProcessLifecycleOwner.get().lifecycle.addObserver(this@EventsFragment)
 
         setupRecyclerView()
 
@@ -398,5 +404,46 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private fun askIfSamePerson() {
+
+        val builder = AlertDialog.Builder(requireContext()).apply {
+
+            setNegativeButton("Change Person") { _, _ ->
+                findNavController().navigate(R.id.settings_fragment, Bundle().apply {
+                    putString("org.phenoapps.intercross.ASK_PERSON", "true")
+                })
+            }
+
+            setPositiveButton("Yes") { _, _ ->
+                //welcome back
+            }
+        }
+
+        val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .getString("org.phenoapps.intercross.PERSON", "Guillaume").also {
+                    it?.let { jessiepoland ->
+                        builder.setTitle("Is this still ${jessiepoland}?")
+                        if (it.isNotBlank()) builder.show()
+                    }
+                }
+
+
+    }
+
+    override fun onPause() {
+        super.onPause()
+        mLastOpened = System.nanoTime()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val timeLength = System.nanoTime() - mLastOpened
+        Log.d("TIME", timeLength.toString())
+        if (timeLength > 1e10 && mLastOpened != 0L) {
+            //askIfSamePerson()
+        }
     }
 }

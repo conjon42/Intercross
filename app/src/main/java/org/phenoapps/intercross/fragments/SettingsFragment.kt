@@ -24,6 +24,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             true
         }
 
+
     }
 
     companion object {

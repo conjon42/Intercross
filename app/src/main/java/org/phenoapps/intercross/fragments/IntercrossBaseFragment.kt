@@ -27,7 +27,7 @@ import org.phenoapps.intercross.viewmodels.*
 import kotlin.reflect.KClass
 
 //base fragment class that loads all db viewmodels
-abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId: Int) : Fragment(), LifecycleObserver  {
+abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId: Int) : Fragment()  {
 
     lateinit var mEventsListViewModel: EventsListViewModel
     lateinit var mSettingsViewModel: SettingsViewModel
@@ -84,8 +84,6 @@ abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId:
             }
         }
 
-        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
-
         val db = IntercrossDatabase.getInstance(requireContext())
 
         activity?.run {
@@ -138,14 +136,6 @@ abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId:
 
         mSnackbar = SnackbarQueue()
 
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    fun onAppForegrounded() {
-        //TODO
-        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
-       // if ((pref.getString("org.phenoapps.intercross.PERSON", "") ?: "").isNotBlank())
-            //askIfSamePerson()
     }
 
     fun closeKeyboard() {

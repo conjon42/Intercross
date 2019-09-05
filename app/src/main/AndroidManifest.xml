@@ -18,7 +18,8 @@
 
         <activity android:name=".MainActivity"
             android:configChanges="keyboardHidden|screenSize|keyboard|orientation"
-            android:windowSoftInputMode="adjustPan">
+            android:windowSoftInputMode="adjustPan"
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
