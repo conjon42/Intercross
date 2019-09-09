@@ -41,6 +41,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:buttonTint="@color/colorAccent"
+                android:checked="true"
                 android:text="None"
                 android:textSize="18sp" />
 
