@@ -35,6 +35,7 @@ public class IntroActivity extends AppIntro2 {
     @Override
     public void onDonePressed(Fragment currentFragment) {
         super.onDonePressed(currentFragment);
+        setResult(RESULT_OK);
         finish();
     }
 }

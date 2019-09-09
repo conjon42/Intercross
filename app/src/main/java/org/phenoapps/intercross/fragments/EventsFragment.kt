@@ -184,7 +184,11 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             //editTextCross.setText("")
             firstText.setText("")
             secondText.setText("")
-            firstText.requestFocus()
+
+            val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                    .getString("org.phenoapps.intercross.PERSON", "")
+
+            if (person.isNotBlank()) firstText.requestFocus()
         }
     }
 

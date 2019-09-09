@@ -85,16 +85,34 @@ class MainActivity : AppCompatActivity() {
         return false
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    private fun setupDirs() {
+        if (!mDirectory.isDirectory) mDirectory.mkdirs()
 
-        super.onCreate(savedInstanceState)
+        //will import example csv files (that are stored in the raw folder) into the import folder
+        val importDir = File(mDirectory.path + "/Import")
+        val exportDir = File(mDirectory.path + "/Export")
+        if (!importDir.isDirectory) importDir.mkdirs()
+        if (!exportDir.isDirectory) exportDir.mkdirs()
+        val wishImport = File(importDir.path + "/Wishlist")
+        if (!wishImport.isDirectory) wishImport.mkdirs()
+        val parentImport = File(importDir.path + "/Parents")
+        if (!parentImport.isDirectory) parentImport.mkdirs()
+        val exampleWish = File(wishImport.path + "/example.csv")
+        val exampleParents = File(parentImport.path + "/example.csv")
+        if (!exampleWish.isFile) {
+            val stream = resources.openRawResource(R.raw.wishlist_example)
+            exampleWish.writeBytes(stream.readBytes())
+            stream.close()
+        }
+        if (!exampleParents.isFile) {
+            val stream = resources.openRawResource(R.raw.parents_example)
+            exampleParents.writeBytes(stream.readBytes())
+            stream.close()
+        }
+    }
 
-        mSnackbar = SnackbarQueue()
-
-        mBinding = DataBindingUtil.setContentView(this@MainActivity,
-                R.layout.activity_main)
-
-        mNavController = Navigation.findNavController(this@MainActivity, R.id.nav_fragment)
+    override fun onStart() {
+        super.onStart()
 
         supportActionBar.apply {
             title = ""
@@ -190,63 +208,6 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-        //change the hamburger toggle to a back button whenever the fragment is
-        //not the main events fragment
-        mNavController.addOnDestinationChangedListener { controller, destination, arguments ->
-            when (destination.id) {
-                R.id.events_fragment -> {
-                    mDrawerToggle.isDrawerIndicatorEnabled = true
-                    mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
-
-                }
-                else -> {
-                    mDrawerToggle.isDrawerIndicatorEnabled = false
-                    mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-
-                }
-            }
-        }
-
-        //Show Tutorial Fragment for first-time users
-        val pref = PreferenceManager.getDefaultSharedPreferences(this)
-        pref.apply {
-            if (!getBoolean(SettingsFragment.TUTORIAL, false)) {
-                startActivity(Intent(this@MainActivity, IntroActivity::class.java))
-            }
-        }
-
-        pref.edit().apply {
-            putBoolean(SettingsFragment.TUTORIAL, true)
-            apply()
-        }
-
-        if (isExternalStorageWritable()) {
-
-            if (!mDirectory.isDirectory) mDirectory.mkdirs()
-
-            //will import example csv files (that are stored in the raw folder) into the import folder
-            val importDir = File(mDirectory.path + "/Import")
-            val exportDir = File(mDirectory.path + "/Export")
-            if (!importDir.isDirectory) importDir.mkdirs()
-            if (!exportDir.isDirectory) exportDir.mkdirs()
-            val wishImport = File(importDir.path + "/Wishlist")
-            if (!wishImport.isDirectory) wishImport.mkdirs()
-            val parentImport = File(importDir.path + "/Parents")
-            if (!parentImport.isDirectory) parentImport.mkdirs()
-            val exampleWish = File(wishImport.path + "/example.csv")
-            val exampleParents = File(parentImport.path + "/example.csv")
-            if (!exampleWish.isFile) {
-                val stream = resources.openRawResource(R.raw.wishlist_example)
-                exampleWish.writeBytes(stream.readBytes())
-                stream.close()
-            }
-            if (!exampleParents.isFile) {
-                val stream = resources.openRawResource(R.raw.parents_example)
-                exampleParents.writeBytes(stream.readBytes())
-                stream.close()
-            }
-        }
-
         val db = IntercrossDatabase.getInstance(this)
 
         mEventsViewModel = ViewModelProviders.of(this@MainActivity,
@@ -281,6 +242,7 @@ class MainActivity : AppCompatActivity() {
                 mEvents = it
             }
         })
+
         //change the hamburger toggle to a back button whenever the fragment is
         //not the main events fragment
         mNavController.addOnDestinationChangedListener { controller, destination, arguments ->
@@ -297,6 +259,35 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+
+        super.onCreate(savedInstanceState)
+
+        mSnackbar = SnackbarQueue()
+
+        mBinding = DataBindingUtil.setContentView(this@MainActivity,
+                R.layout.activity_main)
+
+        mNavController = Navigation.findNavController(this@MainActivity, R.id.nav_fragment)
+
+        //Show Tutorial Fragment for first-time users
+        val pref = PreferenceManager.getDefaultSharedPreferences(this)
+        pref.apply {
+            if (!getBoolean(SettingsFragment.TUTORIAL, false)) {
+                startActivityForResult(Intent(this@MainActivity, IntroActivity::class.java), REQ_FIRST_OPEN)
+            } else if (isExternalStorageWritable()) {
+                setupDirs()
+            }
+        }
+
+        pref.edit().apply {
+            putBoolean(SettingsFragment.TUTORIAL, true)
+            apply()
+        }
+
+
     }
 
     fun scanFile(ctx: Context, filePath: File) {
@@ -344,7 +335,7 @@ class MainActivity : AppCompatActivity() {
             when {
                 perm == Manifest.permission.WRITE_EXTERNAL_STORAGE
                         && granted[index] == PackageManager.PERMISSION_GRANTED -> {
-
+                    setupDirs()
                 }
             }
         }
@@ -385,6 +376,10 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+        } else if (requestCode == REQ_FIRST_OPEN && resultCode == Activity.RESULT_OK) {
+            if (isExternalStorageWritable()) {
+                setupDirs()
+            }
         }
     }
 
@@ -395,6 +390,7 @@ class MainActivity : AppCompatActivity() {
         const val REQ_EXT_STORAGE = 101
         const val REQ_CAMERA = 102
         const val REQ_FILE_IMPORT = 103
+        const val REQ_FIRST_OPEN = 104
 
     }
 
