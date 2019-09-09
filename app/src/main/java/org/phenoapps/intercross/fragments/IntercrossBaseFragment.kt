@@ -160,9 +160,9 @@ abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId:
             }
         }
 
-        builder.setTitle("Is this still " +
-                "${PreferenceManager.getDefaultSharedPreferences(requireContext())
-                        .getString("org.phenoapps.intercross.PERSON", "Guillaume")}?")
+        val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .getString("org.phenoapps.intercross.PERSON", "") ?: ""
+        if (person.isNotBlank()) builder.setTitle("Is this still $person?")
         builder.show()
     }
 }

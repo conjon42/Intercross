@@ -17,8 +17,7 @@ data class Events(
         var femaleObsUnitDbId: String, var maleOBsUnitDbId: String, var eventValue: Int?,
         var timestamp: String?, var person: String?): Parcelable {
 
-    //TODO reimplement
     override fun toString(): String {
-        return ",$eventDbId,$femaleObsUnitDbId,$maleOBsUnitDbId,$id"
+        return "$eventDbId,$eventName,$eventValue,$femaleObsUnitDbId,$maleOBsUnitDbId,$person,$timestamp"
     }
 }

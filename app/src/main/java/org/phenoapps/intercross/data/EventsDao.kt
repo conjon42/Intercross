@@ -18,6 +18,9 @@ interface EventsDao : BaseDao<Events> {
     @Query("SELECT * FROM events")
     fun getAll(): LiveData<List<Events>>
 
+    @Query("DELETE FROM events WHERE :dbId = eventDbId")
+    fun deleteAll(dbId: String): Int
+
     @Query("SELECT * FROM events WHERE events.eventName = 'flower'")
     fun getCrosses(): LiveData<List<Events>>
 

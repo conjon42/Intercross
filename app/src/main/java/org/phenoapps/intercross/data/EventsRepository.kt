@@ -49,9 +49,7 @@ class EventsRepository private constructor(private val eventsDao: EventsDao) {
 
     suspend fun delete(e: Events) {
         withContext(IO) {
-            eventsDao.delete(e.apply { eventName = EventName.POLLINATION.itemType })
-            eventsDao.delete(e.apply { eventName = EventName.HARVEST.itemType })
-            eventsDao.delete(e.apply { eventName = EventName.THRESH.itemType })
+            eventsDao.deleteAll(e.eventDbId)
         }
     }
 

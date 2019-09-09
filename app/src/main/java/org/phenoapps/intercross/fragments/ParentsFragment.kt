@@ -5,9 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
@@ -22,9 +20,7 @@ import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.FileUtil
 
-class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.id.parents_fragment) {
-
-    //private lateinit var mBinding: FragmentParentsBinding
+class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.fragment_parents) {
 
     private lateinit var mMales: List<Parents>
     private lateinit var mFemales: List<Parents>
@@ -58,13 +54,10 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.id.paren
 
         mAdapter = ParentsAdapter()
 
-        //mBinding = FragmentParentsBinding
-         //       .inflate(inflater, container, false)
+        recyclerView.adapter = mAdapter
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        mBinding.recyclerView.adapter = mAdapter
-        mBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-
-        mBinding.importButton.setOnClickListener {
+        importButton.setOnClickListener {
             mParentsViewModel.delete(*(mMales + mFemales).toTypedArray())
 
             val uri = Uri.parse(Environment.getExternalStorageDirectory().path
@@ -75,7 +68,7 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.id.paren
                     }, "Choose parents to import"), REQ_FILE_IMPORT)
         }
 
-        mBinding.tabLayout2.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+        tabLayout2.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
 
             override fun onTabReselected(tab: TabLayout.Tab?) {
             }
@@ -98,7 +91,8 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.id.paren
 
         })
 
-        mBinding.button3.setOnClickListener {
+
+        button3.setOnClickListener {
 
             val events = ArrayList<Events>()
             (mMales + mFemales).forEach {
@@ -123,7 +117,7 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.id.paren
                 mMales = males.toList()
                 mFemales = females.toList()
 
-                when (mBinding.tabLayout2.selectedTabPosition) {
+                when (tabLayout2.selectedTabPosition) {
                     0 -> {
                         mAdapter.submitList(mFemales)
                     }

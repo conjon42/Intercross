@@ -67,7 +67,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mNavController: NavController
 
     //location to save data
-    private lateinit var mDirectory: File
+    private val mDirectory: File by lazy {
+        File(Environment.getExternalStorageDirectory().path + "/Intercross")
+    }
 
     private fun isExternalStorageWritable(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -119,7 +121,7 @@ class MainActivity : AppCompatActivity() {
                     findViewById<TextView>(R.id.navHeaderText)
                             .text = PreferenceManager
                             .getDefaultSharedPreferences(this@MainActivity)
-                            .getString("org.phenoapps.intercross.PERSON", "Trevor")
+                            .getString("org.phenoapps.intercross.PERSON", "")
                 }
             }
         }
@@ -159,7 +161,7 @@ class MainActivity : AppCompatActivity() {
                                 "yyyy-MM-dd HH:mm:ss.SSS"))}.csv")
                         val fstream = FileOutputStream(output)
 
-                        fstream.write("eid,eventDbId,eventValue,femaleObsUnitDbId,maleObsUnitDbId,id,date,flowers,fruits,seeds".toByteArray())
+                        fstream.write("eventDbId,eventName,eventValue,femaleObsUnitDbId,maleObsUnitDbId,person,timestamp".toByteArray())
                         fstream.write(lineSeparator.toByteArray())
 
                         mEvents.forEachIndexed { i, e ->
@@ -220,7 +222,6 @@ class MainActivity : AppCompatActivity() {
 
         if (isExternalStorageWritable()) {
 
-            mDirectory = File(Environment.getExternalStorageDirectory().path + "/Intercross")
             if (!mDirectory.isDirectory) mDirectory.mkdirs()
 
             //will import example csv files (that are stored in the raw folder) into the import folder

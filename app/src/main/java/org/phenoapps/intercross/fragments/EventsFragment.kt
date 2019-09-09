@@ -245,9 +245,11 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             //val second = (mBinding.secondText.text ?: "")
 
 
-            //TODO add person
+            val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                    .getString("org.phenoapps.intercross.PERSON", "")
+
             mEventsListViewModel.addCrossEvent(
-                    Events(null, value, EventName.POLLINATION.itemType, female, male, null, DateUtil().getTime(), ""))
+                    Events(null, value, EventName.POLLINATION.itemType, female, male, null, DateUtil().getTime(), person))
 
 
             FileUtil(requireContext()).ringNotification(true)
@@ -423,7 +425,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         }
 
         val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getString("org.phenoapps.intercross.PERSON", "Guillaume").also {
+                .getString("org.phenoapps.intercross.PERSON", "").also {
                     it?.let { jessiepoland ->
                         builder.setTitle("Is this still ${jessiepoland}?")
                         if (it.isNotBlank()) builder.show()
