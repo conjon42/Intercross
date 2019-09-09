@@ -164,10 +164,11 @@ class MainActivity : AppCompatActivity() {
                 R.id.action_nav_import -> {
                     mWishListViewModel.deleteAll()
                     val uri = Uri.parse("${mDirectory.path}/Import/Wishlist/")
-                    startActivityForResult(Intent.createChooser(Intent(Intent.ACTION_GET_CONTENT)
+                    val i = Intent(Intent.ACTION_GET_CONTENT)
                             .apply {
                                 setDataAndType(uri, "*/*")
-                            }, "Choose wishlist to import"), REQ_FILE_IMPORT)
+                            }
+                    startActivityForResult(Intent.createChooser(i, "Choose wishlist to import."), REQ_FILE_IMPORT)
                 }
                 R.id.action_nav_export -> {
                     val lineSeparator = System.getProperty("line.separator")
