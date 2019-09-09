@@ -8,6 +8,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.SummaryAdapter
+import org.phenoapps.intercross.data.EventName
 import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.databinding.FragmentSummaryBinding
 
@@ -30,13 +31,15 @@ class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.
             events.let {
                 var summaryList = ArrayList<SummaryData>()
 
-                events.forEach { x ->
+                val pollinations = events.filter { it.eventName == EventName.POLLINATION.itemType }
+
+                pollinations.forEach { x ->
 
                     var f: Events? = null
                     var m: Events? = null
                     var count = 0
 
-                    events.forEach { y ->
+                    pollinations.forEach { y ->
 
                         if (x.maleOBsUnitDbId == y.maleOBsUnitDbId
                                 && x.femaleObsUnitDbId == y.femaleObsUnitDbId) {
@@ -48,6 +51,7 @@ class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.
                     }
 
                     summaryList.add(SummaryData(m, f, x, count))
+
                 }
 
                 mAdapter.submitList(

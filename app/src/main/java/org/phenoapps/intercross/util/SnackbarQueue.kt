@@ -1,5 +1,6 @@
 package org.phenoapps.intercross.util
 
+import android.content.Context
 import android.os.Handler
 import android.view.View
 import com.google.android.material.snackbar.Snackbar
@@ -26,15 +27,21 @@ class SnackbarQueue {
 
             override fun run() {
 
-                if (mQueue.isNotEmpty() && !isShowing) {
-                    isShowing = true
-                    val job = mQueue.removeAt(0)
-                    mSnack = Snackbar.make(job.v, job.txt, Snackbar.LENGTH_LONG)
-                    mSnack.setAction(job.actionText) {
-                        job.action()
+                try {
+                    if (mQueue.isNotEmpty() && !isShowing) {
+                        isShowing = true
+                        val job = mQueue.removeAt(0)
+                        mSnack = Snackbar.make(job.v, job.txt, Snackbar.LENGTH_LONG)
+                        mSnack.setAction(job.actionText) {
+                            job.action()
+                        }
+                        mSnack.show()
+
                     }
-                    mSnack.show()
-                    mHandler.postDelayed({isShowing=false}, 500)
+                } catch (e : IllegalArgumentException) {
+                    e.printStackTrace()
+                } finally {
+                    mHandler.postDelayed({ isShowing = false }, 250)
                 }
             }
         }
@@ -42,6 +49,8 @@ class SnackbarQueue {
         Timer().scheduleAtFixedRate(task, 0, 1000)
 
     }
+
+    fun clear() = mQueue.clear()
 
     fun push(job: SnackJob) = mQueue.add(job)
 

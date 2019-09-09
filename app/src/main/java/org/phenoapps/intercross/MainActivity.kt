@@ -116,7 +116,7 @@ class MainActivity : AppCompatActivity() {
                 super.onDrawerOpened(drawerView)
                 //update the person viewed under "Intercross" each time the drawer opens
                 findViewById<NavigationView>(R.id.nvView).getHeaderView(0).apply {
-                    findViewById<TextView>(R.id.navUserTextView)
+                    findViewById<TextView>(R.id.navHeaderText)
                             .text = PreferenceManager
                             .getDefaultSharedPreferences(this@MainActivity)
                             .getString("org.phenoapps.intercross.PERSON", "Trevor")

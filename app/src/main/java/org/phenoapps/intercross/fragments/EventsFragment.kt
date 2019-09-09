@@ -300,8 +300,8 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         }
         if (current >= min && min != 0) {
             FileUtil(requireContext()).ringNotification(true)
-            mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "Wishlist complete for $f and $m : $current/$min"))
-        } else mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "New Cross Event! $x added."))
+            mSnackbar.push(SnackbarQueue.SnackJob(root, "Wishlist complete for $f and $m : $current/$min"))
+        } else mSnackbar.push(SnackbarQueue.SnackJob(root, "New Cross Event! $x added."))
 
         firstText.requestFocus()
     }
