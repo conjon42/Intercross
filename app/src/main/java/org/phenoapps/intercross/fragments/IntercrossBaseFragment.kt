@@ -144,25 +144,4 @@ abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId:
             imm.hideSoftInputFromWindow(it.currentFocus?.windowToken, 0)
         }
     }
-
-    private fun askIfSamePerson() {
-
-        val builder = AlertDialog.Builder(requireContext()).apply {
-
-            setNegativeButton("Change Person") { _, _ ->
-                findNavController().navigate(R.id.settings_fragment, Bundle().apply {
-                    putString("org.phenoapps.intercross.ASK_PERSON", "true")
-                })
-            }
-
-            setPositiveButton("Yes") { _, _ ->
-                //welcome back
-            }
-        }
-
-        val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getString("org.phenoapps.intercross.PERSON", "") ?: ""
-        if (person.isNotBlank()) builder.setTitle("Is this still $person?")
-        builder.show()
-    }
 }

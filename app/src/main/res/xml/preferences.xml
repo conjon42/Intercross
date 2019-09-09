@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto" >
     <PreferenceCategory android:title="Profile"
-        app:iconSpaceReserved="false">
+        app:iconSpaceReserved="false" >
         <EditTextPreference
             android:icon="@drawable/ic_setting_person"
             android:key="org.phenoapps.intercross.PERSON"
@@ -19,7 +19,8 @@
         <CheckBoxPreference
             android:icon="@drawable/ic_setting_male_blank"
             android:key="org.phenoapps.intercross.BLANK_MALE_ID"
-            android:title="Allow blank male ID" />
+            android:title="Allow blank male ID"
+            android:widgetLayout='@layout/checkbox' />
         <ListPreference
             android:defaultValue="0"
             android:entries="@array/cross_order_array"
@@ -40,13 +41,15 @@
             android:defaultValue="true"
             android:icon="@drawable/ic_setting_additional_info"
             android:key="org.phenoapps.intercross.COLLECT_INFO"
-            android:title="Collect additional information" />
+            android:title="Collect additional information"
+            android:widgetLayout='@layout/checkbox'/>
 
         <CheckBoxPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_setting_sound"
             android:key="org.phenoapps.intercross.AUDIO_ENABLED"
-            android:title="Audio notifications" />
+            android:title="Audio notifications"
+            android:widgetLayout='@layout/checkbox'/>
     </PreferenceCategory>
     <PreferenceCategory android:title="Printing"
         app:iconSpaceReserved="false">

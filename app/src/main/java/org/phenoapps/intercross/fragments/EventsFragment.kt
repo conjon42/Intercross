@@ -408,7 +408,11 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         return super.onOptionsItemSelected(item)
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    private fun afterCreated() {
+        askIfSamePerson()
+    }
+
     private fun askIfSamePerson() {
 
         val builder = AlertDialog.Builder(requireContext()).apply {
@@ -432,20 +436,24 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                     }
                 }
 
-
     }
 
-    override fun onPause() {
-        super.onPause()
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private fun afterReturn() {
+        val timeLength = System.nanoTime() - mLastOpened
+        Log.d("TIME", timeLength.toString())
+        if ((timeLength > 5e9 && mLastOpened != 0L)) {
+            askIfSamePerson()
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private fun afterClosed() {
         mLastOpened = System.nanoTime()
     }
 
     override fun onResume() {
         super.onResume()
-        val timeLength = System.nanoTime() - mLastOpened
-        Log.d("TIME", timeLength.toString())
-        if (timeLength > 1e10 && mLastOpened != 0L) {
-            //askIfSamePerson()
-        }
+
     }
 }

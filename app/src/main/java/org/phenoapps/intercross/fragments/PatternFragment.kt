@@ -24,98 +24,93 @@ class PatternFragment: IntercrossBaseFragment<FragmentPatternBinding>(R.layout.f
 
         activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
-        //mBinding = FragmentPatternBinding
-           //     .inflate(inflater, container, false)
-
         mSettingsViewModel.settings.observe(viewLifecycleOwner, Observer {
             it?.let {
-                with(mBinding) {
-                    when {
-                        it.isUUID -> {
-                            mBinding.fragmentPatternInput.visibility = View.INVISIBLE
-                            mBinding.codeTextView.text = mLastUUID
+                when {
+                    it.isUUID -> {
+                        fragmentPatternInput.visibility = View.INVISIBLE
+                        codeTextView.text = mLastUUID
 
-                            noneButton.isChecked = false
-                            uuidButton.isChecked = true
-                            patternButton.isChecked = false
-                        }
-                        it.isPattern -> {
-                            mBinding.fragmentPatternInput.visibility = View.VISIBLE
+                        noneButton.isChecked = false
+                        uuidButton.isChecked = true
+                        patternButton.isChecked = false
+                    }
+                    it.isPattern -> {
+                        fragmentPatternInput.visibility = View.VISIBLE
 
-                            noneButton.isChecked = false
-                            uuidButton.isChecked = false
-                            patternButton.isChecked = true
-                            prefixEditText.setText(it.prefix)
-                            suffixEditText.setText(it.suffix)
-                            numberEditText.setText(it.number.toString())
-                            padEditText.setText(it.pad.toString())
+                        noneButton.isChecked = false
+                        uuidButton.isChecked = false
+                        patternButton.isChecked = true
+                        prefixEditText.setText(it.prefix)
+                        suffixEditText.setText(it.suffix)
+                        numberEditText.setText(it.number.toString())
+                        padEditText.setText(it.pad.toString())
 
-                            when {
-                                it.startFrom -> {
-                                    startFromRadioButton.isChecked = true
-                                    autoRadioButton.isChecked = false
-                                }
-                                it.isAutoIncrement -> {
-                                    startFromRadioButton.isChecked = false
-                                    autoRadioButton.isChecked = true
-                                }
+                        when {
+                            it.startFrom -> {
+                                startFromRadioButton.isChecked = true
+                                autoRadioButton.isChecked = false
+                            }
+                            it.isAutoIncrement -> {
+                                startFromRadioButton.isChecked = false
+                                autoRadioButton.isChecked = true
                             }
                         }
-                        else -> {
-                            mBinding.fragmentPatternInput.visibility = View.INVISIBLE
-                            mBinding.codeTextView.text = ""
-                            uuidButton.isChecked = false
-                            patternButton.isChecked = false
-                            noneButton.isChecked = true
-                        }
                     }
-
-                    mSettings = it
+                    else -> {
+                        mBinding.fragmentPatternInput.visibility = View.INVISIBLE
+                        mBinding.codeTextView.text = ""
+                        uuidButton.isChecked = false
+                        patternButton.isChecked = false
+                        noneButton.isChecked = true
+                    }
                 }
+
+                mSettings = it
             }
         })
 
-        mBinding.saveButton.setOnClickListener {
+        saveButton.setOnClickListener {
             mSettingsViewModel.addSetting(buildSettings())
         }
 
-        mBinding.radioGroup2.setOnCheckedChangeListener { group, checkedId ->
+        radioGroup2.setOnCheckedChangeListener { group, checkedId ->
             when (checkedId) {
                 R.id.uuidButton -> {
-                    mBinding.fragmentPatternInput.visibility = View.GONE
-                    mBinding.codeTextView.text = mLastUUID
+                    fragmentPatternInput.visibility = View.GONE
+                    codeTextView.text = mLastUUID
 
                 }
                 R.id.patternButton -> {
-                    mBinding.fragmentPatternInput.visibility = View.VISIBLE
+                    fragmentPatternInput.visibility = View.VISIBLE
                     with(buildPatternViewModel()) {
-                        mBinding.codeTextView.text = "${prefix.value}${number.value.toString().padStart(pad.value ?: 0, '0')}${suffix.value}"
+                        codeTextView.text = "${prefix.value}${number.value.toString().padStart(pad.value ?: 0, '0')}${suffix.value}"
                     }
                 }
                 R.id.noneButton -> {
-                    mBinding.fragmentPatternInput.visibility = View.GONE
-                    mBinding.codeTextView.text = ""
+                    fragmentPatternInput.visibility = View.GONE
+                    codeTextView.text = ""
                 }
             }
         }
 
-        mBinding.radioGroup.setOnCheckedChangeListener { group, checkedId ->
+        radioGroup.setOnCheckedChangeListener { group, checkedId ->
             when(checkedId) {
                 R.id.autoRadioButton -> {
-                    mBinding.numberEditText.isEnabled = false
-                    mLastUsed = mBinding.numberEditText.text.toString()
-                    mBinding.numberEditText.setText("0")
+                    numberEditText.isEnabled = false
+                    mLastUsed = numberEditText.text.toString()
+                    numberEditText.setText("0")
                 }
                 else -> {
-                    mBinding.numberEditText.isEnabled = true
-                    mBinding.numberEditText.setText(mLastUsed)
+                    numberEditText.isEnabled = true
+                    numberEditText.setText(mLastUsed)
                 }
             }
 
             updateCodeTextView()
         }
 
-        arrayOf(mBinding.prefixEditText, mBinding.numberEditText, mBinding.suffixEditText, mBinding.padEditText).forEach {
+        arrayOf(prefixEditText, numberEditText, suffixEditText, padEditText).forEach {
             it.addTextChangedListener(object : TextWatcher {
 
                 override fun afterTextChanged(s: Editable?) {

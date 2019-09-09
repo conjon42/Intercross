@@ -40,6 +40,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:buttonTint="@color/colorAccent"
                 android:text="None"
                 android:textSize="18sp" />
 
@@ -48,6 +49,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:buttonTint="@color/colorAccent"
                 android:text="Pattern"
                 android:textSize="18sp" />
 
@@ -56,6 +58,7 @@
                 android:layout_width="84dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:buttonTint="@color/colorAccent"
                 android:text="UUID"
                 android:textSize="18sp" />
         </RadioGroup>
