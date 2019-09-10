@@ -75,6 +75,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         const val TUTORIAL = "org.phenoapps.intercross.TUTORIAL"
         const val AUDIO_ENABLED = "org.phenoapps.intercross.AUDIO_ENABLED"
         const val COLLECT_INFO = "org.phenoapps.intercross.COLLECT_INFO"
-
+        const val PERSON = "org.phenoapps.intercross.PERSON"
+        const val EXPERIMENT = "org.phenoapps.intercross.EXPERIMENT"
     }
 }

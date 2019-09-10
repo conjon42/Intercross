@@ -15,9 +15,9 @@ data class Events(
         @PrimaryKey(autoGenerate = true)
         var id: Long?, var eventDbId: String, var eventName: String,
         var femaleObsUnitDbId: String, var maleOBsUnitDbId: String, var eventValue: Int?,
-        var timestamp: String?, var person: String?): Parcelable {
+        var timestamp: String?, var person: String?, var experiment: String?): Parcelable {
 
     override fun toString(): String {
-        return "$eventDbId,$eventName,$eventValue,$femaleObsUnitDbId,$maleOBsUnitDbId,$person,$timestamp"
+        return "$eventDbId,$eventName,$eventValue,$femaleObsUnitDbId,$maleOBsUnitDbId,$person,$timestamp,$experiment"
     }
 }

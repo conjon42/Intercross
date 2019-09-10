@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.preference.PreferenceManager
 import android.view.*
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -94,12 +95,18 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
         button3.setOnClickListener {
 
+            val experiment = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                    .getString("org.phenoapps.intercross.EXPERIMENT", "")
+
+            val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                    .getString("org.phenoapps.intercross.PERSON", "")
+
             val events = ArrayList<Events>()
             (mMales + mFemales).forEach {
                 //add person TODO
                 if (it.isSelected) events.add(
                         Events(null, it.parentDbId, EventName.POLLINATION.itemType,
-                                "none", "none", null, DateUtil().getTime(), ""))
+                                "none", "none", null, DateUtil().getTime(), person, experiment))
             }
             if (events.isNotEmpty()) {
                 BluetoothUtil().templatePrint(requireContext(), events.toTypedArray())

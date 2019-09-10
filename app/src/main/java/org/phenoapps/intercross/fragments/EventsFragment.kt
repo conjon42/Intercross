@@ -186,7 +186,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             secondText.setText("")
 
             val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                    .getString("org.phenoapps.intercross.PERSON", "")
+                    .getString("org.phenoapps.intercross.PERSON", "") ?: ""
 
             if (person.isNotBlank()) firstText.requestFocus()
         }
@@ -252,8 +252,11 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
                     .getString("org.phenoapps.intercross.PERSON", "")
 
+            val experiment = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                    .getString("org.phenoapps.intercross.EXPERIMENT", "")
+
             mEventsListViewModel.addCrossEvent(
-                    Events(null, value, EventName.POLLINATION.itemType, female, male, null, DateUtil().getTime(), person))
+                    Events(null, value, EventName.POLLINATION.itemType, female, male, null, DateUtil().getTime(), person, experiment))
 
 
             FileUtil(requireContext()).ringNotification(true)

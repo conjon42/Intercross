@@ -36,6 +36,7 @@ import com.google.android.material.snackbar.Snackbar
 import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.databinding.ActivityMainBinding
 import org.phenoapps.intercross.fragments.SettingsFragment
+import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.util.SnackbarQueue
 import org.phenoapps.intercross.viewmodels.EventsListViewModel
@@ -174,11 +175,10 @@ class MainActivity : AppCompatActivity() {
                     try {
                         val dir = File(mDirectory.path + "/Export/")
                         dir.mkdir()
-                        val output = File(dir, "crosses_${LocalDateTime.now().format(DateTimeFormatter.ofPattern(
-                                "yyyy-MM-dd HH:mm:ss.SSS"))}.csv")
+                        val output = File(dir, "crosses_${DateUtil().getTime()}.csv")
                         val fstream = FileOutputStream(output)
 
-                        fstream.write("eventDbId,eventName,eventValue,femaleObsUnitDbId,maleObsUnitDbId,person,timestamp".toByteArray())
+                        fstream.write("eventDbId,eventName,eventValue,femaleObsUnitDbId,maleObsUnitDbId,person,timestamp,experiment".toByteArray())
                         fstream.write(lineSeparator.toByteArray())
 
                         mEvents.forEachIndexed { i, e ->

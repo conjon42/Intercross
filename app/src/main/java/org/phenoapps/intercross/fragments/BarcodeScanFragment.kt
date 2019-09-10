@@ -33,10 +33,11 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
 
     private lateinit var mBarcodeScanner: DecoratedBarcodeView
-    //private lateinit var mBinding: FragmentBarcodeScanBinding
+
     private lateinit var mCallback: BarcodeCallback
 
     private lateinit var mWishlist: List<Wishlist>
+
     private var mEvents = ArrayList<Events>()
 
     private var lastText: String? = null
@@ -72,8 +73,6 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
                 lastText = result.text
                 zxingBarcodeScanner.statusView.text = "Single Mode"
-
-                //binding.zxingBarcodeScanner.setStatusText(result.text)
 
                 arguments?.let {
                     when(it.getString("mode")) {
@@ -192,12 +191,6 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
             }
         })
 
-        mSettingsViewModel.settings.observe(viewLifecycleOwner, Observer {
-            it?.let {
-                mSettings = it
-            }
-        })
-
         mEventsListViewModel.crosses.observe(viewLifecycleOwner, Observer {
             it?.let {
                 mEvents = ArrayList(it)
@@ -214,6 +207,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
         var isOnList = false
         var min = 0
         var current = 0
+
         mWishlist.forEach {
             if (it.femaleDbId == f && it.maleDbId == m) {
                 isOnList = true
@@ -260,8 +254,14 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                 male,
                 cross)
 
+        val experiment = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .getString("org.phenoapps.intercross.EXPERIMENT", "")
+
+        val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .getString("org.phenoapps.intercross.PERSON", "")
+
         mEventsListViewModel.addCrossEvent(Events(null, cross, EventName.POLLINATION.itemType,
-                mSharedViewModel.female.value ?: String(), male, null, DateUtil().getTime(), ""))
+                mSharedViewModel.female.value ?: String(), male, null, DateUtil().getTime(), person, experiment))
 
         mSharedViewModel.name.value = ""
         mSharedViewModel.female.value = ""

@@ -8,7 +8,6 @@ data class Settings (
 
     @PrimaryKey
     var id: Int = 0,
-
     var isPattern: Boolean = false,
     var isUUID: Boolean = false,
     var startFrom: Boolean = false,
