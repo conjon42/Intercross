@@ -88,7 +88,8 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                             //mSharedViewModel.lastScan.value = result.text.toString()
                             mEvents.forEach { event ->
                                 if (event.eventDbId == result.text.toString()) {
-                                    findNavController().navigate(BarcodeScanFragmentDirections.actionToEventFragment(event))
+                                    findNavController().navigate(BarcodeScanFragmentDirections
+                                            .globalActionToEventFragment(event))
                                 }
                             }
                         }
@@ -197,7 +198,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
             }
         })
 
-        mEventsListViewModel.events.observe(viewLifecycleOwner, Observer {
+        mEventsListViewModel.crosses.observe(viewLifecycleOwner, Observer {
             it?.let {
                 mEvents = ArrayList(it)
             }

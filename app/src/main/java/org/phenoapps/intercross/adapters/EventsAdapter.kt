@@ -34,7 +34,7 @@ class EventsAdapter(
             with(holder) {
                 itemView.tag = events
                 bind(Navigation.createNavigateOnClickListener(
-                      R.id.action_to_event,
+                      R.id.action_to_event_fragment,
                         Bundle().apply { putParcelable("events", events) }), events)
             }
         }

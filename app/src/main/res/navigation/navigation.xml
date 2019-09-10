@@ -16,7 +16,7 @@
             android:id="@+id/action_to_barcode_scan_fragment"
             app:destination="@id/barcode_scan_fragment"/>
         <action
-            android:id="@+id/action_to_event"
+            android:id="@+id/action_to_event_fragment"
             app:destination="@id/event_fragment"/>
     </fragment>
 
@@ -27,7 +27,7 @@
         tools:layout="@layout/fragment_barcode_scan">
 
         <action
-            android:id="@+id/action_to_event_fragment"
+            android:id="@+id/action_to_event_fragment_from_scan"
             app:destination="@id/event_fragment" />
     </fragment>
 
