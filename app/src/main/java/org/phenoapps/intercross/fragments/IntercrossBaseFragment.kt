@@ -1,6 +1,8 @@
 package org.phenoapps.intercross.fragments
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.view.LayoutInflater
@@ -40,11 +42,21 @@ abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId:
 
     lateinit var mBinding: T
 
+    val mPrefs: SharedPreferences by lazy {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
     var mSettings = Settings()
 
     var mOrder: Int = 0
     var mAllowBlank: Boolean = false
     var mCollectData = true
+
+    var mPerson: String
+        get() = mPrefs.getString(SettingsFragment.PERSON, "") ?: ""
+        set(value) {
+            mPrefs.edit().putString(SettingsFragment.PERSON, value).apply()
+        }
 
     //lateinit var mAdapter: ListAdapter<*,*>
 

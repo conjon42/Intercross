@@ -255,6 +255,8 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             val experiment = PreferenceManager.getDefaultSharedPreferences(requireContext())
                     .getString("org.phenoapps.intercross.EXPERIMENT", "")
 
+            assert(person == mPerson)
+
             mEventsListViewModel.addCrossEvent(
                     Events(null, value, EventName.POLLINATION.itemType, female, male, null, DateUtil().getTime(), person, experiment))
 
