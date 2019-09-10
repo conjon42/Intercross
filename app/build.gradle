@@ -37,7 +37,6 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     kapt 'com.android.databinding:compiler:3.1.4'
     kapt "androidx.room:room-compiler:$rootProject.roomVersion"
-
     implementation "androidx.appcompat:appcompat:$rootProject.supportLibraryVersion"
     implementation "androidx.constraintlayout:constraintlayout:$rootProject.constraintLayoutVersion"
     implementation "androidx.core:core-ktx:$rootProject.ktxVersion"
@@ -52,7 +51,6 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-core-utils:1.0.0'
     implementation 'androidx.preference:preference:1.1.0-alpha02'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
-
     implementation 'org.apache.poi:poi:4.0.0'
     implementation 'org.apache.poi:poi-ooxml:4.0.0'
     implementation 'com.journeyapps:zxing-android-embedded:3.6.0'
@@ -60,21 +58,16 @@ dependencies {
     implementation "android.arch.navigation:navigation-fragment-ktx:$rootProject.navigationVersion"
     implementation "android.arch.navigation:navigation-ui-ktx:$rootProject.navigationVersion"
     implementation "android.arch.work:work-runtime-ktx:$rootProject.workVersion"
-
-
     implementation "com.google.android.material:material:$rootProject.materialVersion"
     implementation "com.google.code.gson:gson:$rootProject.gsonVersion"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.41"
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.41'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$rootProject.coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$rootProject.coroutinesVersion"
     implementation 'com.android.support:design:28.0.0'
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support:multidex:1.0.3'
-
-
     implementation 'com.google.android.material:material:1.1.0-alpha03'
     implementation 'com.android.support:preference-v14:28.0.0'
-
 
     // Testing dependencies
     androidTestImplementation "androidx.arch.core:core-testing:$rootProject.coreTestingVersion"
@@ -83,7 +76,7 @@ dependencies {
     androidTestImplementation "androidx.test.espresso:espresso-intents:$rootProject.espressoVersion"
     androidTestImplementation "androidx.test.uiautomator:uiautomator:$rootProject.uiAutomatorVersion"
     testImplementation "junit:junit:$rootProject.junitVersion"
-    implementation files('C:/Users/Chaney/StudioProjects/IntercrossJETPACK/libs/ZSDK_ANDROID_API.jar')
+    implementation files('libs/ZSDK_ANDROID_API.jar')
 }
 repositories {
     mavenCentral()
