@@ -24,12 +24,13 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
 import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
+import org.phenoapps.intercross.synthetics.AutoPreferenceFragment
 import org.phenoapps.intercross.util.SnackbarQueue
 import org.phenoapps.intercross.viewmodels.*
 import kotlin.reflect.KClass
 
 //base fragment class that loads all db viewmodels
-abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId: Int) : Fragment()  {
+abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId: Int) : Fragment() {
 
     lateinit var mEventsListViewModel: EventsListViewModel
     lateinit var mSettingsViewModel: SettingsViewModel
@@ -42,21 +43,11 @@ abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId:
 
     lateinit var mBinding: T
 
-    val mPrefs: SharedPreferences by lazy {
-        PreferenceManager.getDefaultSharedPreferences(context)
-    }
-
     var mSettings = Settings()
 
     var mOrder: Int = 0
     var mAllowBlank: Boolean = false
     var mCollectData = true
-
-    var mPerson: String
-        get() = mPrefs.getString(SettingsFragment.PERSON, "") ?: ""
-        set(value) {
-            mPrefs.edit().putString(SettingsFragment.PERSON, value).apply()
-        }
 
     //lateinit var mAdapter: ListAdapter<*,*>
 
@@ -156,4 +147,5 @@ abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId:
             imm.hideSoftInputFromWindow(it.currentFocus?.windowToken, 0)
         }
     }
+
 }

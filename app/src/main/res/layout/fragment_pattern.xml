@@ -41,7 +41,6 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:buttonTint="@color/colorAccent"
-                android:checked="true"
                 android:text="None"
                 android:textSize="18sp" />
 
@@ -181,10 +180,12 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <data>
-
         <variable
             name="viewModel"
             type="org.phenoapps.intercross.viewmodels.SettingsViewModel" />
+        <variable
+            name="mode"
+            type="int"/>
     </data>
 
 </layout>

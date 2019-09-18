@@ -4,9 +4,10 @@
     <PreferenceCategory android:title="Profile"
         app:iconSpaceReserved="false">
         <EditTextPreference
+            android:title="Person"
             android:icon="@drawable/ic_setting_person"
             android:key="org.phenoapps.intercross.PERSON"
-            android:title="Person" />
+             />
 
         <EditTextPreference
             android:icon="@drawable/ic_setting_experiment"

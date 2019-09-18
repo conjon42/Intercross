@@ -3,6 +3,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'androidx.navigation.safeargs'
+apply plugin: 'org.phenoapps.oak.preferences'
 
 android {
     compileSdkVersion 28
@@ -29,11 +30,20 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
     productFlavors {
+
+    }
+
+    autoPref {
+        packageName="org.phenoapps.intercross"
+        name="preferences.xml"
+        destination="src.main.java.org.phenoapps.intercross"
     }
 }
 

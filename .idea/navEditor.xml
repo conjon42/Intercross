@@ -131,7 +131,7 @@
                         </option>
                         <option name="myPositions">
                           <map>
-                            <entry key="action_to_event_fragment">
+                            <entry key="action_to_event_fragment_from_scan">
                               <value>
                                 <LayoutPositions />
                               </value>
@@ -178,7 +178,7 @@
                                 <LayoutPositions />
                               </value>
                             </entry>
-                            <entry key="action_to_event">
+                            <entry key="action_to_event_fragment">
                               <value>
                                 <LayoutPositions />
                               </value>

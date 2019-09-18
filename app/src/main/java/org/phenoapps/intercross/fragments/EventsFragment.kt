@@ -41,6 +41,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     override fun FragmentEventsBinding.afterCreateView() {
 
+
         ProcessLifecycleOwner.get().lifecycle.addObserver(this@EventsFragment)
 
         setupRecyclerView()
@@ -249,16 +250,16 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             //val second = (mBinding.secondText.text ?: "")
 
 
-            val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
+            val tPerson = PreferenceManager.getDefaultSharedPreferences(requireContext())
                     .getString("org.phenoapps.intercross.PERSON", "")
 
             val experiment = PreferenceManager.getDefaultSharedPreferences(requireContext())
                     .getString("org.phenoapps.intercross.EXPERIMENT", "")
 
-            assert(person == mPerson)
+            //assert(person == tPerson)
 
             mEventsListViewModel.addCrossEvent(
-                    Events(null, value, EventName.POLLINATION.itemType, female, male, null, DateUtil().getTime(), person, experiment))
+                    Events(null, value, EventName.POLLINATION.itemType, female, male, null, DateUtil().getTime(), tPerson, experiment))
 
 
             FileUtil(requireContext()).ringNotification(true)

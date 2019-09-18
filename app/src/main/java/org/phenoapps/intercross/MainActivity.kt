@@ -35,6 +35,7 @@ import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.databinding.ActivityMainBinding
+import org.phenoapps.intercross.fragments.PatternFragment
 import org.phenoapps.intercross.fragments.SettingsFragment
 import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.FileUtil
@@ -114,6 +115,66 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+
+        val db = IntercrossDatabase.getInstance(this)
+
+        mEventsViewModel = ViewModelProviders.of(this@MainActivity,
+                object : ViewModelProvider.NewInstanceFactory() {
+                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return EventsListViewModel(
+                                EventsRepository.getInstance(db.eventsDao())) as T
+                    }
+                }).get(EventsListViewModel::class.java)
+
+        mWishListViewModel = ViewModelProviders.of(this@MainActivity,
+                object : ViewModelProvider.NewInstanceFactory() {
+                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return WishlistViewModel(WishlistRepository.getInstance(db.wishlistDao())) as T
+
+                    }
+                }).get(WishlistViewModel::class.java)
+
+        mParentsViewModel = ViewModelProviders.of(this@MainActivity,
+                object : ViewModelProvider.NewInstanceFactory() {
+                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return ParentsViewModel(ParentsRepository.getInstance(db.parentsDao())) as T
+
+                    }
+                }).get(ParentsViewModel::class.java)
+
+        mEventsViewModel.events.observe(this, Observer {
+            it?.let {
+                mEvents = it
+            }
+        })
+
+        //change the hamburger toggle to a back button whenever the fragment is
+        //not the main events fragment
+        mNavController.addOnDestinationChangedListener { controller, destination, arguments ->
+            when (destination.id) {
+                R.id.events_fragment -> {
+                    mDrawerToggle.isDrawerIndicatorEnabled = true
+                    mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+
+                }
+                else -> {
+                    mDrawerToggle.isDrawerIndicatorEnabled = false
+                    mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+
+                }
+            }
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+
+        super.onCreate(savedInstanceState)
+
+        mBinding = DataBindingUtil.setContentView(this@MainActivity,
+                R.layout.activity_main)
 
         supportActionBar.apply {
             title = ""
@@ -207,67 +268,7 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-        val db = IntercrossDatabase.getInstance(this)
-
-        mEventsViewModel = ViewModelProviders.of(this@MainActivity,
-                object : ViewModelProvider.NewInstanceFactory() {
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return EventsListViewModel(
-                                EventsRepository.getInstance(db.eventsDao())) as T
-                    }
-                }).get(EventsListViewModel::class.java)
-
-        mWishListViewModel = ViewModelProviders.of(this@MainActivity,
-                object : ViewModelProvider.NewInstanceFactory() {
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return WishlistViewModel(WishlistRepository.getInstance(db.wishlistDao())) as T
-
-                    }
-                }).get(WishlistViewModel::class.java)
-
-        mParentsViewModel = ViewModelProviders.of(this@MainActivity,
-                object : ViewModelProvider.NewInstanceFactory() {
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return ParentsViewModel(ParentsRepository.getInstance(db.parentsDao())) as T
-
-                    }
-                }).get(ParentsViewModel::class.java)
-
-        mEventsViewModel.events.observe(this, Observer {
-            it?.let {
-                mEvents = it
-            }
-        })
-
-        //change the hamburger toggle to a back button whenever the fragment is
-        //not the main events fragment
-        mNavController.addOnDestinationChangedListener { controller, destination, arguments ->
-            when (destination.id) {
-                R.id.events_fragment -> {
-                    mDrawerToggle.isDrawerIndicatorEnabled = true
-                    mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
-
-                }
-                else -> {
-                    mDrawerToggle.isDrawerIndicatorEnabled = false
-                    mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-
-                }
-            }
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-
-        super.onCreate(savedInstanceState)
-
         mSnackbar = SnackbarQueue()
-
-        mBinding = DataBindingUtil.setContentView(this@MainActivity,
-                R.layout.activity_main)
 
         mNavController = Navigation.findNavController(this@MainActivity, R.id.nav_fragment)
 
@@ -378,6 +379,22 @@ class MainActivity : AppCompatActivity() {
         } else if (requestCode == REQ_FIRST_OPEN && resultCode == Activity.RESULT_OK) {
             if (isExternalStorageWritable()) {
                 setupDirs()
+            }
+        }
+    }
+
+    override fun onBackPressed() {
+        mNavController.currentDestination?.let {
+            when (it.id) {
+                R.id.pattern_fragment -> {
+
+                    supportFragmentManager.primaryNavigationFragment?.let {
+                        (it.childFragmentManager.fragments[0] as PatternFragment).onBackButtonPressed()
+                        //(supportFragmentManager.primaryNavigationFragment as PatternFragment).onBackButtonPressed()
+                    }
+                }
+                //go back to the last fragment instead of opening the navigation drawer
+                else -> super.onBackPressed()
             }
         }
     }
