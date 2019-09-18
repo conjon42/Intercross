@@ -36,7 +36,7 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
                     val headerLine = lines[0]
                     val headers = headerLine.split(",")
                     val numCols = headers.size
-                    if (numCols == 4) { //lines = id,maleName,type,order
+                    if (numCols == 4) { //lines = id,name,type,order
                         (lines - lines[0]).forEach {
                             val row = it.split(",")
                             if (row.size == numCols) {
