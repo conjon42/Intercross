@@ -1,5 +1,7 @@
 package org.phenoapps.intercross.fragments
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -45,6 +47,23 @@ class SettingsFragment : PreferenceFragmentCompat() {
             })
         }
 
+        val printSetup = findPreference<Preference>("org.phenoapps.intercross.PRINTER_SETUP")
+        printSetup?.setOnPreferenceClickListener {
+            val intent = activity?.packageManager
+                    ?.getLaunchIntentForPackage("com.zebra.printersetup")
+            when (intent) {
+                null -> {
+                    val i = Intent(Intent.ACTION_VIEW)
+                    i.data = Uri.parse(
+                            "https://play.google.com/store/apps/details?id=com.zebra.printersetup")
+                    startActivity(i)
+                }
+                else -> {
+                    startActivity(intent)
+                }
+            }
+            true
+        }
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
