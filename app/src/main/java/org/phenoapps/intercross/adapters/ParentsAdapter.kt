@@ -28,13 +28,12 @@ class ParentsAdapter
 
         getItem(position).let { p ->
             with(holder) {
-                itemView.setBackgroundColor(Color.GREEN)
                 itemView.tag = p
-                if (p.isSelected) itemView.setBackgroundColor(Color.GREEN)
+                if (p.isSelected) itemView.setBackgroundColor(Color.parseColor("#FBE9E7"))
                 else holder.itemView.setBackgroundColor(Color.WHITE)
                 bind(View.OnClickListener {
                     p.isSelected = !p.isSelected
-                    if (p.isSelected) itemView.setBackgroundColor(Color.GREEN)
+                    if (p.isSelected) itemView.setBackgroundColor(Color.parseColor("#FBE9E7"))
                     else holder.itemView.setBackgroundColor(Color.WHITE)
                 }, p)
             }

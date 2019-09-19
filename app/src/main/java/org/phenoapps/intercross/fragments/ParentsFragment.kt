@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.preference.PreferenceManager
 import android.view.*
+import androidx.core.view.GestureDetectorCompat
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
@@ -20,12 +21,39 @@ import org.phenoapps.intercross.databinding.FragmentParentsBinding
 import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.FileUtil
+import android.text.method.Touch.onTouchEvent
+import android.view.MotionEvent
+import android.R.attr.name
+import kotlinx.android.synthetic.main.fragment_parents.*
+import kotlin.math.abs
+
 
 class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.fragment_parents) {
 
     private lateinit var mMales: List<Parents>
     private lateinit var mFemales: List<Parents>
     private lateinit var mAdapter: ParentsAdapter
+
+    private val gestureListener = object : GestureDetector.SimpleOnGestureListener() {
+
+        override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+
+            val dx = e1.x - e2.x
+            val x = abs(dx)
+
+            if (x in 100.0..1000.0) {
+                if (dx > 0) {
+                    //swip to left
+                    swipeLeft()
+                } else {
+                    //swipe right
+                    swipeRight()
+                }
+            }
+
+            return true
+        }
+    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, i: Intent?) {
         super.onActivityResult(requestCode, resultCode, i)
@@ -103,12 +131,12 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
             val events = ArrayList<Events>()
             (mMales + mFemales).forEach {
-                //add person TODO
                 if (it.isSelected) events.add(
                         Events(null, it.parentDbId, EventName.POLLINATION.itemType,
                                 "none", "none", null, DateUtil().getTime(), person, experiment))
             }
             if (events.isNotEmpty()) {
+                //TODO add message saying printing females and males
                 BluetoothUtil().templatePrint(requireContext(), events.toTypedArray())
             }
 
@@ -133,5 +161,21 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
             }
         })
 
+        val gdc = GestureDetectorCompat(context, gestureListener)
+
+
+        //todo create custom view and override performClick()
+        recyclerView.setOnTouchListener { view, motionEvent ->
+            gdc.onTouchEvent(motionEvent)
+        }
+
+    }
+
+    private fun swipeLeft() {
+        tabLayout2.getTabAt(1)?.select()
+    }
+
+    private fun swipeRight() {
+        tabLayout2.getTabAt(0)?.select()
     }
 }

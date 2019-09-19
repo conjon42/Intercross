@@ -22,7 +22,6 @@
         android:ellipsize="end"
         android:gravity="center"
         android:maxLines="1"
-        android:background="#00FF00"
         android:onClickListener="@{onClick}"
         android:text="@{model.parentName}"
         android:textSize="18sp"
