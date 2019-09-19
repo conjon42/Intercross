@@ -12,8 +12,10 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.preference.PreferenceManager
+import android.util.Log
 import android.view.MenuItem
 import android.view.View
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -70,7 +72,7 @@ class MainActivity : AppCompatActivity() {
 
     //location to save data
     private val mDirectory: File by lazy {
-        File(Environment.getExternalStorageDirectory().path + "/Intercross")
+        File(Environment.getExternalStorageDirectory().path + "/Intercross/")
     }
 
     private fun isExternalStorageWritable(): Boolean {
@@ -225,11 +227,13 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.action_nav_import -> {
                     mWishListViewModel.deleteAll()
-                    val uri = Uri.parse("${mDirectory.path}/Import/Wishlist/")
 
-                    val i = Intent.createChooser(Intent(Intent.ACTION_GET_CONTENT), "Choose wishlist to import.")
-                    i.setDataAndType(uri, "*/*")
-                    startActivityForResult(i, REQ_FILE_IMPORT)
+                    val intent = Intent(Intent.ACTION_GET_CONTENT)
+                    val uri = Uri.parse(Environment.getExternalStorageDirectory().path)
+                    intent.setDataAndType(uri, "resource/folder")
+                    startActivity(Intent.createChooser(intent, "Open folder"))
+
+
                 }
                 R.id.action_nav_export -> {
                     val lineSeparator = System.getProperty("line.separator")
