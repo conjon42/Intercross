@@ -6,6 +6,7 @@ import android.content.Context
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import androidx.appcompat.app.AlertDialog
+import androidx.preference.PreferenceManager
 import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.data.Pollen
 
@@ -38,8 +39,6 @@ class BluetoothUtil {
                 BluetoothClass.Device.Major.WEARABLE -> Log.d("BTWEARABLE", it.bluetoothClass.toString())
             }
         }*/
-
-        //val pref = PreferenceManager.getDefaultSharedPreferences(ctx)
 
         //val btId = pref.getString(SettingsActivity.BT_ID, "")
 
@@ -88,11 +87,18 @@ class BluetoothUtil {
         } else f()
     }
 
-    val template = "^XA^MNA^MMT,N^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS^FWR^FO100,25^A0,25,20^FN1^FS^FO200,25^A0N,25,20^BQ,2,6^FN2^FS^FO450,25^A0,25,20^FN3^FS^XZ"
+    var template = "^XA^MNA^MMT,N^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS^FWR^FO100,25^A0,25,20^FN1^FS^FO200,25^A0N,25,20^BQ,2,6^FN2^FS^FO450,25^A0,25,20^FN3^FS^XZ"
+
+    fun print(ctx: Context, events: Array<Events>) {
+        choose(ctx) {
+            PrintThread(ctx, template, mBtName).printEvents(events)
+        }
+    }
 
     fun templatePrint(ctx: Context, events: Array<Events>) {
         choose(ctx) {
-            PrintThread(ctx, template, mBtName).printEvents(events)
+            val pref = PreferenceManager.getDefaultSharedPreferences(ctx)
+            PrintThread(ctx, pref.getString("ZPL_CODE", template) ?: template, mBtName).printEvents(events)
         }
     }
 

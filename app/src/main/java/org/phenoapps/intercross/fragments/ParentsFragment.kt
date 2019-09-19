@@ -140,7 +140,7 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
             }
             if (events.isNotEmpty()) {
                 //TODO add message saying printing females and males
-                BluetoothUtil().templatePrint(requireContext(), events.toTypedArray())
+                BluetoothUtil().print(requireContext(), events.toTypedArray())
             }
 
         }

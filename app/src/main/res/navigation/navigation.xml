@@ -67,6 +67,10 @@
             android:id="@+id/action_to_pattern_fragment"
             app:destination="@id/pattern_fragment"
             app:launchSingleTop="true" />
+        <action
+            android:id="@+id/action_to_import_zpl_fragment"
+            app:destination="@id/import_zpl_fragment"
+            app:launchSingleTop="true" />
     </fragment>
 
     <fragment
@@ -74,6 +78,13 @@
         android:name="org.phenoapps.intercross.fragments.PatternFragment"
         android:label="Patterns"
         tools:layout="@layout/fragment_pattern">
+    </fragment>
+
+    <fragment
+        android:id="@+id/import_zpl_fragment"
+        android:name="org.phenoapps.intercross.fragments.ImportZPLFragment"
+        android:label="Import ZPL"
+        tools:layout="@layout/fragment_import_zpl">
     </fragment>
 
     <fragment

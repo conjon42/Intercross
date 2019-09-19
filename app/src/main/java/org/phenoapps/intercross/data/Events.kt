@@ -17,6 +17,9 @@ data class Events(
         var femaleObsUnitDbId: String, var maleOBsUnitDbId: String, var eventValue: Int?,
         var timestamp: String?, var person: String?, var experiment: String?): Parcelable {
 
+    @Transient
+    var isSelected: Boolean = false
+
     override fun toString(): String {
         return "$eventDbId,$eventName,$eventValue,$femaleObsUnitDbId,$maleOBsUnitDbId,$person,$timestamp,$experiment"
     }

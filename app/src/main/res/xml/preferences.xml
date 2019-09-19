@@ -63,10 +63,6 @@
             android:icon="@drawable/ic_setting_import_zpl"
             android:key="org.phenoapps.intercross.ZPL_IMPORT"
             android:title="ZPL Import">
-            <intent
-                android:action="android.intent.action.VIEW"
-                android:targetClass="org.phenoapps.intercross.ImportZPLActivity"
-                android:targetPackage="org.phenoapps.intercross" />
         </Preference>
     </PreferenceCategory>
 </PreferenceScreen>

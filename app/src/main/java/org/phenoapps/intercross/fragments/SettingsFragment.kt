@@ -47,6 +47,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
             })
         }
 
+        with(findPreference<Preference>("org.phenoapps.intercross.ZPL_IMPORT")){
+            setOnPreferenceClickListener {
+                findNavController().navigate(SettingsFragmentDirections.actionToImportZplFragment())
+                true
+            }
+        }
+
         val printSetup = findPreference<Preference>("org.phenoapps.intercross.PRINTER_SETUP")
         printSetup?.setOnPreferenceClickListener {
             val intent = activity?.packageManager

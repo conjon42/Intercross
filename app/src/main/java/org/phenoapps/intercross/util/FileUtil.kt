@@ -129,4 +129,11 @@ class FileUtil(val ctx: Context) {
         return ret
     }
 
+    fun readText(uri: Uri?): CharSequence {
+        uri?.let {
+            val lines = File(getPath(uri)).readLines()
+            return lines.joinToString("\n")
+        }
+        return String()
+    }
 }

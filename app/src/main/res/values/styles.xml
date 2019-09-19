@@ -10,4 +10,5 @@
         <!-- This item controls the icon color -->
         <item name="android:tint">#757575</item>
     </style>
+
 </resources>

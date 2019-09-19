@@ -21,6 +21,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Add New Pollen Set"
+            android:backgroundTint="@color/colorAccent"
             app:layout_constraintEnd_toEndOf="@+id/pollenView"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="@+id/pollenView"

@@ -28,6 +28,9 @@ import org.phenoapps.intercross.synthetics.AutoPreferenceFragment
 import org.phenoapps.intercross.util.SnackbarQueue
 import org.phenoapps.intercross.viewmodels.*
 import kotlin.reflect.KClass
+import org.apache.poi.ss.formula.functions.T
+import androidx.appcompat.view.ContextThemeWrapper
+
 
 //base fragment class that loads all db viewmodels
 abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId: Int) : Fragment() {
@@ -62,7 +65,11 @@ abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId:
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        mBinding = DataBindingUtil.inflate<T>(inflater, layoutId, container, false)
+        val contextThemeWrapper = ContextThemeWrapper(activity, org.phenoapps.intercross.R.style.AppTheme)
+        val localInflater = inflater.cloneInContext(contextThemeWrapper)
+
+        mBinding = DataBindingUtil.inflate<T>(localInflater, layoutId, container, false)
+
         return with(mBinding) {
             afterCreateView()
             root

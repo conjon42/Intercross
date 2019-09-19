@@ -14,4 +14,8 @@ import kotlinx.android.parcel.Parcelize
                 parentColumns = ["id"], childColumns = ["pid"])])
 data class Pollen(@ColumnInfo(name = "id")
                   @PrimaryKey(autoGenerate = true) var id: Long?,
-                  var pid: Int, var eid: Int): Parcelable
+                  var pid: Int, var eid: Int): Parcelable {
+
+    @Transient
+    var isSelected: Boolean = true
+}

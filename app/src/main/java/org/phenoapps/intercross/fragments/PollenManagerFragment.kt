@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.phenoapps.intercross.adapters.PollenAdapter
+import org.phenoapps.intercross.adapters.PollenGroupAdapter
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.PollenGroupRepository
 import org.phenoapps.intercross.databinding.FragmentPollenManagerBinding
@@ -19,7 +20,7 @@ import org.phenoapps.intercross.viewmodels.PollenGroupViewModel
 class PollenManagerFragment : Fragment() {
 
     private lateinit var mBinding: FragmentPollenManagerBinding
-    private lateinit var mAdapter: PollenAdapter
+    private lateinit var mAdapter: PollenGroupAdapter
     private lateinit var mPollenManagerViewModel: PollenGroupViewModel
 
     override fun onCreateView(
@@ -43,7 +44,7 @@ class PollenManagerFragment : Fragment() {
         mBinding = FragmentPollenManagerBinding
                 .inflate(inflater, container, false)
 
-        mAdapter = PollenAdapter(requireContext())
+        mAdapter = PollenGroupAdapter(requireContext())
 
         mPollenManagerViewModel.groups.observe(viewLifecycleOwner, Observer {
             it?.let {

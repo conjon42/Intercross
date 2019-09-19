@@ -6,40 +6,40 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
+import org.phenoapps.intercross.adapters.PollenAdapter
 import org.phenoapps.intercross.data.PollenGroup
 import org.phenoapps.intercross.databinding.FragmentPollenBinding
 
-class PollenFragment : IntercrossBaseFragment<FragmentPollenBinding>(R.layout.fragment_pattern) {
+class PollenFragment : IntercrossBaseFragment<FragmentPollenBinding>(R.layout.fragment_pollen) {
 
-   // private lateinit var mBinding: FragmentPollenBinding
-
-    private lateinit var mAdapter: EventsAdapter
+    private lateinit var mAdapter: PollenAdapter
 
     override fun FragmentPollenBinding.afterCreateView() {
-        //activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
         val pollen = arguments?.getParcelable<PollenGroup>("pollen")
 
-        //mBinding = FragmentPollenBinding
-        //        .inflate(inflater, container, false)
+        model = pollen
 
-        mBinding.model = pollen
+        maleView.layoutManager = LinearLayoutManager(requireContext())
 
-        mBinding.maleView.layoutManager = LinearLayoutManager(requireContext())
+        mAdapter = PollenAdapter(requireContext())
 
-        mAdapter = EventsAdapter(requireContext())
+        maleView.adapter = mAdapter
 
-        mBinding.maleView.adapter = mAdapter
-
-        mBinding.executePendingBindings()
+        executePendingBindings()
 
         //TODO clarify which males should be considered
-        mEventsListViewModel.events.observe(viewLifecycleOwner, Observer {
+        mEventsListViewModel.crosses.observe(viewLifecycleOwner, Observer {
             it?.let {list ->
                 mAdapter.submitList(list)
             }
         })
+
+        updateButton.setOnClickListener {
+
+        }
     }
 }

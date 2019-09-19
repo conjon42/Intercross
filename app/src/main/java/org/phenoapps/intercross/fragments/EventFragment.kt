@@ -59,11 +59,11 @@ class EventFragment: IntercrossBaseFragment<FragmentEventBinding>(R.layout.fragm
         })
 
         maleName.setOnClickListener {
-            searchForParents(mBinding.maleName.text.toString())
+            searchForParents(maleName.text.toString())
         }
 
         femaleName.setOnClickListener {
-            searchForParents(mBinding.femaleName.text.toString())
+            searchForParents(femaleName.text.toString())
         }
 
         button2.setOnClickListener {
@@ -167,7 +167,7 @@ class EventFragment: IntercrossBaseFragment<FragmentEventBinding>(R.layout.fragm
 
         when(item.itemId) {
             R.id.action_print -> {
-                BluetoothUtil().templatePrint(requireContext(), arrayOf(mEvent))
+                BluetoothUtil().print(requireContext(), arrayOf(mEvent))
             }
         }
         return super.onOptionsItemSelected(item)

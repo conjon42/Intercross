@@ -101,8 +101,11 @@ class MainActivity : AppCompatActivity() {
         if (!wishImport.isDirectory) wishImport.mkdirs()
         val parentImport = File(importDir.path + "/Parents")
         if (!parentImport.isDirectory) parentImport.mkdirs()
+        val zplImport = File(importDir.path + "/ZPL")
+        if (!zplImport.isDirectory) zplImport.mkdirs()
         val exampleWish = File(wishImport.path + "/example.csv")
         val exampleParents = File(parentImport.path + "/example.csv")
+        val exampleZPL = File(zplImport.path + "/example.zpl")
         if (!exampleWish.isFile) {
             val stream = resources.openRawResource(R.raw.wishlist_example)
             exampleWish.writeBytes(stream.readBytes())
@@ -111,6 +114,11 @@ class MainActivity : AppCompatActivity() {
         if (!exampleParents.isFile) {
             val stream = resources.openRawResource(R.raw.parents_example)
             exampleParents.writeBytes(stream.readBytes())
+            stream.close()
+        }
+        if (!exampleZPL.isFile) {
+            val stream = resources.openRawResource(R.raw.example)
+            exampleZPL.writeBytes(stream.readBytes())
             stream.close()
         }
     }
@@ -230,8 +238,8 @@ class MainActivity : AppCompatActivity() {
 
                     val intent = Intent(Intent.ACTION_GET_CONTENT)
                     val uri = Uri.parse(Environment.getExternalStorageDirectory().path)
-                    intent.setDataAndType(uri, "resource/folder")
-                    startActivity(Intent.createChooser(intent, "Open folder"))
+                    intent.setDataAndType(uri, "*/*")
+                    startActivity(Intent.createChooser(intent, "Import Wishlist file."))
 
 
                 }
