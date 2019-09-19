@@ -30,7 +30,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
 
-        <TextView
+        <Button
             android:id="@+id/maleParentText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -40,7 +40,7 @@
             android:ellipsize="end"
             android:gravity="start"
             android:maxLines="1"
-            android:onClickListener="@{maleClick}"
+            android:onClick="@{maleClick}"
             android:text="@{viewModel.male}"
             android:textAlignment="viewStart"
             android:textSize="18sp"
@@ -49,7 +49,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
+        <Button
             android:id="@+id/femaleParentText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -58,7 +58,7 @@
             android:gravity="start"
             android:text="@{viewModel.female}"
             android:textSize="18sp"
-            android:onClickListener="@{femaleClick}"
+            android:onClick="@{femaleClick}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/countText"
             app:layout_constraintStart_toStartOf="parent"
