@@ -33,9 +33,7 @@ class EventsAdapter(
         getItem(position).let { events ->
             with(holder) {
                 itemView.tag = events
-                bind(Navigation.createNavigateOnClickListener(
-                      R.id.action_to_event_fragment,
-                        Bundle().apply { putParcelable("events", events) }), events)
+                bind(events)
             }
         }
     }
@@ -44,10 +42,19 @@ class EventsAdapter(
             private val binding: ListItemEventsBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(listener: View.OnClickListener, events: Events) {
+        fun bind(events: Events) {
 
             with(binding) {
-                clickListener = listener
+                clickListener = View.OnClickListener {
+                    try {
+                        Navigation.findNavController(binding.root)
+                                .navigate(R.id.action_to_event_fragment, Bundle().apply {
+                                    putParcelable("events", events)
+                                })
+                    } catch (e: Exception) {
+
+                    }
+                }
                 viewModel = EventsViewModel(events)
                 executePendingBindings()
             }

@@ -24,6 +24,7 @@ import org.phenoapps.intercross.util.FileUtil
 import android.text.method.Touch.onTouchEvent
 import android.view.MotionEvent
 import android.R.attr.name
+import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.fragment_parents.*
 import kotlin.math.abs
 
@@ -33,6 +34,8 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
     private lateinit var mMales: List<Parents>
     private lateinit var mFemales: List<Parents>
     private lateinit var mAdapter: ParentsAdapter
+
+    private var mAllSelected: Boolean = true
 
     private val gestureListener = object : GestureDetector.SimpleOnGestureListener() {
 
@@ -169,6 +172,29 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
             gdc.onTouchEvent(motionEvent)
         }
 
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.parents_toolbar, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        when(item.itemId) {
+            R.id.action_select_all -> {
+                val l = mAdapter.currentList.map { p -> p.apply { isSelected = !mAllSelected} }
+                mAllSelected = !mAllSelected
+                mAdapter.submitList(l)
+                mAdapter.notifyDataSetChanged()
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun swipeLeft() {
