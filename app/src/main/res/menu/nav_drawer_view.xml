@@ -3,7 +3,7 @@
     <item
         android:id="@+id/action_nav_import"
         android:icon="@drawable/ic_nv_import"
-        android:title="Import" />
+        android:title="Import Wishlist" />
     <item
         android:id="@+id/action_nav_parents"
         android:icon="@drawable/ic_nv_parents"

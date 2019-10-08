@@ -6,11 +6,11 @@ import kotlinx.coroutines.withContext
 class WishlistRepository private constructor(
         private val wishlistDao: WishlistDao
 ) {
-    suspend fun createWishlist( maleDbId: String,  femaleDbId: String,
-                                maleName: String,  femaleName: String,
+    suspend fun createWishlist( fid: String,  mid: String,
+                                fname: String,  mname: String,
                                 wishType: String,  wishMin: Int,  wishMax: Int) {
         withContext(IO) {
-            wishlistDao.insert(Wishlist(maleDbId, femaleDbId, maleName, femaleName, wishType, wishMin, wishMax))
+            wishlistDao.insert(Wishlist(fid, mid, fname, mname, wishType, wishMin, wishMax))
         }
     }
 

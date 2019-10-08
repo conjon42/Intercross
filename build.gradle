@@ -30,7 +30,7 @@ buildscript {
         //maven { url uri('/home/chaneylc/Workspace/mavenRepo') }
     }
     dependencies {
-        classpath 'org.phenoapps.oak:preferences:1.0-SNAPSHOT'
+        //classpath 'org.phenoapps.oak:preferences:1.0-SNAPSHOT'
         classpath "com.android.tools.build:gradle:${gradleVersion}"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath "android.arch.navigation:navigation-safe-args-gradle-plugin:$navigationVersion"

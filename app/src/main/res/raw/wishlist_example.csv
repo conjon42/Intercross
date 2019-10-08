@@ -1,5 +1,6 @@
 fid,mid,fname,mname,type,min,max
-13RPN00001,13RPN00018,Kharkof,Scout 66,cross,1,5
+f,m,a,b,cross,1,1
+13RPN00001,13RPN00018,Kharkof,Scout 66,cross,1,1
 13RPN00002,13RPN00019,Roughrider,Kharkof,cross,1,5
 13RPN00003,13RPN00020,Nuplains,TAM-107,cross,1,5
 13RPN00004,13RPN00021,Nekota,SD05W140,cross,1,5

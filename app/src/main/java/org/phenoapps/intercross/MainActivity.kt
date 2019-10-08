@@ -239,7 +239,7 @@ class MainActivity : AppCompatActivity() {
                     val intent = Intent(Intent.ACTION_GET_CONTENT)
                     val uri = Uri.parse(Environment.getExternalStorageDirectory().path)
                     intent.setDataAndType(uri, "*/*")
-                    startActivity(Intent.createChooser(intent, "Import Wishlist file."))
+                    startActivityForResult(Intent.createChooser(intent, "Import Wishlist file."), REQ_FILE_IMPORT)
 
 
                 }

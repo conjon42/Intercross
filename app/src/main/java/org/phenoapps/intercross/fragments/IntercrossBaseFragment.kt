@@ -24,7 +24,7 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
 import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
-import org.phenoapps.intercross.synthetics.AutoPreferenceFragment
+//import org.phenoapps.intercross.synthetics.AutoPreferenceFragment
 import org.phenoapps.intercross.util.SnackbarQueue
 import org.phenoapps.intercross.viewmodels.*
 import kotlin.reflect.KClass
