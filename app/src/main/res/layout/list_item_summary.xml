@@ -4,10 +4,7 @@
 
     <data>
         <variable
-            name="femaleClick"
-            type="android.view.View.OnClickListener"/>
-        <variable
-            name="maleClick"
+            name="click"
             type="android.view.View.OnClickListener"/>
         <variable
             name="viewModel"
@@ -18,6 +15,7 @@
         android:id="@+id/linearLayout3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:onClick="@{click}"
         android:background="@android:drawable/editbox_background_normal">
 
         <TextView
@@ -30,41 +28,32 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
 
-        <Button
+        <TextView
             android:id="@+id/maleParentText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
+            android:backgroundTint="@color/colorAccent"
             android:ellipsize="end"
             android:gravity="start"
             android:maxLines="1"
-            android:onClick="@{maleClick}"
-            android:backgroundTint="@color/colorAccent"
             android:text="@{viewModel.male}"
             android:textAlignment="viewStart"
             android:textSize="18sp"
             app:layout_constraintEnd_toStartOf="@+id/countText"
-            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/femaleParentText" />
 
-        <Button
+        <TextView
             android:id="@+id/femaleParentText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
+            android:backgroundTint="@color/colorAccent"
             android:gravity="start"
             android:text="@{viewModel.female}"
-            android:backgroundTint="@color/colorAccent"
             android:textSize="18sp"
-            android:onClick="@{femaleClick}"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/countText"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/maleParentText" />
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

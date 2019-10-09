@@ -17,7 +17,7 @@ class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.
 
     private lateinit var mAdapter: SummaryAdapter
 
-    data class SummaryData(var m: Events?, var f: Events?, var event: Events, var count: Int)
+    data class SummaryData(var m: String, var f: String, var count: Int, var event: List<Events>)
 
     override fun FragmentSummaryBinding.afterCreateView() {
 
@@ -27,35 +27,42 @@ class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.
 
         recyclerView.adapter = mAdapter
 
-        mEventsListViewModel.events.observe(viewLifecycleOwner, Observer { events ->
+        mEventsListViewModel.crosses.observe(viewLifecycleOwner, Observer { events ->
             events.let {
                 var summaryList = ArrayList<SummaryData>()
 
-                val pollinations = events.filter { it.eventName == EventName.POLLINATION.itemType }
+                it.forEach { x ->
 
-                pollinations.forEach { x ->
-
-                    var f: Events? = null
-                    var m: Events? = null
+                    val female = x.femaleObsUnitDbId
+                    val male = x.maleOBsUnitDbId
+                    var f: String? = null
+                    var m: String? = null
                     var count = 0
+                    var events: ArrayList<Events> = ArrayList()
 
-                    pollinations.forEach { y ->
+                    (it - x).forEach { y ->
 
                         if (x.maleOBsUnitDbId == y.maleOBsUnitDbId
-                                && x.femaleObsUnitDbId == y.femaleObsUnitDbId) {
-                            count++
+                                && x.femaleObsUnitDbId == y.femaleObsUnitDbId
+                                && x.eventDbId != y.eventDbId) {
+                            f = x.femaleObsUnitDbId
+                            m = x.maleOBsUnitDbId
+                            if (y !in events) events.add(y)
                         }
 
-                        if (x.maleOBsUnitDbId == y.eventDbId) m = y
-                        if (x.femaleObsUnitDbId == y.eventDbId) f = y
+                        //if (x.maleOBsUnitDbId == y.eventDbId) m = y
+                        //if (x.femaleObsUnitDbId == y.eventDbId) f = y
                     }
 
-                    summaryList.add(SummaryData(m, f, x, count))
-
+                    f?.let { fit ->
+                        m?.let { mit ->
+                            summaryList.add(SummaryData(fit, mit, events.size, events))
+                        }
+                    }
                 }
 
                 mAdapter.submitList(
-                        summaryList.distinctBy { "${it.event.femaleObsUnitDbId}/${it.event.maleOBsUnitDbId}" }
+                        summaryList.distinctBy { "${it.f}/${it.m}" }
                 )
             }
         })

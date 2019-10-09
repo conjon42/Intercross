@@ -62,7 +62,7 @@ class EventsAdapter(
     }
 }
 
-private class EventsDiffCallback : DiffUtil.ItemCallback<Events>() {
+class EventsDiffCallback : DiffUtil.ItemCallback<Events>() {
 
     override fun areItemsTheSame(oldItem: Events, newItem: Events): Boolean {
         return oldItem.id == newItem.id
