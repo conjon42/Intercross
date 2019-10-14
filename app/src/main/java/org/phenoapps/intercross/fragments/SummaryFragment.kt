@@ -28,42 +28,46 @@ class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.
         recyclerView.adapter = mAdapter
 
         mEventsListViewModel.crosses.observe(viewLifecycleOwner, Observer { events ->
+
             events.let {
-                var summaryList = ArrayList<SummaryData>()
+
+                val parents = HashMap<Pair<String,String>, ArrayList<Events>>()
 
                 it.forEach { x ->
 
                     val female = x.femaleObsUnitDbId
                     val male = x.maleOBsUnitDbId
-                    var f: String? = null
-                    var m: String? = null
-                    var count = 0
-                    var events: ArrayList<Events> = ArrayList()
+
+                    parents[Pair(female,male)] = ArrayList<Events>().also { list ->
+                        list.add(x)
+                    }
 
                     (it - x).forEach { y ->
 
-                        if (x.maleOBsUnitDbId == y.maleOBsUnitDbId
-                                && x.femaleObsUnitDbId == y.femaleObsUnitDbId
-                                && x.eventDbId != y.eventDbId) {
-                            f = x.femaleObsUnitDbId
-                            m = x.maleOBsUnitDbId
-                            if (y !in events) events.add(y)
-                        }
-
-                        //if (x.maleOBsUnitDbId == y.eventDbId) m = y
-                        //if (x.femaleObsUnitDbId == y.eventDbId) f = y
-                    }
-
-                    f?.let { fit ->
-                        m?.let { mit ->
-                            summaryList.add(SummaryData(fit, mit, events.size, events))
+                        val yf = y.femaleObsUnitDbId
+                        val ym = y.maleOBsUnitDbId
+                        val key = Pair(yf,ym)
+                        if (key in parents.keys) {
+                            parents[key]?.let { children ->
+                                if (y !in children) children.add(y)
+                            }
                         }
                     }
                 }
 
+                var summaryList = ArrayList<SummaryData>()
+
+                for ((p,c) in parents) {
+                    summaryList.add(SummaryData(p.first, p.second,
+                            c.size, c))
+                }
+
+
                 mAdapter.submitList(
                         summaryList.distinctBy { "${it.f}/${it.m}" }
                 )
+
+                mAdapter.notifyDataSetChanged()
             }
         })
     }
