@@ -253,11 +253,19 @@ class MainActivity : AppCompatActivity() {
                         val fstream = FileOutputStream(output)
 
                         fstream.write("eventDbId,eventName,eventValue,femaleObsUnitDbId,maleObsUnitDbId,person,timestamp,experiment".toByteArray())
-                        fstream.write(lineSeparator.toByteArray())
+                        fstream.write(lineSeparator?.toByteArray() ?: "\n".toByteArray())
 
                         mEvents.forEachIndexed { i, e ->
-                            fstream.write(e.toString().toByteArray())
-                            fstream.write(lineSeparator?.toByteArray())
+                            if (e.eventName == "flower") {
+                                fstream.write(e.toString().toByteArray())
+                                fstream.write(lineSeparator?.toByteArray() ?: "\n".toByteArray())
+                            } else {
+                                e.eventValue?.let {
+                                    fstream.write(e.toString().toByteArray())
+                                    fstream.write(lineSeparator?.toByteArray() ?: "\n".toByteArray())
+                                }
+                            }
+
                         }
                         scanFile(this@MainActivity, output)
                         fstream.flush()
