@@ -39,22 +39,27 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
     private val gestureListener = object : GestureDetector.SimpleOnGestureListener() {
 
-        override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+        override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
 
-            val dx = e1.x - e2.x
-            val x = abs(dx)
+            e1?.let {
+                e2?.let {
+                    val dx = e1.x - e2.x
+                    val x = abs(dx)
 
-            if (x in 100.0..1000.0) {
-                if (dx > 0) {
-                    //swip to left
-                    swipeLeft()
-                } else {
-                    //swipe right
-                    swipeRight()
+                    if (x in 100.0..1000.0) {
+                        if (dx > 0) {
+                            //swip to left
+                            swipeLeft()
+                        } else {
+                            //swipe right
+                            swipeRight()
+                        }
+                    }
+
+                    return true
                 }
             }
-
-            return true
+            return false
         }
     }
 
