@@ -37,15 +37,18 @@ class EventFragment: IntercrossBaseFragment<FragmentEventBinding>(R.layout.fragm
         arguments?.getParcelable<Events>("events")?.let {
             mEvent = it
         }
-
-        if (mCollectData) {
+        val collect = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .getString(SettingsFragment.COLLECT_INFO, "0")
+        if (collect == "1") {
             //mBinding.dateEditText.visibility = View.VISIBLE
             countEditText.visibility = View.VISIBLE
             tabLayout.visibility = View.VISIBLE
+            button2.visibility = View.VISIBLE
         } else {
             //mBinding.dateEditText.visibility = View.INVISIBLE
             countEditText.visibility = View.INVISIBLE
             tabLayout.visibility = View.INVISIBLE
+            button2.visibility = View.INVISIBLE
         }
 
         events = mEvent

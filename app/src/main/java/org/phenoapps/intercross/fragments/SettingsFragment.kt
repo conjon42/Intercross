@@ -1,8 +1,10 @@
 package org.phenoapps.intercross.fragments
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,10 +16,12 @@ import androidx.navigation.fragment.findNavController
 import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.SettingsRepository
 import org.phenoapps.intercross.viewmodels.SettingsViewModel
+import androidx.preference.ListPreference
+import org.phenoapps.intercross.R
+
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
@@ -46,6 +50,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 }
             })
         }
+
 
         with(findPreference<Preference>("org.phenoapps.intercross.ZPL_IMPORT")){
             setOnPreferenceClickListener {
@@ -84,6 +89,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
             preferenceManager.showDialog(findPreference<EditTextPreference>("org.phenoapps.intercross.PERSON"))
         }
 
+        preferenceManager.sharedPreferences.registerOnSharedPreferenceChangeListener { pref, key ->
+            val pref = findPreference<Preference>(key)
+
+            if (pref is ListPreference) {
+                val listPref = pref as ListPreference
+                pref.setSummary(listPref.entry)
+            }
+        }
         val db = IntercrossDatabase.getInstance(requireContext())
 
         mSettingsViewModel = ViewModelProviders.of(this,
@@ -100,6 +113,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
     companion object {
         const val TUTORIAL = "org.phenoapps.intercross.TUTORIAL"
         const val AUDIO_ENABLED = "org.phenoapps.intercross.AUDIO_ENABLED"
+        const val BLANK = "org.phenoapps.intercross.BLANK_MALE_ID"
+        const val ORDER = "org.phenoapps.intercross.CROSS_ORDER"
         const val COLLECT_INFO = "org.phenoapps.intercross.COLLECT_INFO"
         const val PERSON = "org.phenoapps.intercross.PERSON"
         const val EXPERIMENT = "org.phenoapps.intercross.EXPERIMENT"

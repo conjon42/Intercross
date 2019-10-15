@@ -3,7 +3,6 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'androidx.navigation.safeargs'
-//apply plugin: 'org.phenoapps.oak.preferences'
 
 android {
     compileSdkVersion 28
@@ -39,12 +38,6 @@ android {
     productFlavors {
 
     }
-
-    /*autoPref {
-        packageName="org.phenoapps.intercross"
-        name="preferences.xml"
-        destination="src.main.java.org.phenoapps.intercross"
-    }*/
 }
 
 dependencies {

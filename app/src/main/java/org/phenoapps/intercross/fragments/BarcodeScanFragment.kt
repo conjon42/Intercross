@@ -95,8 +95,10 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                         "continuous" -> {
                             zxingBarcodeScanner.setStatusText("Continuous Mode")
 
-                            when (mOrder) {
-                                0 -> when {
+                            val order = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                                    .getString(SettingsFragment.ORDER, "0")
+                            when (order) {
+                                "0" -> when {
                                     (mSharedViewModel.female.value ?: "").isEmpty() -> {
                                         mSharedViewModel.female.value = result.text.toString()
                                         female.setImageBitmap(result.getBitmapWithResultPoints(Color.RED))
@@ -123,7 +125,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                                         submitCross()
                                     }
                                 }
-                                1 -> when {
+                                "1" -> when {
                                     (mSharedViewModel.male.value ?: "").isEmpty() -> {
                                         mSharedViewModel.male.value = result.text.toString()
                                         male.setImageBitmap(result.getBitmapWithResultPoints(Color.BLUE))

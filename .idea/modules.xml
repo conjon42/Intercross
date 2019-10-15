@@ -5,8 +5,10 @@
       <module fileurl="file://$PROJECT_DIR$/Intercross.iml" filepath="$PROJECT_DIR$/Intercross.iml" />
       <module fileurl="file://$PROJECT_DIR$/ZSDK_ANDROID_API/Intercross-ZSDK_ANDROID_API.iml" filepath="$PROJECT_DIR$/ZSDK_ANDROID_API/Intercross-ZSDK_ANDROID_API.iml" />
       <module fileurl="file://$PROJECT_DIR$/StudioProjects-Intercross.iml" filepath="$PROJECT_DIR$/StudioProjects-Intercross.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ZSDK_ANDROID_API/StudioProjects-Intercross-ZSDK_ANDROID_API.iml" filepath="$PROJECT_DIR$/ZSDK_ANDROID_API/StudioProjects-Intercross-ZSDK_ANDROID_API.iml" />
       <module fileurl="file://$PROJECT_DIR$/ZSDK_ANDROID_API/ZSDK_ANDROID_API.iml" filepath="$PROJECT_DIR$/ZSDK_ANDROID_API/ZSDK_ANDROID_API.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/chaneylc-StudioProjects-Intercross.iml" filepath="$PROJECT_DIR$/chaneylc-StudioProjects-Intercross.iml" />
     </modules>
   </component>
 </project>

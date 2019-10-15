@@ -17,11 +17,13 @@
 
     <PreferenceCategory android:title="Naming"
         app:iconSpaceReserved="false">
-        <CheckBoxPreference
+        <ListPreference
+            android:defaultValue="0"
+            android:entries="@array/blank_male_array"
+            android:entryValues="@array/blank_male_array_values"
             android:icon="@drawable/ic_setting_male_blank"
             android:key="org.phenoapps.intercross.BLANK_MALE_ID"
-            android:title="Allow blank male ID"
-            android:widgetLayout='@layout/checkbox' />
+            android:title="Allow blank male ID" />
         <ListPreference
             android:defaultValue="0"
             android:entries="@array/cross_order_array"
@@ -39,13 +41,13 @@
 
     <PreferenceCategory android:title="Workflow"
         app:iconSpaceReserved="false">
-        <CheckBoxPreference
-            android:defaultValue="true"
+        <ListPreference
+            android:defaultValue="0"
+            android:entries="@array/collect_info_array"
+            android:entryValues="@array/collect_info_array_values"
             android:icon="@drawable/ic_setting_additional_info"
             android:key="org.phenoapps.intercross.COLLECT_INFO"
-            android:title="Collect additional information"
-            android:widgetLayout='@layout/checkbox'/>
-
+            android:title="Collect additional information" />
         <CheckBoxPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_setting_sound"

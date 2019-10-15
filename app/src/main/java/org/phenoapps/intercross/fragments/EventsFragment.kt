@@ -1,5 +1,7 @@
 package org.phenoapps.intercross.fragments
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Handler
 import android.preference.PreferenceManager
@@ -53,12 +55,14 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         setHasOptionsMenu(true)
 
-        when (mOrder) {
-            0 -> {
+        val order = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .getString(SettingsFragment.ORDER, "0")
+        when (order) {
+            "0" -> {
                 firstText.hint = "Female ID:"
                 secondText.hint = "Male ID:"
             }
-            1 -> {
+            "1" -> {
                 firstText.hint = "Male ID:"
                 secondText.hint = "Female ID:"
             }
@@ -196,10 +200,14 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun FragmentEventsBinding.isInputValid(): Boolean {
 
+        val allowBlank = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .getString(SettingsFragment.BLANK, "0")
+        val order = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .getString(SettingsFragment.ORDER, "0")
         val male: String
         val female: String
         val cross: String = editTextCross.text.toString()
-        if (mOrder == 0) {
+        if (order == "0") {
             female = firstText.text.toString()
             male = secondText.text.toString()
         } else {
@@ -209,7 +217,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         //calculate how full the save button should be
         var numFilled = 0
-        if (mAllowBlank) numFilled++
+        if (allowBlank == "1") numFilled++
         else if (male.isNotBlank()) numFilled++
         if (female.isNotBlank()) numFilled++
         if (cross.isNotBlank()) numFilled++
@@ -223,7 +231,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                     else -> R.drawable.button_save_full
                 })
 
-        return ((male.isNotEmpty() || mAllowBlank) && female.isNotEmpty()
+        return ((male.isNotEmpty() || (allowBlank == "1")) && female.isNotEmpty()
                 && (cross.isNotEmpty() || (mSettings.isUUID || mSettings.isPattern)))
     }
 
@@ -231,20 +239,24 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         val value = editTextCross.text.toString()
 
+        val allowBlank = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .getString(SettingsFragment.BLANK, "0")
+        val order = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .getString(SettingsFragment.ORDER, "0")
         lateinit var male: String
         lateinit var female: String
-        when (mOrder) {
-            0 -> {
+        when (order) {
+            "0" -> {
                 female = (firstText.text ?: "").toString()
                 male = (secondText.text ?: "").toString()
             }
-            1 -> {
+            "1" -> {
                 male = (firstText.text ?: "").toString()
                 female = (secondText.text ?: "").toString()
             }
         }
 
-        if (value.isNotEmpty() && (male.isNotEmpty() || mAllowBlank)) {
+        if (value.isNotEmpty() && (male.isNotEmpty() || allowBlank == "1")) {
 
             if (male.isEmpty()) male = "blank"
             //val first = (mBinding.firstText.text ?: "")
