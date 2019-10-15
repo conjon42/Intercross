@@ -421,7 +421,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     private fun afterCreated() {
-        askIfSamePerson()
+        //askIfSamePerson()
     }
 
     private fun askIfSamePerson() {
@@ -453,7 +453,8 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
     private fun afterReturn() {
         val timeLength = System.nanoTime() - mLastOpened
         Log.d("TIME", timeLength.toString())
-        if ((timeLength > 5e9 && mLastOpened != 0L)) {
+        //24*60*60 = 86400s timeLength is in nanoseconds
+        if ((timeLength > 864e11 && mLastOpened != 0L)) {
             askIfSamePerson()
         }
     }
