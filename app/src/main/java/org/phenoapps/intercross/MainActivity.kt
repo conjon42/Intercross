@@ -12,11 +12,13 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.preference.PreferenceManager
+import android.text.InputType
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
@@ -244,39 +246,31 @@ class MainActivity : AppCompatActivity() {
 
                 }
                 R.id.action_nav_export -> {
-                    val lineSeparator = System.getProperty("line.separator")
 
-                    try {
-                        val dir = File(mDirectory.path + "/Export/")
-                        dir.mkdir()
-                        val output = File(dir, "crosses_${DateUtil().getTime()}.csv")
-                        val fstream = FileOutputStream(output)
+                    val filename = "crosses_${DateUtil().getTime()}.csv"
 
-                        fstream.write("eventDbId,eventName,eventValue,femaleObsUnitDbId,maleObsUnitDbId,person,timestamp,experiment".toByteArray())
-                        fstream.write(lineSeparator?.toByteArray() ?: "\n".toByteArray())
-
-                        mEvents.forEachIndexed { i, e ->
-                            if (e.eventName == "flower") {
-                                fstream.write(e.toString().toByteArray())
-                                fstream.write(lineSeparator?.toByteArray() ?: "\n".toByteArray())
-                            } else {
-                                e.eventValue?.let {
-                                    fstream.write(e.toString().toByteArray())
-                                    fstream.write(lineSeparator?.toByteArray() ?: "\n".toByteArray())
-                                }
-                            }
-
-                        }
-                        scanFile(this@MainActivity, output)
-                        fstream.flush()
-                        fstream.close()
-                    } catch (e: FileNotFoundException) {
-                        e.printStackTrace()
-                    } catch (io: IOException) {
-                        io.printStackTrace()
-                    } finally {
-                        Snackbar.make(mBinding.root, "File write successful!", Snackbar.LENGTH_SHORT).show()
+                    val input = EditText(this@MainActivity).apply {
+                        inputType = InputType.TYPE_CLASS_TEXT
+                        hint = "Exported file name"
+                        setText(filename)
                     }
+
+                    val builder = AlertDialog.Builder(this@MainActivity).apply {
+
+                        setView(input)
+
+                        setPositiveButton("OK") { _, _ ->
+                            val value = input.text.toString()
+                            if (value.isNotEmpty()) {
+                                exportFile(value)
+                            } else {
+                                Snackbar.make(mBinding.root,
+                                        "You must enter a new file name.", Snackbar.LENGTH_LONG).show()
+                            }
+                        }
+                        setTitle("Enter a new file name")
+                    }
+                    builder.show()
                 }
                 R.id.action_nav_intro -> {
                     startActivity(Intent(this@MainActivity, IntroActivity::class.java))
@@ -308,6 +302,42 @@ class MainActivity : AppCompatActivity() {
             apply()
         }
 
+    }
+
+    private fun exportFile(filename: String) {
+        val lineSeparator = System.getProperty("line.separator")
+
+        try {
+            val dir = File(mDirectory.path + "/Export/")
+            dir.mkdir()
+            val output = File(dir, filename)
+            val fstream = FileOutputStream(output)
+
+            fstream.write("eventDbId,eventName,eventValue,femaleObsUnitDbId,maleObsUnitDbId,person,timestamp,experiment".toByteArray())
+            fstream.write(lineSeparator?.toByteArray() ?: "\n".toByteArray())
+
+            mEvents.forEachIndexed { i, e ->
+                if (e.eventName == "flower") {
+                    fstream.write(e.toString().toByteArray())
+                    fstream.write(lineSeparator?.toByteArray() ?: "\n".toByteArray())
+                } else {
+                    e.eventValue?.let {
+                        fstream.write(e.toString().toByteArray())
+                        fstream.write(lineSeparator?.toByteArray() ?: "\n".toByteArray())
+                    }
+                }
+
+            }
+            scanFile(this@MainActivity, output)
+            fstream.flush()
+            fstream.close()
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        } catch (io: IOException) {
+            io.printStackTrace()
+        } finally {
+            Snackbar.make(mBinding.root, "File write successful!", Snackbar.LENGTH_SHORT).show()
+        }
     }
 
     fun scanFile(ctx: Context, filePath: File) {
