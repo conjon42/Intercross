@@ -144,9 +144,9 @@ class EventFragment: IntercrossBaseFragment<FragmentEventBinding>(R.layout.fragm
 
     private fun updateCountEditText() {
         mBinding.countEditText.setText(when (mBinding.tabLayout.selectedTabPosition) {
-            0 -> (mFlowers ?: "None").toString()
-            1 -> (mHarvests ?: "None").toString()
-            else -> (mThreshes ?: "None").toString()
+            0 -> (mFlowers ?: "").toString()
+            1 -> (mHarvests ?: "").toString()
+            else -> (mThreshes ?: "").toString()
         } )
     }
 
