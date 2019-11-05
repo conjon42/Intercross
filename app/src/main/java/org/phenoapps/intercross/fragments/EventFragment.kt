@@ -1,23 +1,18 @@
 package org.phenoapps.intercross.fragments
 
 import android.content.Context.INPUT_METHOD_SERVICE
-import android.os.Bundle
 import android.preference.PreferenceManager
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.tabs.TabLayout
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.data.EventName
 import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.databinding.FragmentEventBinding
 import org.phenoapps.intercross.util.BluetoothUtil
-import org.phenoapps.intercross.util.DateUtil
 
 
 class EventFragment: IntercrossBaseFragment<FragmentEventBinding>(R.layout.fragment_event) {

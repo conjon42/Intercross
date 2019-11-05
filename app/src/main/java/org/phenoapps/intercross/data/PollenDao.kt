@@ -5,6 +5,7 @@ import androidx.room.*
 
 @Dao
 interface PollenDao {
+
     @Query("SELECT * FROM pollen")
     fun getAll(): LiveData<List<Pollen>>
 

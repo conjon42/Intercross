@@ -2,7 +2,6 @@ package org.phenoapps.intercross.data
 
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
-import org.phenoapps.intercross.data.PollenGroupDao
 import java.util.*
 
 

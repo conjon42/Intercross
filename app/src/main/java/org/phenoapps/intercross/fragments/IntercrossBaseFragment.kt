@@ -1,36 +1,22 @@
 package org.phenoapps.intercross.fragments
 
-import android.content.Context
-import android.content.Context.MODE_PRIVATE
-import android.content.Intent
-import android.content.SharedPreferences
+//import org.phenoapps.intercross.synthetics.AutoPreferenceFragment
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.Adapter
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.*
-import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
-import org.phenoapps.intercross.R
-import org.phenoapps.intercross.adapters.EventsAdapter
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import org.phenoapps.intercross.data.*
-import org.phenoapps.intercross.databinding.FragmentEventsBinding
-//import org.phenoapps.intercross.synthetics.AutoPreferenceFragment
 import org.phenoapps.intercross.util.SnackbarQueue
 import org.phenoapps.intercross.viewmodels.*
-import kotlin.reflect.KClass
-import org.apache.poi.ss.formula.functions.T
-import androidx.appcompat.view.ContextThemeWrapper
 
 
 //base fragment class that loads all db viewmodels
@@ -40,6 +26,7 @@ abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId:
     lateinit var mSettingsViewModel: SettingsViewModel
     lateinit var mWishlistViewModel: WishlistViewModel
     lateinit var mParentsViewModel: ParentsViewModel
+    lateinit var mPollenManagerViewModel: PollenGroupViewModel
 
     lateinit var mSharedViewModel: CrossSharedViewModel
 
@@ -120,11 +107,21 @@ abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId:
                     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
                         @Suppress("UNCHECKED_CAST")
                         return EventsListViewModel(EventsRepository.getInstance(
-                                db.eventsDao())) as T
+                                    db.eventsDao())) as T
 
                     }
                 }
         ).get(EventsListViewModel::class.java)
+
+        mPollenManagerViewModel = ViewModelProviders.of(this,
+                object : ViewModelProvider.NewInstanceFactory() {
+                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return PollenGroupViewModel(PollenGroupRepository.getInstance(
+                                db.pollenGroupDao())) as T
+
+                    }
+                }).get(PollenGroupViewModel::class.java)
 
         mSnackbar = SnackbarQueue()
 

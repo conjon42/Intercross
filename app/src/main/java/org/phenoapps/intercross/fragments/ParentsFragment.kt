@@ -11,6 +11,7 @@ import androidx.core.view.GestureDetectorCompat
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
+import kotlinx.android.synthetic.main.fragment_parents.*
 import org.phenoapps.intercross.MainActivity.Companion.REQ_FILE_IMPORT
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.ParentsAdapter
@@ -21,11 +22,6 @@ import org.phenoapps.intercross.databinding.FragmentParentsBinding
 import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.FileUtil
-import android.text.method.Touch.onTouchEvent
-import android.view.MotionEvent
-import android.R.attr.name
-import androidx.navigation.fragment.findNavController
-import kotlinx.android.synthetic.main.fragment_parents.*
 import kotlin.math.abs
 
 

@@ -9,5 +9,6 @@ class EventsViewModel(event: Events) : ViewModel() {
     val date = ObservableField<String>(event.timestamp)
     val male = ObservableField<String>(event.maleOBsUnitDbId)
     val female = ObservableField<String>(event.femaleObsUnitDbId)
+    val isPoly = ObservableField<Boolean>(event.isPoly)
     //val count = ObservableField<Int>(event.eid)
 }

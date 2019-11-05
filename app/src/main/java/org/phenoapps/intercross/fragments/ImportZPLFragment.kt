@@ -1,33 +1,12 @@
 package org.phenoapps.intercross.fragments
 
-import android.Manifest
 import android.app.Activity
-import android.content.ContentUris
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.database.Cursor
-import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import android.os.Environment
 import android.preference.PreferenceManager
-import android.provider.DocumentsContract
-import android.util.Log
-import android.view.MenuItem
-import android.widget.Button
-import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat.checkSelfPermission
-import androidx.lifecycle.LifecycleObserver
-import kotlinx.android.synthetic.main.fragment_parents.*
 import kotlinx.android.synthetic.main.fragment_pattern.*
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.databinding.FragmentImportZplBinding
 import org.phenoapps.intercross.util.FileUtil
-
-import java.io.File
 
 class ImportZPLFragment : IntercrossBaseFragment<FragmentImportZplBinding>(R.layout.fragment_import_zpl) {
 

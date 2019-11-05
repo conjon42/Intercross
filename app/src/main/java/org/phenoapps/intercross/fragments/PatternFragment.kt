@@ -1,21 +1,14 @@
 package org.phenoapps.intercross.fragments
 
-import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.WindowManager
-import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.data.Settings
 import org.phenoapps.intercross.databinding.FragmentPatternBinding
-import org.phenoapps.intercross.util.SnackbarQueue
 import org.phenoapps.intercross.viewmodels.PatternViewModel
 import java.util.*
 

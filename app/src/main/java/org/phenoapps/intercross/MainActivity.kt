@@ -13,17 +13,14 @@ import android.os.Bundle
 import android.os.Environment
 import android.preference.PreferenceManager
 import android.text.InputType
-import android.util.Log
 import android.view.MenuItem
 import android.view.View
-import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
@@ -34,7 +31,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
-import androidx.navigation.fragment.findNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import org.phenoapps.intercross.data.*
@@ -44,15 +40,11 @@ import org.phenoapps.intercross.fragments.SettingsFragment
 import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.util.SnackbarQueue
-import org.phenoapps.intercross.viewmodels.EventsListViewModel
-import org.phenoapps.intercross.viewmodels.ParentsViewModel
-import org.phenoapps.intercross.viewmodels.WishlistViewModel
+import org.phenoapps.intercross.viewmodels.*
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class MainActivity : AppCompatActivity() {
 
@@ -67,6 +59,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mEvents: List<Events>
 
     private lateinit var mParentsViewModel: ParentsViewModel
+
+    private lateinit var mPollenGroupViewModel: PollenGroupViewModel
+    private lateinit var mGroups: List<PollenGroup>
+
+    private lateinit var mPollenViewModel: PollenViewModel
+    private lateinit var mPollens: List<Pollen>
 
     private lateinit var mBinding: ActivityMainBinding
 
@@ -157,9 +155,41 @@ class MainActivity : AppCompatActivity() {
                     }
                 }).get(ParentsViewModel::class.java)
 
+        mPollenGroupViewModel = ViewModelProviders.of(this,
+                object : ViewModelProvider.NewInstanceFactory() {
+                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return PollenGroupViewModel(PollenGroupRepository.getInstance(
+                                db.pollenGroupDao())) as T
+
+                    }
+                }).get(PollenGroupViewModel::class.java)
+
+        mPollenViewModel = ViewModelProviders.of(this,
+                object : ViewModelProvider.NewInstanceFactory() {
+                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return PollenViewModel(PollenRepository.getInstance(
+                                db.pollenDao())) as T
+
+                    }
+                }).get(PollenViewModel::class.java)
+
         mEventsViewModel.events.observe(this, Observer {
             it?.let {
                 mEvents = it
+            }
+        })
+
+        mPollenGroupViewModel.groups.observe(this, Observer {
+            it?.let {
+                mGroups = it
+            }
+        })
+
+        mPollenViewModel.pollen.observe(this, Observer {
+            it?.let {
+                mPollens = it
             }
         })
 
@@ -317,6 +347,23 @@ class MainActivity : AppCompatActivity() {
             fstream.write(lineSeparator?.toByteArray() ?: "\n".toByteArray())
 
             mEvents.forEachIndexed { i, e ->
+                mGroups.let {
+                    for (g in it) {
+                        if (e.maleOBsUnitDbId == g.uuid) {
+                            val dads = ArrayList<String>()
+                            for (p in mPollens) {
+                                if (p.pid == g.id) {
+                                    dads.add(p.pollenId)
+                                }
+                            }
+                            e.maleOBsUnitDbId = dads.joinToString(";")
+                        }
+                    }
+                    val groups = it.map { it.uuid }
+                    if (e.maleOBsUnitDbId in groups) {
+                        e.isPoly = true
+                    }
+                }
                 if (e.eventName == "flower") {
                     fstream.write(e.toString().toByteArray())
                     fstream.write(lineSeparator?.toByteArray() ?: "\n".toByteArray())

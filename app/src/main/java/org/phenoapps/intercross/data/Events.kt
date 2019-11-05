@@ -3,10 +3,8 @@ package org.phenoapps.intercross.data
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import kotlinx.android.parcel.Parcelize
-import java.sql.Date
 
 @Parcelize
 @Entity(tableName = "events")
@@ -15,7 +13,7 @@ data class Events(
         @PrimaryKey(autoGenerate = true)
         var id: Long?, var eventDbId: String, var eventName: String,
         var femaleObsUnitDbId: String, var maleOBsUnitDbId: String, var eventValue: Int?,
-        var timestamp: String?, var person: String?, var experiment: String?): Parcelable {
+        var timestamp: String?, var person: String?, var experiment: String?, var isPoly: Boolean? = false): Parcelable {
 
     @Transient
     var isSelected: Boolean = false

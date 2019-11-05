@@ -26,7 +26,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:src="@{viewModel.male.equals(`blank`) ? @drawable/ic_cross_open : viewModel.female.equals(viewModel.male) ? @drawable/ic_cross_self : @drawable/ic_cross_biparental}"/>
+            android:src="@{viewModel.isPoly ? @drawable/ic_cross_poly : viewModel.male.equals(`blank`) ? @drawable/ic_cross_open : viewModel.female.equals(viewModel.male) ? @drawable/ic_cross_self : @drawable/ic_cross_biparental}"/>
 
         <TextView
             android:id="@+id/nameTextView"
