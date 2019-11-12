@@ -35,7 +35,7 @@
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_marginEnd="8dp"
-                android:src="@{events.maleOBsUnitDbId.equals(`blank`) ? @drawable/ic_cross_open : events.femaleObsUnitDbId.equals(events.maleOBsUnitDbId) ? @drawable/ic_cross_self : @drawable/ic_cross_biparental}"
+                android:src="@{events.isPoly ? @drawable/ic_cross_poly : events.maleOBsUnitDbId.equals(`blank`) ? @drawable/ic_cross_open : events.femaleObsUnitDbId.equals(events.maleOBsUnitDbId) ? @drawable/ic_cross_self : @drawable/ic_cross_biparental}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />

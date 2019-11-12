@@ -1,7 +1,5 @@
 package org.phenoapps.intercross.fragments
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Handler
 import android.preference.PreferenceManager
@@ -13,9 +11,11 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
-import androidx.databinding.ViewDataBinding
-import androidx.lifecycle.*
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.Observer
+import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,7 +24,7 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
 import org.phenoapps.intercross.data.EventName
 import org.phenoapps.intercross.data.Events
-import org.phenoapps.intercross.data.Settings
+import org.phenoapps.intercross.data.PollenGroup
 import org.phenoapps.intercross.data.Wishlist
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
 import org.phenoapps.intercross.util.DateUtil
@@ -37,6 +37,8 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
     private lateinit var mAdapter: EventsAdapter
 
     private lateinit var mWishlist: List<Wishlist>
+    private lateinit var mGroups: List<PollenGroup>
+
     private lateinit var mFocused: View
 
     private var mLastOpened: Long = 0L
@@ -92,11 +94,21 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                 val event = mAdapter.currentList[viewHolder.adapterPosition]
                 mEventsListViewModel.delete(event)
                 mSnackbar.push(SnackbarQueue.SnackJob(root, "${event.eventDbId}", "Undo") {
-                    mEventsListViewModel.addCrossEvent(event.apply { id = null })
+                    submitCrossEvent(event.apply { id = null })
                 })
 
             }
         }).attachToRecyclerView(recyclerView)
+    }
+
+    private fun submitCrossEvent(e: Events) {
+        mGroups.let {
+            val groups = it.map { it.uuid }
+            if (e.maleOBsUnitDbId in groups) {
+                e.isPoly = true
+            }
+        }
+        mEventsListViewModel.addCrossEvent(e)
     }
 
     private fun FragmentEventsBinding.setupTextInput() {
@@ -271,8 +283,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             //assert(person == tPerson)
 
-            mEventsListViewModel.addCrossEvent(
-                    Events(null, value, EventName.POLLINATION.itemType, female, male, null, DateUtil().getTime(), tPerson, experiment))
+            submitCrossEvent(Events(null, value, EventName.POLLINATION.itemType, female, male, null, DateUtil().getTime(), tPerson, experiment))
 
 
             FileUtil(requireContext()).ringNotification(true)
@@ -376,6 +387,12 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                     }
                     else -> editTextCross.setText("")
                 }
+            }
+        })
+
+        mPollenManagerViewModel.groups.observe(viewLifecycleOwner, Observer {
+            it?.let {
+                mGroups = it
             }
         })
     }

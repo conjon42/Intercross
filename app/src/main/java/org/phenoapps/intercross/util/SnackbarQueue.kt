@@ -1,10 +1,8 @@
 package org.phenoapps.intercross.util
 
-import android.content.Context
 import android.os.Handler
 import android.view.View
 import com.google.android.material.snackbar.Snackbar
-import java.lang.IllegalArgumentException
 import java.util.*
 import kotlin.collections.ArrayList
 

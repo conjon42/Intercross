@@ -1,15 +1,10 @@
 package org.phenoapps.intercross.fragments
 
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.SummaryAdapter
-import org.phenoapps.intercross.data.EventName
 import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.databinding.FragmentSummaryBinding
 

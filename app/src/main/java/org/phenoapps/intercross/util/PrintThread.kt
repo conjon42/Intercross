@@ -10,7 +10,7 @@ import com.zebra.sdk.printer.SGD
 import com.zebra.sdk.printer.ZebraPrinterFactory
 import com.zebra.sdk.printer.ZebraPrinterLanguageUnknownException
 import org.phenoapps.intercross.data.Events
-import org.phenoapps.intercross.data.Pollen
+import org.phenoapps.intercross.data.PollenGroup
 
 
 class PrintThread(private val ctx: Context, private val template: String,
@@ -18,7 +18,7 @@ class PrintThread(private val ctx: Context, private val template: String,
 
     var mMode = 0
     lateinit var mEvents: Array<Events>
-    lateinit var mPollen: Pollen
+    lateinit var mGroup: PollenGroup
 
     fun printEvents(events: Array<Events>) {
         mEvents = events
@@ -26,8 +26,8 @@ class PrintThread(private val ctx: Context, private val template: String,
         start()
     }
 
-    fun printPollen(pollen: Pollen) {
-        mPollen = pollen
+    fun printGroup(group: PollenGroup) {
+        mGroup = group
         mMode = 1
         start()
     }
@@ -70,14 +70,13 @@ class PrintThread(private val ctx: Context, private val template: String,
                                     }
                                 }
                                 1 -> {
-                                    //TODO implement Pollen print
                                     if (template.isNotBlank()) {
                                         printer.sendCommand(template)
                                     }
                                     printer.sendCommand("^XA^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF" +
-                                            "^FN1^FD${mPollen.id}^FS" +
-                                            "^FN2^FDQA,${mPollen.pid}^FS" +
-                                            "^FN3^FD${mPollen.pid}^FS^XZ")
+                                            "^FN1^FD${mGroup.name}^FS" +
+                                            "^FN2^FDQA,${mGroup.uuid}^FS" +
+                                            "^FN3^FD${mGroup.uuid}^FS^XZ")
                                 }
                             }
 

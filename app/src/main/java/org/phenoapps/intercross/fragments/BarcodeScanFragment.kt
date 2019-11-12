@@ -3,12 +3,8 @@ package org.phenoapps.intercross.fragments
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.os.Bundle
 import android.os.Handler
 import android.preference.PreferenceManager
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.lifecycle.Observer
@@ -22,7 +18,7 @@ import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.EventName
 import org.phenoapps.intercross.data.Events
-import org.phenoapps.intercross.data.Settings
+import org.phenoapps.intercross.data.PollenGroup
 import org.phenoapps.intercross.data.Wishlist
 import org.phenoapps.intercross.databinding.FragmentBarcodeScanBinding
 import org.phenoapps.intercross.util.DateUtil
@@ -37,6 +33,8 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
     private lateinit var mCallback: BarcodeCallback
 
     private lateinit var mWishlist: List<Wishlist>
+
+    private lateinit var mGroups: List<PollenGroup>
 
     private var mEvents = ArrayList<Events>()
 
@@ -199,6 +197,12 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
             }
         })
 
+        mPollenManagerViewModel.groups.observe(viewLifecycleOwner, Observer {
+            it?.let {
+                mGroups = ArrayList(it)
+            }
+        })
+
         mSharedViewModel.name.value = ""
         mSharedViewModel.female.value = ""
         mSharedViewModel.male.value = ""
@@ -262,8 +266,17 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
         val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
                 .getString("org.phenoapps.intercross.PERSON", "")
 
-        mEventsListViewModel.addCrossEvent(Events(null, cross, EventName.POLLINATION.itemType,
-                mSharedViewModel.female.value ?: String(), male, null, DateUtil().getTime(), person, experiment))
+        val e = Events(null, cross, EventName.POLLINATION.itemType,
+                mSharedViewModel.female.value ?: String(), male, null, DateUtil().getTime(), person, experiment)
+
+        mGroups.let {
+            val groups = it.map { it.uuid }
+            if (e.maleOBsUnitDbId in groups) {
+                e.isPoly = true
+            }
+        }
+
+        mEventsListViewModel.addCrossEvent(e)
 
         mSharedViewModel.name.value = ""
         mSharedViewModel.female.value = ""

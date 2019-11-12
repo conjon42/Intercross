@@ -3,38 +3,37 @@ package org.phenoapps.intercross.viewmodels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.phenoapps.intercross.data.Pollen
-import org.phenoapps.intercross.data.PollenRepository
+import org.phenoapps.intercross.data.PollenGroup
+import org.phenoapps.intercross.data.PollenGroupRepository
 
-class PollenViewModel internal constructor(
-        private val repo: PollenRepository
+class PollenGroupViewModel internal constructor(
+        private val repo: PollenGroupRepository
 ) : ViewModel() {
 
     private val viewModelJob = Job()
 
     //coroutines do not complete until all launched children complete
-    private val viewModelScope = CoroutineScope(Main + viewModelJob)
+    private val viewModelScope = CoroutineScope(Dispatchers.Main + viewModelJob)
 
-    val pollen: LiveData<List<Pollen>> = repo.getAll()
+    val groups: LiveData<List<PollenGroup>> = repo.getAll()
 
-    fun addPollen(groupId: Long, name: String) {
+    fun addPollenSet(name: String) {
         viewModelScope.launch {
-            repo.createPollen(groupId, name)
+            repo.createPollenSet(name)
         }
     }
 
-    fun delete(vararg p: Pollen) {
+    fun delete(vararg p: PollenGroup) {
         viewModelScope.launch {
             repo.delete(*p)
         }
     }
-    fun update(vararg p: Pollen) {
+    fun update(vararg p: PollenGroup) {
         viewModelScope.launch {
             repo.update(*p)
         }
     }
 }
-

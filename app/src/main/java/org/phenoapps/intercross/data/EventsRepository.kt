@@ -2,10 +2,6 @@ package org.phenoapps.intercross.data
 
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
-import org.phenoapps.intercross.util.DateUtil
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
 class EventsRepository private constructor(private val eventsDao: EventsDao) {
 

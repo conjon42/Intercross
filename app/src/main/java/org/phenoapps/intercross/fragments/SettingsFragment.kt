@@ -1,10 +1,8 @@
 package org.phenoapps.intercross.fragments
 
 import android.content.Intent
-import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,13 +12,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.preference.EditTextPreference
+import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.SettingsRepository
 import org.phenoapps.intercross.viewmodels.SettingsViewModel
-import androidx.preference.ListPreference
-import org.phenoapps.intercross.R
 
 
 class SettingsFragment : PreferenceFragmentCompat() {

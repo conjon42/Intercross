@@ -2,7 +2,6 @@ package org.phenoapps.intercross.data
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import org.phenoapps.intercross.data.PollenGroup
 
 @Dao
 interface PollenGroupDao {
