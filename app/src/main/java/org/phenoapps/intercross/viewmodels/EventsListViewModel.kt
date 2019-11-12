@@ -67,4 +67,10 @@ class EventsListViewModel internal constructor(
             repo.delete(e)
         }
     }
+
+    fun deleteAll() {
+        viewModelScope.launch {
+            repo.deleteAll()
+        }
+    }
 }

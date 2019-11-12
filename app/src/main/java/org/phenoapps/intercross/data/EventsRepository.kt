@@ -49,7 +49,13 @@ class EventsRepository private constructor(private val eventsDao: EventsDao) {
 
     suspend fun delete(e: Events) {
         withContext(IO) {
-            eventsDao.deleteAll(e.eventDbId)
+            eventsDao.delete(e.eventDbId)
+        }
+    }
+
+    suspend fun deleteAll() {
+        withContext(IO) {
+            eventsDao.deleteAll()
         }
     }
 

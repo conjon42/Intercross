@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.SummaryAdapter
@@ -26,6 +27,11 @@ class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.
         mAdapter = SummaryAdapter(requireContext())
 
         recyclerView.adapter = mAdapter
+
+        deleteButton.setOnClickListener {
+            mEventsListViewModel.deleteAll()
+            findNavController().navigate(R.id.events_fragment)
+        }
 
         mEventsListViewModel.crosses.observe(viewLifecycleOwner, Observer { events ->
 

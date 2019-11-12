@@ -94,6 +94,11 @@ class EventFragment: IntercrossBaseFragment<FragmentEventBinding>(R.layout.fragm
             }
         })
 
+        deleteButton.setOnClickListener {
+            mEventsListViewModel.delete(mEvent)
+            findNavController().navigate(R.id.events_fragment)
+        }
+
         startObservers()
     }
 
