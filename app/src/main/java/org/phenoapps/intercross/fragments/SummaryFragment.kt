@@ -1,5 +1,7 @@
 package org.phenoapps.intercross.fragments
 
+import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -7,6 +9,7 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.SummaryAdapter
 import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.databinding.FragmentSummaryBinding
+import org.phenoapps.intercross.util.SnackbarQueue
 
 
 class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.fragment_summary) {
@@ -23,9 +26,33 @@ class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.
 
         recyclerView.adapter = mAdapter
 
+        //deletes all entries from the database
+        //two nested alert dialogs to ask user
         deleteButton.setOnClickListener {
-            mEventsListViewModel.deleteAll()
-            findNavController().navigate(R.id.events_fragment)
+
+            val builder = AlertDialog.Builder(requireContext()).apply {
+
+                setNegativeButton("Cancel") { _, _ -> }
+
+                setPositiveButton("OK") { _, _ ->
+
+                    val builder = AlertDialog.Builder(requireContext()).apply {
+
+                        setNegativeButton("Cancel") { _, _ -> }
+
+                        setPositiveButton("Yes") { _, _ ->
+                            mEventsListViewModel.deleteAll()
+                            findNavController().navigate(R.id.events_fragment)
+                        }
+                    }
+
+                    builder.setTitle("Are you sure?")
+                    builder.show()
+                }
+            }
+
+            builder.setTitle("This will delete all entries from the database.")
+            builder.show()
         }
 
         mEventsListViewModel.crosses.observe(viewLifecycleOwner, Observer { events ->

@@ -27,33 +27,38 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         with(findPreference<Preference>("org.phenoapps.intercross.CREATE_PATTERN")){
-            setOnPreferenceClickListener {
-                findNavController().navigate(SettingsFragmentDirections.actionToPatternFragment())
-                true
-            }
 
-            mSettingsViewModel.settings.observe(viewLifecycleOwner, Observer {
-                it?.let {
-                    summary = when {
-                        it.isPattern -> {
-                            "Pattern"
-                        }
-                        it.isUUID -> {
-                            "UUID"
-                        }
-                        else -> {
-                            "None"
+            this?.let {
+                setOnPreferenceClickListener {
+                    findNavController().navigate(SettingsFragmentDirections.actionToPatternFragment())
+                    true
+                }
+
+                mSettingsViewModel.settings.observe(viewLifecycleOwner, Observer {
+                    it?.let {
+                        summary = when {
+                            it.isPattern -> {
+                                "Pattern"
+                            }
+                            it.isUUID -> {
+                                "UUID"
+                            }
+                            else -> {
+                                "None"
+                            }
                         }
                     }
-                }
-            })
+                })
+            }
         }
 
 
         with(findPreference<Preference>("org.phenoapps.intercross.ZPL_IMPORT")){
-            setOnPreferenceClickListener {
-                findNavController().navigate(SettingsFragmentDirections.actionToImportZplFragment())
-                true
+            this?.let {
+                setOnPreferenceClickListener {
+                    findNavController().navigate(SettingsFragmentDirections.actionToImportZplFragment())
+                    true
+                }
             }
         }
 
@@ -91,7 +96,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             val pref = findPreference<Preference>(key)
 
             if (pref is ListPreference) {
-                val listPref = pref as ListPreference
+                val listPref = pref
                 pref.setSummary(listPref.entry)
             }
         }

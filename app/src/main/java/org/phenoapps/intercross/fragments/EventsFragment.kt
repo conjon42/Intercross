@@ -493,8 +493,4 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         mLastOpened = System.nanoTime()
     }
 
-    override fun onResume() {
-        super.onResume()
-
-    }
 }
