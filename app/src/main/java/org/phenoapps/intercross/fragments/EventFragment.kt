@@ -89,11 +89,6 @@ class EventFragment: IntercrossBaseFragment<FragmentEventBinding>(R.layout.fragm
             }
         })
 
-        deleteButton.setOnClickListener {
-            mEventsListViewModel.delete(mEvent)
-            findNavController().navigate(R.id.events_fragment)
-        }
-
         startObservers()
     }
 
@@ -162,7 +157,7 @@ class EventFragment: IntercrossBaseFragment<FragmentEventBinding>(R.layout.fragm
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.print_toolbar, menu)
+        inflater.inflate(R.menu.cross_entry_toolbar, menu)
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -171,6 +166,10 @@ class EventFragment: IntercrossBaseFragment<FragmentEventBinding>(R.layout.fragm
         when(item.itemId) {
             R.id.action_print -> {
                 BluetoothUtil().print(requireContext(), arrayOf(mEvent))
+            }
+            R.id.action_delete -> {
+                mEventsListViewModel.delete(mEvent)
+                findNavController().navigate(R.id.events_fragment)
             }
         }
         return super.onOptionsItemSelected(item)
