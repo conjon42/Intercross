@@ -86,8 +86,30 @@ class BluetoothUtil {
 
         } else f()
     }
+    var template = "^XA^MNA^MMT,N" +
+            "^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS" +
+            "^FWR" +
+            "^FO50,25^A0,20,20^FB200,4,,c,^FN1^FS" +
+            "^FO150,30^BQ,,5,H^FN2^FS" +
+            "^FO325,15^A0,20,20^FB200,4,,c,^FN3^FS^XZ"
 
-    var template = "^XA^MNA^MMT,N^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS^FWR^FO100,25^A0,25,20^FN1^FS^FO200,25^A0N,25,20^BQ,2,6^FN2^FS^FO450,25^A0,25,20^FN3^FS^XZ"
+    /*var template = """
+        ^XA
+        ^MNA
+        ^MMT,N
+        ^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS
+        ^FWR
+        ^FO50,25
+        ^A0,20,20
+        ^FN1^FS
+        ^FO150,30
+        ^BQ,,5,H
+        ^FN2^FS
+        ^FO400,25
+        ^A0,25,20
+        ^FN3^FS
+        ^XZ"
+    """*/
 
     fun print(ctx: Context, events: Array<Events>) {
         choose(ctx) {

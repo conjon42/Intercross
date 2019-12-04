@@ -9,6 +9,7 @@ import com.zebra.sdk.comm.ConnectionException
 import com.zebra.sdk.printer.SGD
 import com.zebra.sdk.printer.ZebraPrinterFactory
 import com.zebra.sdk.printer.ZebraPrinterLanguageUnknownException
+import com.zebra.sdk.settings.Setting
 import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.data.PollenGroup
 
@@ -55,6 +56,8 @@ class PrintThread(private val ctx: Context, private val template: String,
                     linkOsPrinter?.let {
                         val printerStatus = it.currentStatus
                         getPrinterStatus(bc)
+                        //println((it.allSettings["head.resolution.in_dpi"] as Setting).value)
+
                         if (printerStatus.isReadyToPrint) {
 
                             when (mMode) {
@@ -66,7 +69,7 @@ class PrintThread(private val ctx: Context, private val template: String,
                                         printer.sendCommand("^XA^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF" +
                                                 "^FN1^FD${it.eventDbId}^FS" +
                                                 "^FN2^FDQA,${it.eventDbId}^FS" +
-                                                "^FN3^FD${it.eventDbId}^FS^XZ") //todo replace with Date
+                                                "^FN3^FD${it.timestamp}^FS^XZ")
                                     }
                                 }
                                 1 -> {
