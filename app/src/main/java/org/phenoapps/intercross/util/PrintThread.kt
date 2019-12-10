@@ -9,7 +9,6 @@ import com.zebra.sdk.comm.ConnectionException
 import com.zebra.sdk.printer.SGD
 import com.zebra.sdk.printer.ZebraPrinterFactory
 import com.zebra.sdk.printer.ZebraPrinterLanguageUnknownException
-import com.zebra.sdk.settings.Setting
 import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.data.PollenGroup
 

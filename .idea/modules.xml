@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/ZSDK_ANDROID_API/Chaney-StudioProjects-Intercross-ZSDK_ANDROID_API.iml" filepath="$PROJECT_DIR$/ZSDK_ANDROID_API/Chaney-StudioProjects-Intercross-ZSDK_ANDROID_API.iml" />
       <module fileurl="file://$PROJECT_DIR$/Intercross.iml" filepath="$PROJECT_DIR$/Intercross.iml" />
       <module fileurl="file://$PROJECT_DIR$/ZSDK_ANDROID_API/Intercross-ZSDK_ANDROID_API.iml" filepath="$PROJECT_DIR$/ZSDK_ANDROID_API/Intercross-ZSDK_ANDROID_API.iml" />
       <module fileurl="file://$PROJECT_DIR$/StudioProjects-Intercross.iml" filepath="$PROJECT_DIR$/StudioProjects-Intercross.iml" />

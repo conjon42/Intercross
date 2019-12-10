@@ -1,6 +1,5 @@
 package org.phenoapps.intercross.fragments
 
-import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
@@ -9,7 +8,6 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.SummaryAdapter
 import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.databinding.FragmentSummaryBinding
-import org.phenoapps.intercross.util.SnackbarQueue
 
 
 class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.fragment_summary) {

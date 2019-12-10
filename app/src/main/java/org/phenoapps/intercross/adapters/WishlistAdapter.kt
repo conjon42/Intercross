@@ -15,15 +15,10 @@ import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.databinding.ListItemSimpleRowBinding
-import org.phenoapps.intercross.databinding.ListItemSummaryBinding
-import org.phenoapps.intercross.databinding.ListItemSummaryBindingImpl
 import org.phenoapps.intercross.databinding.ListItemWishlistBinding
-import org.phenoapps.intercross.fragments.SummaryFragment
 import org.phenoapps.intercross.fragments.WishlistFragment
 import org.phenoapps.intercross.util.SnackbarQueue
-import org.phenoapps.intercross.viewmodels.SummaryViewModel
 import org.phenoapps.intercross.viewmodels.WishlistSummaryViewModel
-import org.phenoapps.intercross.viewmodels.WishlistViewModel
 
 class WishlistAdapter(
         val context: Context
