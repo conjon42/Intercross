@@ -21,7 +21,7 @@ public class IntroActivity extends AppIntro2 {
         showStatusBar(false);
 
         // Add slides
-        addSlide(AppIntroFragment.newInstance(getString(org.phenoapps.intercross.R.string.intro_title_1), getString(org.phenoapps.intercross.R.string.intro_body_1), R.drawable.ic_launcher_web, Color.parseColor("#3f51b5")));
+        addSlide(AppIntroFragment.newInstance(getString(org.phenoapps.intercross.R.string.intro_title_1), getString(org.phenoapps.intercross.R.string.intro_body_1), R.mipmap.ic_launcher, Color.parseColor("#3f51b5")));
         //TODO redo intro icons
         //addSlide(AppIntroFragment.newInstance(getString(org.phenoapps.intercross.R.string.intro_title_2), getString(org.phenoapps.intercross.R.string.intro_body_2), org.phenoapps.intercross.R.drawable.intro_barcode, Color.parseColor("#285E3D")));
         //addSlide(AppIntroFragment.newInstance(getString(org.phenoapps.intercross.R.string.intro_title_3), getString(org.phenoapps.intercross.R.string.intro_body_3), org.phenoapps.intercross.R.drawable.intro_zebra, Color.parseColor("#0C6291")));

@@ -308,6 +308,9 @@ class MainActivity : AppCompatActivity() {
                 R.id.action_nav_summary -> {
                     mNavController.navigate(R.id.global_action_to_summary_fragment)
                 }
+                R.id.action_nav_wishlist_manager -> {
+                    mNavController.navigate(R.id.global_action_to_wishlist_manager_fragment)
+                }
             }
             mDrawerLayout.closeDrawers()
             true

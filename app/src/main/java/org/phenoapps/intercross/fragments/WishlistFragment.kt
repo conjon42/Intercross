@@ -1,0 +1,58 @@
+package org.phenoapps.intercross.fragments
+
+import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import org.phenoapps.intercross.R
+import org.phenoapps.intercross.adapters.SummaryAdapter
+import org.phenoapps.intercross.adapters.WishlistAdapter
+import org.phenoapps.intercross.data.Events
+import org.phenoapps.intercross.data.Wishlist
+import org.phenoapps.intercross.databinding.FragmentSummaryBinding
+import org.phenoapps.intercross.databinding.FragmentWishlistManagerBinding
+import org.phenoapps.intercross.util.SnackbarQueue
+
+
+class WishlistFragment : IntercrossBaseFragment<FragmentWishlistManagerBinding>(R.layout.fragment_wishlist_manager) {
+
+    private lateinit var mAdapter: WishlistAdapter
+
+    data class WishlistData(var m: String, var f: String, var count: String, var event: List<Events>)
+
+    override fun FragmentWishlistManagerBinding.afterCreateView() {
+
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        mAdapter = WishlistAdapter(requireContext())
+
+        recyclerView.adapter = mAdapter
+
+        mEventsListViewModel.crosses.observe(viewLifecycleOwner, Observer { events ->
+
+            mWishlistViewModel.wishlist.observe(viewLifecycleOwner, Observer { wishlist ->
+
+                var data = ArrayList<WishlistData>()
+
+                wishlist.forEach { wish ->
+
+                    var current = 0
+                    var crosses = ArrayList<Events>()
+                    events.forEach { event ->
+                        if (event.femaleObsUnitDbId == wish.femaleDbId && event.maleOBsUnitDbId == wish.maleDbId) {
+                            current++
+                            crosses.add(event)
+                        }
+                    }
+                    data.add(WishlistData(wish.maleDbId, wish.femaleDbId, "$current/${wish.wishMax}", crosses))
+                }
+
+                mAdapter.submitList(data)
+
+                mAdapter.notifyDataSetChanged()
+
+            })
+        })
+    }
+}

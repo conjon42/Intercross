@@ -39,6 +39,13 @@
     </fragment>
 
     <fragment
+        android:id="@+id/wishlist_manager_fragment"
+        android:name="org.phenoapps.intercross.fragments.WishlistFragment"
+        android:label="Wishlist"
+        tools:layout="@layout/fragment_wishlist_manager">
+    </fragment>
+
+    <fragment
         android:id="@+id/event_fragment"
         android:name="org.phenoapps.intercross.fragments.EventFragment"
         android:label="Event"
@@ -119,6 +126,11 @@
         app:destination="@id/summary_fragment"
         app:launchSingleTop="true"
         app:popUpTo="@id/summary_fragment"/>
+    <action
+        android:id="@+id/global_action_to_wishlist_manager_fragment"
+        app:destination="@id/wishlist_manager_fragment"
+        app:launchSingleTop="true"
+        app:popUpTo="@id/wishlist_manager_fragment"/>
     <action
         android:id="@+id/global_action_to_event_fragment"
         app:destination="@id/event_fragment" />

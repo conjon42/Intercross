@@ -5,6 +5,10 @@
         android:icon="@drawable/ic_nv_import"
         android:title="Import Wishlist" />
     <item
+        android:id="@+id/action_nav_wishlist_manager"
+        android:icon="@drawable/ic_nv_summary"
+        android:title="View Wishlist"/>
+    <item
         android:id="@+id/action_nav_parents"
         android:icon="@drawable/ic_nv_parents"
         android:title="Parents" />
