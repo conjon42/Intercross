@@ -20,9 +20,9 @@ class PollenGroupViewModel internal constructor(
 
     val groups: LiveData<List<PollenGroup>> = repo.getAll()
 
-    fun addPollenSet(name: String) {
+    fun addPollenSet(name: String, id: String) {
         viewModelScope.launch {
-            repo.createPollenSet(name)
+            repo.createPollenSet(name, id)
         }
     }
 

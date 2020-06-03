@@ -8,9 +8,9 @@ import java.util.*
 class PollenGroupRepository private constructor(
         private val pollenGroupDao: PollenGroupDao
 ) {
-    suspend fun createPollenSet(name: String) {
+    suspend fun createPollenSet(name: String, id: String) {
         withContext(IO) {
-             pollenGroupDao.insert(PollenGroup(null, name, UUID.randomUUID().toString()))
+             pollenGroupDao.insert(PollenGroup(null, name, id))
         }
     }
 
