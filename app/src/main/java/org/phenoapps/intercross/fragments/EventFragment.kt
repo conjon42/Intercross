@@ -6,6 +6,7 @@ import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.tabs.TabLayout
@@ -13,6 +14,7 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.databinding.FragmentEventBinding
 import org.phenoapps.intercross.util.BluetoothUtil
+import org.phenoapps.intercross.util.SnackbarQueue
 
 
 class EventFragment: IntercrossBaseFragment<FragmentEventBinding>(R.layout.fragment_event) {
@@ -168,8 +170,21 @@ class EventFragment: IntercrossBaseFragment<FragmentEventBinding>(R.layout.fragm
                 BluetoothUtil().print(requireContext(), arrayOf(mEvent))
             }
             R.id.action_delete -> {
-                mEventsListViewModel.delete(mEvent)
-                findNavController().navigate(R.id.events_fragment)
+                val builder = AlertDialog.Builder(requireContext()).apply {
+
+                    setNegativeButton("Cancel") { _, _ ->
+
+                    }
+
+                    setPositiveButton("Confirm") { _, _ ->
+                        mEventsListViewModel.delete(mEvent)
+                        findNavController().navigate(R.id.events_fragment)
+                    }
+                }
+
+                builder.setTitle("Delete this cross entry?")
+                builder.show()
+
             }
         }
         return super.onOptionsItemSelected(item)

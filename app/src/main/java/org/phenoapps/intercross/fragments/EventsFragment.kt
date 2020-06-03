@@ -448,11 +448,6 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         return super.onOptionsItemSelected(item)
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-    private fun afterCreated() {
-        //askIfSamePerson()
-    }
-
     private fun askIfSamePerson() {
 
         val builder = AlertDialog.Builder(requireContext()).apply {
@@ -467,15 +462,6 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                 //welcome back
             }
         }
-
-        val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getString("org.phenoapps.intercross.PERSON", "").also {
-                    it?.let { jessiepoland ->
-                        builder.setTitle("Is this still ${jessiepoland}?")
-                        if (it.isNotBlank()) builder.show()
-                    }
-                }
-
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)

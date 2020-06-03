@@ -25,15 +25,11 @@
         android:icon="@drawable/ic_nv_export"
         android:title="Export" />
     <item
+        android:id="@+id/action_nav_about"
         android:icon="@drawable/ic_nv_about"
         android:title="About" />
     <item
         android:id="@+id/action_nav_settings"
         android:icon="@drawable/ic_nv_settings"
         android:title="Settings" />
-    <item
-        android:id="@+id/action_nav_intro"
-        android:icon="@drawable/ic_nv_about"
-        android:title="Intro"
-        android:visible="false" />
 </menu>

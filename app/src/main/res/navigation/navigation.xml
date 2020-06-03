@@ -104,6 +104,14 @@
             app:destination="@+id/pollen_fragment"/>
     </fragment>
 
+    <activity
+        android:id="@+id/aboutActivity"
+        android:name="org.phenoapps.intercross.AboutActivity"
+        android:configChanges="keyboardHidden|screenSize|keyboard|orientation"
+        android:theme="@style/AppTheme"
+        android:windowSoftInputMode="adjustPan">
+    </activity>
+
     <fragment
         android:id="@+id/pollen_fragment"
         android:name="org.phenoapps.intercross.fragments.PollenFragment"

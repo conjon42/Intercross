@@ -51,7 +51,7 @@ class BluetoothUtil {
 
                 val input = RadioGroup(ctx)
 
-                pairedDevices.forEachIndexed { i, t ->
+                pairedDevices.forEachIndexed { _, t ->
                     val button = RadioButton(ctx)
                     button.text = t.name
                     input.addView(button)

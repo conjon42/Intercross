@@ -80,7 +80,7 @@ class PatternFragment: IntercrossBaseFragment<FragmentPatternBinding>(R.layout.f
 
         }
 
-        radioGroup2.setOnCheckedChangeListener { group, checkedId ->
+        radioGroup2.setOnCheckedChangeListener { _, checkedId ->
 
             closeKeyboard()
 

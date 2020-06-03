@@ -33,10 +33,13 @@ import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.michaelflisar.changelog.ChangelogBuilder
+import com.mikepenz.aboutlibraries.Libs
+import com.mikepenz.aboutlibraries.LibsBuilder
 import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.databinding.ActivityMainBinding
 import org.phenoapps.intercross.fragments.PatternFragment
-import org.phenoapps.intercross.fragments.SettingsFragment
 import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.util.SnackbarQueue
@@ -47,6 +50,10 @@ import java.io.FileOutputStream
 import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
+
+    private val mFirebaseAnalytics by lazy {
+        FirebaseAnalytics.getInstance(this)
+    }
 
     private lateinit var mSnackbar: SnackbarQueue
 
@@ -195,7 +202,7 @@ class MainActivity : AppCompatActivity() {
 
         //change the hamburger toggle to a back button whenever the fragment is
         //not the main events fragment
-        mNavController.addOnDestinationChangedListener { controller, destination, arguments ->
+        mNavController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
                 R.id.events_fragment -> {
                     mDrawerToggle.isDrawerIndicatorEnabled = true
@@ -214,6 +221,13 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
+
+        if (isExternalStorageWritable()) setupDirs()
+
+        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.APP_OPEN,
+                Bundle().apply {
+                    putString(FirebaseAnalytics.Param.TERM, "APP OPEN")
+                })
 
         mBinding = DataBindingUtil.setContentView(this@MainActivity,
                 R.layout.activity_main)
@@ -302,14 +316,14 @@ class MainActivity : AppCompatActivity() {
                     }
                     builder.show()
                 }
-                R.id.action_nav_intro -> {
-                    startActivity(Intent(this@MainActivity, IntroActivity::class.java))
-                }
                 R.id.action_nav_summary -> {
                     mNavController.navigate(R.id.global_action_to_summary_fragment)
                 }
                 R.id.action_nav_wishlist_manager -> {
                     mNavController.navigate(R.id.global_action_to_wishlist_manager_fragment)
+                }
+                R.id.action_nav_about -> {
+                    mNavController.navigate(R.id.aboutActivity)
                 }
             }
             mDrawerLayout.closeDrawers()
@@ -319,21 +333,6 @@ class MainActivity : AppCompatActivity() {
         mSnackbar = SnackbarQueue()
 
         mNavController = Navigation.findNavController(this@MainActivity, R.id.nav_fragment)
-
-        //Show Tutorial Fragment for first-time users
-        val pref = PreferenceManager.getDefaultSharedPreferences(this)
-        pref.apply {
-            if (!getBoolean(SettingsFragment.TUTORIAL, false)) {
-                startActivityForResult(Intent(this@MainActivity, IntroActivity::class.java), REQ_FIRST_OPEN)
-            } else if (isExternalStorageWritable()) {
-                setupDirs()
-            }
-        }
-
-        pref.edit().apply {
-            putBoolean(SettingsFragment.TUTORIAL, true)
-            apply()
-        }
 
     }
 
@@ -349,7 +348,7 @@ class MainActivity : AppCompatActivity() {
             fstream.write("eventDbId,eventName,eventValue,femaleObsUnitDbId,maleObsUnitDbId,person,timestamp,experiment".toByteArray())
             fstream.write(lineSeparator?.toByteArray() ?: "\n".toByteArray())
 
-            mEvents.forEachIndexed { i, e ->
+            mEvents.forEachIndexed { _, e ->
                 mGroups.let {
                     for (g in it) {
                         if (e.maleOBsUnitDbId == g.uuid) {

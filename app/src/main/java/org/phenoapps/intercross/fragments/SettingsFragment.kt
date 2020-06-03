@@ -92,7 +92,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             preferenceManager.showDialog(findPreference<EditTextPreference>("org.phenoapps.intercross.PERSON"))
         }
 
-        preferenceManager.sharedPreferences.registerOnSharedPreferenceChangeListener { pref, key ->
+        preferenceManager.sharedPreferences.registerOnSharedPreferenceChangeListener { _, key ->
             val pref = findPreference<Preference>(key)
 
             if (pref is ListPreference) {

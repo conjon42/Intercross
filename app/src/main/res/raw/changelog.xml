@@ -1,0 +1,6 @@
+<changelog>
+    <!-- example with filters in rows -->
+    <release versionCode="100" versionName="v1.0" date="2020-6-3">
+        <new filter="version">First version released.</new>
+    </release>
+</changelog>

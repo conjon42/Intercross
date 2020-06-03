@@ -169,7 +169,7 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
 
         //todo create custom view and override performClick()
-        recyclerView.setOnTouchListener { view, motionEvent ->
+        recyclerView.setOnTouchListener { _, motionEvent ->
             gdc.onTouchEvent(motionEvent)
         }
 
