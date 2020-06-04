@@ -16,6 +16,7 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.databinding.ListItemSimpleRowBinding
 import org.phenoapps.intercross.databinding.ListItemWishlistBinding
+import org.phenoapps.intercross.databinding.ListItemWishlistRowBinding
 import org.phenoapps.intercross.fragments.WishlistFragment
 import org.phenoapps.intercross.util.SnackbarQueue
 import org.phenoapps.intercross.viewmodels.WishlistSummaryViewModel
@@ -32,17 +33,17 @@ class WishlistAdapter(
         return ViewHolder(
                 DataBindingUtil.inflate(
                         LayoutInflater.from(parent.context),
-                        R.layout.list_item_wishlist, parent, false
+                        R.layout.list_item_wishlist_row, parent, false
                 )
         )
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
-        getItem(position).let { s ->
+        getItem(position).let { wishitem ->
             with(holder) {
-                itemView.tag = s
-                bind(s)
+                itemView.tag = wishitem
+                bind(wishitem)
             }
         }
     }
@@ -66,15 +67,29 @@ class WishlistAdapter(
         }
     }
 
+
     inner class ViewHolder(
-            private val binding: ListItemWishlistBinding
+            private val binding: ListItemWishlistRowBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(data: WishlistFragment.WishlistData) {
 
             with(binding) {
-                viewModel = WishlistSummaryViewModel(data)
-                click = View.OnClickListener {
+
+                maleParent = data.m
+                //maleId.text = data.m
+
+                femaleParent = data.f
+                //femaleId.text = data.f
+
+                count = data.count
+                //itemCount.text = data.count
+
+                //viewModel = WishlistSummaryViewModel(data)
+
+
+                //uses inner view holder to create list of crosses used for that wish item
+                onClick = View.OnClickListener {
                     val builder = AlertDialog.Builder(context)
                     builder.setTitle("Crosses")
                     val layout = RecyclerView(context)

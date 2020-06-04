@@ -42,18 +42,18 @@ class AboutActivity : MaterialAboutActivity() {
         authorCardBuilder.addItem(MaterialAboutActionItem.Builder()
                 .text(getString(org.phenoapps.intercross.R.string.about_developer_trife))
                 .subText(getString(org.phenoapps.intercross.R.string.about_developer_trife_location))
-                .icon(org.phenoapps.intercross.R.drawable.ic_nav_drawer_person)
+                .icon(R.drawable.ic_nav_drawer_person)
                 .build())
 
         authorCardBuilder.addItem(ConvenienceBuilder.createEmailItem(context,
-                resources.getDrawable(org.phenoapps.intercross.R.drawable.ic_about_email),
+                resources.getDrawable(R.drawable.ic_about_email, theme),
                 getString(org.phenoapps.intercross.R.string.about_email_title),
                 true,
                 getString(org.phenoapps.intercross.R.string.about_developer_trife_email),
                 "Intercross Question"))
 
         authorCardBuilder.addItem(ConvenienceBuilder.createWebsiteActionItem(context,
-                resources.getDrawable(org.phenoapps.intercross.R.drawable.ic_about_website),
+                resources.getDrawable(R.drawable.ic_about_website, theme),
                 "PhenoApps.org",
                 false,
                 Uri.parse("http://phenoapps.org/")))
@@ -62,7 +62,7 @@ class AboutActivity : MaterialAboutActivity() {
         contributorsCardBuilder.title(getString(org.phenoapps.intercross.R.string.about_contributors_title))
 
         contributorsCardBuilder.addItem(ConvenienceBuilder.createWebsiteActionItem(context,
-                resources.getDrawable(org.phenoapps.intercross.R.drawable.ic_about_contributors),
+                resources.getDrawable(R.drawable.ic_about_contributors, theme),
                 getString(org.phenoapps.intercross.R.string.about_contributors_developers_title),
                 false,
                 Uri.parse("https://github.com/PhenoApps/Field-Book/graphs/contributors")))
@@ -70,13 +70,13 @@ class AboutActivity : MaterialAboutActivity() {
         contributorsCardBuilder.addItem(MaterialAboutActionItem.Builder()
                 .text(getString(org.phenoapps.intercross.R.string.about_translators_title))
                 .subText(getString(org.phenoapps.intercross.R.string.about_translators_text))
-                .icon(org.phenoapps.intercross.R.drawable.ic_about_translators)
+                .icon(R.drawable.ic_about_translators)
                 .build())
 
         contributorsCardBuilder.addItem(MaterialAboutActionItem.Builder()
                 .text(getString(org.phenoapps.intercross.R.string.about_contributors_funding_title))
                 .subText(getString(org.phenoapps.intercross.R.string.about_contributors_funding_text))
-                .icon(org.phenoapps.intercross.R.drawable.ic_about_funding)
+                .icon(R.drawable.ic_about_funding)
                 .build())
 
         val technicalCardBuilder = MaterialAboutCard.Builder()
@@ -84,13 +84,13 @@ class AboutActivity : MaterialAboutActivity() {
 
         technicalCardBuilder.addItem(MaterialAboutActionItem.Builder()
                 .text(org.phenoapps.intercross.R.string.about_github_title)
-                .icon(org.phenoapps.intercross.R.drawable.ic_about_github)
+                .icon(R.drawable.ic_about_github)
                 .setOnClickAction(ConvenienceBuilder.createWebsiteOnClickAction(context, Uri.parse("https://github.com/PhenoApps/Field-Book")))
                 .build())
 
         technicalCardBuilder.addItem(MaterialAboutActionItem.Builder()
                 .text(org.phenoapps.intercross.R.string.libraries_title)
-                .icon(org.phenoapps.intercross.R.drawable.ic_about_libraries)
+                .icon(R.drawable.ic_about_libraries)
                 .setOnClickAction {
                     LibsBuilder()
                             //.withActivityTheme(org.phenoapps.intercross.R.style.AppTheme)

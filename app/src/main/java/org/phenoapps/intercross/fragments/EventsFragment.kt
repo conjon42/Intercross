@@ -17,6 +17,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -61,15 +62,17 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                 .getString(SettingsFragment.ORDER, "0")
         when (order) {
             "0" -> {
-                firstText.hint = "Female ID:"
-                secondText.hint = "Male ID:"
+                firstTextHolder.hint = "Female ID:"
+                secondTextHolder.hint = "Male ID:"
             }
             "1" -> {
-                firstText.hint = "Male ID:"
-                secondText.hint = "Female ID:"
+                firstTextHolder.hint = "Male ID:"
+                secondTextHolder.hint = "Female ID:"
             }
         }
 
+        progressBar.visibility=View.VISIBLE
+        progressBar.isIndeterminate=true
         startObservers()
     }
 
@@ -80,6 +83,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         mAdapter = EventsAdapter(root.context)
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        //adds horizontal dividers between list items, not sure why the parameter is "VERTICAL"
+        recyclerView.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
 
         recyclerView.adapter = mAdapter
 
@@ -347,6 +353,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         mEventsListViewModel.crosses.observe(viewLifecycleOwner, Observer { result ->
             result?.let {
                 mAdapter.submitList(it.reversed())
+                progressBar.visibility=View.INVISIBLE
             }
         })
 

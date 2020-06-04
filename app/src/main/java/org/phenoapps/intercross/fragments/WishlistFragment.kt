@@ -1,6 +1,9 @@
 package org.phenoapps.intercross.fragments
 
+import android.app.Notification
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.WishlistAdapter
@@ -16,11 +19,15 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistManagerBinding>(
 
     override fun FragmentWishlistManagerBinding.afterCreateView() {
 
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        //recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         mAdapter = WishlistAdapter(requireContext())
 
         recyclerView.adapter = mAdapter
+
+        recyclerView.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
+
+        recyclerView.layoutManager = GridLayoutManager(context, 1)
 
         mEventsListViewModel.crosses.observe(viewLifecycleOwner, Observer { events ->
 

@@ -15,7 +15,7 @@
         android:id="@+id/linearLayout3"
         android:layout_width="match_parent"
         android:layout_height="72dp"
-        android:background="@android:drawable/editbox_background_normal"
+        android:background="#FFFFFF"
         android:onClickListener="@{clickListener}">
 
         <ImageView

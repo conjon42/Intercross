@@ -33,6 +33,8 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
     private var mAllSelected: Boolean = true
 
+    //simple gesture listener to detect left and right swipes,
+    //on a detected swipe the viewed gender will change
     private val gestureListener = object : GestureDetector.SimpleOnGestureListener() {
 
         override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
@@ -44,7 +46,7 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
                     if (x in 100.0..1000.0) {
                         if (dx > 0) {
-                            //swip to left
+                            //swipe to left
                             swipeLeft()
                         } else {
                             //swipe right
