@@ -51,9 +51,9 @@ import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
 
-    private val mFirebaseAnalytics by lazy {
-        FirebaseAnalytics.getInstance(this)
-    }
+//    private val mFirebaseAnalytics by lazy {
+//        FirebaseAnalytics.getInstance(this)
+//    }
 
     private lateinit var mSnackbar: SnackbarQueue
 
@@ -224,10 +224,10 @@ class MainActivity : AppCompatActivity() {
 
         if (isExternalStorageWritable()) setupDirs()
 
-        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.APP_OPEN,
-                Bundle().apply {
-                    putString(FirebaseAnalytics.Param.TERM, "APP OPEN")
-                })
+//        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.APP_OPEN,
+//                Bundle().apply {
+//                    putString(FirebaseAnalytics.Param.TERM, "APP OPEN")
+//                })
 
         mBinding = DataBindingUtil.setContentView(this@MainActivity,
                 R.layout.activity_main)
@@ -278,6 +278,9 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.action_nav_pollen_manager -> {
                     mNavController.navigate(MainGraphDirections.globalActionToPollenManagerFragment())
+                }
+                R.id.action_cross_block_manager -> {
+                    mNavController.navigate(MainGraphDirections.globalActionToCrossBlockManager())
                 }
                 R.id.action_nav_import -> {
                     mWishListViewModel.deleteAll()

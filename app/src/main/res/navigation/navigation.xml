@@ -46,6 +46,13 @@
     </fragment>
 
     <fragment
+        android:id="@+id/crossblock_manager"
+        android:name="org.phenoapps.intercross.CrossBlockManager"
+        android:label="Cross Block"
+        tools:layout="@layout/cross_block_manager">
+    </fragment>
+
+    <fragment
         android:id="@+id/event_fragment"
         android:name="org.phenoapps.intercross.fragments.EventFragment"
         android:label="Event"
@@ -124,6 +131,11 @@
         app:destination="@id/settings_fragment"
         app:launchSingleTop="true"
         app:popUpTo="@id/settings_fragment"/>
+    <action
+        android:id="@+id/global_action_to_cross_block_manager"
+        app:destination="@id/crossblock_manager"
+        app:launchSingleTop="true"
+        app:popUpTo="@id/crossblock_manager"/>
     <action
         android:id="@+id/global_action_to_parents_fragment"
         app:destination="@id/parents_fragment"

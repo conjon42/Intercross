@@ -9,6 +9,7 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.WishlistAdapter
 import org.phenoapps.intercross.data.Events
 import org.phenoapps.intercross.databinding.FragmentWishlistManagerBinding
+import org.phenoapps.intercross.databinding.FragmentWorkflowManagerBinding
 
 
 class WishlistFragment : IntercrossBaseFragment<FragmentWishlistManagerBinding>(R.layout.fragment_wishlist_manager) {
@@ -29,11 +30,14 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistManagerBinding>(
 
         recyclerView.layoutManager = GridLayoutManager(context, 1)
 
+
         mEventsListViewModel.crosses.observe(viewLifecycleOwner, Observer { events ->
 
             mWishlistViewModel.wishlist.observe(viewLifecycleOwner, Observer { wishlist ->
 
                 var data = ArrayList<WishlistData>()
+
+                //data.add(0, WishlistData("Male Parent", "Female Parent", "Progress", ArrayList()))
 
                 wishlist.forEach { wish ->
 
