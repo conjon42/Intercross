@@ -3,7 +3,6 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'androidx.navigation.safeargs'
-
 apply plugin: 'com.mikepenz.aboutlibraries.plugin'
 
 android {
@@ -27,9 +26,16 @@ android {
     }
     buildTypes {
         release {
-            /*minifyEnabled true
-            shrinkResources true*/
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), "proguard-rules.pro"
+            debuggable false
+            jniDebuggable false
+            renderscriptDebuggable false
+            //signingConfig playStoreConfig //Add your own signing config
+            pseudoLocalesEnabled false
+            zipAlignEnabled true
+            shrinkResources true
         }
         debug {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -104,7 +110,6 @@ dependencies {
 
 
     //local files
-    implementation files('libs/ZSDK_ANDROID_API.jar')
 
     //firebase
     implementation 'com.google.firebase:firebase-crash:16.2.1'

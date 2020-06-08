@@ -1,1 +1,1 @@
-include ':app', ':ZSDK_ANDROID_API'
+include ':app'

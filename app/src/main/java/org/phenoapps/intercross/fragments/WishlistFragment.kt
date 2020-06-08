@@ -26,7 +26,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistManagerBinding>(
 
         recyclerView.adapter = mAdapter
 
-        recyclerView.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
+        //recyclerView.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
 
         recyclerView.layoutManager = GridLayoutManager(context, 1)
 

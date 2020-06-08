@@ -83,6 +83,11 @@ class WishlistAdapter(
                 //femaleId.text = data.f
 
                 count = data.count
+
+                val tokens = data.count.split("/")
+                if (tokens[0].toInt() >= tokens[1].toInt()) {
+                    completed = true
+                }
                 //itemCount.text = data.count
 
                 //viewModel = WishlistSummaryViewModel(data)

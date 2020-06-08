@@ -12,7 +12,9 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.preference.PreferenceManager
+import android.provider.DocumentsContract
 import android.text.InputType
+import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -22,6 +24,8 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
@@ -77,11 +81,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var mNavController: NavController
 
-    //location to save data
-    private val mDirectory: File by lazy {
-        File(Environment.getExternalStorageDirectory().path + "/Intercross/")
-    }
-
     private fun isExternalStorageWritable(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
@@ -97,22 +96,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupDirs() {
-        if (!mDirectory.isDirectory) mDirectory.mkdirs()
 
-        //will import example csv files (that are stored in the raw folder) into the import folder
-        val importDir = File(mDirectory.path + "/Import")
-        val exportDir = File(mDirectory.path + "/Export")
-        if (!importDir.isDirectory) importDir.mkdirs()
-        if (!exportDir.isDirectory) exportDir.mkdirs()
-        val wishImport = File(importDir.path + "/Wishlist")
-        if (!wishImport.isDirectory) wishImport.mkdirs()
-        val parentImport = File(importDir.path + "/Parents")
-        if (!parentImport.isDirectory) parentImport.mkdirs()
-        val zplImport = File(importDir.path + "/ZPL")
-        if (!zplImport.isDirectory) zplImport.mkdirs()
-        val exampleWish = File(wishImport.path + "/example.csv")
-        val exampleParents = File(parentImport.path + "/example.csv")
-        val exampleZPL = File(zplImport.path + "/example.zpl")
+        //create separate subdirectory foreach type of import
+        val wishlists = File(this@MainActivity.externalCacheDir, "Wishlist")
+        val parents = File(this@MainActivity.externalCacheDir, "Parents")
+        val zpl = File(this@MainActivity.externalCacheDir, "ZPL")
+        wishlists.mkdirs()
+        parents.mkdirs()
+        zpl.mkdirs()
+
+        //create empty files for the examples
+        val exampleWish = File(wishlists, "/wishlist_example.csv")
+        val exampleParents = File(parents, "/parents_example.csv")
+        val exampleZPL = File(zpl, "/zpl_example.zpl")
+
         if (!exampleWish.isFile) {
             val stream = resources.openRawResource(R.raw.wishlist_example)
             exampleWish.writeBytes(stream.readBytes())
@@ -222,7 +219,8 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
 
-        if (isExternalStorageWritable()) setupDirs()
+        //if (isExternalStorageWritable()) setupDirs()
+        setupDirs()
 
 //        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.APP_OPEN,
 //                Bundle().apply {
@@ -285,11 +283,19 @@ class MainActivity : AppCompatActivity() {
                 R.id.action_nav_import -> {
                     mWishListViewModel.deleteAll()
 
-                    val intent = Intent(Intent.ACTION_GET_CONTENT)
-                    val uri = Uri.parse(Environment.getExternalStorageDirectory().path)
-                    intent.setDataAndType(uri, "*/*")
-                    startActivityForResult(Intent.createChooser(intent, "Import Wishlist file."), REQ_FILE_IMPORT)
+                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type="*/*"
+                        flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        putExtra(DocumentsContract.EXTRA_INITIAL_URI,
+                                FileProvider.getUriForFile(this@MainActivity,
+                                "org.phenoapps.intercross.fileprovider",
+                                File(File(this@MainActivity.externalCacheDir, "Wishlist"), "wishlist_example.csv")))
 
+
+                    }
+
+                    startActivityForResult(Intent.createChooser(intent, "Import Wishlist file."), REQ_FILE_IMPORT)
 
                 }
                 R.id.action_nav_export -> {
@@ -343,7 +349,7 @@ class MainActivity : AppCompatActivity() {
         val lineSeparator = System.getProperty("line.separator")
 
         try {
-            val dir = File(mDirectory.path + "/Export/")
+            var dir = this.getDir("Intercross/Export", Context.MODE_PRIVATE)
             dir.mkdir()
             val output = File(dir, filename)
             val fstream = FileOutputStream(output)

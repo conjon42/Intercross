@@ -24,7 +24,8 @@
         android:maxLines="1"
         android:onClickListener="@{onClick}"
         android:text="@{model.parentName}"
-        android:textSize="18sp"
+        android:textSize="12sp"
+        android:background="@drawable/cell"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

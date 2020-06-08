@@ -3,10 +3,13 @@ package org.phenoapps.intercross.fragments
 import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.preference.PreferenceManager
+import android.provider.DocumentsContract
 import android.view.*
+import androidx.core.content.FileProvider
 import androidx.core.view.GestureDetectorCompat
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,6 +25,7 @@ import org.phenoapps.intercross.databinding.FragmentParentsBinding
 import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.FileUtil
+import java.io.File
 import kotlin.math.abs
 
 
@@ -87,20 +91,31 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
     override fun FragmentParentsBinding.afterCreateView() {
 
+        val ctx = requireContext()
+
         mAdapter = ParentsAdapter()
 
         recyclerView.adapter = mAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         importButton.setOnClickListener {
+
             mParentsViewModel.delete(*(mMales + mFemales).toTypedArray())
 
-            val uri = Uri.parse(Environment.getExternalStorageDirectory().path
-                    + "/Intercross/Import/Parents/")
-            startActivityForResult(Intent.createChooser(Intent(Intent.ACTION_GET_CONTENT)
-                    .apply {
-                        setDataAndType(uri, "*/*")
-                    }, "Choose parents to import"), REQ_FILE_IMPORT)
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                type="*/*"
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    putExtra(DocumentsContract.EXTRA_INITIAL_URI,
+                            FileProvider.getUriForFile(ctx,
+                                    "org.phenoapps.intercross.fileprovider",
+                                    File(File(ctx.externalCacheDir, "Parents"), "parents_example.csv")))
+                }
+
+            }
+
+            startActivityForResult(Intent.createChooser(intent, "Import Parents file."), REQ_FILE_IMPORT)
+
         }
 
         tabLayout2.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {

@@ -4,13 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools">
     <data>
         <variable
+            name="completed"
+            type="java.lang.Boolean"/>
+        <variable
             name="maleParent"
-            type="String"
-            />
+            type="String" />
         <variable
             name='femaleParent'
-            type="String"
-            />
+            type="String" />
         <variable
             name='count'
             type='String'/>
@@ -22,61 +23,56 @@
     <LinearLayout
         android:id="@+id/linearLayout3"
         android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:divider="?attr/dividerVertical"
+        android:layout_height="wrap_content"
         android:onClick="@{onClick}">
 
+        <CheckBox
+            android:id="@+id/doneCheckBox"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:clickable="false"
+            android:checked="@{completed}"
+            android:layout_marginTop="8dp"/>
         <TextView
             android:id="@+id/maleId"
-            android:layout_width="100dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="16dp"
-            android:layout_weight="3"
+            android:layout_marginTop="8dp"
+            android:layout_weight="2"
             android:ellipsize="end"
             android:gravity="start"
             android:maxLines="1"
             android:text="@{maleParent}"
             android:textAlignment="viewStart"
-            android:textSize="14sp" />
-
-        <View
-            style="@style/Divider"
-            android:layout_weight="1"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp" />
+            android:textSize="12sp"
+            android:background="@drawable/cell"/>
 
         <TextView
             android:id="@+id/femaleId"
-            android:layout_width="100dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_weight="3"
+            android:layout_marginTop="8dp"
+            android:layout_weight="2"
             android:ellipsize="end"
             android:gravity="start"
             android:maxLines="1"
             android:text="@{femaleParent}"
             android:textAlignment="viewStart"
-            android:textSize="14sp" />
-
-        <View
-            style="@style/Divider"
-            android:layout_weight="1"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp" />
+            android:textSize="12sp"
+            android:background="@drawable/cell"/>
 
         <TextView
             android:id="@+id/numCrosses"
-            android:layout_width="50dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="8dp"
-            android:layout_weight="2"
+            android:layout_marginTop="8dp"
+            android:layout_weight="1"
             android:ellipsize="end"
             android:gravity="end"
             android:maxLines="1"
             android:text="@{count}"
-            android:textSize="14sp" />
+            android:textSize="12sp"
+            android:background="@drawable/cell"/>
 
 
     </LinearLayout>

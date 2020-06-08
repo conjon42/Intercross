@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <external-cache-path
+        name="files"
+        path="."/>
+    <external-cache-path
+        name="wishlist_examples"
+        path="Wishlist/"/>
+    <external-cache-path
+        name="parent_examples"
+        path="Parents/"/>
+    <external-cache-path
+        name="zpl_examples"
+        path="ZPL/"/>
+</paths>

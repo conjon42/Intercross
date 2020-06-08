@@ -10,46 +10,55 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
-
+        android:background="@android:drawable/editbox_dropdown_light_frame"
         android:orientation="vertical">
 
         <LinearLayout
             android:id="@+id/linearLayout3"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:background="@android:drawable/editbox_background_normal"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/recyclerView"
             app:layout_constraintTop_toTopOf="parent">
 
             <TextView
-                android:layout_width="100dp"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_weight="1"
+                android:layout_marginStart="32dp"
+                android:layout_weight="2"
+                android:background="@drawable/cell"
                 android:text="Male Parent"
                 android:textAllCaps="false"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:ellipsize="end"
+                android:maxLines="1"/>
 
             <TextView
-                android:layout_width="100dp"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_weight="1"
+                android:layout_weight="2"
+                android:background="@drawable/cell"
                 android:text="Female Parent"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:ellipsize="end"
+                android:maxLines="1"/>
 
             <TextView
-                android:layout_width="50dp"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="1"
-                android:text="Progress"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:background="@drawable/cell"
+                android:text="Crosses"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:ellipsize="end"
+                android:maxLines="1"/>
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
@@ -57,7 +66,6 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:background="@android:drawable/editbox_background_normal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
