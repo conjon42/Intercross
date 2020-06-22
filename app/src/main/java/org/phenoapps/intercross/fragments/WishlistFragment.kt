@@ -1,62 +1,84 @@
 package org.phenoapps.intercross.fragments
 
-import android.app.Notification
+import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.adapters.WishlistAdapter
-import org.phenoapps.intercross.data.Events
-import org.phenoapps.intercross.databinding.FragmentWishlistManagerBinding
-import org.phenoapps.intercross.databinding.FragmentWorkflowManagerBinding
+import org.phenoapps.intercross.adapters.SummaryAdapter
+import org.phenoapps.intercross.data.WishlistRepository
+import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
+import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
+import org.phenoapps.intercross.databinding.FragmentSummaryBinding
+
+/**
+ * Summary Fragment is a recycler list of currenty crosses.
+ * Users can navigate to and from cross block and wishlist fragments.
+ */
+class WishlistFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.fragment_summary) {
 
 
-class WishlistFragment : IntercrossBaseFragment<FragmentWishlistManagerBinding>(R.layout.fragment_wishlist_manager) {
+    override fun FragmentSummaryBinding.afterCreateView() {
 
-    private lateinit var mAdapter: WishlistAdapter
+        recyclerView.adapter = SummaryAdapter(requireContext())
 
-    data class WishlistData(var m: String, var f: String, var count: String, var event: List<Events>)
+        recyclerView.layoutManager = LinearLayoutManager(context)
 
-    override fun FragmentWishlistManagerBinding.afterCreateView() {
+        val viewModel: WishlistViewModel by viewModels {
+            WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
+        }
 
-        //recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        viewModel.wishlist.observe(viewLifecycleOwner, Observer {
 
-        mAdapter = WishlistAdapter(requireContext())
+            it?.let { crosses ->
 
-        recyclerView.adapter = mAdapter
+                (recyclerView.adapter as SummaryAdapter)
+                        .submitList(crosses.map { res ->
+                            SummaryFragment.WishlistData(res.maleName, res.femaleName,
+                                    res.wishCurrent.toString() + "/" + res.wishMax.toString(), ArrayList())
+                        })
 
-        //recyclerView.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
-
-        recyclerView.layoutManager = GridLayoutManager(context, 1)
-
-
-        mEventsListViewModel.crosses.observe(viewLifecycleOwner, Observer { events ->
-
-            mWishlistViewModel.wishlist.observe(viewLifecycleOwner, Observer { wishlist ->
-
-                var data = ArrayList<WishlistData>()
-
-                //data.add(0, WishlistData("Male Parent", "Female Parent", "Progress", ArrayList()))
-
-                wishlist.forEach { wish ->
-
-                    var current = 0
-                    var crosses = ArrayList<Events>()
-                    events.forEach { event ->
-                        if (event.femaleObsUnitDbId == wish.femaleDbId && event.maleOBsUnitDbId == wish.maleDbId) {
-                            current++
-                            crosses.add(event)
-                        }
-                    }
-                    data.add(WishlistData(wish.maleDbId, wish.femaleDbId, "$current/${wish.wishMax}", crosses))
-                }
-
-                mAdapter.submitList(data)
-
-                mAdapter.notifyDataSetChanged()
-
-            })
+                recyclerView.adapter?.notifyDataSetChanged()
+            }
         })
+    }
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+
+        super.onCreate(savedInstanceState)
+
+        setHasOptionsMenu(true)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+
+        inflater.inflate(R.menu.wishlist_toolbar, menu)
+
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        when(item.itemId) {
+
+            R.id.action_nav_crossblock -> {
+
+                Navigation.findNavController(mBinding.root)
+                        .navigate(WishlistFragmentDirections.actionToCrossblock())
+            }
+
+            R.id.action_nav_summary -> {
+
+                Navigation.findNavController(mBinding.root)
+                        .navigate(WishlistFragmentDirections.actionToSummary())
+            }
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 }

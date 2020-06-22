@@ -2,15 +2,11 @@ package org.phenoapps.intercross.fragments
 
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.preference.PreferenceManager
 import android.provider.DocumentsContract
 import androidx.core.content.FileProvider
-import androidx.core.net.toUri
-import androidx.documentfile.provider.DocumentFile
 import kotlinx.android.synthetic.main.fragment_pattern.*
-import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.databinding.FragmentImportZplBinding
 import org.phenoapps.intercross.util.FileUtil

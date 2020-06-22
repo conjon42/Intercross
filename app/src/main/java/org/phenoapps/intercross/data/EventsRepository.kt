@@ -1,69 +1,41 @@
 package org.phenoapps.intercross.data
 
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.phenoapps.intercross.data.dao.EventsDao
+import org.phenoapps.intercross.data.models.Event
 
-class EventsRepository private constructor(private val eventsDao: EventsDao) {
+class EventsRepository
+    private constructor(private val eventsDao: EventsDao): BaseRepository<Event>(eventsDao) {
 
-    suspend fun createCrossEvent(e: Events) {
-        withContext(IO) {
-            eventsDao.insert(e.apply { eventName = EventName.POLLINATION.itemType })
-            eventsDao.insert(e.apply { eventName = EventName.HARVEST.itemType })
-            eventsDao.insert(e.apply { eventName = EventName.THRESH.itemType })
-        }
-    }
+    fun selectAll() = eventsDao.selectAll()
 
-    suspend fun insert(e: Events) {
-        withContext(IO) {
-            eventsDao.insert(e)
-        }
-    }
+    fun getParentCount() = eventsDao.getParentCount()
 
-    suspend fun updateFlowers(e: Events, x: Int) {
-        withContext(IO) {
-            eventsDao.updateFlower(e.eventDbId, x, e.femaleObsUnitDbId, e.maleOBsUnitDbId)
-        }
-    }
+    fun getParents(eid: Long) = eventsDao.getParents(eid)
 
-    suspend fun updateFruit(e: Events, x: Int) {
-        withContext(IO) {
-            eventsDao.updateFruit(e.eventDbId, x, e.femaleObsUnitDbId, e.maleOBsUnitDbId)
-        }
-    }
+    suspend fun getEvent(eid: Long) = eventsDao.selectById(eid)
 
-    suspend fun updateSeed(e: Events, x: Int) {
-        withContext(IO) {
-            eventsDao.updateSeed(e.eventDbId, x, e.femaleObsUnitDbId, e.maleOBsUnitDbId)
-        }
-    }
+    fun deleteById(eid: Long) {
 
-    suspend fun update(vararg e: Events?) {
-        withContext(IO) {
-            eventsDao.update(*e)
-        }
-    }
+        runBlocking {
 
-    suspend fun delete(e: Events) {
-        withContext(IO) {
-            eventsDao.delete(e.eventDbId)
+            eventsDao.deleteById(eid)
+
         }
     }
 
     suspend fun deleteAll() {
+
         withContext(IO) {
+
             eventsDao.deleteAll()
+
         }
     }
 
-    fun getAll() = eventsDao.getAll()
-
-    fun getCrosses() = eventsDao.getCrosses()
-
-    fun getThresh(e: Events) = eventsDao.getThresh(e.eventDbId)
-
-    fun getHarvest(e: Events) = eventsDao.getHarvest(e.eventDbId)
-
-    fun getPollination(e: Events) = eventsDao.getPollination(e.eventDbId)
+    fun loadCrosses() = eventsDao.selectAllLive()
 
     companion object {
         @Volatile private var instance: EventsRepository? = null

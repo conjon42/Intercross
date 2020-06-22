@@ -1,67 +1,71 @@
 package org.phenoapps.intercross.adapters
 
-import android.graphics.Color
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.data.Parents
-import org.phenoapps.intercross.databinding.ListItemParentsBinding
+import org.phenoapps.intercross.data.models.Parent
+import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
+import org.phenoapps.intercross.databinding.ListItemSelectableParentRowBinding
 
-class ParentsAdapter
-    : ListAdapter<Parents, ParentsAdapter.ViewHolder>(ParentsDiffCallback()) {
+class ParentsAdapter(private val listModel: ParentsListViewModel)
+    : ListAdapter<Parent, ParentsAdapter.ViewHolder>(Parent.Companion.DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+
         return ViewHolder(
+
                 DataBindingUtil.inflate(
                         LayoutInflater.from(parent.context),
-                        R.layout.list_item_parents, parent, false
+                        R.layout.list_item_selectable_parent_row, parent, false
                 )
         )
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
-        getItem(position).let { p ->
+        getItem(position).let { item ->
+
             with(holder) {
-                itemView.tag = p
-                if (p.isSelected) itemView.setBackgroundColor(Color.parseColor("#FBE9E7"))
-                else holder.itemView.setBackgroundColor(Color.WHITE)
-                bind(View.OnClickListener {
-                    p.isSelected = !p.isSelected
-                    if (p.isSelected) itemView.setBackgroundColor(Color.parseColor("#FBE9E7"))
-                    else holder.itemView.setBackgroundColor(Color.WHITE)
-                }, p)
+
+                bind(item)
             }
         }
     }
 
-    class ViewHolder(
-            private val binding: ListItemParentsBinding
-    ) : RecyclerView.ViewHolder(binding.root) {
+    inner class ViewHolder(private val binding: ListItemSelectableParentRowBinding)
+        : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(click: View.OnClickListener, p: Parents) {
+        fun bind(p: Parent) {
 
             with(binding) {
-                model = p
-                onClick = click
+
+                parent = p
+
+//                if (event.type == CrossType.POLY) {
+//
+//                    this.textField.setBackgroundColor(Color.GREEN)
+//
+//                } else {
+//
+//                    this.textField.setBackgroundResource(R.drawable.cell)
+//                }
+
+                doneCheckBox.isChecked = p.selected
+
+                linearLayout3.setOnClickListener {
+
+                    doneCheckBox.isChecked=!doneCheckBox.isChecked
+
+                    listModel.update(p.apply {
+                        selected = doneCheckBox.isChecked
+                    })
+                }
+
                 executePendingBindings()
             }
         }
-    }
-}
-
-private class ParentsDiffCallback : DiffUtil.ItemCallback<Parents>() {
-
-    override fun areItemsTheSame(oldItem: Parents, newItem: Parents): Boolean {
-        return oldItem.parentDbId == newItem.parentDbId
-    }
-
-    override fun areContentsTheSame(oldItem: Parents, newItem: Parents): Boolean {
-        return oldItem.parentDbId == newItem.parentDbId
     }
 }

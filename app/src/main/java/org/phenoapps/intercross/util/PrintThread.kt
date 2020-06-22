@@ -9,18 +9,18 @@ import com.zebra.sdk.comm.ConnectionException
 import com.zebra.sdk.printer.SGD
 import com.zebra.sdk.printer.ZebraPrinterFactory
 import com.zebra.sdk.printer.ZebraPrinterLanguageUnknownException
-import org.phenoapps.intercross.data.Events
-import org.phenoapps.intercross.data.PollenGroup
+import org.phenoapps.intercross.data.models.Event
+import org.phenoapps.intercross.data.models.PollenGroup
 
 
 class PrintThread(private val ctx: Context, private val template: String,
                   private val btName: String) : Thread() {
 
-    var mMode = 0
-    lateinit var mEvents: Array<Events>
-    lateinit var mGroup: PollenGroup
+    private var mMode = 0
+    private lateinit var mEvents: Array<Event>
+    private lateinit var mGroup: PollenGroup
 
-    fun printEvents(events: Array<Events>) {
+    fun printEvents(events: Array<Event>) {
         mEvents = events
         mMode = 0
         start()
@@ -52,7 +52,7 @@ class PrintThread(private val ctx: Context, private val template: String,
                     bc.open()
                     val printer = ZebraPrinterFactory.getInstance(bc)
                     val linkOsPrinter = ZebraPrinterFactory.createLinkOsPrinter(printer)
-                    linkOsPrinter?.let {
+                    linkOsPrinter?.let { it ->
                         val printerStatus = it.currentStatus
                         getPrinterStatus(bc)
                         //println((it.allSettings["head.resolution.in_dpi"] as Setting).value)
@@ -75,10 +75,10 @@ class PrintThread(private val ctx: Context, private val template: String,
                                     if (template.isNotBlank()) {
                                         printer.sendCommand(template)
                                     }
-                                    printer.sendCommand("^XA^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF" +
-                                            "^FN1^FD${mGroup.name}^FS" +
-                                            "^FN2^FDQA,${mGroup.uuid}^FS" +
-                                            "^FN3^FD${mGroup.uuid}^FS^XZ")
+//                                    printer.sendCommand("^XA^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF" +
+//                                            "^FN1^FD${mGroup.name}^FS" +
+//                                            "^FN2^FDQA,${mGroup.uuid}^FS" +
+//                                            "^FN3^FD${mGroup.uuid}^FS^XZ")
                                 }
                             }
 

@@ -9,35 +9,83 @@
     <string name="start_from">Starts From</string>
     <string name="auto">Auto</string>
     <string name="pad_length">pad length</string>
-    <string name="test00000test">test00000test</string>
-    <string name="create_a_pattern_for_your_auto_generated_cross_names">Create a pattern for your auto generated ids.</string>
     <string name="number">number</string>
     <string name="suffix">suffix</string>
     <string name="prefix">prefix</string>
 
     <!-- About dialog -->
-    <string name="about_title">About</string>
-    <string name="about_version_title">Version</string>
-    <string name="about_title_other_apps">Other PhenoApps</string>
     <string name="about_project_lead_title">Project Lead</string>
-    <string name="about_developer_title">Developer</string>
     <string name="about_developer_trife" translatable="false">Trevor Rife</string>
     <string name="about_developer_trife_location" translatable="false">Kansas State University</string>
     <string name="about_developer_trife_email" translatable="false">trife@ksu.edu</string>
     <string name="about_email_title">Email</string>
-    <string name="about_developer_trife_website" translatable="false">https://github.com/PhenoApps/Field-Book</string>
     <string name="about_contributors_title">Contributors</string>
     <string name="about_contributors_developers_title">Developers</string>
     <string name="about_translators_title">Translators</string>
     <string name="about_translators_text" translatable="false">Irazema Fuentes-Bueno,  Sandra Dunckel,  Shuangye Wu,  Narinder Singh,  Daljit Singh,  Erena Edae,  Tatiana Danilova,  Rodrigo Pedrozo,  Cristiano Lemes da Silva,  Sophie Bouchet,  Hiroyoshi Iwata,  Goro Ishikawa,  Khaled El-Shamaa, Mokhlesur Rahman, Alice Brunazzi</string>
     <string name="about_contributors_funding_title">Funding</string>
     <string name="about_contributors_funding_text" translatable="false">Development of Field Book has been supported by the Collaborative Crop Research Program of The McKnight Foundation, the National Science Foundation (#1543958), and the National Institute of Food and Agriculture (#2019-67021-29931).</string>
-    <string name="about_rate">Rate this app</string>
     <string name="about_technical_title">Technical Details</string>
     <string name="about_github_title">GitHub</string>
-    <string name="about_licenses_title">Licenses</string>
-    <string name="about_help_translate_title">Help translate</string>
     <string name="changelog_title">Changelog</string>
     <string name="libraries_title">Libraries</string>
+    <string name="parents">Parents</string>
+    <string name="metaData">Meta Data</string>
+    <string name="Seeds">Seeds</string>
+    <string name="Fruits">Fruits</string>
+    <string name="Flowers">Flowers</string>
+    <string name="ParentNavigation">Parental Navigation</string>
+    <string name="UpdateMetaData">Update Meta Data</string>
+    <string name="navigate_to_wishlist">Navigate to wishlist</string>
+    <string name="navigate_to_crossblock">Navigate to crossblock</string>
+    <string name="Clear">Clear</string>
+    <string name="New">New</string>
+    <string name="SelectAllRows">Select all rows</string>
+    <string name="Name">Name</string>
+    <string name="Code">Code</string>
+    <string name="CreateMaleGroup">Create Male Group</string>
+    <string name="PotentialMales">Potential Males</string>
+    <string name="ErrorCodeExists">Code Exists</string>
+    <string name="FemaleID">FemaleID</string>
+    <string name="MaleID">Male ID:</string>
+    <string name="search_with_barcode_scanner">Search with barcode scanner.</string>
+    <string name="continuous_scan_and_submit">Continuous scan and submit.</string>
+    <string name="test">TEST</string>
+    <string name="import_a_zpl_file">Import a ZPL file</string>
+    <string name="zpl_default">^XA ^DFR:SAMPLE.GRF^FS ^FO100,75^A0,25,20^FN1^FS ^FO200,75^A0N,25,20^BQN,2,6^FDQA,^FN2^FS ^FO450,75^A0,25,20^FN3^FS ^XZ</string>
+    <string name="zpl_parameter_instructions">FN1-4 are used to pass data. 1 is the text cross id, 2 is a barcode, 3 is the date, 4 is the person</string>
+    <string name="import_zpl">Import ZPL</string>
+    <string name="female">Female</string>
+    <string name="male">Male</string>
+    <string name="delete">Delete</string>
+    <string name="print">Print</string>
+    <string name="none">None</string>
+    <string name="pattern">Pattern</string>
+    <string name="uuid">UUID</string>
+    <string name="male_parent">Male Parent</string>
+    <string name="female_parent">Female Parent</string>
+    <string name="crosses">Crosses</string>
+    <string name="import_file">Import</string>
+
+    <!-- Parents Input File Header's
+        Warning: parents_header_code_id and parents_header_readable_name
+            must not match wishlist_header_type-->
+    <string name="parents_header_code_id">codeId</string>
+    <string name="parents_header_readable_name">name</string>
+    <string name="parents_header_sex">sex</string>
+
+    <!-- Wishlist Input File Header's -->
+    <string name="wishlist_header_female_id">femaleDbId</string>
+    <string name="wishlist_header_male_id">maleDbId</string>
+    <string name="wishlist_header_female_name">femaleName</string>
+    <string name="wishlist_header_male_name">maleName</string>
+    <string name="wishlist_header_type">wishType</string>
+    <string name="wishlist_header_min">wishMin</string>
+    <string name="wishlist_header_max">wishMax</string>
+
+    <string name="parental_navigation">Parental Navigation</string>
+    <string name="parents_dont_exist">Parents do not exist in the DB</string>
+    <string name="navigate_to_summary">Navigate to summary</string>
+    <string name="add_individual_parent">Add Parent</string>
 
 </resources>

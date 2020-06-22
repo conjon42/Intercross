@@ -1,6 +1,5 @@
 package org.phenoapps.intercross.fragments
 
-//import org.phenoapps.intercross.synthetics.AutoPreferenceFragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,120 +10,47 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
-import org.phenoapps.intercross.data.*
+import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.util.SnackbarQueue
-import org.phenoapps.intercross.viewmodels.*
 
-
-//base fragment class that loads all db viewmodels
-abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId: Int) : Fragment() {
-
-    lateinit var mEventsListViewModel: EventsListViewModel
-    lateinit var mSettingsViewModel: SettingsViewModel
-    lateinit var mWishlistViewModel: WishlistViewModel
-    lateinit var mParentsViewModel: ParentsViewModel
-    lateinit var mPollenManagerViewModel: PollenGroupViewModel
-
-    lateinit var mSharedViewModel: CrossSharedViewModel
+abstract class IntercrossBaseFragment<T : ViewDataBinding>(
+        private val layoutId: Int) : Fragment() {
 
     lateinit var mSnackbar: SnackbarQueue
 
-    lateinit var mBinding: T
+    protected lateinit var mBinding: T
 
-    var mSettings = Settings()
-
-    //lateinit var mAdapter: ListAdapter<*,*>
+    val db by lazy {
+        IntercrossDatabase.getInstance(requireContext())
+    }
 
     abstract fun T.afterCreateView()
-
-    /*infix fun <VH : RecyclerView.ViewHolder> RecyclerView.lists(adapter: ListAdapter<*,VH>) {
-
-        //mAdapter = adapter
-        this.layoutManager = LinearLayoutManager(requireContext())
-        this.adapter = adapter
-    }*/
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         val contextThemeWrapper = ContextThemeWrapper(activity, org.phenoapps.intercross.R.style.AppTheme)
+
         val localInflater = inflater.cloneInContext(contextThemeWrapper)
 
-        mBinding = DataBindingUtil.inflate<T>(localInflater, layoutId, container, false)
+        mBinding = DataBindingUtil.inflate(localInflater, layoutId, container, false)
 
         return with(mBinding) {
+
             afterCreateView()
+
             root
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        mBinding.unbind()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val db = IntercrossDatabase.getInstance(requireContext())
-
-        activity?.run {
-            with(ViewModelProviders.of(this)) {
-                mSharedViewModel = this.get(CrossSharedViewModel::class.java)
-            }
-        }
-
-        mParentsViewModel = ViewModelProviders.of(this,
-                object : ViewModelProvider.NewInstanceFactory() {
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return ParentsViewModel(ParentsRepository.getInstance(
-                                db.parentsDao())) as T
-
-                    }
-                }).get(ParentsViewModel::class.java)
-
-        mSettingsViewModel = ViewModelProviders.of(this,
-                object : ViewModelProvider.NewInstanceFactory() {
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return SettingsViewModel(SettingsRepository.getInstance(
-                                db.settingsDao())) as T
-
-                    }
-                }).get(SettingsViewModel::class.java)
-
-        mWishlistViewModel = ViewModelProviders.of(this,
-                object : ViewModelProvider.NewInstanceFactory() {
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return WishlistViewModel(WishlistRepository.getInstance(
-                                db.wishlistDao())) as T
-
-                    }
-                }).get(WishlistViewModel::class.java)
-
-        mEventsListViewModel = ViewModelProviders.of(this,
-                object : ViewModelProvider.NewInstanceFactory() {
-
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return EventsListViewModel(EventsRepository.getInstance(
-                                    db.eventsDao())) as T
-
-                    }
-                }
-        ).get(EventsListViewModel::class.java)
-
-        mPollenManagerViewModel = ViewModelProviders.of(this,
-                object : ViewModelProvider.NewInstanceFactory() {
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return PollenGroupViewModel(PollenGroupRepository.getInstance(
-                                db.pollenGroupDao())) as T
-
-                    }
-                }).get(PollenGroupViewModel::class.java)
-
         mSnackbar = SnackbarQueue()
-
     }
 
     fun closeKeyboard() {
@@ -133,5 +59,4 @@ abstract class IntercrossBaseFragment<T : ViewDataBinding>(private val layoutId:
             imm.hideSoftInputFromWindow(it.currentFocus?.windowToken, 0)
         }
     }
-
 }

@@ -6,9 +6,8 @@ import android.content.Context
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import androidx.appcompat.app.AlertDialog
-import androidx.preference.PreferenceManager
-import org.phenoapps.intercross.data.Events
-import org.phenoapps.intercross.data.PollenGroup
+import org.phenoapps.intercross.data.models.Event
+import org.phenoapps.intercross.data.models.PollenGroup
 
 
 //Bluetooth Utility class for printing ZPL code and choosing bluetooth devices to print from.
@@ -86,7 +85,7 @@ class BluetoothUtil {
 
         } else f()
     }
-    var template = "^XA^MNA^MMT,N" +
+    private var template = "^XA^MNA^MMT,N" +
             "^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS" +
             "^FWR" +
             "^FO50,25^A0,20,20^FB200,4,,c,^FN1^FS" +
@@ -111,7 +110,7 @@ class BluetoothUtil {
         ^XZ"
     """*/
 
-    fun print(ctx: Context, events: Array<Events>) {
+    fun print(ctx: Context, events: Array<Event>) {
         choose(ctx) {
             PrintThread(ctx, template, mBtName).printEvents(events)
         }
@@ -123,10 +122,4 @@ class BluetoothUtil {
         }
     }
 
-    fun templatePrint(ctx: Context, events: Array<Events>) {
-        choose(ctx) {
-            val pref = PreferenceManager.getDefaultSharedPreferences(ctx)
-            PrintThread(ctx, pref.getString("ZPL_CODE", template) ?: template, mBtName).printEvents(events)
-        }
-    }
 }

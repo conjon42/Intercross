@@ -1,30 +1,12 @@
 package org.phenoapps.intercross.data
 
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.withContext
+import org.phenoapps.intercross.data.dao.SettingsDao
+import org.phenoapps.intercross.data.models.Settings
 
 class SettingsRepository private constructor(
-        private val settingsDao: SettingsDao
-) {
-    suspend fun createSettings(s: Settings) {
-        withContext(IO) {
-            settingsDao.insert(s.apply { id = 0 })
-        }
-    }
+        private val settingsDao: SettingsDao): BaseRepository<Settings>(settingsDao) {
 
-    suspend fun update(s: Settings) {
-        withContext(IO) {
-            settingsDao.update(s)
-        }
-    }
-
-    suspend fun delete(vararg e: Settings?) {
-        withContext(IO) {
-            settingsDao.delete(*e)
-        }
-    }
-
-    fun getSettings() = settingsDao.getSettings(0)
+    suspend fun getSettings() = settingsDao.getSettings()
 
     companion object {
         @Volatile private var instance: SettingsRepository? = null

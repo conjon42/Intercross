@@ -3,6 +3,19 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <data>
+        <variable
+            name="firstHint"
+            type="String" />
+        <variable
+            name="secondHint"
+            type="String"/>
+        <variable
+            name="settings"
+            type="org.phenoapps.intercross.data.models.Settings" />
+    </data>
+
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraint_layout_parent"
         android:layout_width="match_parent"
@@ -15,17 +28,20 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
-            android:background="@android:drawable/editbox_background_normal"
+            android:background="@drawable/cell"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/progressBar">
+            app:layout_constraintTop_toTopOf="parent">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/firstTextHolder"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                app:hint="@{firstHint}"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
@@ -44,6 +60,7 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:hint="@{secondHint}"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/firstTextHolder">
 
@@ -72,9 +89,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:ems="10"
+                    android:hint="@string/cross_id"
                     android:imeOptions="actionDone"
                     android:inputType="text"
-                    android:visibility="visible" />
+                    android:visibility="visible"
+                    app:setCrossId="@{settings}" />
+
             </com.google.android.material.textfield.TextInputLayout>
 
             <androidx.appcompat.widget.AppCompatButton
@@ -83,9 +103,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="9dp"
+                android:layout_marginBottom="8dp"
                 android:layout_weight="2"
                 android:background="@drawable/button_clear"
-                android:text="Clear"
+                android:text="@string/Clear"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/crossTextHolder" />
 
@@ -96,10 +118,12 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
+                android:layout_marginBottom="8dp"
                 android:layout_weight="3"
                 android:background="@drawable/button_save_empty"
                 android:text="@string/save_text"
                 android:textColor="#000000"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/clearButton"
                 app:layout_constraintTop_toBottomOf="@+id/crossTextHolder" />
@@ -111,8 +135,8 @@
             android:layout_height="0dp"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
-            android:background="@android:drawable/editbox_background_normal"
-            app:layout_constraintBottom_toTopOf="@+id/button"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/constraintLayout2">
@@ -121,49 +145,34 @@
                 android:id="@+id/recyclerView"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/list_item_events" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <ImageButton
             android:id="@+id/button"
             android:layout_width="64dp"
             android:layout_height="64dp"
-            android:layout_marginStart="10dp"
             android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
             android:adjustViewBounds="false"
+            android:layout_margin="16dp"
             android:background="@drawable/capture_button_background"
             android:cropToPadding="false"
             android:elevation="5dp"
             android:scaleType="fitCenter"
             android:tint="#ffffff"
-            app:layout_constraintBottom_toBottomOf="@+id/bottomAppBar"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.498"
-            app:layout_constraintStart_toStartOf="parent"
-            app:srcCompat="@drawable/ic_barcode_scan" />
-
-        <org.phenoapps.intercross.views.CurvedBottomNavigationView
-            android:id="@+id/bottomAppBar"
-            style="@style/Widget.MaterialComponents.BottomAppBar.Colored"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <ProgressBar
-            android:id="@+id/progressBar"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:srcCompat="@drawable/ic_barcode_scan" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 </layout>

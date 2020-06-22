@@ -1,102 +1,96 @@
 package org.phenoapps.intercross.fragments
 
-import androidx.appcompat.app.AlertDialog
+import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.navigation.fragment.findNavController
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.SummaryAdapter
-import org.phenoapps.intercross.data.Events
+import org.phenoapps.intercross.data.EventsRepository
+import org.phenoapps.intercross.data.models.Event
+import org.phenoapps.intercross.data.viewmodels.EventListViewModel
+import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentSummaryBinding
 
-
+/**
+ * Summary Fragment is a recycler list of currenty crosses.
+ * Users can navigate to and from cross block and wishlist fragments.
+ */
 class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.fragment_summary) {
 
-    private lateinit var mAdapter: SummaryAdapter
+    /**
+     * Polymorphism setup to allow adapter to work with two different types of objects.
+     * Wishlists and Summary data are the same but they have to be rendered differently.
+     */
+    open class ListEntry(open var m: String, open var f: String, open var count: String, open var events: List<Event>)
 
-    data class SummaryData(var m: String, var f: String, var count: Int, var event: List<Events>)
+    data class WishlistData(override var m: String, override var f: String, override var count: String, override var events: List<Event>):
+            ListEntry(m, f, count, events)
+
+    data class CrossData(override var m: String, override var f: String, override var count: String, override var events: List<Event>):
+            ListEntry(m, f, count, events)
+
 
     override fun FragmentSummaryBinding.afterCreateView() {
 
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        recyclerView.adapter = SummaryAdapter(requireContext())
 
-        mAdapter = SummaryAdapter(requireContext())
+        recyclerView.layoutManager = LinearLayoutManager(context)
 
-        recyclerView.adapter = mAdapter
-
-        //deletes all entries from the database
-        //two nested alert dialogs to ask user
-        deleteButton.setOnClickListener {
-
-            val builder = AlertDialog.Builder(requireContext()).apply {
-
-                setNegativeButton("Cancel") { _, _ -> }
-
-                setPositiveButton("OK") { _, _ ->
-
-                    val builder = AlertDialog.Builder(requireContext()).apply {
-
-                        setNegativeButton("Cancel") { _, _ -> }
-
-                        setPositiveButton("Yes") { _, _ ->
-                            mEventsListViewModel.deleteAll()
-                            findNavController().navigate(R.id.events_fragment)
-                        }
-                    }
-
-                    builder.setTitle("Are you sure?")
-                    builder.show()
-                }
-            }
-
-            builder.setTitle("This will delete all entries from the database.")
-            builder.show()
+        val viewModel: EventListViewModel by viewModels {
+            EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
         }
 
-        mEventsListViewModel.crosses.observe(viewLifecycleOwner, Observer { events ->
+        viewModel.parents.observe(viewLifecycleOwner, Observer {
 
-            events.let {
+            it?.let { crosses ->
 
-                val parents = HashMap<Pair<String,String>, ArrayList<Events>>()
+                (recyclerView.adapter as SummaryAdapter)
+                        .submitList(crosses.map { res ->
+                            CrossData(res.dad, res.mom, res.count.toString(), ArrayList())
+                        })
 
-                it.forEach { x ->
-
-                    val female = x.femaleObsUnitDbId
-                    val male = x.maleOBsUnitDbId
-
-                    parents[Pair(female,male)] = ArrayList<Events>().also { list ->
-                        list.add(x)
-                    }
-
-                    (it - x).forEach { y ->
-
-                        val yf = y.femaleObsUnitDbId
-                        val ym = y.maleOBsUnitDbId
-                        val key = Pair(yf,ym)
-                        if (key in parents.keys) {
-                            parents[key]?.let { children ->
-                                if (y !in children) children.add(y)
-                            }
-                        }
-                    }
-                }
-
-                var summaryList = ArrayList<SummaryData>()
-
-                for ((p,c) in parents) {
-                    summaryList.add(SummaryData(p.first, p.second,
-                            c.size, c))
-                }
-
-
-                mAdapter.submitList(
-                        summaryList.distinctBy { "${it.f}/${it.m}" }
-                )
-
-                mAdapter.notifyDataSetChanged()
+                recyclerView.adapter?.notifyDataSetChanged()
             }
         })
     }
 
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+
+        super.onCreate(savedInstanceState)
+
+        setHasOptionsMenu(true)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+
+        inflater.inflate(R.menu.summary_toolbar, menu)
+
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        when(item.itemId) {
+
+            R.id.action_nav_crossblock -> {
+
+                Navigation.findNavController(mBinding.root)
+                        .navigate(SummaryFragmentDirections.actionToCrossblock())
+            }
+
+            R.id.action_nav_wishlist -> {
+
+                Navigation.findNavController(mBinding.root)
+                        .navigate(SummaryFragmentDirections.actionToWishlist())
+            }
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
 }

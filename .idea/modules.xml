@@ -2,13 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Intercross.iml" filepath="$PROJECT_DIR$/Intercross.iml" />
-      <module fileurl="file://$PROJECT_DIR$/StudioProjects-Intercross.iml" filepath="$PROJECT_DIR$/StudioProjects-Intercross.iml" group="Intercross" />
-      <module fileurl="file://$PROJECT_DIR$/ZSDK_ANDROID_API/ZSDK_ANDROID_API.iml" filepath="$PROJECT_DIR$/ZSDK_ANDROID_API/ZSDK_ANDROID_API.iml" group="Intercross/ZSDK_ANDROID_API" />
-      <module fileurl="file://$PROJECT_DIR$/androidlibrary-release/androidlibrary-release.iml" filepath="$PROJECT_DIR$/androidlibrary-release/androidlibrary-release.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="Intercross/app" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/chaneylc-StudioProjects-Intercross.iml" filepath="$PROJECT_DIR$/.idea/modules/chaneylc-StudioProjects-Intercross.iml" group="Intercross" />
-      <module fileurl="file://$PROJECT_DIR$/javalib/javalib.iml" filepath="$PROJECT_DIR$/javalib/javalib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Intercross.iml" filepath="$PROJECT_DIR$/.idea/modules/Intercross.iml" group="Intercross" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/app.iml" group="Intercross/app" />
     </modules>
   </component>
 </project>

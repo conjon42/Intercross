@@ -1,31 +1,14 @@
 package org.phenoapps.intercross.data
 
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.withContext
+import org.phenoapps.intercross.data.dao.ParentsDao
+import org.phenoapps.intercross.data.models.Parent
 
 class ParentsRepository private constructor(
-        private val parentsDao: ParentsDao
-) {
-    suspend fun createParents(parentDbId: String, parentName: String,
-                            parentType: String, order: String) {
-        withContext(IO) {
-            parentsDao.insert(Parents(parentDbId, parentName, parentType, order))
-        }
-    }
+        private val parentsDao: ParentsDao): BaseRepository<Parent>(parentsDao) {
 
-    suspend fun update(vararg p: Parents?) {
-        withContext(IO) {
-            parentsDao.update(*p)
-        }
-    }
+    fun selectAll() = parentsDao.selectAll()
 
-    suspend fun delete(vararg p: Parents?) {
-        withContext(IO) {
-            parentsDao.delete(*p)
-        }
-    }
-
-    fun getAll() = parentsDao.getAll()
+    fun selectAll(sex: Int) = parentsDao.selectAll(sex)
 
     companion object {
         @Volatile private var instance: ParentsRepository? = null

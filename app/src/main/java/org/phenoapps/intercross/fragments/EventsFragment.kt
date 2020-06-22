@@ -1,54 +1,164 @@
 package org.phenoapps.intercross.fragments
 
+import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.preference.PreferenceManager
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.OnLifecycleEvent
-import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.android.synthetic.main.fragment_events.*
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
-import org.phenoapps.intercross.data.EventName
-import org.phenoapps.intercross.data.Events
-import org.phenoapps.intercross.data.PollenGroup
-import org.phenoapps.intercross.data.Wishlist
+import org.phenoapps.intercross.data.EventsRepository
+import org.phenoapps.intercross.data.SettingsRepository
+import org.phenoapps.intercross.data.WishlistRepository
+import org.phenoapps.intercross.data.models.Event
+import org.phenoapps.intercross.data.models.Settings
+import org.phenoapps.intercross.data.models.Wishlist
+import org.phenoapps.intercross.data.viewmodels.CrossSharedViewModel
+import org.phenoapps.intercross.data.viewmodels.EventListViewModel
+import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
+import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
+import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
 import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.util.SnackbarQueue
 import java.util.*
 
-class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fragment_events), LifecycleObserver {
+class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fragment_events) {
 
-    private lateinit var mAdapter: EventsAdapter
+    private val viewModel: EventListViewModel by viewModels {
+        EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
+    }
+
+    private val settingsModel: SettingsViewModel by viewModels {
+        SettingsViewModelFactory(SettingsRepository.getInstance(db.settingsDao()))
+    }
+
+    private var mSettings: Settings = Settings()
+
+    private val mAdapter: EventsAdapter = EventsAdapter()
+
+    private lateinit var mWishlistStore: WishlistViewModel
+    private lateinit var mSharedViewModel: CrossSharedViewModel
 
     private lateinit var mWishlist: List<Wishlist>
-    private lateinit var mGroups: List<PollenGroup>
 
-    private lateinit var mFocused: View
+    private fun getFirstOrder(context: Context): String {
 
-    private var mLastOpened: Long = 0L
+        val order = PreferenceManager.getDefaultSharedPreferences(context)
+                .getString(SettingsFragment.ORDER, "0")
+
+        return when (order) {
+
+            "0" -> context.getString(R.string.FemaleID)
+
+            else -> context.getString(R.string.MaleID)
+
+        }
+    }
+
+    private fun getSecondOrder(context: Context): String {
+
+        val order = PreferenceManager.getDefaultSharedPreferences(context)
+                .getString(SettingsFragment.ORDER, "0")
+
+        return when (order) {
+
+            "1" -> context.getString(R.string.FemaleID)
+
+            else -> context.getString(R.string.MaleID)
+
+        }
+    }
 
     override fun FragmentEventsBinding.afterCreateView() {
 
+        recyclerView.adapter = EventsAdapter()
+
+        recyclerView.layoutManager = LinearLayoutManager(context)
+
+        mWishlistStore = WishlistViewModel(WishlistRepository.getInstance(db.wishlistDao()))
+
+        mSharedViewModel = CrossSharedViewModel()
+
+        firstHint = getFirstOrder(requireContext())
+
+        secondHint = getSecondOrder(requireContext())
+
+        viewModel.events.observe(viewLifecycleOwner, Observer {
+
+            it?.let {
+
+                (recyclerView.adapter as? EventsAdapter)?.submitList(it)
+
+                recyclerView.adapter?.notifyDataSetChanged()
+            }
+        })
+
+        settingsModel.settings.observeForever {
+
+            it?.let {
+
+                mSettings = it
+
+                mBinding.settings = it
+
+            }
+        }
+
+        mWishlistStore.wishlist.observe(viewLifecycleOwner, Observer {
+
+            mWishlist = it
+        })
+
+        mSharedViewModel.lastScan.observe(viewLifecycleOwner, Observer {
+
+            it?.let {
+
+                if (it.isNotEmpty()) {
+
+                    if ((firstText.text ?: "").isEmpty()) firstText.setText(it)
+                    else if ((secondText.text ?: "").isEmpty()) {
+
+                        secondText.setText(it)
+                        if ((mSettings.isPattern || mSettings.isUUID)) askUserNewExperimentName()
+
+                    }
+                    else if ((editTextCross.text ?: "").isEmpty()) {
+
+                        editTextCross.setText(it)
+                        askUserNewExperimentName()
+
+                    }
+
+                    mSharedViewModel.lastScan.value = ""
+                }
+            }
+        })
+
+        executePendingBindings()
+
         activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
 
-        ProcessLifecycleOwner.get().lifecycle.addObserver(this@EventsFragment)
+        setupUI()
+
+    }
+
+    private fun FragmentEventsBinding.setupUI() {
 
         setupRecyclerView()
 
@@ -58,37 +168,14 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         setHasOptionsMenu(true)
 
-        val order = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getString(SettingsFragment.ORDER, "0")
-        when (order) {
-            "0" -> {
-                firstTextHolder.hint = "Female ID:"
-                secondTextHolder.hint = "Male ID:"
-            }
-            "1" -> {
-                firstTextHolder.hint = "Male ID:"
-                secondTextHolder.hint = "Female ID:"
-            }
-        }
-
-        progressBar.visibility=View.VISIBLE
-        progressBar.isIndeterminate=true
-        startObservers()
     }
 
     private fun FragmentEventsBinding.setupRecyclerView() {
 
-        //recyclerView lists EventsAdapter(requireContext())
+        //setup recycler adapter
+        recyclerView.adapter = EventsAdapter()
 
-        mAdapter = EventsAdapter(root.context)
-
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-
-        //adds horizontal dividers between list items, not sure why the parameter is "VERTICAL"
-        recyclerView.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
-
-        recyclerView.adapter = mAdapter
-
+        //setup on item swipe to delete
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
 
             override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
@@ -97,24 +184,58 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
 
-                val event = mAdapter.currentList[viewHolder.adapterPosition]
-                mEventsListViewModel.delete(event)
-                mSnackbar.push(SnackbarQueue.SnackJob(root, "${event.eventDbId}", "Undo") {
-                    submitCrossEvent(event.apply { id = null })
-                })
+                (recyclerView.adapter as EventsAdapter)
+                        .currentList[viewHolder.adapterPosition].also { event ->
 
+                    event.id?.let {
+
+                        viewModel.deleteById(eid = it)
+
+                        mSnackbar.push(SnackbarQueue.SnackJob(root, event.readableName, "Undo") {
+
+                            submitCrossEvent(event.apply { id = null })
+                        })
+                    }
+
+
+                }
             }
         }).attachToRecyclerView(recyclerView)
     }
 
-    private fun submitCrossEvent(e: Events) {
-        mGroups.let {
-            val groups = it.map { it.uuid }
-            if (e.maleOBsUnitDbId in groups) {
-                e.isPoly = true
+    private fun submitCrossEvent(e: Event) {
+
+//        mGroups.let { it ->
+//            val groups = it.map { it.uuid }
+//            if (e.maleObsUnitDbId in groups) {
+//                e.isPoly = true
+//            }
+//        }
+
+        viewModel.insert(e)
+
+    }
+
+    private fun resetDataEntry() {
+
+        firstText.setText("")
+
+        secondText.setText("")
+
+        editTextCross.setText("")
+
+        when {
+
+            mSettings.isPattern -> {
+
+                editTextCross.setText(mSettings.pattern)
+            }
+
+            mSettings.isUUID -> {
+
+                editTextCross.setText(UUID.randomUUID().toString())
             }
         }
-        mEventsListViewModel.addCrossEvent(e)
     }
 
     private fun FragmentEventsBinding.setupTextInput() {
@@ -127,6 +248,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             }
 
             override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
+
                 saveButton.isEnabled = isInputValid()
             }
 
@@ -136,7 +258,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         }
 
         val focusListener = View.OnFocusChangeListener { v, hasFocus ->
-            if (hasFocus) mFocused = v
+            //if (hasFocus) mFocused = v
             if (hasFocus && (PreferenceManager.getDefaultSharedPreferences(requireContext())
                             .getString("org.phenoapps.intercross.PERSON", "") ?: "").isBlank()) {
                 askUserForPerson()
@@ -192,21 +314,20 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                             .getString("org.phenoapps.intercross.PERSON", "") ?: "").isBlank()) {
                 askUserForPerson()
             } else
-                findNavController().navigate(R.id.barcode_scan_fragment,
-                        Bundle().apply {
-                            putString("mode", "single")
-                        }
-                )
+                findNavController()
+                        .navigate(EventsFragmentDirections
+                        .actionToBarcodeScanFragment())
         }
 
         saveButton.setOnClickListener {
+
             askUserNewExperimentName()
         }
 
-
         clearButton.setOnClickListener {
-            //editTextCross.setText("")
+
             firstText.setText("")
+
             secondText.setText("")
 
             val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
@@ -253,7 +374,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                 && (cross.isNotEmpty() || (mSettings.isUUID || mSettings.isPattern)))
     }
 
-    private fun FragmentEventsBinding.askUserNewExperimentName() {
+    private fun askUserNewExperimentName() {
 
         val value = editTextCross.text.toString()
 
@@ -261,8 +382,10 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                 .getString(SettingsFragment.BLANK, "0")
         val order = PreferenceManager.getDefaultSharedPreferences(requireContext())
                 .getString(SettingsFragment.ORDER, "0")
+
         lateinit var male: String
         lateinit var female: String
+
         when (order) {
             "0" -> {
                 female = (firstText.text ?: "").toString()
@@ -277,9 +400,6 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         if (value.isNotEmpty() && (male.isNotEmpty() || allowBlank == "1")) {
 
             if (male.isEmpty()) male = "blank"
-            //val first = (mBinding.firstText.text ?: "")
-            //val second = (mBinding.secondText.text ?: "")
-
 
             val tPerson = PreferenceManager.getDefaultSharedPreferences(requireContext())
                     .getString("org.phenoapps.intercross.PERSON", "")
@@ -287,121 +407,57 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             val experiment = PreferenceManager.getDefaultSharedPreferences(requireContext())
                     .getString("org.phenoapps.intercross.EXPERIMENT", "")
 
-            //assert(person == tPerson)
-
-            submitCrossEvent(Events(null, value, EventName.POLLINATION.itemType, female, male, null, DateUtil().getTime(), tPerson, experiment))
-
+            submitCrossEvent(Event(value, female, male, value, DateUtil().getTime(), tPerson
+                    ?: "?", experiment ?: "?"))
 
             FileUtil(requireContext()).ringNotification(true)
+
             checkWishlist(female, male, value)
 
-            Handler().postDelayed(Runnable {
+            resetDataEntry()
+
+            if (mSettings.isPattern) {
+
+                settingsModel.update(mSettings.apply {
+
+                    number += 1
+                })
+            }
+
+            firstText.requestFocus()
+
+            Handler().postDelayed({
                 recyclerView.scrollToPosition(0)
             }, 250)
 
         } else {
-            mSnackbar.push(SnackbarQueue.SnackJob(root, "You must enter a cross name."))
+            mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "You must enter a cross name."))
             //FileUtil(requireContext()).ringNotification(false)
         }
     }
 
-    private fun FragmentEventsBinding.checkWishlist(f: String, m: String, x: String) {
+    private fun checkWishlist(f: String, m: String, x: String) {
 
-        var isOnList = false
-        var min = 0
-        var current = 0
-        mWishlist.forEach {
-            if (it.femaleDbId == f && it.maleDbId == m) {
-                isOnList = true
-                min = it.wishMin
-                current++
-            }
+        mWishlist.find { it.femaleDbId == f && it.maleDbId == m}?.let { item ->
+
+            //TODO: Add Alert Dialog when min or max is achieved.
+
+            val current = item.wishCurrent + 1
+
+            //wishlist item has been found, item should be updated and visualized
+            mWishlistStore.update(item.apply {
+
+                wishCurrent = current
+            })
+
+            if (current >= item.wishMin && item.wishMin != 0) {
+
+                FileUtil(requireContext()).ringNotification(true)
+
+                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "Wishlist complete for $f and $m : $current/${item.wishMin}"))
+
+            } else mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "New Cross Event! $x added."))
         }
-        if (isOnList) {
-            mAdapter.currentList.forEach {
-                if (it.femaleObsUnitDbId == f && it.maleOBsUnitDbId == m) {
-                    current++
-                }
-            }
-        }
-
-        firstText.setText("")
-        secondText.setText("")
-        editTextCross.setText("")
-
-        when {
-            mSettings.isPattern -> {
-                mSettings.number += 1
-                mSettingsViewModel.update(mSettings)
-                editTextCross.setText("${mSettings.prefix}${mSettings.number.toString().padStart(mSettings.pad, '0')}${mSettings.suffix}")
-
-            }
-            mSettings.isUUID -> {
-                editTextCross.setText(UUID.randomUUID().toString())
-            }
-        }
-        if (current >= min && min != 0) {
-            FileUtil(requireContext()).ringNotification(true)
-            mSnackbar.push(SnackbarQueue.SnackJob(root, "Wishlist complete for $f and $m : $current/$min"))
-        } else mSnackbar.push(SnackbarQueue.SnackJob(root, "New Cross Event! $x added."))
-
-        firstText.requestFocus()
-    }
-
-    private fun FragmentEventsBinding.startObservers() {
-
-        mEventsListViewModel.crosses.observe(viewLifecycleOwner, Observer { result ->
-            result?.let {
-                mAdapter.submitList(it.reversed())
-                progressBar.visibility=View.INVISIBLE
-            }
-        })
-
-        mWishlistViewModel.wishlist.observe(viewLifecycleOwner, Observer{
-            it?.let {
-                mWishlist = it
-            }
-        })
-
-        mSharedViewModel.lastScan.observe(viewLifecycleOwner, Observer {
-            it?.let {
-                if (it.isNotEmpty()) {
-
-                    if ((firstText.text ?: "").isEmpty()) firstText.setText(it)
-                    else if ((secondText.text ?: "").isEmpty()) {
-                        secondText.setText(it)
-                        if ((mSettings.isPattern || mSettings.isUUID)) askUserNewExperimentName()
-                    }
-                    else if ((editTextCross.text ?: "").isEmpty()) {
-                        editTextCross.setText(it)
-                        askUserNewExperimentName()
-                    }
-
-                    mSharedViewModel.lastScan.value = ""
-                }
-            }
-        })
-
-        mSettingsViewModel.settings.observe(viewLifecycleOwner, Observer {
-            it?.let {
-                mSettings = it
-                when {
-                    mSettings.isPattern -> {
-                        editTextCross.setText("${mSettings.prefix}${mSettings.number.toString().padStart(mSettings.pad, '0')}${mSettings.suffix}")
-                    }
-                    mSettings.isUUID -> {
-                        editTextCross.setText(UUID.randomUUID().toString())
-                    }
-                    else -> editTextCross.setText("")
-                }
-            }
-        })
-
-        mPollenManagerViewModel.groups.observe(viewLifecycleOwner, Observer {
-            it?.let {
-                mGroups = it
-            }
-        })
     }
 
     private fun askUserForPerson() {
@@ -426,14 +482,18 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+
         inflater.inflate(R.menu.activity_main_toolbar, menu)
+
         super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
         when(item.itemId) {
+
             R.id.action_search_barcode -> {
+
                 findNavController().navigate(R.id.barcode_scan_fragment,
                         Bundle().apply {
                             putString("mode", "search")
@@ -441,6 +501,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                 )
             }
             R.id.action_continuous_barcode -> {
+
                 if ((PreferenceManager.getDefaultSharedPreferences(requireContext())
                                 .getString("org.phenoapps.intercross.PERSON", "") ?: "").isBlank()) {
                     askUserForPerson()
@@ -454,36 +515,4 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         }
         return super.onOptionsItemSelected(item)
     }
-
-    private fun askIfSamePerson() {
-
-        val builder = AlertDialog.Builder(requireContext()).apply {
-
-            setNegativeButton("Change Person") { _, _ ->
-                findNavController().navigate(R.id.settings_fragment, Bundle().apply {
-                    putString("org.phenoapps.intercross.ASK_PERSON", "true")
-                })
-            }
-
-            setPositiveButton("Yes") { _, _ ->
-                //welcome back
-            }
-        }
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    private fun afterReturn() {
-        val timeLength = System.nanoTime() - mLastOpened
-        Log.d("TIME", timeLength.toString())
-        //24*60*60 = 86400s timeLength is in nanoseconds
-        if ((timeLength > 864e11 && mLastOpened != 0L)) {
-            askIfSamePerson()
-        }
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-    private fun afterClosed() {
-        mLastOpened = System.nanoTime()
-    }
-
 }

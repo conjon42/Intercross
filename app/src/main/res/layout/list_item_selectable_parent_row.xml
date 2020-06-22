@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+    <data>
+
+        <import type="org.phenoapps.intercross.data.models.Parent"/>
+
+        <import type="android.view.View"/>
+
+        <variable
+            name="parent"
+            type="Parent" />
+
+    </data>
+
+    <LinearLayout
+        android:id="@+id/linearLayout3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <CheckBox
+            android:id="@+id/doneCheckBox"
+            android:clickable="false"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="8dp"/>
+
+        <TextView style="@style/CellText"
+            android:id="@+id/textField"
+            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="5"
+            android:text="@{parent.name}"/>
+    </LinearLayout>
+</layout>

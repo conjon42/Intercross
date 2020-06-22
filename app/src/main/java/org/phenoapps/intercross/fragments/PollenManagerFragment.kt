@@ -1,59 +1,175 @@
 package org.phenoapps.intercross.fragments
 
+import androidx.core.widget.addTextChangedListener
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.adapters.PollenGroupAdapter
+import org.phenoapps.intercross.adapters.ParentsAdapter
+import org.phenoapps.intercross.data.EventsRepository
+import org.phenoapps.intercross.data.ParentsRepository
+import org.phenoapps.intercross.data.PollenGroupRepository
+import org.phenoapps.intercross.data.models.Event
+import org.phenoapps.intercross.data.models.Parent
+import org.phenoapps.intercross.data.models.PollenGroup
+import org.phenoapps.intercross.data.viewmodels.EventListViewModel
+import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
+import org.phenoapps.intercross.data.viewmodels.PollenGroupListViewModel
+import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentPollenManagerBinding
-import org.phenoapps.intercross.util.SnackbarQueue
 import java.util.*
 
 class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBinding>(R.layout.fragment_pollen_manager) {
 
-    private lateinit var mAdapter: PollenGroupAdapter
+    private lateinit var mAdapter: ParentsAdapter
+
+    private var mEvents: List<Event> = ArrayList<Event>()
+
+    private var mMales: List<Parent> = ArrayList<Parent>()
+
+    private var mPolycrosses: List<PollenGroup> = ArrayList<PollenGroup>()
+
+    private val eventList: EventListViewModel by viewModels {
+
+        EventsListViewModelFactory(
+                EventsRepository.getInstance(db.eventsDao()))
+    }
+
+    private val parentList: ParentsListViewModel by viewModels {
+
+        ParentsListViewModelFactory(
+                ParentsRepository.getInstance(db.parentsDao())
+        )
+    }
+
+    private val groupList: PollenGroupListViewModel by viewModels {
+
+        PollenGroupListViewModelFactory(
+                PollenGroupRepository.getInstance(db.pollenGroupDao())
+        )
+    }
 
     override fun FragmentPollenManagerBinding.afterCreateView() {
 
-        //activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        //an error is shown when a barcode already exists in the database
+        val error = getString(R.string.ErrorCodeExists)
 
-        mAdapter = PollenGroupAdapter(requireContext())
+        mAdapter = ParentsAdapter(parentList)
 
-        mPollenManagerViewModel.groups.observe(viewLifecycleOwner, Observer {
-            it?.let {
-                mAdapter.submitList(it)
-            }
-        })
+        parentList.males.observeForever {
 
-        pollenView.layoutManager = LinearLayoutManager(requireContext())
-        pollenView.adapter = mAdapter
+            it?.let { males ->
 
-        editText2.setText(UUID.randomUUID().toString())
+                mMales = males
 
-        newButton.setOnClickListener {
-            if (editText.text.toString().isNotEmpty()) {
-                mPollenManagerViewModel.addPollenSet(editText.text.toString(), editText2.text.toString())
-                editText.text.clear()
+                groupList.groups.observeForever { groups ->
+
+                    groups?.let {
+
+                        /**
+                         * Transform polycrosses to simple parent object before submitting to parent adapter.
+                         */
+                        mAdapter.submitList(groups.map {
+
+                            Parent(it.codeId, 1, it.name)
+
+                        }.distinctBy { g -> g.codeId }+males)
+                    }
+                }
             }
         }
 
-        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
 
-            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
-                return false
+        /**
+         * Error check, ensure that the entered code does not exist in the events table.
+         * TODO also check parents codes
+         */
+        eventList.events?.observe(viewLifecycleOwner, Observer {
+
+            it?.let {
+
+                mEvents = it
+
+                codeEditText.addTextChangedListener {
+
+                    var flag = true
+
+                    for (e: Event in mEvents) {
+
+                        if (codeEditText.text.toString() == e.eventDbId) {
+
+                            if (codeTextHolder.error == null) codeTextHolder.error = error
+
+                            flag = false
+
+                            break
+
+                        }
+                    }
+
+                    if (flag) {
+
+                        codeTextHolder.error = null
+
+                    }
+
+//                mAdapter.submitList(it
+//                        .filter { it.sex == 1 }
+//                        .map { Parent(it.eventDbId, it.sex, it.readableName) })
+                }
+            }
+        })
+
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        recyclerView.adapter = mAdapter
+
+        codeEditText.setText(UUID.randomUUID().toString())
+
+        newButton.setOnClickListener {
+
+            val addedMales = ArrayList<PollenGroup>()
+
+            for (p: Parent in mMales) {
+
+                if (p.selected) {
+
+                    p.id?.let { id ->
+
+                        addedMales.add(buildGroup(id))
+                    }
+                }
             }
 
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            for (poly: PollenGroup in mPolycrosses) {
 
-                val p = mAdapter.currentList[viewHolder.adapterPosition]
-                mPollenManagerViewModel.delete(p)
-                mSnackbar.push(SnackbarQueue.SnackJob(root, p.name, "Undo") {
-                    mPollenManagerViewModel.addPollenSet(p.name, editText2.text.toString())
-                })
+                if (poly.selected) {
 
+                    poly.id?.let {id ->
+
+                        addedMales.add(buildGroup(id))
+                    }
+                }
             }
-        }).attachToRecyclerView(pollenView)
 
+            groupList.insert(*addedMales.toTypedArray())
+
+            mBinding.root.findNavController().navigate(
+                    PollenManagerFragmentDirections
+                            .actionReturnToParentsFragment()
+                            .setMalesFirst(1))
+        }
     }
+
+    /**
+     * This function initializes and returns a PollenGroup object with the elements of the UI.
+     */
+    private fun FragmentPollenManagerBinding.buildGroup(id: Long) =
+            PollenGroup(codeEditText.text.toString(),
+                    nameEditText.text.toString(), id)
+
+
 }

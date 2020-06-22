@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View" />
+
+        <import type="org.phenoapps.intercross.data.models.CrossType"/>
+
+        <import type="org.phenoapps.intercross.data.models.Event"/>
+
+        <variable
+            name="model"
+            type="org.phenoapps.intercross.data.models.Settings" />
+
+        <variable
+            name="event"
+            type="Event"/>
+
+        <variable
+            name="metaDataVisibility"
+            type="int" />
+
+        <variable
+            name="momName"
+            type="String" />
+
+        <variable
+            name="dadName"
+            type="String"/>
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/parentDivider"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <include layout="@layout/list_item_events"
+            android:id="@+id/event_detail_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <LinearLayout
+            android:id="@+id/linearLayout2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:background="@drawable/cell"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/event_detail_layout">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:text='@{momName.length() == 0 &amp;&amp; dadName.length() == 0 ? @string/parents_dont_exist : @string/parental_navigation}'/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="@{momName.length() == 0 ? View.GONE : View.VISIBLE}">
+
+                    <ImageView
+                        android:id="@+id/momCrossImage"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_margin="8dp"/>
+<!--                        android:src="@{momCrossType == CrossType.BIPARENTAL ? @drawable/ic_cross_biparental : momCrossType == CrossType.SELF ? @drawable/ic_cross_self : momCrossType == CrossType.OPEN ? @drawable/ic_cross_open : momCrossType == CrossType.POLY ? @drawable/ic_cross_poly : @drawable/ic_cross_unknown}" />-->
+
+                    <Button
+                        android:id="@+id/femaleName"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
+                        android:layout_weight="1"
+                        android:backgroundTint="@color/colorAccent"
+                        android:ellipsize="end"
+                        android:gravity="start"
+                        android:maxLines="1"
+                        android:text="@{momName}"
+                        android:textAlignment="viewStart"
+                        android:textSize="18sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="@{dadName.length() == 0 ? View.GONE : View.VISIBLE}">
+
+                    <ImageView
+                        android:id="@+id/dadCrossImage"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_margin="8dp"/>
+<!--                        android:src="@{dadCrossType == CrossType.BIPARENTAL ? @drawable/ic_cross_biparental : dadCrossType == CrossType.SELF ? @drawable/ic_cross_self : dadCrossType == CrossType.OPEN ? @drawable/ic_cross_open : dadCrossType == CrossType.POLY ? @drawable/ic_cross_poly : @drawable/ic_cross_unknown}" />-->
+
+                    <Button
+                        android:id="@+id/maleName"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
+                        android:layout_weight="1"
+                        android:backgroundTint="@color/colorAccent"
+                        android:ellipsize="end"
+                        android:gravity="start"
+                        android:maxLines="1"
+                        android:text="@{dadName}"
+                        android:textAlignment="viewStart"
+                        android:textSize="18sp" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/layoutMetaData"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:background="@drawable/cell"
+            android:orientation="vertical"
+            android:visibility="@{metaDataVisibility == 1 ? View.VISIBLE : View.GONE}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout2">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/metaData" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/flowerTextLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:hint="@string/Flowers">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/flowerText"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:imeOptions="actionDone"
+                    android:inputType="number"
+                    android:text="@{Integer.toString(event.metaData.flowers)}" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/seedTextLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:hint="@string/Seeds">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/seedText"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:imeOptions="actionDone"
+                    android:inputType="number"
+                    android:text="@{Integer.toString(event.metaData.seeds)}" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/fruitTextLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:hint="@string/Fruits">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/fruitText"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:imeOptions="actionDone"
+                    android:inputType="number"
+                    android:text="@{Integer.toString(event.metaData.fruits)}" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/submitMetaDataButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:backgroundTint="@color/colorAccent"
+                android:text="@string/UpdateMetaData" />
+
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

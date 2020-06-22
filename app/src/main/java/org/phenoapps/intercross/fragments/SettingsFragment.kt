@@ -6,10 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
@@ -18,29 +15,33 @@ import androidx.preference.PreferenceFragmentCompat
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.SettingsRepository
-import org.phenoapps.intercross.viewmodels.SettingsViewModel
+import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
+import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
 
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
-    lateinit var mSettingsViewModel: SettingsViewModel
+    private val settingsModel: SettingsViewModel by viewModels {
+        SettingsViewModelFactory(SettingsRepository
+                .getInstance(IntercrossDatabase.getInstance(requireContext()).settingsDao()))
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        with(findPreference<Preference>("org.phenoapps.intercross.CREATE_PATTERN")){
 
-            this?.let {
-                setOnPreferenceClickListener {
-                    findNavController().navigate(SettingsFragmentDirections.actionToPatternFragment())
-                    true
-                }
+        settingsModel.settings.observeForever { settings ->
 
-                mSettingsViewModel.settings.observe(viewLifecycleOwner, Observer {
-                    it?.let {
+            settings?.let {
+
+                findPreference<Preference>("org.phenoapps.intercross.CREATE_PATTERN").apply {
+
+                    this?.let {
+
                         summary = when {
-                            it.isPattern -> {
+
+                            settings.isPattern -> {
                                 "Pattern"
                             }
-                            it.isUUID -> {
+                            settings.isUUID -> {
                                 "UUID"
                             }
                             else -> {
@@ -48,7 +49,21 @@ class SettingsFragment : PreferenceFragmentCompat() {
                             }
                         }
                     }
-                })
+                }
+            }
+        }
+
+        with(findPreference<Preference>("org.phenoapps.intercross.CREATE_PATTERN")){
+
+            this?.let {
+
+                setOnPreferenceClickListener {
+
+                    findNavController().navigate(SettingsFragmentDirections
+                            .actionToPatternFragment())
+
+                    true
+                }
             }
         }
 
@@ -96,30 +111,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
             val pref = findPreference<Preference>(key)
 
             if (pref is ListPreference) {
-                val listPref = pref
-                pref.setSummary(listPref.entry)
+                pref.setSummary(pref.entry)
             }
         }
-        val db = IntercrossDatabase.getInstance(requireContext())
-
-        mSettingsViewModel = ViewModelProviders.of(this,
-                object : ViewModelProvider.NewInstanceFactory() {
-                    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return SettingsViewModel(SettingsRepository.getInstance(
-                                db.settingsDao())) as T
-
-                    }
-                }).get(SettingsViewModel::class.java)
     }
 
     companion object {
-        const val TUTORIAL = "org.phenoapps.intercross.TUTORIAL"
         const val AUDIO_ENABLED = "org.phenoapps.intercross.AUDIO_ENABLED"
         const val BLANK = "org.phenoapps.intercross.BLANK_MALE_ID"
         const val ORDER = "org.phenoapps.intercross.CROSS_ORDER"
         const val COLLECT_INFO = "org.phenoapps.intercross.COLLECT_INFO"
-        const val PERSON = "org.phenoapps.intercross.PERSON"
-        const val EXPERIMENT = "org.phenoapps.intercross.EXPERIMENT"
     }
 }

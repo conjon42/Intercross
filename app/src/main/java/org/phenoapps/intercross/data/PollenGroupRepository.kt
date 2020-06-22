@@ -1,32 +1,17 @@
 package org.phenoapps.intercross.data
 
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.withContext
-import java.util.*
+import org.phenoapps.intercross.data.dao.PollenGroupDao
+import org.phenoapps.intercross.data.models.PollenGroup
 
 
 class PollenGroupRepository private constructor(
         private val pollenGroupDao: PollenGroupDao
-) {
-    suspend fun createPollenSet(name: String, id: String) {
-        withContext(IO) {
-             pollenGroupDao.insert(PollenGroup(null, name, id))
-        }
-    }
+): BaseRepository<PollenGroup>(pollenGroupDao) {
 
-    suspend fun update(vararg p: PollenGroup?) {
-        withContext(IO) {
-            pollenGroupDao.update(*p)
-        }
-    }
+    fun selectAll() = pollenGroupDao.selectAll()
 
-    suspend fun delete(vararg p: PollenGroup?) {
-        withContext(IO) {
-            pollenGroupDao.delete(*p)
-        }
-    }
 
-    fun getAll() = pollenGroupDao.getAll()
+
 
     companion object {
         @Volatile private var instance: PollenGroupRepository? = null

@@ -3,6 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/layout">
 
+    <data>
+
+        <import type="android.view.View"/>
+
+        <variable
+            name="settings"
+            type="org.phenoapps.intercross.data.models.Settings" />
+    </data>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -41,8 +50,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:buttonTint="@color/colorAccent"
-                android:text="None"
-                android:textSize="18sp" />
+                android:text="@string/none"
+                android:textSize="18sp"
+                android:checked="@{!(settings.isPattern || settings.isUUID)}"/>
 
             <RadioButton
                 android:id="@+id/patternButton"
@@ -50,8 +60,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:buttonTint="@color/colorAccent"
-                android:text="Pattern"
-                android:textSize="18sp" />
+                android:text="@string/pattern"
+                android:textSize="18sp"
+                android:checked="@{settings.isPattern}"/>
 
             <RadioButton
                 android:id="@+id/uuidButton"
@@ -59,8 +70,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:buttonTint="@color/colorAccent"
-                android:text="UUID"
-                android:textSize="18sp" />
+                android:text="@string/uuid"
+                android:textSize="18sp"
+                android:checked="@{settings.isUUID}"/>
         </RadioGroup>
 
         <TextView
@@ -88,7 +100,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
-            android:visibility="gone"
+            android:visibility="@{settings.isPattern ? View.VISIBLE : View.GONE}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/codeTextView">
@@ -178,14 +190,5 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <data>
-        <variable
-            name="viewModel"
-            type="org.phenoapps.intercross.viewmodels.SettingsViewModel" />
-        <variable
-            name="mode"
-            type="int"/>
-    </data>
 
 </layout>

@@ -48,8 +48,6 @@ class SnackbarQueue {
 
     }
 
-    fun clear() = mQueue.clear()
-
     fun push(job: SnackJob) = mQueue.add(job)
 
     data class SnackJob(val v: View, val txt: String, val actionText: String = "", val action: () -> Unit = {})

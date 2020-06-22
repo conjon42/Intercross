@@ -1,124 +1,131 @@
 package org.phenoapps.intercross.fragments
 
-import android.app.Activity.RESULT_OK
-import android.content.Intent
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.preference.PreferenceManager
-import android.provider.DocumentsContract
-import android.view.*
-import androidx.core.content.FileProvider
-import androidx.core.view.GestureDetectorCompat
-import androidx.lifecycle.Observer
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import androidx.fragment.app.viewModels
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
-import kotlinx.android.synthetic.main.fragment_parents.*
-import org.phenoapps.intercross.MainActivity.Companion.REQ_FILE_IMPORT
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.ParentsAdapter
-import org.phenoapps.intercross.data.EventName
-import org.phenoapps.intercross.data.Events
-import org.phenoapps.intercross.data.Parents
+import org.phenoapps.intercross.data.ParentsRepository
+import org.phenoapps.intercross.data.PollenGroupRepository
+import org.phenoapps.intercross.data.models.Parent
+import org.phenoapps.intercross.data.viewmodels.EventProducer
+import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
+import org.phenoapps.intercross.data.viewmodels.PollenGroupListViewModel
+import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentParentsBinding
-import org.phenoapps.intercross.util.BluetoothUtil
-import org.phenoapps.intercross.util.DateUtil
-import org.phenoapps.intercross.util.FileUtil
-import java.io.File
-import kotlin.math.abs
 
 
 class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.fragment_parents) {
 
-    private lateinit var mMales: List<Parents>
-    private lateinit var mFemales: List<Parents>
-    private lateinit var mAdapter: ParentsAdapter
+    private val viewModel: ParentsListViewModel by viewModels {
+        ParentsListViewModelFactory(ParentsRepository.getInstance(db.parentsDao()))
+    }
 
-    private var mAllSelected: Boolean = true
+    private val groupList: PollenGroupListViewModel by viewModels {
+        PollenGroupListViewModelFactory(PollenGroupRepository.getInstance(db.pollenGroupDao()))
+    }
+
+    val parentList: ParentsListViewModel by viewModels {
+        ParentsListViewModelFactory(ParentsRepository.getInstance(db.parentsDao()))
+    }
+
+
+    private lateinit var mMaleAdapter: ParentsAdapter
+
+    private lateinit var mFemaleAdapter: ParentsAdapter
+
 
     //simple gesture listener to detect left and right swipes,
     //on a detected swipe the viewed gender will change
-    private val gestureListener = object : GestureDetector.SimpleOnGestureListener() {
+    //private val gestureListener = object : GestureDetector.SimpleOnGestureListener() {
 
-        override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-
-            e1?.let {
-                e2?.let {
-                    val dx = e1.x - e2.x
-                    val x = abs(dx)
-
-                    if (x in 100.0..1000.0) {
-                        if (dx > 0) {
-                            //swipe to left
-                            swipeLeft()
-                        } else {
-                            //swipe right
-                            swipeRight()
-                        }
-                    }
-
-                    return true
-                }
-            }
-            return false
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, i: Intent?) {
-        super.onActivityResult(requestCode, resultCode, i)
-        if (requestCode == REQ_FILE_IMPORT && resultCode == RESULT_OK) {
-            i?.data?.let {
-                val lines = FileUtil(requireContext()).parseUri(it)
-                if (lines.isNotEmpty()) {
-                    val headerLine = lines[0]
-                    val headers = headerLine.split(",")
-                    val numCols = headers.size
-                    if (numCols == 4) { //lines = id,name,type,order
-                        (lines - lines[0]).forEach {
-                            val row = it.split(",")
-                            if (row.size == numCols) {
-                                mParentsViewModel.addParents(
-                                        row[0], row[1], row[2], row[3]
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+//        override fun onFling(e1: MotionEvent?, e2: MotionEvent?,
+//                             velocityX: Float, velocityY: Float): Boolean {
+//
+//            e1?.let {
+//                e2?.let {
+//                    val dx = e1.x - e2.x
+//                    val x = abs(dx)
+//
+//                    if (x in 100.0..1000.0) {
+//                        if (dx > 0) {
+//                            //swipe to left
+//                            FragmentParentsBinding.swipeLeft()
+//                        } else {
+//                            //swipe right
+//                            swipeRight()
+//                        }
+//                    }
+//
+//                    return true
+//                }
+//            }
+//            return false
+//        }
+    //}
 
     override fun FragmentParentsBinding.afterCreateView() {
 
         val ctx = requireContext()
 
-        mAdapter = ParentsAdapter()
+        val tabFocus = arguments?.getInt("malesFirst") ?: 0
 
-        recyclerView.adapter = mAdapter
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        mMaleAdapter = ParentsAdapter(viewModel)
+        mFemaleAdapter = ParentsAdapter(viewModel)
 
-        importButton.setOnClickListener {
+        femaleRecycler.adapter = mFemaleAdapter
+        femaleRecycler.layoutManager = LinearLayoutManager(ctx)
 
-            mParentsViewModel.delete(*(mMales + mFemales).toTypedArray())
+        maleRecycler.adapter = mMaleAdapter
+        maleRecycler.layoutManager = LinearLayoutManager(ctx)
 
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                type="*/*"
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-                    putExtra(DocumentsContract.EXTRA_INITIAL_URI,
-                            FileProvider.getUriForFile(ctx,
-                                    "org.phenoapps.intercross.fileprovider",
-                                    File(File(ctx.externalCacheDir, "Parents"), "parents_example.csv")))
-                }
+        viewModel.parents.observeForever { parents ->
+
+            val addedMales = ArrayList<Parent>()
+
+            groupList.groups.observeForever { groups ->
+
+                //aggregate groups TODO replace with new query
+                addedMales.addAll(groups
+                        .distinctBy { it.codeId }
+                        .map { g-> Parent(g.codeId, 1, g.name) })
+
+                mMaleAdapter.submitList(addedMales+parents.filter { p -> p.sex == 1 })
 
             }
 
-            startActivityForResult(Intent.createChooser(intent, "Import Parents file."), REQ_FILE_IMPORT)
+            mMaleAdapter.submitList(addedMales+(parents.filter { p -> p.sex == 1 }.reversed()))
+
+            mFemaleAdapter.submitList(parents.filter { p -> p.sex == 0 }.reversed())
 
         }
 
-        tabLayout2.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+        /**
+         * Submit id/name pair to Parents table
+         */
+        submitParent.setOnClickListener {
+
+            //TODO add text sanitization / checking
+
+            val sex = if (tabLayout.getTabAt(0)?.isSelected != false) 0 else 1
+
+            parentList.insert(Parent(codeEditText.text.toString(), sex, nameEditText.text.toString()))
+
+            //clear edit texts
+            nameEditText.setText("")
+
+            codeEditText.setText("")
+        }
+
+        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
 
             override fun onTabReselected(tab: TabLayout.Tab?) {
             }
@@ -127,22 +134,53 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
             }
 
             override fun onTabSelected(tab: TabLayout.Tab?) {
+
                 tab?.let {
+
                     when(it.text) {
+
                         "Female" -> {
-                            mAdapter.submitList(mFemales)
+                            femaleRecycler.visibility=View.VISIBLE
+                            maleRecycler.visibility=View.GONE
+                            newMaleButton.visibility=View.GONE
                         }
                         "Male" -> {
-                            mAdapter.submitList(mMales)
+                            maleRecycler.visibility=View.VISIBLE
+                            femaleRecycler.visibility=View.GONE
+                            newMaleButton.visibility=View.VISIBLE
                         }
                     }
                 }
             }
-
         })
 
+        /*
+        On startup, read arguments and determine the tab
+         */
+        tabLayout.getTabAt(tabFocus)?.select()
 
-        button3.setOnClickListener {
+        /*
+        Go to Pollen Manager fragment for male group data-entry
+         */
+        newMaleButton.setOnClickListener {
+
+            Navigation.findNavController(mBinding.root)
+                    .navigate(ParentsFragmentDirections.globalActionToPollenManagerFragment())
+        }
+
+        deleteButton.setOnClickListener {
+
+            //TODO Ask if delete should erase both male and female selected, or just the current tab?
+            //TODO add poly cross delete, all entries that have the selected group ids must be purged from DB.
+            //delete only selected tab
+
+            viewModel.delete(*(mFemaleAdapter.currentList + mMaleAdapter.currentList)
+                    .filter { it.selected }
+                    .toTypedArray())
+
+        }
+
+        printButton.setOnClickListener {
 
             val experiment = PreferenceManager.getDefaultSharedPreferences(requireContext())
                     .getString("org.phenoapps.intercross.EXPERIMENT", "")
@@ -150,76 +188,93 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
             val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
                     .getString("org.phenoapps.intercross.PERSON", "")
 
-            val events = ArrayList<Events>()
-            (mMales + mFemales).forEach {
-                if (it.isSelected) events.add(
-                        Events(null, it.parentDbId, EventName.POLLINATION.itemType,
-                                "none", "none", null, DateUtil().getTime(), person, experiment))
-            }
-            if (events.isNotEmpty()) {
-                //TODO add message saying printing females and males
-                BluetoothUtil().print(requireContext(), events.toTypedArray())
-            }
-
+//            val events = (mMaleAdapter.currentList + mFemaleAdapter.currentList)
+//                    .filter { it.isSelected }
+//                    .toTypedArray()
+//
+//            if (events.isNotEmpty()) {
+//
+//                //TODO add message saying printing females and males
+//                BluetoothUtil().print(requireContext(), events)
+//            }
         }
 
-        mParentsViewModel.parents.observe(viewLifecycleOwner, Observer {
-            it?.let {
 
-                //get uniques
-                val males = it.filter { p -> p.parentType == "male" }.toSet()
-                val females = it.filter { p -> p.parentType == "female" }.toSet()
-
-                mMales = males.toList()
-                mFemales = females.toList()
-
-                when (tabLayout2.selectedTabPosition) {
-                    0 -> {
-                        mAdapter.submitList(mFemales)
-                    }
-                    else -> mAdapter.submitList(mMales)
-                }
-            }
-        })
-
-        val gdc = GestureDetectorCompat(context, gestureListener)
-
-
-        //todo create custom view and override performClick()
-        recyclerView.setOnTouchListener { _, motionEvent ->
-            gdc.onTouchEvent(motionEvent)
-        }
+//        val gdc = GestureDetectorCompat(context, gestureListener)
+//
+//        //todo create custom view and override performClick()
+//        maleRecycler.setOnTouchListener { _, motionEvent ->
+//            gdc.onTouchEvent(motionEvent)
+//        }
+//
+//        femaleRecycler.setOnTouchListener({ _, motionEvent ->
+//            gdc.onTouchEvent(motionEvent)
+//        })
 
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
+
         setHasOptionsMenu(true)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+
         inflater.inflate(R.menu.parents_toolbar, menu)
+
         super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        when(item.itemId) {
-            R.id.action_select_all -> {
-                val l = mAdapter.currentList.map { p -> p.apply { isSelected = !mAllSelected} }
-                mAllSelected = !mAllSelected
-                mAdapter.submitList(l)
-                mAdapter.notifyDataSetChanged()
+        with (mBinding) {
+
+            when(item.itemId) {
+
+                R.id.action_select_all -> {
+
+                    //TODO update all male/female or just the selected tab?
+                    //TODO reverse all selections or just make them all true? no inverting
+//                    if (tabLayout2.getTabAt(0)?.isSelected == true) {
+//
+//                        mEventStore.update(
+//                                *(mFemaleAdapter.currentList)
+//                                        .map { it.apply { it.isSelected = true }}
+//                                        .toTypedArray()
+//
+//                        )
+//
+//                        mFemaleAdapter.notifyDataSetChanged()
+//
+//                    } else {
+//
+//                        mEventStore.update(
+//                                *(mMaleAdapter.currentList)
+//                                        .map { it.apply { it.isSelected = true }}
+//                                        .toTypedArray()
+//
+//                        )
+//
+//                        mMaleAdapter.notifyDataSetChanged()
+//                    }
+                }
             }
         }
+
         return super.onOptionsItemSelected(item)
     }
 
-    private fun swipeLeft() {
-        tabLayout2.getTabAt(1)?.select()
+    private fun FragmentParentsBinding.swipeLeft() {
+
+        tabLayout.getTabAt(1)?.select()
+
     }
 
-    private fun swipeRight() {
-        tabLayout2.getTabAt(0)?.select()
+    private fun FragmentParentsBinding.swipeRight() {
+
+        tabLayout.getTabAt(0)?.select()
+
     }
 }

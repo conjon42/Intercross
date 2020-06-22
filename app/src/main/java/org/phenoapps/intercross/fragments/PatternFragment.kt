@@ -5,14 +5,32 @@ import android.text.TextWatcher
 import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
-import androidx.lifecycle.Observer
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.data.SettingsRepository
+import org.phenoapps.intercross.data.models.Settings
+import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
+import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentPatternBinding
-import org.phenoapps.intercross.viewmodels.PatternViewModel
 import java.util.*
 
 class PatternFragment: IntercrossBaseFragment<FragmentPatternBinding>(R.layout.fragment_pattern) {
+
+    data class Pattern(val uuid: Boolean = false,
+                       val auto: Boolean = false,
+                       val suffix: String = "",
+                       val prefix: String = "",
+                       val number: Int = 0,
+                       val pad: Int = 3) {
+
+        val pattern = prefix + number.toString().padStart(pad, '0') + suffix
+
+    }
+
+    private val settingsModel: SettingsViewModel by viewModels {
+        SettingsViewModelFactory(SettingsRepository.getInstance(db.settingsDao()))
+    }
 
     private var mLastUsed: String = "0"
 
@@ -26,57 +44,51 @@ class PatternFragment: IntercrossBaseFragment<FragmentPatternBinding>(R.layout.f
 
         activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
-        mSettingsViewModel.settings.observe(viewLifecycleOwner, Observer {
-            if (it == null) {
-                noneButton.isChecked = true
-            } else {
-                when {
-                    it.isUUID -> {
-                        fragmentPatternInput.visibility = View.INVISIBLE
-                        codeTextView.text = mLastUUID
+        settingsModel.settings.observeForever {
 
-                        noneButton.isChecked = false
-                        uuidButton.isChecked = true
-                        patternButton.isChecked = false
-                    }
-                    it.isPattern -> {
-                        fragmentPatternInput.visibility = View.VISIBLE
+            it?.let {
 
-                        noneButton.isChecked = false
-                        uuidButton.isChecked = false
-                        patternButton.isChecked = true
-                        prefixEditText.setText(it.prefix)
-                        suffixEditText.setText(it.suffix)
-                        numberEditText.setText(it.number.toString())
-                        padEditText.setText(it.pad.toString())
+                with (it) {
 
-                        when {
-                            it.startFrom -> {
-                                startFromRadioButton.isChecked = true
-                                autoRadioButton.isChecked = false
-                            }
-                            it.isAutoIncrement -> {
-                                startFromRadioButton.isChecked = false
-                                autoRadioButton.isChecked = true
+                    settings = this
+
+                    when {
+
+                        isUUID -> {
+
+                            codeTextView.text = mLastUUID
+
+                        }
+                        isPattern -> {
+
+                            prefixEditText.setText(prefix)
+                            suffixEditText.setText(suffix)
+                            numberEditText.setText(number.toString())
+                            padEditText.setText(pad.toString())
+
+                            when {
+                                startFrom -> {
+                                    startFromRadioButton.isChecked = true
+                                    autoRadioButton.isChecked = false
+                                }
+                                isAutoIncrement -> {
+                                    startFromRadioButton.isChecked = false
+                                    autoRadioButton.isChecked = true
+                                }
                             }
                         }
-                    }
-                    else -> {
-                        fragmentPatternInput.visibility = View.INVISIBLE
-                        codeTextView.text = ""
-                        uuidButton.isChecked = false
-                        patternButton.isChecked = false
-                        noneButton.isChecked = true
+                        else -> {
+                            codeTextView.text = ""
+                        }
                     }
                 }
-
-                mSettings = it
             }
-        })
+        }
+
 
         saveButton.setOnClickListener {
 
-            mSettingsViewModel.addSetting(buildSettings())
+            settingsModel.insert(buildSettings())
 
         }
 
@@ -85,8 +97,11 @@ class PatternFragment: IntercrossBaseFragment<FragmentPatternBinding>(R.layout.f
             closeKeyboard()
 
             if (mPrevCheckedId == -1) {
+
                 mPrevCheckedId = checkedId
+
             } else if (mPrevCheckedId != checkedId) {
+
                 mSettingsHaveChanged = true
             }
 
@@ -98,8 +113,8 @@ class PatternFragment: IntercrossBaseFragment<FragmentPatternBinding>(R.layout.f
                 }
                 R.id.patternButton -> {
                     fragmentPatternInput.visibility = View.VISIBLE
-                    with(buildPatternViewModel()) {
-                        codeTextView.text = "${prefix.value}${number.value.toString().padStart(pad.value ?: 0, '0')}${suffix.value}"
+                    with(buildPattern()) {
+                        codeTextView.text = pattern
                     }
                 }
                 R.id.noneButton -> {
@@ -141,7 +156,9 @@ class PatternFragment: IntercrossBaseFragment<FragmentPatternBinding>(R.layout.f
         }
     }
 
-    private fun buildSettings() = mSettings.apply {
+    private fun buildSettings() = Settings().apply {
+
+        id = 0
         var n = mBinding.numberEditText.text.toString()
         var p = mBinding.padEditText.text.toString()
         if(n.isEmpty()) n = "0"
@@ -157,20 +174,24 @@ class PatternFragment: IntercrossBaseFragment<FragmentPatternBinding>(R.layout.f
     }
 
     fun updateCodeTextView() {
-        with (buildPatternViewModel()) {
-            mBinding.codeTextView.text = "${prefix.value}${number.value.toString().padStart(pad.value ?: 0, '0')}${suffix.value}"
+
+        with (buildPattern()) {
+
+            mBinding.codeTextView.text = pattern
         }
     }
 
-    fun buildPatternViewModel(): PatternViewModel {
+    private fun buildPattern(): Pattern {
 
         var num = mBinding.numberEditText.text.toString().trim()
+
         if (num.isEmpty()) num = "0"
 
         var pad = mBinding.padEditText.text.toString().trim()
+
         if (pad.isEmpty()) pad = "0"
 
-        return PatternViewModel(mBinding.uuidButton.isChecked,
+        return Pattern(mBinding.uuidButton.isChecked,
                 mBinding.autoRadioButton.isChecked,
                 mBinding.suffixEditText.text.toString(),
                 mBinding.prefixEditText.text.toString(),
@@ -183,8 +204,6 @@ class PatternFragment: IntercrossBaseFragment<FragmentPatternBinding>(R.layout.f
         if (mSettingsHaveChanged) {
             askUserToSave()
         } else findNavController().popBackStack()
-
-
     }
 
     private fun askUserToSave() {
@@ -192,11 +211,14 @@ class PatternFragment: IntercrossBaseFragment<FragmentPatternBinding>(R.layout.f
         val builder = AlertDialog.Builder(requireContext()).apply {
 
             setNegativeButton("Cancel") { _, _ ->
+
                 findNavController().popBackStack()
             }
 
             setPositiveButton("Save") { _, _ ->
-                mSettingsViewModel.addSetting(buildSettings())
+
+                settingsModel.insert(buildSettings())
+
                 findNavController().popBackStack()
             }
         }

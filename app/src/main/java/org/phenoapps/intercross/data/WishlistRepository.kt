@@ -2,15 +2,26 @@ package org.phenoapps.intercross.data
 
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
+import org.phenoapps.intercross.data.dao.WishlistDao
+import org.phenoapps.intercross.data.models.Wishlist
 
 class WishlistRepository private constructor(
-        private val wishlistDao: WishlistDao
-) {
+        private val wishlistDao: WishlistDao): BaseRepository<Wishlist>(wishlistDao) {
+
     suspend fun createWishlist( fid: String,  mid: String,
                                 fname: String,  mname: String,
-                                wishType: String,  wishMin: Int,  wishMax: Int) {
+                                wishType: String,  wishCurrent: Int,
+                                wishMin: Int,  wishMax: Int) {
         withContext(IO) {
-            wishlistDao.insert(Wishlist(fid, mid, fname, mname, wishType, wishMin, wishMax))
+            wishlistDao.insert(Wishlist(fid, mid, fname, mname, wishType, wishCurrent, wishMin, wishMax))
+        }
+    }
+
+    suspend fun createWishlist(vararg wishlist: Wishlist) {
+
+        withContext(IO) {
+
+            wishlistDao.insert(*wishlist)
         }
     }
 
@@ -20,17 +31,7 @@ class WishlistRepository private constructor(
         }
     }
 
-    suspend fun update(vararg p: Wishlist?) {
-        withContext(IO) {
-            wishlistDao.update(*p)
-        }
-    }
-
-    suspend fun delete(vararg p: Wishlist?) {
-        withContext(IO) {
-            wishlistDao.delete(*p)
-        }
-    }
+    fun getCrossblock() = wishlistDao.getCrossBlock()
 
     fun getAll() = wishlistDao.getAll()
 
