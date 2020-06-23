@@ -1,9 +1,11 @@
 package org.phenoapps.intercross.fragments
 
+import android.view.View
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.ParentsAdapter
@@ -23,6 +25,8 @@ import org.phenoapps.intercross.databinding.FragmentPollenManagerBinding
 import java.util.*
 
 class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBinding>(R.layout.fragment_pollen_manager) {
+
+    private val args: PollenManagerFragmentArgs by navArgs()
 
     private lateinit var mAdapter: ParentsAdapter
 
@@ -54,40 +58,54 @@ class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBindin
 
     override fun FragmentPollenManagerBinding.afterCreateView() {
 
+        /***
+         * When the safe args = 0 we are creating females, otherwise we are creating males/groups
+         */
         //an error is shown when a barcode already exists in the database
         val error = getString(R.string.ErrorCodeExists)
 
-        mAdapter = ParentsAdapter(parentList)
+        if (args.mode == 1) {
 
-        parentList.males.observeForever {
+            mAdapter = ParentsAdapter(parentList, groupList)
 
-            it?.let { males ->
+            parentList.males.observe(viewLifecycleOwner, Observer {
 
-                mMales = males
+                it?.let { males ->
 
-                groupList.groups.observeForever { groups ->
+                    mMales = males
 
-                    groups?.let {
+                    groupList.groups.observeForever { groups ->
 
-                        /**
-                         * Transform polycrosses to simple parent object before submitting to parent adapter.
-                         */
-                        mAdapter.submitList(groups.map {
+                        groups?.let {
 
-                            Parent(it.codeId, 1, it.name)
-
-                        }.distinctBy { g -> g.codeId }+males)
+                            /**
+                             * Transform polycrosses to simple parent object before submitting to parent adapter.
+                             */
+                            mAdapter.submitList(groups
+                                    .distinctBy { g -> g.codeId }+males.distinctBy { m -> m.codeId })
+                        }
                     }
                 }
-            }
-        }
+            })
 
+            recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+            recyclerView.adapter = mAdapter
+
+        } else {
+
+            //TODO replace with data binding
+
+            textView.visibility = View.GONE
+
+            recyclerView.visibility = View.GONE
+        }
 
         /**
          * Error check, ensure that the entered code does not exist in the events table.
          * TODO also check parents codes
          */
-        eventList.events?.observe(viewLifecycleOwner, Observer {
+        eventList.events.observe(viewLifecycleOwner, Observer {
 
             it?.let {
 
@@ -115,52 +133,81 @@ class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBindin
                         codeTextHolder.error = null
 
                     }
-
-//                mAdapter.submitList(it
-//                        .filter { it.sex == 1 }
-//                        .map { Parent(it.eventDbId, it.sex, it.readableName) })
                 }
             }
         })
-
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-
-        recyclerView.adapter = mAdapter
 
         codeEditText.setText(UUID.randomUUID().toString())
 
         newButton.setOnClickListener {
 
-            val addedMales = ArrayList<PollenGroup>()
+            when (args.mode) {
+                /**
+                 * Insert a single female into the database based on the data entry.
+                 */
+                0 -> {
+                    //TODO add text sanitization
+                    parentList.insert(
+                            Parent(codeEditText.text.toString(),
+                                    0,
+                                    nameEditText.text.toString()))
 
-            for (p: Parent in mMales) {
+                    mBinding.root.findNavController().navigate(
+                            PollenManagerFragmentDirections
+                                    .actionReturnToParentsFragment(0))
+                }
+                /**
+                 * Either enter a group if a list is selected, or a single male with the
+                 * entered data
+                 */
+                1 -> {
+                    val addedMales = ArrayList<PollenGroup>()
 
-                if (p.selected) {
+                    for (p: Parent in mMales) {
 
-                    p.id?.let { id ->
+                        if (p.selected) {
 
-                        addedMales.add(buildGroup(id))
+                            p.id?.let { id ->
+
+                                addedMales.add(buildGroup(id))
+                            }
+                        }
                     }
+
+                    for (poly: PollenGroup in mPolycrosses) {
+
+                        if (poly.selected) {
+
+                            poly.id?.let {id ->
+
+                                addedMales.add(buildGroup(id))
+                            }
+                        }
+                    }
+
+                    /***
+                     * check if list has been created, otherwise insert a single male
+                     */
+                    if (addedMales.isEmpty()) {
+
+                        //Todo make a build function to replace this
+                        parentList.insert(
+                                Parent(codeEditText.text.toString(),
+                                        1,
+                                        nameEditText.text.toString()))
+
+                    } else {
+
+                        groupList.insert(*addedMales.toTypedArray())
+
+                    }
+
+                    mBinding.root.findNavController().navigate(
+                            PollenManagerFragmentDirections
+                                    .actionReturnToParentsFragment(1))
                 }
             }
 
-            for (poly: PollenGroup in mPolycrosses) {
-
-                if (poly.selected) {
-
-                    poly.id?.let {id ->
-
-                        addedMales.add(buildGroup(id))
-                    }
-                }
-            }
-
-            groupList.insert(*addedMales.toTypedArray())
-
-            mBinding.root.findNavController().navigate(
-                    PollenManagerFragmentDirections
-                            .actionReturnToParentsFragment()
-                            .setMalesFirst(1))
         }
     }
 

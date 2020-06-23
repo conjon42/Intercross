@@ -17,7 +17,7 @@ class EventListViewModel(private val eventRepo: EventsRepository): BaseViewModel
 
     }
 
-    //TODO move ParentCount class to Query Result / Relations file
+    //TODO chaneylc move ParentCount class to Query Result / Relations file
     val parents = eventRepo.getParentCount()
 
     val events = eventRepo.selectAll()

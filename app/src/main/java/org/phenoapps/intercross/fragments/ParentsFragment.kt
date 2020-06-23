@@ -6,15 +6,24 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.widget.CheckBox
+import androidx.core.os.bundleOf
+import androidx.core.view.children
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
+import kotlinx.android.synthetic.main.fragment_barcode_scan.*
+import kotlinx.android.synthetic.main.fragment_events.*
+import kotlinx.coroutines.*
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.ParentsAdapter
 import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.PollenGroupRepository
+import org.phenoapps.intercross.data.models.BaseParent
 import org.phenoapps.intercross.data.models.Parent
+import org.phenoapps.intercross.data.models.PollenGroup
 import org.phenoapps.intercross.data.viewmodels.EventProducer
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
 import org.phenoapps.intercross.data.viewmodels.PollenGroupListViewModel
@@ -78,8 +87,12 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
         val tabFocus = arguments?.getInt("malesFirst") ?: 0
 
-        mMaleAdapter = ParentsAdapter(viewModel)
-        mFemaleAdapter = ParentsAdapter(viewModel)
+        //todo add deselect queries
+        //viewModel.deselectAll()
+        //groupList.deselectAll()
+
+        mMaleAdapter = ParentsAdapter(viewModel, groupList)
+        mFemaleAdapter = ParentsAdapter(viewModel, groupList)
 
         femaleRecycler.adapter = mFemaleAdapter
         femaleRecycler.layoutManager = LinearLayoutManager(ctx)
@@ -87,43 +100,25 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
         maleRecycler.adapter = mMaleAdapter
         maleRecycler.layoutManager = LinearLayoutManager(ctx)
 
-        viewModel.parents.observeForever { parents ->
+        viewModel.parents.observe(viewLifecycleOwner, Observer { parents ->
 
-            val addedMales = ArrayList<Parent>()
+            val addedMales = ArrayList<BaseParent>()
 
-            groupList.groups.observeForever { groups ->
+            groupList.groups.observe(viewLifecycleOwner, Observer { groups ->
 
-                //aggregate groups TODO replace with new query
-                addedMales.addAll(groups
-                        .distinctBy { it.codeId }
-                        .map { g-> Parent(g.codeId, 1, g.name) })
+                addedMales.clear()
 
-                mMaleAdapter.submitList(addedMales+parents.filter { p -> p.sex == 1 })
+                addedMales.addAll(groups.distinctBy { it.codeId })
 
-            }
+                mMaleAdapter.submitList(addedMales+(parents.filter { p -> p.sex == 1 }.reversed()))
+
+            })
 
             mMaleAdapter.submitList(addedMales+(parents.filter { p -> p.sex == 1 }.reversed()))
 
             mFemaleAdapter.submitList(parents.filter { p -> p.sex == 0 }.reversed())
 
-        }
-
-        /**
-         * Submit id/name pair to Parents table
-         */
-        submitParent.setOnClickListener {
-
-            //TODO add text sanitization / checking
-
-            val sex = if (tabLayout.getTabAt(0)?.isSelected != false) 0 else 1
-
-            parentList.insert(Parent(codeEditText.text.toString(), sex, nameEditText.text.toString()))
-
-            //clear edit texts
-            nameEditText.setText("")
-
-            codeEditText.setText("")
-        }
+        })
 
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
 
@@ -142,12 +137,10 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
                         "Female" -> {
                             femaleRecycler.visibility=View.VISIBLE
                             maleRecycler.visibility=View.GONE
-                            newMaleButton.visibility=View.GONE
                         }
                         "Male" -> {
                             maleRecycler.visibility=View.VISIBLE
                             femaleRecycler.visibility=View.GONE
-                            newMaleButton.visibility=View.VISIBLE
                         }
                     }
                 }
@@ -162,21 +155,49 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
         /*
         Go to Pollen Manager fragment for male group data-entry
          */
-        newMaleButton.setOnClickListener {
+        newButton.setOnClickListener {
 
-            Navigation.findNavController(mBinding.root)
-                    .navigate(ParentsFragmentDirections.globalActionToPollenManagerFragment())
+            when (tabLayout.getTabAt(0)?.isSelected) {
+
+                true -> Navigation.findNavController(mBinding.root)
+                        .navigate(ParentsFragmentDirections.actionParentsToCreateEvent(0))
+
+                else -> Navigation.findNavController(mBinding.root)
+                        .navigate(ParentsFragmentDirections.actionParentsToCreateEvent(1))
+            }
+
         }
 
+        /**
+         * Delete should erase just the current tab
+         * Group deletion: ll entries that have the selected group ids must be purged from DB.
+         */
         deleteButton.setOnClickListener {
 
-            //TODO Ask if delete should erase both male and female selected, or just the current tab?
-            //TODO add poly cross delete, all entries that have the selected group ids must be purged from DB.
-            //delete only selected tab
+            if (tabLayout.getTabAt(0)?.isSelected == true) {
 
-            viewModel.delete(*(mFemaleAdapter.currentList + mMaleAdapter.currentList)
-                    .filter { it.selected }
-                    .toTypedArray())
+                val outParents: List<Parent> = mFemaleAdapter
+                        .currentList.filterIsInstance(Parent::class.java)
+
+                viewModel.delete(*(outParents
+                        .filter { p -> p.selected }).toTypedArray())
+
+            } else {
+
+                val outParents = mMaleAdapter.currentList.filterIsInstance(Parent::class.java)
+
+                val outGroups = mMaleAdapter.currentList.filterIsInstance(PollenGroup::class.java)
+
+
+                groupList.deleteByCode(outGroups
+                        .filter { group -> group.selected }
+                        .map { g -> g.codeId }.toList())
+
+                //groupList.delete(*outGroups.filter { group -> group.selected }.toTypedArray())
+
+                viewModel.delete(*outParents.filter { parent -> parent.selected }.toTypedArray())
+
+            }
 
         }
 

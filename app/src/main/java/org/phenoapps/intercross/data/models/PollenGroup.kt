@@ -25,7 +25,7 @@ data class PollenGroup(
 
         @ColumnInfo(name = "gid")
         @PrimaryKey(autoGenerate = true)
-        var id: Long? = null) {
+        var id: Long? = null): BaseParent() {
 
         var selected: Boolean = false
 }

@@ -14,7 +14,7 @@ import androidx.room.PrimaryKey
  */
 @Entity(tableName = "parents", indices = [Index(value = ["name"])])
 data class Parent(@ColumnInfo(name = "codeId")
-                  val codeId: String, val sex: Int): BaseTable() {
+                  val codeId: String, val sex: Int): BaseParent() {
 
     /**
      * Selected column is only used for saving check box states.
@@ -28,25 +28,15 @@ data class Parent(@ColumnInfo(name = "codeId")
     @ColumnInfo(name = "name")
     var name: String = codeId
 
-    constructor(codeId: String, sex: Int, name: String?): this(codeId, sex) {
+    var isPoly: Boolean = false
+
+    constructor(codeId: String, sex: Int, name: String?, isPoly: Boolean = false): this(codeId, sex) {
 
         name?.let { readableName ->
 
             this.name = readableName
-        }
-    }
 
-    companion object {
-
-        class DiffCallback : DiffUtil.ItemCallback<Parent>() {
-
-            override fun areItemsTheSame(oldItem: Parent, newItem: Parent): Boolean {
-                return oldItem.id == newItem.id
-            }
-
-            override fun areContentsTheSame(oldItem: Parent, newItem: Parent): Boolean {
-                return oldItem.id == newItem.id
-            }
+            this.isPoly = isPoly
         }
     }
 }

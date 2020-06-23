@@ -87,5 +87,7 @@
     <string name="parents_dont_exist">Parents do not exist in the DB</string>
     <string name="navigate_to_summary">Navigate to summary</string>
     <string name="add_individual_parent">Add Parent</string>
+    <string name="polycrosses">Polycrosses</string>
+    <string name="initial_parents">Initial Parents</string>
 
 </resources>

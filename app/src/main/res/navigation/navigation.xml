@@ -58,6 +58,13 @@
         android:name="org.phenoapps.intercross.fragments.ParentsFragment"
         android:label="Parents"
         tools:layout="@layout/fragment_parents">
+
+        <action android:id="@+id/action_parents_to_create_event"
+            app:destination="@id/pollen_manager_fragment">
+            <argument android:name="mode"
+                app:argType="integer"
+                android:defaultValue="0"/>
+        </action>
     </fragment>
 
     <fragment
@@ -93,6 +100,11 @@
         android:name="org.phenoapps.intercross.fragments.PollenManagerFragment"
         android:label="Pollen Manager"
         tools:layout="@layout/fragment_pollen_manager">
+
+        <argument
+            android:name="mode"
+            android:defaultValue="0"
+            app:argType="integer"/>
 
         <action
             android:id="@+id/action_return_to_parents_fragment"
