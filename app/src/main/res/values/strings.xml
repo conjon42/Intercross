@@ -89,5 +89,8 @@
     <string name="add_individual_parent">Add Parent</string>
     <string name="polycrosses">Polycrosses</string>
     <string name="initial_parents">Initial Parents</string>
+    <string name="add_female">Add Female</string>
+    <string name="add_male_group">Add Male Group</string>
+    <string name="add_male">Add Male</string>
 
 </resources>

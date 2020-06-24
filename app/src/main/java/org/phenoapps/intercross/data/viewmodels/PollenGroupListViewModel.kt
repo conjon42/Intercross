@@ -10,6 +10,15 @@ class PollenGroupListViewModel(private val repo: PollenGroupRepository): BaseVie
 
     val groups = repo.selectAll()
 
+    fun updateSelection(selection: Int) {
+
+        viewModelScope.launch {
+
+            repo.updateSelection(selection)
+
+        }
+    }
+
     fun updateSelectByCode(codeId: String, selected: Boolean) {
 
         viewModelScope.launch {

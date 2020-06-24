@@ -14,4 +14,7 @@ interface ParentsDao : BaseDao<Parent> {
     @Query("SELECT * FROM parents WHERE parents.sex == :sex")
     fun selectAll(sex: Int): LiveData<List<Parent>>
 
+    @Query("UPDATE parents SET selected = :selection")
+    suspend fun updateSelection(selection: Int)
+
 }

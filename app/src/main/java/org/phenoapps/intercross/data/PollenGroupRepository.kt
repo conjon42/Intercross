@@ -13,6 +13,11 @@ class PollenGroupRepository private constructor(
 
     fun selectAll() = pollenGroupDao.selectAll()
 
+    suspend fun updateSelection(selection: Int) {
+
+        pollenGroupDao.updateSelection(selection)
+    }
+
     suspend fun updateSelectByCode(codeId: String, selected: Boolean) {
 
         pollenGroupDao.updateSelectByCode(codeId, selected)

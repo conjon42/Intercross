@@ -1,5 +1,7 @@
 package org.phenoapps.intercross.fragments
 
+import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
@@ -7,6 +9,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.ParentsAdapter
 import org.phenoapps.intercross.data.EventsRepository
@@ -24,15 +27,17 @@ import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModel
 import org.phenoapps.intercross.databinding.FragmentPollenManagerBinding
 import java.util.*
 
+//TODO update fragment with data binding, update button text depending on data to be submitted
+
 class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBinding>(R.layout.fragment_pollen_manager) {
 
     private val args: PollenManagerFragmentArgs by navArgs()
 
     private lateinit var mAdapter: ParentsAdapter
 
-    private var mEvents: List<Event> = ArrayList<Event>()
-
-    private var mMales: List<Parent> = ArrayList<Parent>()
+    private lateinit var mEvents: List<Event>
+    private lateinit var mMales: List<Parent>
+    private lateinit var mGroups: List<PollenGroup>
 
     private var mPolycrosses: List<PollenGroup> = ArrayList<PollenGroup>()
 
@@ -58,6 +63,10 @@ class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBindin
 
     override fun FragmentPollenManagerBinding.afterCreateView() {
 
+        parentList.updateSelection(0)
+
+        groupList.updateSelection(0)
+
         /***
          * When the safe args = 0 we are creating females, otherwise we are creating males/groups
          */
@@ -76,29 +85,29 @@ class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBindin
 
                     groupList.groups.observeForever { groups ->
 
-                        groups?.let {
+                        groups?.let { gs ->
 
+                            mGroups = gs
                             /**
                              * Transform polycrosses to simple parent object before submitting to parent adapter.
                              */
-                            mAdapter.submitList(groups
+                            mAdapter.submitList(gs
                                     .distinctBy { g -> g.codeId }+males.distinctBy { m -> m.codeId })
+
+                            updateButtonText()
                         }
                     }
                 }
+
+                updateButtonText()
             })
 
             recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
             recyclerView.adapter = mAdapter
 
-        } else {
+            mode = args.mode
 
-            //TODO replace with data binding
-
-            textView.visibility = View.GONE
-
-            recyclerView.visibility = View.GONE
         }
 
         /**
@@ -209,6 +218,29 @@ class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBindin
             }
 
         }
+    }
+
+    private fun FragmentPollenManagerBinding.updateButtonText() {
+
+        if (isAdded) {
+
+            val act = requireActivity()
+
+            newButton.text =
+                if (::mMales.isInitialized &&
+                        mMales.any { male -> male.selected }
+                        || (::mGroups.isInitialized
+                                && mGroups.any { group -> group.selected })) {
+
+                    act.getString(R.string.add_male_group)
+
+                } else if (args.mode == 0) {
+
+                    act.getString(R.string.add_female)
+
+                } else act.getString(R.string.add_male)
+        }
+
     }
 
     /**

@@ -10,6 +10,8 @@ class ParentsRepository private constructor(
 
     fun selectAll(sex: Int) = parentsDao.selectAll(sex)
 
+    suspend fun updateSelection(selection: Int) = parentsDao.updateSelection(selection)
+
     companion object {
         @Volatile private var instance: ParentsRepository? = null
 

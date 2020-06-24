@@ -51,6 +51,7 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
     private lateinit var mFemaleAdapter: ParentsAdapter
 
+    private var mNextSelection = true
 
     //simple gesture listener to detect left and right swipes,
     //on a detected swipe the viewed gender will change
@@ -87,9 +88,8 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
         val tabFocus = arguments?.getInt("malesFirst") ?: 0
 
-        //todo add deselect queries
-        //viewModel.deselectAll()
-        //groupList.deselectAll()
+        viewModel.updateSelection(0)
+        groupList.updateSelection(0)
 
         mMaleAdapter = ParentsAdapter(viewModel, groupList)
         mFemaleAdapter = ParentsAdapter(viewModel, groupList)
@@ -256,30 +256,40 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
                 R.id.action_select_all -> {
 
-                    //TODO update all male/female or just the selected tab?
-                    //TODO reverse all selections or just make them all true? no inverting
-//                    if (tabLayout2.getTabAt(0)?.isSelected == true) {
-//
-//                        mEventStore.update(
-//                                *(mFemaleAdapter.currentList)
-//                                        .map { it.apply { it.isSelected = true }}
-//                                        .toTypedArray()
-//
-//                        )
-//
-//                        mFemaleAdapter.notifyDataSetChanged()
-//
-//                    } else {
-//
-//                        mEventStore.update(
-//                                *(mMaleAdapter.currentList)
-//                                        .map { it.apply { it.isSelected = true }}
-//                                        .toTypedArray()
-//
-//                        )
-//
-//                        mMaleAdapter.notifyDataSetChanged()
-//                    }
+
+                    if (tabLayout.getTabAt(0)?.isSelected == true) {
+
+                        parentList.update(
+                                *(mFemaleAdapter.currentList
+                                        .filterIsInstance(Parent::class.java)
+                                        .map { mom -> mom.apply { mom.selected = mNextSelection } }
+                                        .toTypedArray())
+                        )
+
+                        mFemaleAdapter.notifyDataSetChanged()
+
+
+                    } else {
+
+                        parentList.update(
+                                *(mMaleAdapter.currentList
+                                        .filterIsInstance(Parent::class.java)
+                                        .map { dad -> dad.apply { dad.selected = mNextSelection } }
+                                        .toTypedArray())
+                        )
+
+                        groupList.update(
+                                *(mMaleAdapter.currentList
+                                        .filterIsInstance(PollenGroup::class.java)
+                                        .map { group -> group.apply { group.selected = mNextSelection } }
+                                        .toTypedArray())
+                        )
+
+                        mMaleAdapter.notifyDataSetChanged()
+                    }
+
+                    mNextSelection = !mNextSelection
+
                 }
             }
         }
