@@ -1,6 +1,7 @@
 package org.phenoapps.intercross.fragments
 
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -10,8 +11,11 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.SummaryAdapter
+import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.WishlistRepository
+import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
+import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentSummaryBinding
 
@@ -21,8 +25,18 @@ import org.phenoapps.intercross.databinding.FragmentSummaryBinding
  */
 class WishlistFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.fragment_summary) {
 
+    val eventsModel: EventListViewModel by viewModels {
+        EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
+    }
+
+    val wishModel: WishlistViewModel by viewModels {
+        WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
+    }
 
     override fun FragmentSummaryBinding.afterCreateView() {
+
+        PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .edit().putString("last_visited_summary", "wishlist").apply()
 
         recyclerView.adapter = SummaryAdapter(requireContext())
 

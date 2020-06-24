@@ -15,26 +15,39 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.observe
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.GlobalScope
+import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.models.Parent
 import org.phenoapps.intercross.data.models.Wishlist
+import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
 import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
+import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.ActivityMainBinding
+import org.phenoapps.intercross.fragments.EventsFragmentDirections
 import org.phenoapps.intercross.fragments.PatternFragment
 import org.phenoapps.intercross.util.DateUtil
+import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.util.SnackbarQueue
 import java.io.File
@@ -45,11 +58,27 @@ class MainActivity : AppCompatActivity() {
 //        FirebaseAnalytics.getInstance(this)
 //    }
 
+    private val eventsModel: EventListViewModel by viewModels {
+        EventsListViewModelFactory(EventsRepository.getInstance(mDatabase.eventsDao()))
+    }
+
+    private val wishModel: WishlistViewModel by viewModels {
+        WishlistViewModelFactory(WishlistRepository.getInstance(mDatabase.wishlistDao()))
+    }
+
+    private val parentsList: ParentsListViewModel by viewModels {
+        ParentsListViewModelFactory(ParentsRepository.getInstance(mDatabase.parentsDao()))
+    }
+
+    private var parentsEmpty = true
+
+    private var wishlistEmpty = true
+
+    private var eventsEmpty = true
+
     private lateinit var mDatabase: IntercrossDatabase
 
     private lateinit var mParentsStore: ParentsListViewModel
-
-    private lateinit var mWishlistStore: WishlistViewModel
 
     private lateinit var mSnackbar: SnackbarQueue
 
@@ -166,7 +195,10 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.action_nav_parents -> {
 
-                    mNavController.navigate(R.id.global_action_to_parents_fragment)
+                    if (!parentsEmpty)
+                        mNavController.navigate(EventsFragmentDirections.actionToParentsFragment())
+                    else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
+                            getString(R.string.parents_table_empty))
                 }
                 R.id.action_nav_import -> {
 
@@ -176,16 +208,51 @@ class MainActivity : AppCompatActivity() {
 
                     exportFile()
                 }
-                R.id.action_nav_wishlist_manager -> {
+                R.id.action_nav_summary -> {
 
-                    mNavController.navigate(R.id.global_action_to_summary_fragment)
+                    val lastSummaryFragment = PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
+                            .getString("last_visited_summary", "summary")
+
+                    /***
+                     * Prioritize navigation to summary fragment, otherwise pick the last chosen view using preferences
+                     * The key "last_visited_summary" is updated at the start of each respective fragment.
+                     */
+                    when (lastSummaryFragment) {
+
+                        "summary" -> {
+                            if (!eventsEmpty)
+                                mNavController.navigate(EventsFragmentDirections.actionToSummaryFragment())
+                            else if(!wishlistEmpty)
+                                mNavController.navigate(EventsFragmentDirections.actionToWishlistFragment())
+                            else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
+                                    getString(R.string.summary_and_wishlist_empty))
+                        }
+                        "crossblock" -> {
+                            if (!wishlistEmpty)
+                                mNavController.navigate(EventsFragmentDirections.actionToCrossblock())
+                            else if (!eventsEmpty)
+                                mNavController.navigate(EventsFragmentDirections.actionToSummaryFragment())
+                            else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
+                                    getString(R.string.summary_and_wishlist_empty))
+                        }
+                        "wishlist" -> {
+                            if (!wishlistEmpty)
+                                mNavController.navigate(EventsFragmentDirections.actionToWishlistFragment())
+                            else if (!eventsEmpty)
+                                mNavController.navigate(EventsFragmentDirections.actionToSummaryFragment())
+                            else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
+                                    getString(R.string.summary_and_wishlist_empty))
+                        }
+                    }
                 }
                 R.id.action_nav_about -> {
 
                     mNavController.navigate(R.id.aboutActivity)
                 }
             }
+
             mDrawerLayout.closeDrawers()
+
             true
         }
 
@@ -197,12 +264,34 @@ class MainActivity : AppCompatActivity() {
 
         mParentsStore = ParentsListViewModel(ParentsRepository.getInstance(mDatabase.parentsDao()))
 
-        mWishlistStore = WishlistViewModel(WishlistRepository.getInstance(mDatabase.wishlistDao()))
+        eventsModel.events.observe(this, Observer {
+
+            it?.let {
+
+                eventsEmpty = it.isEmpty()
+            }
+        })
+
+        parentsList.parents.observe(this, Observer {
+
+            it?.let {
+
+                parentsEmpty = it.isEmpty()
+            }
+        })
+
+        wishModel.wishlist.observe(this, Observer {
+
+            it?.let {
+
+                wishlistEmpty = it.isEmpty()
+            }
+        })
     }
 
     private fun importWishlist() {
 
-        mWishlistStore.deleteAll()
+        wishModel.deleteAll()
 
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
@@ -394,7 +483,7 @@ class MainActivity : AppCompatActivity() {
 
                 columns["Wishlist"]?.let {
 
-                    mWishlistStore.addWishlist(
+                    wishModel.addWishlist(
                             *(it as ArrayList<Wishlist>)
                                     .toTypedArray()
                     )

@@ -42,16 +42,16 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
         PollenGroupListViewModelFactory(PollenGroupRepository.getInstance(db.pollenGroupDao()))
     }
 
-    val parentList: ParentsListViewModel by viewModels {
+    private val parentList: ParentsListViewModel by viewModels {
         ParentsListViewModelFactory(ParentsRepository.getInstance(db.parentsDao()))
     }
-
 
     private lateinit var mMaleAdapter: ParentsAdapter
 
     private lateinit var mFemaleAdapter: ParentsAdapter
 
-    private var mNextSelection = true
+    private var mNextMaleSelection = true
+    private var mNextFemaleSelection = true
 
     //simple gesture listener to detect left and right swipes,
     //on a detected swipe the viewed gender will change
@@ -262,9 +262,11 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
                         parentList.update(
                                 *(mFemaleAdapter.currentList
                                         .filterIsInstance(Parent::class.java)
-                                        .map { mom -> mom.apply { mom.selected = mNextSelection } }
+                                        .map { mom -> mom.apply { mom.selected = mNextFemaleSelection } }
                                         .toTypedArray())
                         )
+
+                        mNextFemaleSelection = !mNextFemaleSelection
 
                         mFemaleAdapter.notifyDataSetChanged()
 
@@ -274,22 +276,21 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
                         parentList.update(
                                 *(mMaleAdapter.currentList
                                         .filterIsInstance(Parent::class.java)
-                                        .map { dad -> dad.apply { dad.selected = mNextSelection } }
+                                        .map { dad -> dad.apply { dad.selected = mNextMaleSelection } }
                                         .toTypedArray())
                         )
 
                         groupList.update(
                                 *(mMaleAdapter.currentList
                                         .filterIsInstance(PollenGroup::class.java)
-                                        .map { group -> group.apply { group.selected = mNextSelection } }
+                                        .map { group -> group.apply { group.selected = mNextMaleSelection } }
                                         .toTypedArray())
                         )
 
+                        mNextMaleSelection = !mNextMaleSelection
+
                         mMaleAdapter.notifyDataSetChanged()
                     }
-
-                    mNextSelection = !mNextSelection
-
                 }
             }
         }

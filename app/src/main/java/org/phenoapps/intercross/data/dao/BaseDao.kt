@@ -1,9 +1,6 @@
 package org.phenoapps.intercross.data.dao
 
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Update
+import androidx.room.*
 
 interface BaseDao<T> {
 
@@ -15,4 +12,5 @@ interface BaseDao<T> {
 
     @Delete
     fun delete(vararg e: T?): Int
+
 }

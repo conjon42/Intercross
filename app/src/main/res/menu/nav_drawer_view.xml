@@ -5,7 +5,7 @@
         android:icon="@drawable/ic_nv_import"
         android:title="@string/import_file" />
     <item
-        android:id="@+id/action_nav_wishlist_manager"
+        android:id="@+id/action_nav_summary"
         android:icon="@drawable/ic_nv_summary"
         android:title="@string/crosses"/>
     <item
@@ -15,13 +15,13 @@
     <item
         android:id="@+id/action_nav_export"
         android:icon="@drawable/ic_nv_export"
-        android:title="Export" />
+        android:title="@string/export" />
     <item
         android:id="@+id/action_nav_about"
         android:icon="@drawable/ic_nv_about"
-        android:title="About" />
+        android:title="@string/about" />
     <item
         android:id="@+id/action_nav_settings"
         android:icon="@drawable/ic_nv_settings"
-        android:title="Settings" />
+        android:title="@string/settings" />
 </menu>

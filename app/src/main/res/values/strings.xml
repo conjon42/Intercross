@@ -92,5 +92,11 @@
     <string name="add_female">Add Female</string>
     <string name="add_male_group">Add Male Group</string>
     <string name="add_male">Add Male</string>
+    <string name="wishlist_is_empty">The wishlist is empty, import a wishlist first.</string>
+    <string name="export">Export</string>
+    <string name="about">About</string>
+    <string name="settings">Settings</string>
+    <string name="summary_and_wishlist_empty">Summary and wishlist are empty.</string>
+    <string name="parents_table_empty">Parents table is empty.</string>
 
 </resources>

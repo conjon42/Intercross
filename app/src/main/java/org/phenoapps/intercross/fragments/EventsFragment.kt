@@ -54,7 +54,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private var mSettings: Settings = Settings()
 
-    private val mAdapter: EventsAdapter = EventsAdapter()
+    private var mEventsEmpty = true
+
+    private var mWishlistEmpty = true
 
     private lateinit var mWishlistStore: WishlistViewModel
     private lateinit var mSharedViewModel: CrossSharedViewModel
@@ -107,6 +109,8 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             it?.let {
 
+                mEventsEmpty = it.isEmpty()
+
                 (recyclerView.adapter as? EventsAdapter)?.submitList(it)
 
                 recyclerView.adapter?.notifyDataSetChanged()
@@ -126,7 +130,13 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         mWishlistStore.wishlist.observe(viewLifecycleOwner, Observer {
 
-            mWishlist = it
+            it?.let {
+
+                mWishlistEmpty = it.isEmpty()
+
+                mWishlist = it
+            }
+
         })
 
         mSharedViewModel.lastScan.observe(viewLifecycleOwner, Observer {

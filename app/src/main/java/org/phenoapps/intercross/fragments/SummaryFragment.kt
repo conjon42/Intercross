@@ -1,9 +1,11 @@
 package org.phenoapps.intercross.fragments
 
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
@@ -11,16 +13,30 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.SummaryAdapter
 import org.phenoapps.intercross.data.EventsRepository
+import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
+import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentSummaryBinding
+import org.phenoapps.intercross.util.Dialogs
 
 /**
  * Summary Fragment is a recycler list of currenty crosses.
  * Users can navigate to and from cross block and wishlist fragments.
  */
 class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.fragment_summary) {
+
+    private val eventsModel: EventListViewModel by viewModels {
+        EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
+    }
+
+    private val wishModel: WishlistViewModel by viewModels {
+        WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
+    }
+
+    private var mWishlistEmpty = true
 
     /**
      * Polymorphism setup to allow adapter to work with two different types of objects.
@@ -37,15 +53,14 @@ class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.
 
     override fun FragmentSummaryBinding.afterCreateView() {
 
+        PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .edit().putString("last_visited_summary", "summary").apply()
+
         recyclerView.adapter = SummaryAdapter(requireContext())
 
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        val viewModel: EventListViewModel by viewModels {
-            EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
-        }
-
-        viewModel.parents.observe(viewLifecycleOwner, Observer {
+        eventsModel.parents.observe(viewLifecycleOwner, Observer {
 
             it?.let { crosses ->
 
@@ -57,8 +72,18 @@ class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.
                 recyclerView.adapter?.notifyDataSetChanged()
             }
         })
-    }
 
+        /**
+         * Keep track if wishlist repo is empty to disable options items menu
+         */
+        wishModel.wishlist.observe(viewLifecycleOwner, Observer {
+
+            it?.let {
+
+                mWishlistEmpty = it.isEmpty()
+            }
+        })
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -76,20 +101,24 @@ class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        when(item.itemId) {
+        if (!mWishlistEmpty) {
 
-            R.id.action_nav_crossblock -> {
+            when(item.itemId) {
 
-                Navigation.findNavController(mBinding.root)
-                        .navigate(SummaryFragmentDirections.actionToCrossblock())
+                R.id.action_nav_crossblock -> {
+
+                    Navigation.findNavController(mBinding.root)
+                            .navigate(SummaryFragmentDirections.actionToCrossblock())
+                }
+
+                R.id.action_nav_wishlist -> {
+
+                    Navigation.findNavController(mBinding.root)
+                            .navigate(SummaryFragmentDirections.actionToWishlist())
+                }
             }
 
-            R.id.action_nav_wishlist -> {
-
-                Navigation.findNavController(mBinding.root)
-                        .navigate(SummaryFragmentDirections.actionToWishlist())
-            }
-        }
+        } else Dialogs.notify(AlertDialog.Builder(requireContext()), "Wishlist is empty.")
 
         return super.onOptionsItemSelected(item)
     }

@@ -3,6 +3,7 @@ package org.phenoapps.intercross.fragments
 
 import android.os.Build
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.view.*
 import androidx.annotation.RequiresApi
 import androidx.core.view.GestureDetectorCompat
@@ -13,14 +14,26 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.HeaderAdapter
+import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.WishlistRepository
+import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
+import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.CrossBlockManagerBinding
+import kotlin.properties.Delegates
 
 
 class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.layout.cross_block_manager),
     GestureDetector.OnGestureListener {
+
+    private val eventsModel: EventListViewModel by viewModels {
+        EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
+    }
+
+    private val wishModel: WishlistViewModel by viewModels {
+        WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
+    }
 
     /***
      * Polymorphism class structure to serve different cell types to the Cross Block Table.
@@ -38,9 +51,13 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
     private lateinit var mColumnAdapter: HeaderAdapter
 
+    private var mEventsEmpty = true
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun CrossBlockManagerBinding.afterCreateView() {
+
+        PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .edit().putString("last_visited_summary", "crossblock").apply()
 
         mGesture = GestureDetectorCompat(requireContext(), this@CrossBlockFragment)
 
@@ -123,13 +140,9 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
         rows.adapter = mRowAdapter
 
-        val viewModel: WishlistViewModel by viewModels {
-            WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
-        }
-
         val data = ArrayList<BlockData>()
 
-        viewModel.crossblock.observe(viewLifecycleOwner, Observer { block ->
+        wishModel.crossblock.observe(viewLifecycleOwner, Observer { block ->
 
             val columns = block.size
 
@@ -163,8 +176,18 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
             mColumnAdapter.notifyDataSetChanged()
             mRowAdapter.notifyDataSetChanged()
         })
-    }
 
+        /**
+         * list for events model, disable options menu for summary if the list is empty
+         */
+        eventsModel.events.observe(viewLifecycleOwner, Observer {
+
+            it?.let {
+
+                mEventsEmpty = it.isEmpty()
+            }
+        })
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -189,9 +212,12 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
                         .navigate(CrossBlockFragmentDirections.actionToWishlist())
             }
 
-            R.id.action_to_summary -> {
-                Navigation.findNavController(mBinding.root)
-                        .navigate(CrossBlockFragmentDirections.actionToSummary())
+            R.id.action_nav_summary -> {
+
+                if (!mEventsEmpty) {
+                    Navigation.findNavController(mBinding.root)
+                            .navigate(CrossBlockFragmentDirections.actionToSummary())
+                }
             }
         }
         return super.onOptionsItemSelected(item)
