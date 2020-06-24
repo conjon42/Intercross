@@ -23,6 +23,8 @@ import org.phenoapps.intercross.fragments.SummaryFragment
  * ListEntry holds wishlist specific data s.a wishMax, current.
  *
  * CrossData's are not rendered with checkboxes.
+ *
+ * TODO implement child list pop-up, maybe use AlertDialog SingleChoice item list
  */
 class SummaryAdapter(
         val context: Context

@@ -5,6 +5,7 @@ import android.preference.PreferenceManager
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
@@ -18,6 +19,7 @@ import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentSummaryBinding
+import org.phenoapps.intercross.util.Dialogs
 
 /**
  * Summary Fragment is a recycler list of currenty crosses.
@@ -25,13 +27,17 @@ import org.phenoapps.intercross.databinding.FragmentSummaryBinding
  */
 class WishlistFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.fragment_summary) {
 
-    val eventsModel: EventListViewModel by viewModels {
+    private val eventsModel: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
     }
 
-    val wishModel: WishlistViewModel by viewModels {
+    private val wishModel: WishlistViewModel by viewModels {
         WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
     }
+
+    private var wishlistEmpty = true
+
+    private var eventsEmpty = true
 
     override fun FragmentSummaryBinding.afterCreateView() {
 
@@ -42,13 +48,19 @@ class WishlistFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout
 
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        val viewModel: WishlistViewModel by viewModels {
-            WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
-        }
+        eventsModel.events.observe(viewLifecycleOwner, Observer {
 
-        viewModel.wishlist.observe(viewLifecycleOwner, Observer {
+            it?.let {
+
+                eventsEmpty = it.isEmpty()
+            }
+        })
+
+        wishModel.wishlist.observe(viewLifecycleOwner, Observer {
 
             it?.let { crosses ->
+
+                wishlistEmpty = crosses.isEmpty()
 
                 (recyclerView.adapter as SummaryAdapter)
                         .submitList(crosses.map { res ->
@@ -82,14 +94,20 @@ class WishlistFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout
 
             R.id.action_nav_crossblock -> {
 
-                Navigation.findNavController(mBinding.root)
-                        .navigate(WishlistFragmentDirections.actionToCrossblock())
+                if (!wishlistEmpty)
+                    Navigation.findNavController(mBinding.root)
+                            .navigate(WishlistFragmentDirections.actionToCrossblock())
+                else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
+
             }
 
             R.id.action_nav_summary -> {
 
-                Navigation.findNavController(mBinding.root)
-                        .navigate(WishlistFragmentDirections.actionToSummary())
+                if (!eventsEmpty)
+                    Navigation.findNavController(mBinding.root)
+                            .navigate(WishlistFragmentDirections.actionToSummary())
+                else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.summary_empty))
+
             }
         }
 

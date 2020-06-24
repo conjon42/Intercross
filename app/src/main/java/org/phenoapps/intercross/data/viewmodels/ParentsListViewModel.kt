@@ -13,6 +13,14 @@ class ParentsListViewModel(private val repo: ParentsRepository): BaseViewModel<P
 
     val females = repo.selectAll(0)
 
+    fun updateName(vararg parents: Parent) {
+
+        viewModelScope.launch {
+
+            repo.updateName(*parents)
+        }
+    }
+
     fun insertIgnore(vararg parents: Parent) {
 
         viewModelScope.launch {
@@ -28,6 +36,14 @@ class ParentsListViewModel(private val repo: ParentsRepository): BaseViewModel<P
 
             repo.updateSelection(selection)
 
+        }
+    }
+
+    fun drop() {
+
+        viewModelScope.launch {
+
+            repo.drop()
         }
     }
 }

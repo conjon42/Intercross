@@ -52,6 +52,8 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         ParentsListViewModelFactory(ParentsRepository.getInstance(db.parentsDao()))
     }
 
+    private lateinit var mParents: List<Parent>
+
     private var mSettings: Settings = Settings()
 
     private var mEventsEmpty = true
@@ -104,6 +106,15 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         firstHint = getFirstOrder(requireContext())
 
         secondHint = getSecondOrder(requireContext())
+
+        parentsList.parents.observe(viewLifecycleOwner, Observer {
+
+            it?.let {
+
+                mParents = it
+
+            }
+        })
 
         viewModel.events.observe(viewLifecycleOwner, Observer {
 
@@ -219,9 +230,18 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun submitCrossEvent(e: Event) {
 
-        parentsList.insertIgnore(
-                Parent(e.femaleObsUnitDbId, 0), Parent(e.maleObsUnitDbId, 1)
-        )
+        /** Insert mom/dad cross ids only if they don't exist in the DB already **/
+        if (!mParents.any { p -> p.codeId == e.femaleObsUnitDbId }) {
+
+            parentsList.insert(Parent(e.femaleObsUnitDbId, 0))
+
+        }
+
+        if (!mParents.any { p -> p.codeId == e.maleObsUnitDbId }) {
+
+            parentsList.insert(Parent(e.maleObsUnitDbId, 1))
+
+        }
 
         viewModel.insert(e)
 
@@ -423,6 +443,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             FileUtil(requireContext()).ringNotification(true)
 
+            //TODO should delete crosses 'undo' wishlist tables?
             checkWishlist(female, male, value)
 
             resetDataEntry()

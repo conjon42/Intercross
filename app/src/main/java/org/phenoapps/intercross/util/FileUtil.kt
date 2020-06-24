@@ -48,8 +48,9 @@ class FileUtil(private val ctx: Context) {
 
     /***
      * Main parse driver. Either a parents or wishlist file can be loaded.
-     * Parents files populates a table of barcodeIds with readable names.
+     * Parents files populate a table of barcodeIds with readable names.
      *  --Parents table is specifically used to print barcodes that don't exist in the crosses table (CIP)
+     *  --But this table is also updated during normal cross entry. (Parents are inserted from data entry)
      * The wishlist table contains rows of samples to be crossed with minimum and maximum requirements
      *
      * This driver function parses a text file and determines the input file type.
@@ -66,11 +67,6 @@ class FileUtil(private val ctx: Context) {
          * The map is populated during parsing and batch-inserted afterwards.
          */
         val columnMap = HashMap<String, ArrayList<out BaseTable>>()
-
-
-        columnMap["Wishlist"] = ArrayList<Wishlist>()
-
-        columnMap["Events"] = ArrayList<Event>()
 
         if (lines.isNotEmpty()) {
 
@@ -92,7 +88,11 @@ class FileUtil(private val ctx: Context) {
 
                     val wishlist = ArrayList<Wishlist>()
 
-                    loadWishlist(headers, lines-lines[0], wishlist)
+                    val parents = ArrayList<Parent>()
+
+                    loadWishlist(headers, lines-lines[0], wishlist, parents)
+
+                    columnMap["Parents"] = parents
 
                     columnMap["Wishlist"] = wishlist
                 }
@@ -187,7 +187,8 @@ class FileUtil(private val ctx: Context) {
     //TODO Low-priority: switch to yield/iterator
     private fun loadWishlist(headers: List<String>,
                              lines: List<String>,
-                             wishlist: ArrayList<Wishlist>) {
+                             wishlist: ArrayList<Wishlist>,
+                             parents: ArrayList<Parent>) {
 
         if (validateHeaders(headers, listOf(
                         wishlistFemaleIdHeader,
@@ -263,6 +264,17 @@ class FileUtil(private val ctx: Context) {
                                             wishMin = row[min].toInt(),
                                             wishMax = wishlistMax
                                     ))
+
+                                    /**
+                                     * Add all parents parsed from the wishlist
+                                     */
+                                    parents.add(Parent(row[femaleId], 0).apply {
+                                        name = readableFemaleName ?: row[femaleId]
+                                    })
+
+                                    parents.add(Parent(row[maleId], 1).apply {
+                                        name = readableMaleName ?: row[maleId]
+                                    })
                                 }
                             }
                         }

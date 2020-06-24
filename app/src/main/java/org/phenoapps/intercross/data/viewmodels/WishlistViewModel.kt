@@ -21,15 +21,11 @@ class WishlistViewModel internal constructor(private val repo: WishlistRepositor
 
     val crossblock: LiveData<List<WishlistDao.CrossBlock>> = repo.getCrossblock()
 
-    fun addWishlist(vararg wishlist: Wishlist) {
-        viewModelScope.launch {
-            repo.createWishlist(*wishlist)
-        }
-    }
+    fun drop() {
 
-    fun deleteAll() {
         viewModelScope.launch {
-            repo.deleteAll()
+
+            repo.drop()
         }
     }
 }

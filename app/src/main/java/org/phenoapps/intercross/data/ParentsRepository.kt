@@ -10,9 +10,23 @@ class ParentsRepository private constructor(
 
     fun selectAll(sex: Int) = parentsDao.selectAll(sex)
 
+    suspend fun drop() = parentsDao.drop()
+
     suspend fun updateSelection(selection: Int) = parentsDao.updateSelection(selection)
 
     suspend fun insertIgnore(vararg parents: Parent) = parentsDao.insertIgnore(*parents)
+
+    /*
+    TODO replace foreach with batch call
+     */
+    suspend fun updateName(vararg parents: Parent) {
+
+        parents.forEach {
+
+            parentsDao.updateName(it.codeId, it.name)
+
+        }
+    }
 
     companion object {
         @Volatile private var instance: ParentsRepository? = null

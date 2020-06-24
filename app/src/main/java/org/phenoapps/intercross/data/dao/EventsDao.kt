@@ -2,6 +2,7 @@ package org.phenoapps.intercross.data.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
+import androidx.room.Embedded
 import androidx.room.Insert
 import androidx.room.Query
 import org.phenoapps.intercross.data.models.Event
@@ -12,7 +13,10 @@ interface EventsDao : BaseDao<Event> {
 
     data class ParentCount(val mom: String, val dad: String, val count: Int)
 
-    data class ParentData(val mom: String, val dad: String, val momName: String?=mom, val dadName: String?=dad)
+    //data class ParentData(val mom: String, val dad: String, val momName: String?, val dadName: String?)
+
+    data class ParentData(val momCode: String, val momReadableName: String,
+                          val dadCode: String, val dadReadableName: String)
 
     @Query("SELECT * FROM events WHERE events.eid == :eid")
     suspend fun getEvent(eid: Long?): Event
@@ -29,12 +33,19 @@ interface EventsDao : BaseDao<Event> {
     """)
     fun getParentCount(): LiveData<List<ParentCount>>
 
+//    @Query("""
+//        SELECT e.mom, e.dad, m.name as momName, d.name as dadName
+//        FROM events as e
+//        LEFT JOIN parents as m ON m.codeId = e.mom
+//        LEFT JOIN parents as d ON d.codeId = e.dad
+//        WHERE e.eid = :eid
+//    """)
+//    fun getParents(eid: Long): LiveData<ParentData>
+
     @Query("""
-        SELECT e.mom, e.dad, m.name as momName, d.name as dadName
-        FROM events as e 
-        LEFT JOIN parents as m ON m.codeId = e.mom
-        LEFT JOIN parents as d ON d.codeId = e.dad
-        WHERE e.eid = :eid
+        SELECT m.codeId as momCode, m.name as momReadableName, d.codeId as dadCode, d.name as dadReadableName
+        FROM parents as m, parents as d, events as e
+        WHERE e.eid = :eid and e.mom = m.codeId and e.dad = d.codeId
     """)
     fun getParents(eid: Long): LiveData<ParentData>
 

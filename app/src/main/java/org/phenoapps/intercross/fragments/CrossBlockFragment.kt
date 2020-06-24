@@ -1,11 +1,11 @@
 package org.phenoapps.intercross.fragments
 
-
 import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.view.*
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.GestureDetectorCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -21,6 +21,7 @@ import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.CrossBlockManagerBinding
+import org.phenoapps.intercross.util.Dialogs
 import kotlin.properties.Delegates
 
 
@@ -217,7 +218,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
                 if (!mEventsEmpty) {
                     Navigation.findNavController(mBinding.root)
                             .navigate(CrossBlockFragmentDirections.actionToSummary())
-                }
+                } else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.summary_empty))
             }
         }
         return super.onOptionsItemSelected(item)

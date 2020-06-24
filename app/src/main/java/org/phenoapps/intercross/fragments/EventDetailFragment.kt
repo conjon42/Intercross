@@ -65,9 +65,9 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
 
                 it?.let { parents ->
 
-                    momName = parents.momName ?: parents.mom
+                    momName = parents.momReadableName //parents.momName ?: parents.mom
 
-                    dadName = parents.dadName ?: parents.dad
+                    dadName = parents.dadReadableName //parents.dadName ?: parents.dad
                 }
             })
 

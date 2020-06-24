@@ -17,17 +17,12 @@ class WishlistRepository private constructor(
         }
     }
 
-    suspend fun createWishlist(vararg wishlist: Wishlist) {
+    suspend fun drop() {
 
         withContext(IO) {
 
-            wishlistDao.insert(*wishlist)
-        }
-    }
+            wishlistDao.drop()
 
-    suspend fun deleteAll() {
-        withContext(IO) {
-            wishlistDao.deleteAll()
         }
     }
 

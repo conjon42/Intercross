@@ -100,6 +100,8 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
         maleRecycler.adapter = mMaleAdapter
         maleRecycler.layoutManager = LinearLayoutManager(ctx)
 
+        //TODO Trevor: What happens when wishlist import includes different code ids with same name, similarly for cross events
+
         viewModel.parents.observe(viewLifecycleOwner, Observer { parents ->
 
             val addedMales = ArrayList<BaseParent>()
@@ -110,13 +112,19 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
                 addedMales.addAll(groups.distinctBy { it.codeId })
 
-                mMaleAdapter.submitList(addedMales+(parents.filter { p -> p.sex == 1 }.reversed()))
+                mMaleAdapter.submitList(addedMales+(parents
+                        .filter { p -> p.sex == 1 }
+                        .sortedBy { p -> p.name}))
 
             })
 
-            mMaleAdapter.submitList(addedMales+(parents.filter { p -> p.sex == 1 }.reversed()))
+            mMaleAdapter.submitList(addedMales+(parents
+                    .filter { p -> p.sex == 1 }
+                    .sortedBy { p -> p.name }))
 
-            mFemaleAdapter.submitList(parents.filter { p -> p.sex == 0 }.reversed())
+            mFemaleAdapter.submitList(parents
+                    .filter { p -> p.sex == 0 }
+                    .sortedBy { p -> p.name })
 
         })
 
@@ -184,16 +192,14 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
             } else {
 
+                //TODO chaney refactor
                 val outParents = mMaleAdapter.currentList.filterIsInstance(Parent::class.java)
 
                 val outGroups = mMaleAdapter.currentList.filterIsInstance(PollenGroup::class.java)
 
-
                 groupList.deleteByCode(outGroups
                         .filter { group -> group.selected }
                         .map { g -> g.codeId }.toList())
-
-                //groupList.delete(*outGroups.filter { group -> group.selected }.toTypedArray())
 
                 viewModel.delete(*outParents.filter { parent -> parent.selected }.toTypedArray())
 
@@ -263,6 +269,7 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
                                 *(mFemaleAdapter.currentList
                                         .filterIsInstance(Parent::class.java)
                                         .map { mom -> mom.apply { mom.selected = mNextFemaleSelection } }
+                                        .sortedBy { mom -> mom.name }
                                         .toTypedArray())
                         )
 

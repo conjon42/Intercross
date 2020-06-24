@@ -12,5 +12,4 @@ interface BaseDao<T> {
 
     @Delete
     fun delete(vararg e: T?): Int
-
 }

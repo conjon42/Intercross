@@ -20,9 +20,9 @@ interface WishlistDao : BaseDao<Wishlist> {
         FROM wishlist as W""")
     fun getCrossBlock(): LiveData<List<CrossBlock>>
 
-    @Query("SELECT * FROM wishlist")
+    @Query("SELECT * FROM wishlist ORDER BY wishlist.wishCurrent DESC")
     fun getAll(): LiveData<List<Wishlist>>
 
     @Query("DELETE FROM wishlist")
-    fun deleteAll()
+    fun drop()
 }

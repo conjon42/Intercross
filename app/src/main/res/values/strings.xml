@@ -83,7 +83,7 @@
     <string name="wishlist_header_min">wishMin</string>
     <string name="wishlist_header_max">wishMax</string>
 
-    <string name="parental_navigation">Parental Navigation</string>
+    <string name="parental_navigation">Parents</string>
     <string name="parents_dont_exist">Parents do not exist in the DB</string>
     <string name="navigate_to_summary">Navigate to summary</string>
     <string name="add_individual_parent">Add Parent</string>
@@ -98,5 +98,6 @@
     <string name="settings">Settings</string>
     <string name="summary_and_wishlist_empty">Summary and wishlist are empty.</string>
     <string name="parents_table_empty">Parents table is empty.</string>
+    <string name="summary_empty">No crosses have been made.</string>
 
 </resources>

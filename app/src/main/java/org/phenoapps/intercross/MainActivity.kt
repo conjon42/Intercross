@@ -76,9 +76,9 @@ class MainActivity : AppCompatActivity() {
 
     private var eventsEmpty = true
 
-    private lateinit var mDatabase: IntercrossDatabase
+    private lateinit var mParents: List<Parent>
 
-    private lateinit var mParentsStore: ParentsListViewModel
+    private lateinit var mDatabase: IntercrossDatabase
 
     private lateinit var mSnackbar: SnackbarQueue
 
@@ -262,8 +262,6 @@ class MainActivity : AppCompatActivity() {
 
         mDatabase = IntercrossDatabase.getInstance(this)
 
-        mParentsStore = ParentsListViewModel(ParentsRepository.getInstance(mDatabase.parentsDao()))
-
         eventsModel.events.observe(this, Observer {
 
             it?.let {
@@ -277,6 +275,8 @@ class MainActivity : AppCompatActivity() {
             it?.let {
 
                 parentsEmpty = it.isEmpty()
+
+                mParents = it
             }
         })
 
@@ -291,12 +291,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun importWishlist() {
 
-        wishModel.deleteAll()
-
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+
             addCategory(Intent.CATEGORY_OPENABLE)
+
             type="*/*"
+
             flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+
 //                        putExtra(DocumentsContract.EXTRA_INITIAL_URI,
 //                                FileProvider.getUriForFile(this@MainActivity,
 //                                "org.phenoapps.intercross.fileprovider",
@@ -342,6 +344,7 @@ class MainActivity : AppCompatActivity() {
         builder.show()
     }
 
+    //TODO update export, move to FileUtil
     private fun exportFile(filename: String) {
 
 //        val lineSeparator = System.getProperty("line.separator")
@@ -354,7 +357,6 @@ class MainActivity : AppCompatActivity() {
 //                    val output = File(dir, filename)
 //                    val fstream = FileOutputStream(output)
 //
-//                    //TODO update headers
 //                    fstream.write("eventDbId,femaleObsUnitDbId,maleObsUnitDbId,crossType,person,timestamp,experiment,flowers,seeds,fruits".toByteArray())
 //                    fstream.write(lineSeparator?.toByteArray() ?: "\n".toByteArray())
 //
@@ -394,6 +396,7 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    //TODO move to FileUtil
     private fun scanFile(ctx: Context, filePath: File) {
 
         MediaScannerConnection.scanFile(ctx,
@@ -473,17 +476,24 @@ class MainActivity : AppCompatActivity() {
 
                 val columns = FileUtil(this).parseInputFile(it)
 
+                //TODO Trevor: Should tables be dropped before import?
+                //TODO Trevor: For wishlist drop, should parents also be dropped?
+                parentsList.drop()
+                wishModel.drop()
+
                 columns["Parents"]?.let { insertableParents ->
 
-                    mParentsStore.insert(
-                            *(insertableParents as ArrayList<Parent>)
-                                    .toTypedArray())
+                    //TODO chaney replace with filterByInstance map
+                    parentsList.insert(*(
+                            insertableParents as ArrayList<Parent>)
+                            .toTypedArray())
+
                 }
 
 
                 columns["Wishlist"]?.let {
 
-                    wishModel.addWishlist(
+                    wishModel.insert(
                             *(it as ArrayList<Wishlist>)
                                     .toTypedArray()
                     )
