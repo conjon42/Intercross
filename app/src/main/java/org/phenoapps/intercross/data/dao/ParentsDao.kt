@@ -2,6 +2,8 @@ package org.phenoapps.intercross.data.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import org.phenoapps.intercross.data.models.Parent
 
@@ -17,4 +19,6 @@ interface ParentsDao : BaseDao<Parent> {
     @Query("UPDATE parents SET selected = :selection")
     suspend fun updateSelection(selection: Int)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertIgnore(vararg parents: Parent)
 }

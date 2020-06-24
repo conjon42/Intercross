@@ -12,6 +12,8 @@ class ParentsRepository private constructor(
 
     suspend fun updateSelection(selection: Int) = parentsDao.updateSelection(selection)
 
+    suspend fun insertIgnore(vararg parents: Parent) = parentsDao.insertIgnore(*parents)
+
     companion object {
         @Volatile private var instance: ParentsRepository? = null
 

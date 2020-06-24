@@ -21,16 +21,16 @@ import kotlinx.android.synthetic.main.fragment_events.*
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
 import org.phenoapps.intercross.data.EventsRepository
+import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.SettingsRepository
 import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.models.Event
+import org.phenoapps.intercross.data.models.Parent
 import org.phenoapps.intercross.data.models.Settings
 import org.phenoapps.intercross.data.models.Wishlist
-import org.phenoapps.intercross.data.viewmodels.CrossSharedViewModel
-import org.phenoapps.intercross.data.viewmodels.EventListViewModel
-import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
-import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
+import org.phenoapps.intercross.data.viewmodels.*
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
 import org.phenoapps.intercross.util.DateUtil
@@ -46,6 +46,10 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private val settingsModel: SettingsViewModel by viewModels {
         SettingsViewModelFactory(SettingsRepository.getInstance(db.settingsDao()))
+    }
+
+    private val parentsList: ParentsListViewModel by viewModels {
+        ParentsListViewModelFactory(ParentsRepository.getInstance(db.parentsDao()))
     }
 
     private var mSettings: Settings = Settings()
@@ -205,12 +209,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun submitCrossEvent(e: Event) {
 
-//        mGroups.let { it ->
-//            val groups = it.map { it.uuid }
-//            if (e.maleObsUnitDbId in groups) {
-//                e.isPoly = true
-//            }
-//        }
+        parentsList.insertIgnore(
+                Parent(e.femaleObsUnitDbId, 0), Parent(e.maleObsUnitDbId, 1)
+        )
 
         viewModel.insert(e)
 
