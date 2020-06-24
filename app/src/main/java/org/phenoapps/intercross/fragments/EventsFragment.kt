@@ -1,11 +1,13 @@
 package org.phenoapps.intercross.fragments
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.preference.PreferenceManager
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
@@ -18,6 +20,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_events.*
+import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
 import org.phenoapps.intercross.data.EventsRepository
@@ -95,6 +98,11 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     override fun FragmentEventsBinding.afterCreateView() {
 
+        if ("demo" in BuildConfig.FLAVOR) {
+            PreferenceManager.getDefaultSharedPreferences(requireContext())
+                    .edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
+        }
+        
         recyclerView.adapter = EventsAdapter()
 
         recyclerView.layoutManager = LinearLayoutManager(context)
