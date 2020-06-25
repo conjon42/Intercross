@@ -18,10 +18,11 @@
             android:id="@+id/navHeaderText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="15dp"
+            android:layout_margin="16dp"
             android:textSize="30sp"
             android:textColor="@android:color/white"
             android:textStyle="bold" />
+
     </androidx.appcompat.widget.LinearLayoutCompat>
 
 

@@ -54,6 +54,7 @@
                         android:id="@+id/barcodeView"
                         android:layout_width="100dp"
                         android:layout_height="100dp"
+                        android:contentDescription="@string/barcode_preview_image"
                         app:setQRCode="@{event.eventDbId}"/>
 
                     <LinearLayout

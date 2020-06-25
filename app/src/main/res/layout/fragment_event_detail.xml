@@ -86,6 +86,7 @@
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:layout_marginTop="16dp"
+                        android:contentDescription="@string/qr_code_for_parent"
                         app:setQRCode="@{momCode}"/>
 
                     <Button
@@ -114,6 +115,7 @@
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:layout_marginTop="16dp"
+                        android:contentDescription="@string/qr_code_for_parent"
                         app:setQRCode="@{dadCode}"/>
 
                     <Button

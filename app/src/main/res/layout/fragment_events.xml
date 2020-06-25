@@ -168,6 +168,7 @@
             android:elevation="5dp"
             android:scaleType="fitCenter"
             android:tint="#ffffff"
+            android:contentDescription="@string/button_to_scan_next_text"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:srcCompat="@drawable/ic_barcode_scan" />

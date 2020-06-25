@@ -318,7 +318,7 @@ class FileUtil(private val ctx: Context) {
                 return when (uri?.authority) {
                     "com.android.externalstorage.documents" -> {
                         val docId = DocumentsContract.getDocumentId(uri).split(":")
-                        if (docId.isNotEmpty() && "primary" == docId[0].toLowerCase()) {
+                        if (docId.isNotEmpty() && "primary" == docId[0].toLowerCase(Locale.getDefault())) {
                             "${Environment.getExternalStorageDirectory()}/${docId[1]}"
                         } else ""
                     }
@@ -331,7 +331,7 @@ class FileUtil(private val ctx: Context) {
                     else -> ""
                 }
             }
-            "file" == (uri?.scheme ?: "").toLowerCase() -> {
+            "file" == (uri?.scheme ?: "").toLowerCase(Locale.getDefault()) -> {
                 return uri?.path ?: ""
             }
         }

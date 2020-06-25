@@ -103,4 +103,7 @@
 
     <string name="go">Go</string>
     <string name="cancel">Cancel</string>
+    <string name="qr_code_for_parent">QR Code for parent</string>
+    <string name="button_to_scan_next_text">Button to scan next text entry.</string>
+    <string name="barcode_preview_image">Barcode preview image.</string>
 </resources>
