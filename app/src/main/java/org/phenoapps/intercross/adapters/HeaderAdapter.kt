@@ -35,26 +35,6 @@ class HeaderAdapter()
 
             with(holder) {
 
-                if (data is Cell) {
-
-                    itemView.findViewById<ProgressBar>(R.id.progressBar).apply {
-//                        progressDrawable.setColorFilter(when {
-//
-//                            data.current >= data.min -> Color.YELLOW
-//
-//                            data.current >= data.max -> Color.GREEN
-//
-//                            else -> Color.RED
-//
-//                        }, PorterDuff.Mode.DST_OVER)
-
-                        isIndeterminate=false
-
-                        progress = data.current
-
-                        max = data.max
-                    }
-                }
                 bind(data)
             }
         }
@@ -67,37 +47,43 @@ class HeaderAdapter()
 
             with(binding) {
 
-                if (data is CrossBlockFragment.EmptyCell) {
+                when (data) {
 
-                    type = 0
+                    is CrossBlockFragment.EmptyCell -> {
 
-                } else if (data is Cell) {
+                        type = 0
 
-                    type = 1
+                    }
 
-                    binding.progressBar.progress = data.current
+                    is Cell -> {
 
-                    progressBar.progressTintList = ColorStateList.valueOf(
+                        type = 1
+
+                        binding.progressBar.progress = data.current
+
+                        progressBar.progressTintList = ColorStateList.valueOf(
 
                             when {
 
                                 data.current >= data.max -> Color.RED
 
-                                data.current >= data.min -> Color.YELLOW
+                                data.current >= data.min -> Color.GREEN
 
-                                else -> Color.GREEN
+                                else -> Color.YELLOW
                             })
 
-                    current = data.current
+                        current = data.current
 
-                    goal = data.max
+                        goal = data.max
 
-                } else {
+                    }
+                    else -> {
 
-                    this.name = (data as Header).name
+                        this.name = (data as Header).name
 
-                    type = 2
+                        type = 2
 
+                    }
                 }
 
                 executePendingBindings()

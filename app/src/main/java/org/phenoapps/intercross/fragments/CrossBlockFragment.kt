@@ -163,7 +163,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
                         val res = filter.first()
 
-                        data.add(CellData(res.count+res.pre, res.min, res.max))
+                        data.add(CellData(res.wishCurrent, res.wishMin, res.wishMax ?: res.wishMin))
 
                     } else data.add(EmptyCell())
                 }

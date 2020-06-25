@@ -25,6 +25,7 @@ import org.phenoapps.intercross.util.Dialogs
  * Summary Fragment is a recycler list of currenty crosses.
  * Users can navigate to and from cross block and wishlist fragments.
  */
+//TODO Trevor when a wishlist is deleted and re-imported, should the current cross table be checked for progress?
 class WishlistFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.fragment_summary) {
 
     private val eventsModel: EventListViewModel by viewModels {
@@ -65,7 +66,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout
                 (recyclerView.adapter as SummaryAdapter)
                         .submitList(crosses.map { res ->
                             SummaryFragment.WishlistData(res.maleName, res.femaleName,
-                                    res.wishCurrent.toString() + "/" + res.wishMax.toString(), ArrayList())
+                                    res.wishCurrent.toString() + "/" + res.wishMin + "/" + res.wishMax.toString(), ArrayList())
                         })
 
                 recyclerView.adapter?.notifyDataSetChanged()

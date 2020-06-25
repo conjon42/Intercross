@@ -19,7 +19,7 @@ class WishlistViewModel internal constructor(private val repo: WishlistRepositor
 
     val wishlist: LiveData<List<Wishlist>> = repo.getAll()
 
-    val crossblock: LiveData<List<WishlistDao.CrossBlock>> = repo.getCrossblock()
+    val crossblock: LiveData<List<Wishlist>> = repo.getAll()
 
     fun drop() {
 

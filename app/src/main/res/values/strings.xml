@@ -46,7 +46,7 @@
     <string name="CreateMaleGroup">Create Male Group</string>
     <string name="PotentialMales">Potential Males</string>
     <string name="ErrorCodeExists">Code Exists</string>
-    <string name="FemaleID">FemaleID</string>
+    <string name="FemaleID">Female ID:</string>
     <string name="MaleID">Male ID:</string>
     <string name="search_with_barcode_scanner">Search with barcode scanner.</string>
     <string name="continuous_scan_and_submit">Continuous scan and submit.</string>

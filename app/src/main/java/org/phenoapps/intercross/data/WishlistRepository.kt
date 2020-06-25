@@ -26,8 +26,6 @@ class WishlistRepository private constructor(
         }
     }
 
-    fun getCrossblock() = wishlistDao.getCrossBlock()
-
     fun getAll() = wishlistDao.getAll()
 
     companion object {
