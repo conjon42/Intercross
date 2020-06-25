@@ -1,5 +1,7 @@
 package org.phenoapps.intercross.adapters
 
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ProgressBar
@@ -36,7 +38,6 @@ class HeaderAdapter()
                 if (data is Cell) {
 
                     itemView.findViewById<ProgressBar>(R.id.progressBar).apply {
-
 //                        progressDrawable.setColorFilter(when {
 //
 //                            data.current >= data.min -> Color.YELLOW
@@ -76,15 +77,16 @@ class HeaderAdapter()
 
                     binding.progressBar.progress = data.current
 
-//                    progressBar.progressDrawable.setColorFilter(when {
-//
-//                        data.current >= data.max -> Color.GREEN
-//
-//                        data.current >= data.min -> Color.YELLOW
-//
-//                        else -> Color.RED
-//
-//                    }, PorterDuff.Mode.DST_OVER)
+                    progressBar.progressTintList = ColorStateList.valueOf(
+
+                            when {
+
+                                data.current >= data.max -> Color.RED
+
+                                data.current >= data.min -> Color.YELLOW
+
+                                else -> Color.GREEN
+                            })
 
                     current = data.current
 

@@ -102,7 +102,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             PreferenceManager.getDefaultSharedPreferences(requireContext())
                     .edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
         }
-        
+
         recyclerView.adapter = EventsAdapter()
 
         recyclerView.layoutManager = LinearLayoutManager(context)
