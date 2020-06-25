@@ -99,5 +99,6 @@
     <string name="summary_and_wishlist_empty">Summary and wishlist are empty.</string>
     <string name="parents_table_empty">Parents table is empty.</string>
     <string name="summary_empty">No crosses have been made.</string>
+    <string name="parent_event_does_not_exist">Parent does not exist as a cross event.</string>
 
 </resources>

@@ -6,6 +6,7 @@
     android:id="@+id/main_graph"
     app:startDestination="@+id/events_fragment">
 
+    <!-- Events Fragment is the main entry fragment that shows the entire crossing table -->
     <fragment
         android:id="@+id/events_fragment"
         android:name="org.phenoapps.intercross.fragments.EventsFragment"
@@ -66,6 +67,17 @@
         <argument
             android:name="eid"
             app:argType="long"/>
+        <action android:id="@+id/action_to_parent_event"
+            app:destination="@id/event_fragment"
+            app:popUpTo="@id/events_fragment">
+            <argument android:name="eid"
+                app:argType="long"
+                android:defaultValue="-1L"/>
+        </action>
+        <action android:id="@+id/action_to_events"
+            app:destination="@id/events_fragment"
+            app:popUpTo="@id/events_fragment">
+        </action>
     </fragment>
 
     <fragment

@@ -5,21 +5,30 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.WindowManager
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.viewmodels.EventDetailViewModel
+import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventDetailViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentEventDetailBinding
+import org.phenoapps.intercross.util.Dialogs
 
 
 class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.layout.fragment_event_detail) {
 
+    val eventsList: EventListViewModel by viewModels {
+        EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +51,9 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
     override fun FragmentEventDetailBinding.afterCreateView() {
 
         arguments?.getLong("eid")?.let { rowid ->
+
+            if (rowid == -1L) findNavController().navigate(
+                    EventDetailFragmentDirections.actionToEvents())
 
             val viewModel: EventDetailViewModel by viewModels {
                 EventDetailViewModelFactory(EventsRepository.getInstance(db.eventsDao()), rowid)
@@ -68,6 +80,43 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
                     momName = parents.momReadableName //parents.momName ?: parents.mom
 
                     dadName = parents.dadReadableName //parents.dadName ?: parents.dad
+
+                    eventsList.events.observe(viewLifecycleOwner, Observer {
+
+                        it?.let { events ->
+
+                            events.find { e -> e.eventDbId == parents.momCode }.let { mom ->
+
+                                femaleName.setOnClickListener {
+
+                                    if (mom?.id == null) {
+
+                                        Dialogs.notify(AlertDialog.Builder(requireContext()),
+                                            getString(R.string.parent_event_does_not_exist))
+
+                                    } else findNavController()
+                                            .navigate(EventDetailFragmentDirections
+                                            .actionToParentEvent(mom.id ?: -1L))
+                                }
+
+                            }
+
+                            events.find { e -> e.eventDbId == parents.dadCode }.let { dad ->
+
+                                maleName.setOnClickListener {
+
+                                    if (dad?.id == null) {
+
+                                        Dialogs.notify(AlertDialog.Builder(requireContext()),
+                                                getString(R.string.parent_event_does_not_exist))
+
+                                    } else findNavController()
+                                            .navigate(EventDetailFragmentDirections
+                                            .actionToParentEvent(dad.id ?: -1L))
+                                }
+                            }
+                        }
+                    })
                 }
             })
 
@@ -78,32 +127,9 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
 //                mEvent.metaData.seeds=Integer.parseInt(seedText.text.toString())
 //                mEventStore.update(mEvent)
 //            }
-//
-//            maleName.setOnClickListener {
-//                searchForParents(maleName.text.toString())
-//            }
-//
-//            femaleName.setOnClickListener {
-//                searchForParents(femaleName.text.toString())
-//            }
 
         }
     }
-
-//    private fun searchForParents(name: String) {
-//
-//        if (::mEvents.isInitialized) {
-//
-//            mEvents.forEach {
-//
-//                if (it.eventDbId == name) {
-//
-////                    findNavController().navigate(
-////                            EventDetailFragmentDirections.actionEventFragmentSelf(it))
-//                }
-//            }
-//        }
-//    }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
 
