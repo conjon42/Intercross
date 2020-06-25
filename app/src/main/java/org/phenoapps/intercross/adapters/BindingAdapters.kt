@@ -70,7 +70,6 @@ fun bindCrossId(view: EditText, settings: Settings?) {
 
     settings?.let {
 
-
         with (it) {
 
             when {

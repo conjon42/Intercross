@@ -6,7 +6,7 @@ import org.phenoapps.intercross.data.models.Settings
 class SettingsRepository private constructor(
         private val settingsDao: SettingsDao): BaseRepository<Settings>(settingsDao) {
 
-    suspend fun getSettings() = settingsDao.getSettings()
+    fun getSettings() = settingsDao.getSettings()
 
     companion object {
         @Volatile private var instance: SettingsRepository? = null

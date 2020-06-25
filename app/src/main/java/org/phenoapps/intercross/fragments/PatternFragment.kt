@@ -85,7 +85,6 @@ class PatternFragment: IntercrossBaseFragment<FragmentPatternBinding>(R.layout.f
             }
         }
 
-
         saveButton.setOnClickListener {
 
             settingsModel.insert(buildSettings())

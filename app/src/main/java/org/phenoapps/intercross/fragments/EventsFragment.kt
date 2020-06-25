@@ -136,7 +136,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             }
         })
 
-        settingsModel.settings.observeForever {
+        settingsModel.settings.observe(viewLifecycleOwner, Observer {
 
             it?.let {
 
@@ -145,7 +145,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                 mBinding.settings = it
 
             }
-        }
+        })
 
         mWishlistStore.wishlist.observe(viewLifecycleOwner, Observer {
 

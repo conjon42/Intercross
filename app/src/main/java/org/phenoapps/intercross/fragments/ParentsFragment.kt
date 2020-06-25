@@ -6,17 +6,11 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.widget.CheckBox
-import androidx.core.os.bundleOf
-import androidx.core.view.children
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
-import kotlinx.android.synthetic.main.fragment_barcode_scan.*
-import kotlinx.android.synthetic.main.fragment_events.*
-import kotlinx.coroutines.*
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.ParentsAdapter
 import org.phenoapps.intercross.data.ParentsRepository
@@ -24,7 +18,6 @@ import org.phenoapps.intercross.data.PollenGroupRepository
 import org.phenoapps.intercross.data.models.BaseParent
 import org.phenoapps.intercross.data.models.Parent
 import org.phenoapps.intercross.data.models.PollenGroup
-import org.phenoapps.intercross.data.viewmodels.EventProducer
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
 import org.phenoapps.intercross.data.viewmodels.PollenGroupListViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory

@@ -77,9 +77,13 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
 
                 it?.let { parents ->
 
-                    momName = parents.momReadableName //parents.momName ?: parents.mom
+                    momName = parents.momReadableName
 
-                    dadName = parents.dadReadableName //parents.dadName ?: parents.dad
+                    dadName = parents.dadReadableName
+
+                    momCode = parents.momCode
+
+                    dadCode = parents.dadCode
 
                     eventsList.events.observe(viewLifecycleOwner, Observer {
 

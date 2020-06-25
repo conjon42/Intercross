@@ -7,6 +7,7 @@ import android.os.Handler
 import android.preference.PreferenceManager
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.checkSelfPermission
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.google.zxing.ResultPoint
@@ -16,16 +17,18 @@ import com.journeyapps.barcodescanner.DecoratedBarcodeView
 import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.EventsRepository
+import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.SettingsRepository
 import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.PollenGroup
 import org.phenoapps.intercross.data.models.Settings
 import org.phenoapps.intercross.data.models.Wishlist
-import org.phenoapps.intercross.data.viewmodels.CrossSharedViewModel
-import org.phenoapps.intercross.data.viewmodels.EventProducer
-import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
-import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
+import org.phenoapps.intercross.data.viewmodels.*
+import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentBarcodeScanBinding
 import org.phenoapps.intercross.util.FileUtil
 import java.util.*
@@ -33,14 +36,24 @@ import java.util.*
 class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.layout.fragment_barcode_scan) {
 
 
-    //TODO update with new view models
+    //TODO General updates / testing
+    private val viewModel: EventListViewModel by viewModels {
+        EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
+    }
 
-    private lateinit var mEventStore: EventProducer
-    private lateinit var mSettingsStore: SettingsViewModel
-    private lateinit var mWishlistStore: WishlistViewModel
+    private val settingsModel: SettingsViewModel by viewModels {
+        SettingsViewModelFactory(SettingsRepository.getInstance(db.settingsDao()))
+    }
+
+    private val wishModel: WishlistViewModel by viewModels {
+        WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
+    }
+
+
     private lateinit var mSharedViewModel: CrossSharedViewModel
 
     private var mSettings = Settings()
+
     private lateinit var mBarcodeScanner: DecoratedBarcodeView
 
     private lateinit var mCallback: BarcodeCallback
@@ -193,10 +206,6 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
             decodeSingle(mCallback)
         }
 
-
-        mEventStore = EventProducer(EventsRepository.getInstance(db.eventsDao()))
-        mSettingsStore = SettingsViewModel(SettingsRepository.getInstance(db.settingsDao()))
-        mWishlistStore = WishlistViewModel(WishlistRepository.getInstance(db.wishlistDao()))
         mSharedViewModel = CrossSharedViewModel()
 
         startObservers()
@@ -204,24 +213,24 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
     private fun startObservers() {
 
-        mWishlistStore.wishlist.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+        wishModel.wishlist.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
             it?.let {
                 mWishlist = it
             }
         })
 
-        mEventStore.events.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+        viewModel.events.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
             it?.let {
                 mEvents = ArrayList(it)
             }
         })
 
+        settingsModel.settings.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+            it?.let {
+                mSettings = it
+            }
+        })
 
-//        mSettingsStore.settings.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
-//            it?.let {
-//                mSettings = it
-//            }
-//        })
         mSharedViewModel.name.value = ""
         mSharedViewModel.female.value = ""
         mSharedViewModel.male.value = ""
@@ -262,7 +271,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
             mSettings.isPattern -> {
                 val n = mSettings.number
                 mSettings.number += 1
-                mSettingsStore.update(mSettings)
+                settingsModel.update(mSettings)
                 "${mSettings.prefix}${n.toString().padStart(mSettings.pad, '0')}${mSettings.suffix}"
             }
             mSettings.isUUID -> {

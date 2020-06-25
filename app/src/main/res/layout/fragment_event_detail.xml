@@ -29,6 +29,14 @@
             name="dadName"
             type="String"/>
 
+        <variable
+            name="dadCode"
+            type="String" />
+
+        <variable
+            name="momCode"
+            type="String" />
+
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -77,8 +85,8 @@
                         android:id="@+id/momCrossImage"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:layout_margin="8dp"/>
-<!--                        android:src="@{momCrossType == CrossType.BIPARENTAL ? @drawable/ic_cross_biparental : momCrossType == CrossType.SELF ? @drawable/ic_cross_self : momCrossType == CrossType.OPEN ? @drawable/ic_cross_open : momCrossType == CrossType.POLY ? @drawable/ic_cross_poly : @drawable/ic_cross_unknown}" />-->
+                        android:layout_marginTop="16dp"
+                        app:setQRCode="@{momCode}"/>
 
                     <Button
                         android:id="@+id/femaleName"
@@ -105,8 +113,8 @@
                         android:id="@+id/dadCrossImage"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:layout_margin="8dp"/>
-<!--                        android:src="@{dadCrossType == CrossType.BIPARENTAL ? @drawable/ic_cross_biparental : dadCrossType == CrossType.SELF ? @drawable/ic_cross_self : dadCrossType == CrossType.OPEN ? @drawable/ic_cross_open : dadCrossType == CrossType.POLY ? @drawable/ic_cross_poly : @drawable/ic_cross_unknown}" />-->
+                        android:layout_marginTop="16dp"
+                        app:setQRCode="@{dadCode}"/>
 
                     <Button
                         android:id="@+id/maleName"
