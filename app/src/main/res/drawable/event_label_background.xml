@@ -17,7 +17,7 @@
     <padding
         android:bottom="5dp"
         android:left="1dp"
-        android:right="1dp"
+        android:right="0dp"
         android:top="5dp"/>
 
     <corners android:radius="3dp"/>
