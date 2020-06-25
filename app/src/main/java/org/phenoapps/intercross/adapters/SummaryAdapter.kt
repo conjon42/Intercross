@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
@@ -15,6 +16,8 @@ import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.databinding.ListItemSimpleRowBinding
 import org.phenoapps.intercross.databinding.ListItemWishlistRowBinding
 import org.phenoapps.intercross.fragments.SummaryFragment
+import org.phenoapps.intercross.fragments.SummaryFragmentDirections
+import org.phenoapps.intercross.util.Dialogs
 
 
 /**
@@ -28,7 +31,23 @@ import org.phenoapps.intercross.fragments.SummaryFragment
  */
 class SummaryAdapter(
         val context: Context
-) : ListAdapter<SummaryFragment.ListEntry, SummaryAdapter.ViewHolder>(WishlistDiffCallback()) {
+) : ListAdapter<SummaryFragment.ListEntry, SummaryAdapter.ViewHolder>(SummaryDiffCallback()) {
+
+    //TODO move this to diff callback file
+    private class SummaryDiffCallback : DiffUtil.ItemCallback<SummaryFragment.ListEntry>() {
+
+        override fun areItemsTheSame(oldItem: SummaryFragment.ListEntry,
+                                     newItem: SummaryFragment.ListEntry): Boolean {
+
+            return (oldItem.f == newItem.f) && (oldItem.m == newItem.m)
+        }
+
+        override fun areContentsTheSame(oldItem: SummaryFragment.ListEntry,
+                                        newItem: SummaryFragment.ListEntry): Boolean {
+
+            return (oldItem.f == newItem.f) && (oldItem.m == newItem.m)
+        }
+    }
 
     private lateinit var mParent: ViewGroup
 
@@ -64,33 +83,6 @@ class SummaryAdapter(
         }
     }
 
-    inner class InnerViewHolder internal constructor(private val binding: ListItemSimpleRowBinding,
-                                                     private val parentRoot: View,
-                                                     private val dialog: AlertDialog)
-        : RecyclerView.ViewHolder(binding.root) {
-
-        fun bind(data: Event) {
-
-            with (binding) {
-
-                name.text = data.readableName
-
-                onClick = View.OnClickListener {
-
-//                    Navigation.findNavController(parentRoot).navigate(R.id.global_action_to_event_fragment, Bundle().apply {
-//
-//                        putParcelable("events", data)
-//                    })
-
-                    dialog.cancel()
-                }
-
-                executePendingBindings()
-            }
-        }
-    }
-
-
     inner class ViewHolder(
             private val binding: ListItemWishlistRowBinding) : RecyclerView.ViewHolder(binding.root) {
 
@@ -119,71 +111,13 @@ class SummaryAdapter(
                 //uses inner view holder to create list of crosses used for that wish item
                 onClick = View.OnClickListener {
 
-                    val builder = AlertDialog.Builder(context)
+                    Dialogs.list(AlertDialog.Builder(context),
+                            context.getString(R.string.crosses),
+                            binding.root,
+                            data.events)
 
-                    builder.setTitle("Crosses")
-
-                    val layout = RecyclerView(context)
-
-                    builder.setView(layout)
-
-                    val dialog = builder.create()
-
-                    val adapter = object : ListAdapter<Event, InnerViewHolder>(Event.Companion.DiffCallback()) {
-
-                        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InnerViewHolder {
-
-                            return InnerViewHolder(
-
-                                    DataBindingUtil.inflate(
-
-                                            LayoutInflater.from(parent.context),
-
-                                            R.layout.list_item_simple_row, parent, false
-
-                                    ), mParent, dialog
-                            )
-                        }
-
-                        override fun onBindViewHolder(holder: InnerViewHolder, position: Int) {
-
-                            with(holder) {
-
-                                itemView.tag = getItem(position)
-
-                                bind(getItem(position))
-                            }
-                        }
-
-                    }
-
-                    adapter.submitList(data.events)
-
-                    layout.adapter = adapter
-
-                    layout.layoutManager = LinearLayoutManager(context)
-
-                    dialog.show()
                 }
-
-                executePendingBindings()
             }
         }
-    }
-}
-
-//TODO move this to diff callback file
-private class WishlistDiffCallback : DiffUtil.ItemCallback<SummaryFragment.ListEntry>() {
-
-    override fun areItemsTheSame(oldItem: SummaryFragment.ListEntry,
-                                 newItem: SummaryFragment.ListEntry): Boolean {
-
-        return (oldItem.f == newItem.f) && (oldItem.m == newItem.m)
-    }
-
-    override fun areContentsTheSame(oldItem: SummaryFragment.ListEntry,
-                                    newItem: SummaryFragment.ListEntry): Boolean {
-
-        return (oldItem.f == newItem.f) && (oldItem.m == newItem.m)
     }
 }

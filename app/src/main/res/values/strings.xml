@@ -101,4 +101,6 @@
     <string name="summary_empty">No crosses have been made.</string>
     <string name="parent_event_does_not_exist">Parent does not exist as a cross event.</string>
 
+    <string name="go">Go</string>
+    <string name="cancel">Cancel</string>
 </resources>

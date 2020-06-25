@@ -17,8 +17,18 @@ typealias Data = CrossBlockFragment.BlockData
 typealias Header = CrossBlockFragment.HeaderData
 typealias Cell = CrossBlockFragment.CellData
 
-class HeaderAdapter()
-    : ListAdapter<Data, HeaderAdapter.ViewHolder>(HeaderDiffCallback()) {
+class HeaderAdapter : ListAdapter<Data, HeaderAdapter.ViewHolder>(HeaderDiffCallback()) {
+
+    private class HeaderDiffCallback : DiffUtil.ItemCallback<Data>() {
+
+        override fun areItemsTheSame(oldItem: Data, newItem: Data): Boolean {
+            return oldItem == newItem
+        }
+
+        override fun areContentsTheSame(oldItem: Data, newItem: Data): Boolean {
+            TODO("Not yet implemented")
+        }
+    }
 
     override fun onCreateViewHolder(vg: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
@@ -92,13 +102,3 @@ class HeaderAdapter()
     }
 }
 
-private class HeaderDiffCallback : DiffUtil.ItemCallback<Data>() {
-
-    override fun areItemsTheSame(oldItem: Data, newItem: Data): Boolean {
-        return oldItem == newItem
-    }
-
-    override fun areContentsTheSame(oldItem: Data, newItem: Data): Boolean {
-        TODO("Not yet implemented")
-    }
-}
