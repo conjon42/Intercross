@@ -39,11 +39,13 @@ class ParentsListViewModel(private val repo: ParentsRepository): BaseViewModel<P
         }
     }
 
-    fun drop() {
+    fun dropAndInsert(parents: List<Parent>) {
 
         viewModelScope.launch {
 
             repo.drop()
+
+            repo.insert(*parents.toTypedArray())
         }
     }
 }

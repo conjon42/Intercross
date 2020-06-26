@@ -18,7 +18,7 @@
             android:id="@+id/female"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toLeftOf="@+id/male" />
+            android:layout_toStartOf="@+id/male" />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/male"
@@ -31,6 +31,6 @@
             android:id="@+id/cross"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@+id/male" />
+            android:layout_toEndOf="@+id/male" />
     </RelativeLayout>
 </layout>

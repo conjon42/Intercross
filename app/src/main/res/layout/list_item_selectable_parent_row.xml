@@ -15,14 +15,10 @@
     </data>
 
     <LinearLayout
+        android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <LinearLayout
-            android:id="@+id/linearLayout3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+        android:orientation="horizontal">
 
             <CheckBox
                 android:id="@+id/doneCheckBox"
@@ -38,6 +34,5 @@
                 android:layout_width="0dp"
                 android:layout_weight="5"
                 android:text="@{name}"/>
-        </LinearLayout>
     </LinearLayout>
 </layout>

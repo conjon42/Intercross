@@ -23,9 +23,4 @@ data class Wishlist(var femaleDbId: String,
             row[4], 0, row[5].toIntOrNull() ?: 0,
             row[6].toIntOrNull() ?: 0)
 
-
-    companion object {
-
-        val headers = "femaleDbId,maleDbId,femaleName,maleName,wishType,wishCurrent,wishMin,wishMax"
-    }
 }

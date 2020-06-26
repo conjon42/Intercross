@@ -2,7 +2,6 @@ package org.phenoapps.intercross.data.viewmodels
 
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.phenoapps.intercross.data.PollenGroupRepository
 import org.phenoapps.intercross.data.models.PollenGroup
 

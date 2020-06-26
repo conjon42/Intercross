@@ -8,25 +8,21 @@ import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.EventsRepository
-import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.viewmodels.EventDetailViewModel
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
-import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventDetailViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentEventDetailBinding
 import org.phenoapps.intercross.util.Dialogs
 
 
 class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.layout.fragment_event_detail) {
 
-    val eventsList: EventListViewModel by viewModels {
+    private val eventsList: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
     }
 
@@ -73,9 +69,9 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
 
 
             //TODO add better query/view to return more Parent details (s.a id)
-            viewModel.parents.observe(viewLifecycleOwner, Observer {
+            viewModel.parents.observe(viewLifecycleOwner, Observer { data ->
 
-                it?.let { parents ->
+                data?.let { parents ->
 
                     momName = parents.momReadableName
 

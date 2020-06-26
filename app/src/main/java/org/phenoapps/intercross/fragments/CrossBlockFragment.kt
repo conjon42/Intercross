@@ -3,7 +3,12 @@ package org.phenoapps.intercross.fragments
 import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.view.*
+import android.view.GestureDetector
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.MotionEvent
+import android.view.View
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.GestureDetectorCompat
@@ -22,7 +27,6 @@ import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFacto
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.CrossBlockManagerBinding
 import org.phenoapps.intercross.util.Dialogs
-import kotlin.properties.Delegates
 
 
 class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.layout.cross_block_manager),

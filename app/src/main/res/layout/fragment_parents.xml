@@ -91,7 +91,8 @@
                 android:layout_marginBottom="8dp"
                 android:layout_weight="1"
                 android:backgroundTint="@color/colorAccent"
-                android:text="@string/delete" />
+                android:text="@string/delete"
+                tools:ignore="ButtonStyle" />
 
             <Button
                 android:id="@+id/printButton"
@@ -105,7 +106,8 @@
                 android:text="@string/print"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                tools:ignore="ButtonStyle" />
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

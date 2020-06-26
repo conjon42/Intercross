@@ -1,7 +1,11 @@
 package org.phenoapps.intercross.data.dao
 
 import androidx.lifecycle.LiveData
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
 import org.phenoapps.intercross.data.models.Parent
 
 @Dao
@@ -22,6 +26,7 @@ interface ParentsDao : BaseDao<Parent> {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertIgnore(vararg parents: Parent)
 
+    @Transaction
     @Query("DELETE FROM parents")
     suspend fun drop()
 }

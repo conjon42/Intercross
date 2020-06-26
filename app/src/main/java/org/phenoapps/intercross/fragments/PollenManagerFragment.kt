@@ -1,15 +1,11 @@
 package org.phenoapps.intercross.fragments
 
-import android.view.MenuItem
-import android.view.MotionEvent
-import android.view.View
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.ParentsAdapter
 import org.phenoapps.intercross.data.EventsRepository
@@ -39,7 +35,7 @@ class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBindin
     private lateinit var mMales: List<Parent>
     private lateinit var mGroups: List<PollenGroup>
 
-    private var mPolycrosses: List<PollenGroup> = ArrayList<PollenGroup>()
+    private var mPolycrosses: List<PollenGroup> = ArrayList()
 
     private val eventList: EventListViewModel by viewModels {
 

@@ -1,4 +1,3 @@
 package org.phenoapps.intercross.data.models
 
-open class BaseTable {
-}
+open class BaseTable

@@ -34,7 +34,6 @@
     <string name="Seeds">Seeds</string>
     <string name="Fruits">Fruits</string>
     <string name="Flowers">Flowers</string>
-    <string name="ParentNavigation">Parental Navigation</string>
     <string name="UpdateMetaData">Update Meta Data</string>
     <string name="navigate_to_wishlist">Navigate to wishlist</string>
     <string name="navigate_to_crossblock">Navigate to crossblock</string>
@@ -43,7 +42,6 @@
     <string name="SelectAllRows">Select all rows</string>
     <string name="Name">Name</string>
     <string name="Code">Code</string>
-    <string name="CreateMaleGroup">Create Male Group</string>
     <string name="PotentialMales">Potential Males</string>
     <string name="ErrorCodeExists">Code Exists</string>
     <string name="FemaleID">Female ID:</string>
@@ -53,7 +51,7 @@
     <string name="test">TEST</string>
     <string name="import_a_zpl_file">Import a ZPL file</string>
     <string name="zpl_default">^XA ^DFR:SAMPLE.GRF^FS ^FO100,75^A0,25,20^FN1^FS ^FO200,75^A0N,25,20^BQN,2,6^FDQA,^FN2^FS ^FO450,75^A0,25,20^FN3^FS ^XZ</string>
-    <string name="zpl_parameter_instructions">FN1-4 are used to pass data. 1 is the text cross id, 2 is a barcode, 3 is the date, 4 is the person</string>
+    <string name="zpl_parameter_instructions">FN1–4 are used to pass data. 1 is the text cross id, 2 is a barcode, 3 is the date, 4 is the person</string>
     <string name="import_zpl">Import ZPL</string>
     <string name="female">Female</string>
     <string name="male">Male</string>
@@ -86,9 +84,6 @@
     <string name="parental_navigation">Parents</string>
     <string name="parents_dont_exist">Parents do not exist in the DB</string>
     <string name="navigate_to_summary">Navigate to summary</string>
-    <string name="add_individual_parent">Add Parent</string>
-    <string name="polycrosses">Polycrosses</string>
-    <string name="initial_parents">Initial Parents</string>
     <string name="add_female">Add Female</string>
     <string name="add_male_group">Add Male Group</string>
     <string name="add_male">Add Male</string>
@@ -106,4 +101,24 @@
     <string name="qr_code_for_parent">QR Code for parent</string>
     <string name="button_to_scan_next_text">Button to scan next text entry.</string>
     <string name="barcode_preview_image">Barcode preview image.</string>
+    <string name="zxing_scan_mode_single">Single Mode</string>
+    <string name="zxing_status_single">Single</string>
+    <string name="zxing_scan_mode_search">Search Mode</string>
+    <string name="zxing_scan_mode_continuous">Continuous Mode</string>
+    <string name="choose_a_file_to_import">Choose a file to import.</string>
+    <string name="choose_an_export_file_path">Choose an export file path.</string>
+    <string name="exported_file_name">Exported file name.</string>
+    <string name="default_crosses_export_file_name">crosses</string>
+    <string name="ask_for_new_name">Enter a new file name</string>
+    <string name="crosses_export_mom_header">femaleObsUnitDbId</string>
+    <string name="crosses_export_dad_header">maleObsUnitDbId</string>
+    <string name="crosses_export_name_header">readableName</string>
+    <string name="crosses_export_date_header">timestamp</string>
+    <string name="crosses_export_person_header">person</string>
+    <string name="crosses_export_experiment_header">experiment</string>
+    <string name="crosses_export_type_header">type</string>
+    <string name="crosses_export_sex_header">sex</string>
+    <string name="crosses_export_fruits_header">fruits</string>
+    <string name="crosses_export_flowers_header">flowers</string>
+    <string name="crosses_export_seeds_header">seeds</string>
 </resources>

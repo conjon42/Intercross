@@ -2,11 +2,9 @@ package org.phenoapps.intercross.data.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
-import androidx.room.Embedded
 import androidx.room.Insert
 import androidx.room.Query
 import org.phenoapps.intercross.data.models.Event
-import org.phenoapps.intercross.data.models.Parent
 
 @Dao
 interface EventsDao : BaseDao<Event> {

@@ -2,7 +2,11 @@ package org.phenoapps.intercross.data.models
 
 import androidx.annotation.Keep
 import androidx.recyclerview.widget.DiffUtil
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Embedded
+import androidx.room.Entity
+import androidx.room.Index
+import androidx.room.PrimaryKey
 import org.phenoapps.intercross.data.models.embedded.EventMetaData
 
 /**
@@ -77,8 +81,15 @@ data class Event(
         }
     }
 
-    //TODO update to string
     override fun toString(): String {
-        return "$eventDbId,$femaleObsUnitDbId,$maleObsUnitDbId,$person,$timestamp,$experiment"
+
+        return "$femaleObsUnitDbId,$maleObsUnitDbId,$readableName,$timestamp,$person,$experiment,$type,$sex,${metaData.fruits},${metaData.flowers},${metaData.seeds}"
+
+    }
+
+    fun toPollenGroupString(malesRepr: String): String {
+
+        return "$femaleObsUnitDbId,$malesRepr,$readableName,$timestamp,$person,$experiment,${CrossType.POLY},1,${metaData.fruits},${metaData.flowers},${metaData.seeds}"
+
     }
 }

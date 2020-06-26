@@ -1,19 +1,28 @@
 package org.phenoapps.intercross.util
 
 //import org.apache.poi.ss.usermodel.WorkbookFactory
+import android.content.ContentUris
 import android.content.Context
 import android.media.MediaPlayer
+import android.media.MediaScannerConnection
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.preference.PreferenceManager
 import android.provider.DocumentsContract
+import android.provider.MediaStore
+import android.util.Log
+import androidx.annotation.WorkerThread
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.data.models.BaseTable
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
+import org.phenoapps.intercross.data.models.PollenGroup
 import org.phenoapps.intercross.data.models.Wishlist
 import org.phenoapps.intercross.fragments.SettingsFragment
-import java.io.*
+import java.io.BufferedReader
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.io.InputStreamReader
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -46,6 +55,39 @@ class FileUtil(private val ctx: Context) {
     private val wishlistMaxHeader: String by lazy { ctx.getString(R.string.wishlist_header_max) }
 
 
+    /**
+     * Cross table export file header fields.
+     */
+
+    private val crossMomHeader: String by lazy { ctx.getString(R.string.crosses_export_mom_header) }
+
+    private val crossDadHeader: String by lazy { ctx.getString(R.string.crosses_export_dad_header) }
+
+    private val crossNameHeader: String by lazy { ctx.getString(R.string.crosses_export_name_header) }
+
+    private val crossTimestampHeader: String by lazy { ctx.getString(R.string.crosses_export_date_header) }
+
+    private val crossPersonHeader: String by lazy { ctx.getString(R.string.crosses_export_person_header) }
+
+    private val crossExperimentHeader: String by lazy { ctx.getString(R.string.crosses_export_experiment_header) }
+
+    private val crossTypeHeader: String by lazy { ctx.getString(R.string.crosses_export_type_header) }
+
+    private val crossSexHeader: String by lazy { ctx.getString(R.string.crosses_export_sex_header) }
+
+    private val crossFruitsHeader: String by lazy { ctx.getString(R.string.crosses_export_fruits_header) }
+
+    private val crossFlowersHeader: String by lazy { ctx.getString(R.string.crosses_export_flowers_header) }
+
+    private val crossSeedsHeader: String by lazy { ctx.getString(R.string.crosses_export_seeds_header) }
+
+    private val eventModelHeaderString by lazy {
+        arrayOf(crossMomHeader, crossDadHeader, crossNameHeader,
+                crossTimestampHeader, crossPersonHeader, crossExperimentHeader,
+                crossTypeHeader, crossSexHeader, crossFruitsHeader, crossFlowersHeader, crossSeedsHeader)
+                .joinToString(",")
+    }
+
     /***
      * Main parse driver. Either a parents or wishlist file can be loaded.
      * Parents files populate a table of barcodeIds with readable names.
@@ -58,15 +100,13 @@ class FileUtil(private val ctx: Context) {
      *
      * TODO Localizations must require that the parents input file header should not contain the wishlist type header.
      */
-    fun parseInputFile(uri: Uri): Map<String, List<BaseTable>> {
+    fun parseInputFile(uri: Uri): Pair<List<Parent>, List<Wishlist>> {
+
+        val wishlist = ArrayList<Wishlist>()
+
+        val parents = ArrayList<Parent>()
 
         val lines = parseTextFile(uri, ",")
-
-        /***
-         * Column map is a hash map storing to-be inserted columns.
-         * The map is populated during parsing and batch-inserted afterwards.
-         */
-        val columnMap = HashMap<String, ArrayList<out BaseTable>>()
 
         if (lines.isNotEmpty()) {
 
@@ -77,30 +117,19 @@ class FileUtil(private val ctx: Context) {
 
                 if (headers.find { it == wishlistTypeHeader }.isNullOrBlank()) {
 
-                    val parents = ArrayList<Parent>()
-
                     //import parents file
                     loadParents(headers, lines-lines[0], parents)
 
-                    columnMap["Parents"] = parents
-
                 } else {
-
-                    val wishlist = ArrayList<Wishlist>()
-
-                    val parents = ArrayList<Parent>()
 
                     loadWishlist(headers, lines-lines[0], wishlist, parents)
 
-                    columnMap["Parents"] = parents
-
-                    columnMap["Wishlist"] = wishlist
                 }
             }
 
         }
 
-        return columnMap
+        return parents to wishlist
     }
 
 
@@ -311,100 +340,205 @@ class FileUtil(private val ctx: Context) {
         }
     }
 
-    private fun getPath(uri: Uri?): String {
+    fun exportCrossesToFile(uri: Uri, crosses: List<Event>, parents: List<Parent>, groups: List<PollenGroup>) {
 
-        when {
-            DocumentsContract.isDocumentUri(ctx, uri) -> {
-                return when (uri?.authority) {
-                    "com.android.externalstorage.documents" -> {
-                        val docId = DocumentsContract.getDocumentId(uri).split(":")
-                        if (docId.isNotEmpty() && "primary" == docId[0].toLowerCase(Locale.getDefault())) {
-                            "${Environment.getExternalStorageDirectory()}/${docId[1]}"
-                        } else ""
-                    }
-                    "com.android.providers.downloads.documents" -> {
-                        val docId = DocumentsContract.getDocumentId(uri)
-                        if (docId.isNotEmpty() && docId.startsWith("raw:")) {
-                            docId.replaceFirst("raw:", "")
-                        } else ""
-                    }
-                    else -> ""
-                }
-            }
-            "file" == (uri?.scheme ?: "").toLowerCase(Locale.getDefault()) -> {
-                return uri?.path ?: ""
-            }
-        }
-        return String()
-    }
-
-    fun parseUri(uri: Uri): List<String> {
-
-        val fileUri = uri.path ?: ""
-       /* val fileName =
-                if (fileUri.lastIndexOf('/') != -1) {
-                    fileUri.substring(fileUri.lastIndexOf('/') + 1)
-                } else ""*/
-        val filePath = FileUtil(ctx).getPath(uri)
-
-        val lastDot = fileUri.lastIndexOf(".")
-
-        return when (fileUri.substring(lastDot + 1)) {
-            "xlsx", "xls" -> {
-                parseExcelSheet(filePath)
-            }
-            "tsv" -> {
-                parseTextFile(uri, "\t")
-            }
-            "csv", "txt" -> {
-                parseTextFile(uri, ",")
-            }
-            else -> ArrayList()
-        }
-
-    }
-
-    private fun parseExcelSheet(filePath: String): List<String> {
-//        val workbook = WorkbookFactory.create(File(filePath))
-//        return if (workbook.numberOfSheets > 0) {
-//            workbook.getSheetAt(0).rowIterator().asSequence().toList().map {
-//                it.cellIterator().asSequence().joinToString(",")
-//            }
-//        } else ArrayList()
-        return ArrayList()
-    }
-
-    private fun parseTextFile(it: Uri, delim: String): List<String> {
-
-        var ret = ArrayList<String>()
+        val newLine: ByteArray = System.getProperty("line.separator")?.toByteArray() ?: "\n".toByteArray()
 
         try {
 
-            val stream = ctx.contentResolver.openInputStream(it)
+            ctx.contentResolver.openOutputStream(uri).apply {
 
-            stream?.let {
+                this?.let {
 
-                val reader = BufferedReader(InputStreamReader(it))
+                    write(eventModelHeaderString.toByteArray())
 
-                ret = ArrayList(reader.readLines())
+                    write(newLine)
+
+                    crosses.forEachIndexed { index, cross ->
+                        //TODO: Trevor double check how polycrosses should be exported.
+
+                        //TODO: chaney replace this any check with query or pre-event-insert
+                        if (groups.any { g -> g.codeId == cross.maleObsUnitDbId }) {
+
+                            val males = groups.filter { g -> g.codeId == cross.maleObsUnitDbId }
+                                    .map { g ->
+                                        parents.find { c -> c.id == g.maleId }.let {
+                                            it?.name
+                                        }
+                                    }.joinToString(",", "{", "}")
+
+                            write(cross.toPollenGroupString(males).toByteArray())
+
+                            write(newLine)
+
+                        } else {
+
+                            write(cross.toString().toByteArray())
+
+                            write(newLine)
+
+                        }
+                    }
+
+                    close()
+                }
+
             }
-        } catch (fo: FileNotFoundException) {
-            fo.printStackTrace()
-        } catch (io: IOException) {
-            io.printStackTrace()
+
+        } catch (exception: FileNotFoundException) {
+
+            Log.e("IntFileNotFound", "Chosen uri path was not found: $uri")
+
         }
 
-        return ret
+        MediaScannerConnection.scanFile(ctx, arrayOf(uri.path), arrayOf("*/*"), null)
+
     }
 
-    fun readText(uri: Uri?): CharSequence {
+    //    fun parseUri(uri: Uri): List<String> {
+    //
+    //        val fileUri = uri.path ?: ""
+    //       /* val fileName =
+    //                if (fileUri.lastIndexOf('/') != -1) {
+    //                    fileUri.substring(fileUri.lastIndexOf('/') + 1)
+    //                } else ""*/
+    //        val filePath = FileUtil(ctx).getPath(uri)
+    //
+    //        val lastDot = fileUri.lastIndexOf(".")
+    //
+    //        return when (fileUri.substring(lastDot + 1)) {
+    //            "xlsx", "xls" -> {
+    //                parseExcelSheet(filePath)
+    //            }
+    //            "tsv" -> {
+    //                parseTextFile(uri, "\t")
+    //            }
+    //            "csv", "txt" -> {
+    //                parseTextFile(uri, ",")
+    //            }
+    //            else -> ArrayList()
+    //        }
+    //
+    //    }
 
-        uri?.let {
+        @WorkerThread
+        fun getFilePath(context: Context, uri: Uri): String? = context.run {
+            when {
 
-            val lines = File(getPath(uri)).readLines()
+                Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT ->
+                    getDataColumn(uri, null, null)
 
-            return lines.joinToString("\n")
+                else -> getPathKitkatPlus(uri)
+            }
         }
-        return String()
-    }
+
+        private fun Context.getPathKitkatPlus(uri: Uri): String? {
+            when {
+                DocumentsContract.isDocumentUri(applicationContext, uri) -> {
+                    val docId = DocumentsContract.getDocumentId(uri)
+                    when {
+                        uri.isExternalStorageDocument -> {
+                            val parts = docId.split(":")
+                            if ("primary".equals(parts[0], true)) {
+                                return "${Environment.getExternalStorageDirectory()}/${parts[1]}"
+                            }
+                        }
+                        uri.isDownloadsDocument -> {
+                            val contentUri = ContentUris.withAppendedId(
+                                    Uri.parse("content://downloads/public_downloads"),
+                                    docId.toLong()
+                            )
+                            return getDataColumn(contentUri, null, null)
+                        }
+                        uri.isMediaDocument -> {
+                            val parts = docId.split(":")
+                            val contentUri = when (parts[0].toLowerCase(Locale.ROOT)) {
+                                "image" -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                                "video" -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                                "audio" -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+                                else -> return null
+                            }
+                            return getDataColumn(contentUri, "_id=?", arrayOf(parts[1]))
+                        }
+                    }
+                }
+                "content".equals(uri.scheme, true) -> {
+                    return if (uri.isGooglePhotosUri) {
+                        uri.lastPathSegment
+                    } else {
+                        getDataColumn(uri, null, null)
+                    }
+                }
+                "file".equals(uri.scheme, true) -> {
+                    return uri.path
+                }
+            }
+            return null
+        }
+
+        private fun Context.getDataColumn(uri: Uri, selection: String?, args: Array<String>?): String? {
+            contentResolver?.query(uri, arrayOf("_data"), selection, args, null)?.use {
+                if (it.moveToFirst()) {
+                    return it.getString(it.getColumnIndexOrThrow("_data"))
+                }
+            }
+            return null
+        }
+
+        private val Uri.isExternalStorageDocument: Boolean
+            get() = authority == "com.android.externalstorage.documents"
+
+        private val Uri.isDownloadsDocument: Boolean
+            get() = authority == "com.android.providers.downloads.documents"
+
+        private val Uri.isMediaDocument: Boolean
+            get() = authority == "com.android.providers.media.documents"
+
+        private val Uri.isGooglePhotosUri: Boolean
+            get() = authority == "com.google.android.apps.photos.content"
+
+        private fun parseExcelSheet(filePath: String): List<String> {
+    //        val workbook = WorkbookFactory.create(File(filePath))
+    //        return if (workbook.numberOfSheets > 0) {
+    //            workbook.getSheetAt(0).rowIterator().asSequence().toList().map {
+    //                it.cellIterator().asSequence().joinToString(",")
+    //            }
+    //        } else ArrayList()
+            return ArrayList()
+        }
+
+        private fun parseTextFile(it: Uri, delim: String): List<String> {
+
+            var ret = ArrayList<String>()
+
+            try {
+
+                val stream = ctx.contentResolver.openInputStream(it)
+
+                stream?.let {
+
+                    val reader = BufferedReader(InputStreamReader(it))
+
+                    ret = ArrayList(reader.readLines())
+                }
+            } catch (fo: FileNotFoundException) {
+                fo.printStackTrace()
+            } catch (io: IOException) {
+                io.printStackTrace()
+            }
+
+            return ret
+        }
+
+        fun readText(uri: Uri?): CharSequence {
+
+            uri?.let {
+
+    //            val lines = File(getPath(uri)).readLines()
+    //
+    //            return lines.joinToString("\n")
+            }
+            return String()
+        }
+
 }

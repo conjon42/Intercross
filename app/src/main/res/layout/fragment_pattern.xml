@@ -81,7 +81,6 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
-            android:layout_gravity="right"
             android:fontFamily="monospace"
             android:text=""
             android:textAlignment="center"
@@ -113,6 +112,7 @@
                 android:layout_marginTop="8dp"
                 android:ems="10"
                 android:hint="@string/prefix"
+                android:importantForAutofill="no"
                 android:inputType="textNoSuggestions|textVisiblePassword"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -126,6 +126,7 @@
                 android:layout_marginEnd="16dp"
                 android:ems="10"
                 android:hint="@string/suffix"
+                android:importantForAutofill="no"
                 android:inputType="textNoSuggestions|textVisiblePassword"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -141,6 +142,7 @@
                 android:hint="@string/number"
                 android:inputType="number"
                 android:text=""
+                android:importantForAutofill="no"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/radioGroup"
                 app:layout_constraintTop_toTopOf="@+id/radioGroup" />
@@ -156,6 +158,7 @@
                 android:hint="@string/pad_length"
                 android:inputType="number"
                 android:text=""
+                android:importantForAutofill="no"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/radioGroup"
                 app:layout_constraintTop_toBottomOf="@+id/numberEditText" />

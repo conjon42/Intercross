@@ -1,11 +1,8 @@
 package org.phenoapps.intercross.util
 
-import android.content.Context
-import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.navigation.Navigation
-import androidx.navigation.fragment.findNavController
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.fragments.SummaryFragmentDirections

@@ -17,16 +17,17 @@ import com.journeyapps.barcodescanner.DecoratedBarcodeView
 import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.EventsRepository
-import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.SettingsRepository
 import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.PollenGroup
 import org.phenoapps.intercross.data.models.Settings
 import org.phenoapps.intercross.data.models.Wishlist
-import org.phenoapps.intercross.data.viewmodels.*
+import org.phenoapps.intercross.data.viewmodels.CrossSharedViewModel
+import org.phenoapps.intercross.data.viewmodels.EventListViewModel
+import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
+import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentBarcodeScanBinding
@@ -96,17 +97,17 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                 if (result.text == null) return // || result.text == lastText) return
 
                 lastText = result.text
-                zxingBarcodeScanner.statusView.text = "Single Mode"
+                zxingBarcodeScanner.statusView.text = getString(R.string.zxing_scan_mode_single)
 
                 arguments?.let {
                     when(it.getString("mode")) {
                         "single" -> {
-                            zxingBarcodeScanner.setStatusText("Single")
+                            zxingBarcodeScanner.setStatusText(getString(R.string.zxing_status_single))
                             //mSharedViewModel.lastScan.value = result.text.toString()
                             findNavController().popBackStack()
                         }
                         "search" -> {
-                            zxingBarcodeScanner.setStatusText("Search Mode")
+                            zxingBarcodeScanner.setStatusText(getString(R.string.zxing_scan_mode_search))
 
                             //mSharedViewModel.lastScan.value = result.text.toString()
 //                            mEvents.forEach { event ->
@@ -117,7 +118,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 //                            }
                         }
                         "continuous" -> {
-                            zxingBarcodeScanner.setStatusText("Continuous Mode")
+                            zxingBarcodeScanner.setStatusText(getString(R.string.zxing_scan_mode_continuous))
 
                             val order = PreferenceManager.getDefaultSharedPreferences(requireContext())
                                     .getString(SettingsFragment.ORDER, "0")

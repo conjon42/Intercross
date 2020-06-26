@@ -1,14 +1,16 @@
 package org.phenoapps.intercross.fragments
 
 import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.preference.PreferenceManager
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
-import android.view.*
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -31,7 +33,11 @@ import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
 import org.phenoapps.intercross.data.models.Settings
 import org.phenoapps.intercross.data.models.Wishlist
-import org.phenoapps.intercross.data.viewmodels.*
+import org.phenoapps.intercross.data.viewmodels.CrossSharedViewModel
+import org.phenoapps.intercross.data.viewmodels.EventListViewModel
+import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
+import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
+import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory

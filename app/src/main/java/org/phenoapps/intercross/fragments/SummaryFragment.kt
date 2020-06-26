@@ -6,7 +6,6 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
@@ -15,7 +14,6 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.SummaryAdapter
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.WishlistRepository
-import org.phenoapps.intercross.data.dao.EventsDao
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
@@ -68,15 +66,19 @@ class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.
 
                 val crossData = ArrayList<CrossData>()
 
-                eventsModel.events.observe(viewLifecycleOwner, Observer {
+                eventsModel.events.observe(viewLifecycleOwner, Observer { data ->
 
-                    it?.let { events ->
+                    data?.let { events ->
 
-                        crosses.forEach {
+                        crosses.forEach { parentrow ->
 
                             crossData.add(
-                                    CrossData(it.dad, it.mom, it.count.toString(),
-                                    events.filter { e -> e.maleObsUnitDbId == it.dad && e.femaleObsUnitDbId == it.mom })
+                                    CrossData(
+                                            parentrow.dad,
+                                            parentrow.mom,
+                                            parentrow.count.toString(),
+                                            events.filter { e -> e.maleObsUnitDbId == parentrow.dad
+                                                    && e.femaleObsUnitDbId == parentrow.mom })
                             )
 
                         }

@@ -6,17 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
-import androidx.navigation.Navigation
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.data.models.Event
-import org.phenoapps.intercross.databinding.ListItemSimpleRowBinding
 import org.phenoapps.intercross.databinding.ListItemWishlistRowBinding
 import org.phenoapps.intercross.fragments.SummaryFragment
-import org.phenoapps.intercross.fragments.SummaryFragmentDirections
 import org.phenoapps.intercross.util.Dialogs
 
 

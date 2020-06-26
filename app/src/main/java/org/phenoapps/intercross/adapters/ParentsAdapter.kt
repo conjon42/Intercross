@@ -1,22 +1,17 @@
 package org.phenoapps.intercross.adapters
 
 import android.graphics.Color
-import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.data.PollenGroupRepository
 import org.phenoapps.intercross.data.models.BaseParent
 import org.phenoapps.intercross.data.models.Parent
 import org.phenoapps.intercross.data.models.PollenGroup
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
 import org.phenoapps.intercross.data.viewmodels.PollenGroupListViewModel
-import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModelFactory
 import org.phenoapps.intercross.databinding.ListItemSelectableParentRowBinding
 
 class ParentsAdapter(private val listModel: ParentsListViewModel,
@@ -70,7 +65,7 @@ class ParentsAdapter(private val listModel: ParentsListViewModel,
                     checked = p.selected
                 }
 
-                linearLayout3.setOnClickListener {
+                linearLayout.setOnClickListener {
 
                     doneCheckBox.isChecked=!doneCheckBox.isChecked
 

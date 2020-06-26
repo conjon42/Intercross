@@ -1,20 +1,15 @@
 package org.phenoapps.intercross
 
 import android.Manifest
-import android.app.Activity
-import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.text.InputType
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
@@ -22,26 +17,25 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.observe
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import com.google.android.material.navigation.NavigationView
-import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.GlobalScope
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.ParentsRepository
+import org.phenoapps.intercross.data.PollenGroupRepository
 import org.phenoapps.intercross.data.WishlistRepository
+import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
-import org.phenoapps.intercross.data.models.Wishlist
+import org.phenoapps.intercross.data.models.PollenGroup
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
+import org.phenoapps.intercross.data.viewmodels.PollenGroupListViewModel
 import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.ActivityMainBinding
 import org.phenoapps.intercross.fragments.EventsFragmentDirections
@@ -70,13 +64,43 @@ class MainActivity : AppCompatActivity() {
         ParentsListViewModelFactory(ParentsRepository.getInstance(mDatabase.parentsDao()))
     }
 
-    private var parentsEmpty = true
+    private val groupList: PollenGroupListViewModel by viewModels {
+        PollenGroupListViewModelFactory(PollenGroupRepository.getInstance(mDatabase.pollenGroupDao()))
+    }
+
+    private val exportCrossesFile by lazy {
+
+        registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
+
+            FileUtil(this).exportCrossesToFile(uri, mEvents, mParents, mGroups)
+
+        }
+
+    }
+
+    private val importedFileContent by lazy {
+
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+
+            val tables = FileUtil(this).parseInputFile(uri)
+
+            //TODO Trevor: Should tables be dropped before import?
+            //TODO Trevor: For wishlist drop, should parents also be dropped?
+            parentsList.dropAndInsert(tables.first)
+
+            wishModel.dropAndInsert(tables.second)
+
+        }
+
+    }
 
     private var wishlistEmpty = true
 
-    private var eventsEmpty = true
+    private var mEvents: List<Event> = ArrayList()
 
-    private lateinit var mParents: List<Parent>
+    private var mGroups: List<PollenGroup> = ArrayList()
+
+    private var mParents: List<Parent> = ArrayList()
 
     private lateinit var mDatabase: IntercrossDatabase
 
@@ -90,6 +114,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mNavController: NavController
 
 
+    /**
+     * Function that creates example files for parents/zpl/wishlist tables in the app's cache directory.
+     */
     private fun setupDirs() {
 
         //create separate subdirectory foreach type of import
@@ -163,7 +190,6 @@ class MainActivity : AppCompatActivity() {
 
         mDrawerLayout = mBinding.drawerLayout
 
-
         //TODO name not showing up until app re-open
         mDrawerToggle = object : ActionBarDrawerToggle(this, mDrawerLayout,
                 R.string.drawer_open, R.string.drawer_close) {
@@ -175,6 +201,57 @@ class MainActivity : AppCompatActivity() {
 
         mDrawerToggle.isDrawerIndicatorEnabled = true
         mDrawerLayout.addDrawerListener(mDrawerToggle)
+
+        setupNavDrawer()
+
+        mSnackbar = SnackbarQueue()
+
+        mNavController = Navigation.findNavController(this@MainActivity, R.id.nav_fragment)
+
+        mDatabase = IntercrossDatabase.getInstance(this)
+
+        startObservers()
+    }
+
+    private fun startObservers() {
+
+        eventsModel.events.observe(this, Observer {
+
+            it?.let {
+
+                mEvents = it
+
+            }
+        })
+
+        parentsList.parents.observe(this, Observer {
+
+            it?.let {
+
+                mParents = it
+            }
+        })
+
+        wishModel.wishlist.observe(this, Observer {
+
+            it?.let {
+
+                wishlistEmpty = it.isEmpty()
+            }
+        })
+
+        groupList.groups.observe(this, Observer {
+
+            it?.let {
+
+                mGroups = it
+
+            }
+        })
+
+    }
+
+    private fun setupNavDrawer() {
 
         // Setup drawer view
         val nvDrawer = findViewById<NavigationView>(R.id.nvView)
@@ -195,59 +272,34 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.action_nav_parents -> {
 
-                    if (!parentsEmpty)
-                        mNavController.navigate(EventsFragmentDirections.actionToParentsFragment())
+                    if (mParents.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToParentsFragment())
                     else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
                             getString(R.string.parents_table_empty))
+
                 }
                 R.id.action_nav_import -> {
 
-                    importWishlist()
+                    val mimeType = "*/*"
+
+                    importedFileContent.launch(mimeType)
+
                 }
                 R.id.action_nav_export -> {
 
-                    exportFile()
+                    val defaultFileNamePrefix = getString(R.string.default_crosses_export_file_name)
+
+                    exportCrossesFile.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
+
                 }
                 R.id.action_nav_summary -> {
 
-                    val lastSummaryFragment = PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
-                            .getString("last_visited_summary", "summary")
+                    navigateToLastSummaryFragment()
 
-                    /***
-                     * Prioritize navigation to summary fragment, otherwise pick the last chosen view using preferences
-                     * The key "last_visited_summary" is updated at the start of each respective fragment.
-                     */
-                    when (lastSummaryFragment) {
-
-                        "summary" -> {
-                            if (!eventsEmpty)
-                                mNavController.navigate(EventsFragmentDirections.actionToSummaryFragment())
-                            else if(!wishlistEmpty)
-                                mNavController.navigate(EventsFragmentDirections.actionToWishlistFragment())
-                            else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
-                                    getString(R.string.summary_and_wishlist_empty))
-                        }
-                        "crossblock" -> {
-                            if (!wishlistEmpty)
-                                mNavController.navigate(EventsFragmentDirections.actionToCrossblock())
-                            else if (!eventsEmpty)
-                                mNavController.navigate(EventsFragmentDirections.actionToSummaryFragment())
-                            else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
-                                    getString(R.string.summary_and_wishlist_empty))
-                        }
-                        "wishlist" -> {
-                            if (!wishlistEmpty)
-                                mNavController.navigate(EventsFragmentDirections.actionToWishlistFragment())
-                            else if (!eventsEmpty)
-                                mNavController.navigate(EventsFragmentDirections.actionToSummaryFragment())
-                            else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
-                                    getString(R.string.summary_and_wishlist_empty))
-                        }
-                    }
                 }
                 R.id.action_nav_about -> {
 
                     mNavController.navigate(R.id.aboutActivity)
+
                 }
             }
 
@@ -255,153 +307,38 @@ class MainActivity : AppCompatActivity() {
 
             true
         }
-
-        mSnackbar = SnackbarQueue()
-
-        mNavController = Navigation.findNavController(this@MainActivity, R.id.nav_fragment)
-
-        mDatabase = IntercrossDatabase.getInstance(this)
-
-        eventsModel.events.observe(this, Observer {
-
-            it?.let {
-
-                eventsEmpty = it.isEmpty()
-            }
-        })
-
-        parentsList.parents.observe(this, Observer {
-
-            it?.let {
-
-                parentsEmpty = it.isEmpty()
-
-                mParents = it
-            }
-        })
-
-        wishModel.wishlist.observe(this, Observer {
-
-            it?.let {
-
-                wishlistEmpty = it.isEmpty()
-            }
-        })
     }
 
-    private fun importWishlist() {
+    private fun navigateToLastSummaryFragment() {
 
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+        val lastSummaryFragment = PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
+                .getString("last_visited_summary", "summary")
 
-            addCategory(Intent.CATEGORY_OPENABLE)
+        /***
+         * Prioritize navigation to summary fragment, otherwise pick the last chosen view using preferences
+         * The key "last_visited_summary" is updated at the start of each respective fragment.
+         */
+        when (lastSummaryFragment) {
 
-            type="*/*"
-
-            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-
-//                        putExtra(DocumentsContract.EXTRA_INITIAL_URI,
-//                                FileProvider.getUriForFile(this@MainActivity,
-//                                "org.phenoapps.intercross.fileprovider",
-//                                File(File(this@MainActivity.externalCacheDir, "Wishlist"), "wishlist_example.csv")))
-
-
+            "summary" -> {
+                if (mEvents.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToSummaryFragment())
+                else if(!wishlistEmpty) mNavController.navigate(EventsFragmentDirections.actionToWishlistFragment())
+                else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
+                        getString(R.string.summary_and_wishlist_empty))
+            }
+            "crossblock" -> {
+                if (!wishlistEmpty) mNavController.navigate(EventsFragmentDirections.actionToCrossblock())
+                else if (mEvents.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToSummaryFragment())
+                else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
+                        getString(R.string.summary_and_wishlist_empty))
+            }
+            "wishlist" -> {
+                if (!wishlistEmpty) mNavController.navigate(EventsFragmentDirections.actionToWishlistFragment())
+                else if (mEvents.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToSummaryFragment())
+                else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
+                        getString(R.string.summary_and_wishlist_empty))
+            }
         }
-
-        startActivityForResult(Intent.createChooser(intent, "Import Wishlist file."), REQ_FILE_IMPORT)
-
-    }
-
-    private fun exportFile() {
-
-        val filename = "crosses_${DateUtil().getTime()}.csv"
-
-        val input = EditText(this@MainActivity).apply {
-            inputType = InputType.TYPE_CLASS_TEXT
-            hint = "Exported file name"
-            setText(filename)
-        }
-
-        val builder = AlertDialog.Builder(this@MainActivity).apply {
-
-            setView(input)
-
-            setPositiveButton("OK") { _, _ ->
-
-                val value = input.text.toString()
-
-                if (value.isNotEmpty()) {
-
-                    exportFile(value)
-
-                } else {
-
-                    Snackbar.make(mBinding.root,
-                            "You must enter a new file name.", Snackbar.LENGTH_LONG).show()
-                }
-            }
-            setTitle("Enter a new file name")
-        }
-        builder.show()
-    }
-
-    //TODO update export, move to FileUtil
-    private fun exportFile(filename: String) {
-
-//        val lineSeparator = System.getProperty("line.separator")
-//
-//            mLiveEvents.forEachIndexed { _, e ->
-//
-//                try {
-//                    val dir = this.getDir("Intercross/Export", Context.MODE_PRIVATE)
-//                    dir.mkdir()
-//                    val output = File(dir, filename)
-//                    val fstream = FileOutputStream(output)
-//
-//                    fstream.write("eventDbId,femaleObsUnitDbId,maleObsUnitDbId,crossType,person,timestamp,experiment,flowers,seeds,fruits".toByteArray())
-//                    fstream.write(lineSeparator?.toByteArray() ?: "\n".toByteArray())
-//
-//                    if (!e.unknown) {
-////                                mGroups.let { it ->
-////                                    for (g in it) {
-////                                        if (e.maleObsUnitDbId == g.uuid) {
-////                                            val dads = ArrayList<String>()
-////                                            for (p in mPollens) {
-////                                                if (p.pid == g.id) {
-////                                                    dads.add(p.pollenId)
-////                                                }
-////                                            }
-////                                            e.maleObsUnitDbId = dads.joinToString(";")
-////                                        }
-////                                    }
-////                                    val groups = it.map { it.uuid }
-////                                    if (e.maleObsUnitDbId in groups) {
-////                                        e.crossType = "Polycross"
-////                                    }
-////                                }
-//
-//                        fstream.write(e.toString().toByteArray())
-//                        fstream.write(lineSeparator?.toByteArray() ?: "\n".toByteArray())
-//                    }
-//                    scanFile(this@MainActivity, output)
-//                    fstream.flush()
-//                    fstream.close()
-//                } catch (e: FileNotFoundException) {
-//                    e.printStackTrace()
-//                } catch (io: IOException) {
-//                    io.printStackTrace()
-//                } finally {
-//                    Snackbar.make(mBinding.root, "File write successful!", Snackbar.LENGTH_SHORT).show()
-//                }
-//            }
-    }
-
-
-    //TODO move to FileUtil
-    private fun scanFile(ctx: Context, filePath: File) {
-
-        MediaScannerConnection.scanFile(ctx,
-                arrayOf(filePath.absolutePath),
-                null, null)
     }
 
     private fun closeKeyboard() {
@@ -441,6 +378,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onRequestPermissionsResult(resultCode: Int, permissions: Array<String>, granted: IntArray) {
+        super.onRequestPermissionsResult(resultCode, permissions, granted)
 
         permissions.forEachIndexed { index, perm ->
 
@@ -467,42 +405,6 @@ class MainActivity : AppCompatActivity() {
         mDrawerToggle.onConfigurationChanged(newConfig)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, i: Intent?) {
-        super.onActivityResult(requestCode, resultCode, i)
-
-        if (requestCode == REQ_FILE_IMPORT && resultCode == Activity.RESULT_OK) {
-
-            i?.data?.let { it ->
-
-                val columns = FileUtil(this).parseInputFile(it)
-
-                //TODO Trevor: Should tables be dropped before import?
-                //TODO Trevor: For wishlist drop, should parents also be dropped?
-                parentsList.drop()
-                wishModel.drop()
-
-                columns["Parents"]?.let { insertableParents ->
-
-                    //TODO chaney replace with filterByInstance map
-                    parentsList.insert(*(
-                            insertableParents as ArrayList<Parent>)
-                            .toTypedArray())
-
-                }
-
-
-                columns["Wishlist"]?.let {
-
-                    wishModel.insert(
-                            *(it as ArrayList<Wishlist>)
-                                    .toTypedArray()
-                    )
-
-                }
-            }
-        }
-    }
-
     override fun onBackPressed() {
 
         mNavController.currentDestination?.let { it ->
@@ -523,10 +425,7 @@ class MainActivity : AppCompatActivity() {
     internal companion object {
 
         //requests
-        const val REQ_EXT_STORAGE = 101
         const val REQ_CAMERA = 102
-        const val REQ_FILE_IMPORT = 103
-        const val REQ_FIRST_OPEN = 104
 
     }
 

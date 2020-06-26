@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
     <external-cache-path
-        name="files"
+        name="examples"
         path="."/>
-    <external-cache-path
-        name="wishlist_examples"
-        path="Wishlist/"/>
-    <external-cache-path
-        name="parent_examples"
-        path="Parents/"/>
-    <external-cache-path
-        name="zpl_examples"
-        path="ZPL/"/>
+    <external-path
+        name="export"
+        path="."/>
 </paths>

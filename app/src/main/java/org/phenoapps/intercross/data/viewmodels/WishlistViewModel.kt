@@ -6,7 +6,6 @@ import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.phenoapps.intercross.data.WishlistRepository
-import org.phenoapps.intercross.data.dao.WishlistDao
 import org.phenoapps.intercross.data.models.Wishlist
 
 class WishlistViewModel internal constructor(private val repo: WishlistRepository)
@@ -21,11 +20,13 @@ class WishlistViewModel internal constructor(private val repo: WishlistRepositor
 
     val crossblock: LiveData<List<Wishlist>> = repo.getAll()
 
-    fun drop() {
+    fun dropAndInsert(wishes: List<Wishlist>) {
 
         viewModelScope.launch {
 
             repo.drop()
+
+            repo.insert(*wishes.toTypedArray())
         }
     }
 }
