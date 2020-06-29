@@ -11,8 +11,6 @@ interface EventsDao : BaseDao<Event> {
 
     data class ParentCount(val mom: String, val dad: String, val count: Int)
 
-    //data class ParentData(val mom: String, val dad: String, val momName: String?, val dadName: String?)
-
     data class ParentData(val momCode: String, val momReadableName: String,
                           val dadCode: String, val dadReadableName: String)
 
@@ -30,15 +28,6 @@ interface EventsDao : BaseDao<Event> {
         FROM events as x
     """)
     fun getParentCount(): LiveData<List<ParentCount>>
-
-//    @Query("""
-//        SELECT e.mom, e.dad, m.name as momName, d.name as dadName
-//        FROM events as e
-//        LEFT JOIN parents as m ON m.codeId = e.mom
-//        LEFT JOIN parents as d ON d.codeId = e.dad
-//        WHERE e.eid = :eid
-//    """)
-//    fun getParents(eid: Long): LiveData<ParentData>
 
     @Query("""
         SELECT m.codeId as momCode, m.name as momReadableName, d.codeId as dadCode, d.name as dadReadableName
@@ -58,29 +47,8 @@ interface EventsDao : BaseDao<Event> {
     @Query("DELETE FROM events WHERE events.eid = :eid")
     suspend fun deleteById(eid: Long)
 
-//    @Transaction
-//    suspend fun getParents(eid: Long): ParentalPair
-//            = ParentalPair(getEventWithMom(eid), getEventWithDad(eid))
-
-//    @Query("UPDATE events SET isSelected = 0")
-//    fun resetSelections()
-
-    //TODO Ask if we should display unknown parental pairs
-    //i.e normal data entry, should an unknown cross be added as placeholder if barcode is not found?
-//    @Query("""
-//        SELECT DISTINCT z.codeId as dad, y.codeId as mom,
-//	        (SELECT COUNT(*)
-//            FROM events as x
-//	        WHERE z.codeId = x.maleObsUnitDbId and x.femaleObsUnitDbId = y.codeId) as count
-//        FROM events as x, events as y, events as z
-//        WHERE count > 0""")
-//    fun selectAllParents(): LiveData<List<ParentsCount>>
-
     @Query("SELECT DISTINCT x.codeId FROM events as x WHERE x.codeId = :code")
     fun getEventsWithCode(code: String): List<String>
-
-//    @Query("SELECT DISTINCT *, COUNT(*) FROM events WHERE events.femaleObsUnitDbId=:mom and events.maleOBsUnitDbId=:dad")
-//    fun findChildren(mom: String, dad: String): LiveData<List<Event>>
 
     @Query("SELECT DISTINCT * FROM events WHERE :dbId=codeId")
     fun findCross(dbId: String): LiveData<Event>

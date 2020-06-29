@@ -22,9 +22,12 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_events.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
+import org.phenoapps.intercross.brapi.BrApiService
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.SettingsRepository
@@ -48,6 +51,12 @@ import org.phenoapps.intercross.util.SnackbarQueue
 import java.util.*
 
 class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fragment_events) {
+
+    private val brapi by lazy {
+
+        BrApiService()
+
+    }
 
     private val viewModel: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
@@ -105,8 +114,39 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
     override fun FragmentEventsBinding.afterCreateView() {
 
         if ("demo" in BuildConfig.FLAVOR) {
-            PreferenceManager.getDefaultSharedPreferences(requireContext())
-                    .edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
+
+            val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
+
+            pref.edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
+
+            val url = pref.getString("brapi.url", "")
+
+            val token = "Bearer ${pref.getString("brapi.token", "")}"
+
+            GlobalScope.launch {
+
+                val response = brapi.brapiCrosses(token)
+
+                    response?.let { crossListResponse ->
+
+                        val crosses = crossListResponse.result.data.mapNotNull { cross ->
+
+                            if (cross.crossDbId != null) {
+
+                                Event(cross.crossDbId,
+                                        cross.parent1?.observationUnitDbId ?: "",
+                                        cross.parent2?.observationUnitDbId ?: "")
+
+                            } else null
+
+                        }
+
+                        (recyclerView.adapter as? EventsAdapter)?.submitList(crosses)
+
+                        recyclerView.adapter?.notifyDataSetChanged()
+
+                    }
+            }
         }
 
         recyclerView.adapter = EventsAdapter()

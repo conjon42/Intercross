@@ -67,7 +67,6 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
                 }
             }
 
-
             //TODO add better query/view to return more Parent details (s.a id)
             viewModel.parents.observe(viewLifecycleOwner, Observer { data ->
 

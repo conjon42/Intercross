@@ -22,13 +22,11 @@ import org.phenoapps.intercross.util.Dialogs
  *
  * CrossData's are not rendered with checkboxes.
  *
- * TODO implement child list pop-up, maybe use AlertDialog SingleChoice item list
  */
 class SummaryAdapter(
         val context: Context
 ) : ListAdapter<SummaryFragment.ListEntry, SummaryAdapter.ViewHolder>(SummaryDiffCallback()) {
 
-    //TODO move this to diff callback file
     private class SummaryDiffCallback : DiffUtil.ItemCallback<SummaryFragment.ListEntry>() {
 
         override fun areItemsTheSame(oldItem: SummaryFragment.ListEntry,
