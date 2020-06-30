@@ -14,7 +14,7 @@ import org.phenoapps.intercross.data.models.embedded.EventMetaData
  */
 @Keep
 @Entity(tableName = "events",
-        indices = [Index(value = ["mom", "dad"])])
+        indices = [Index(value = ["codeId"], unique = true)])
 data class Event(
 
         @ColumnInfo(name = "codeId")

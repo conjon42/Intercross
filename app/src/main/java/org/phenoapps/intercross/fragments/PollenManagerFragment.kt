@@ -1,5 +1,6 @@
 package org.phenoapps.intercross.fragments
 
+import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -21,6 +22,7 @@ import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFacto
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentPollenManagerBinding
+import org.phenoapps.intercross.util.Dialogs
 import java.util.*
 
 //TODO update fragment with data binding, update button text depending on data to be submitted
@@ -32,7 +34,11 @@ class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBindin
     private lateinit var mAdapter: ParentsAdapter
 
     private lateinit var mEvents: List<Event>
+
+    private lateinit var mParents: List<Parent>
+
     private lateinit var mMales: List<Parent>
+
     private lateinit var mGroups: List<PollenGroup>
 
     private var mPolycrosses: List<PollenGroup> = ArrayList()
@@ -68,6 +74,15 @@ class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBindin
          */
         //an error is shown when a barcode already exists in the database
         val error = getString(R.string.ErrorCodeExists)
+
+        parentList.parents.observe(viewLifecycleOwner, Observer { parents ->
+
+            parents?.let {
+
+                mParents = it
+
+            }
+        })
 
         if (args.mode == 1) {
 
@@ -118,26 +133,14 @@ class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBindin
 
                 codeEditText.addTextChangedListener {
 
-                    var flag = true
+                    var codes = mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }.distinct()
 
-                    for (e: Event in mEvents) {
+                    if (codeEditText.text.toString() in codes) {
 
-                        if (codeEditText.text.toString() == e.eventDbId) {
+                        if (codeTextHolder.error == null) codeTextHolder.error = error
 
-                            if (codeTextHolder.error == null) codeTextHolder.error = error
+                    } else codeTextHolder.error = null
 
-                            flag = false
-
-                            break
-
-                        }
-                    }
-
-                    if (flag) {
-
-                        codeTextHolder.error = null
-
-                    }
                 }
             }
         })
@@ -146,7 +149,11 @@ class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBindin
 
         newButton.setOnClickListener {
 
-            when (args.mode) {
+            if (mParents.any { parent -> parent.codeId == codeEditText.text.toString() }) {
+
+                Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.parent_already_exists))
+
+            } else when (args.mode) {
                 /**
                  * Insert a single female into the database based on the data entry.
                  */

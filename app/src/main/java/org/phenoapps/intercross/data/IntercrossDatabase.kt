@@ -5,8 +5,17 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import org.phenoapps.intercross.data.dao.*
-import org.phenoapps.intercross.data.models.*
+import org.phenoapps.intercross.data.dao.EventsDao
+import org.phenoapps.intercross.data.dao.ParentsDao
+import org.phenoapps.intercross.data.dao.PollenGroupDao
+import org.phenoapps.intercross.data.dao.SettingsDao
+import org.phenoapps.intercross.data.dao.WishlistDao
+import org.phenoapps.intercross.data.models.Event
+import org.phenoapps.intercross.data.models.EventParentsView
+import org.phenoapps.intercross.data.models.Parent
+import org.phenoapps.intercross.data.models.PollenGroup
+import org.phenoapps.intercross.data.models.Settings
+import org.phenoapps.intercross.data.models.Wishlist
 
 @Database(entities = [Event::class, Parent::class,
     Wishlist::class, Settings::class, PollenGroup::class],

@@ -7,6 +7,7 @@ import android.preference.PreferenceManager
 import android.provider.DocumentsContract
 import androidx.core.content.FileProvider
 import kotlinx.android.synthetic.main.fragment_pattern.*
+import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.databinding.FragmentImportZplBinding
 import org.phenoapps.intercross.util.FileUtil
@@ -28,13 +29,14 @@ class ImportZPLFragment : IntercrossBaseFragment<FragmentImportZplBinding>(R.lay
                     flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
                     putExtra(DocumentsContract.EXTRA_INITIAL_URI,
                             FileProvider.getUriForFile(ctx,
-                                    "org.phenoapps.intercross.fileprovider",
+                                    "${BuildConfig.APPLICATION_ID}.fileprovider",
                                     File(File(ctx.externalCacheDir, "ZPL"), "zpl_example.zpl")))
                 }
 
             }
 
-            startActivityForResult(Intent.createChooser(intent, "Import ZPL file."), 100)
+            val importZplString = getString(R.string.import_a_zpl_file)
+            startActivityForResult(Intent.createChooser(intent, importZplString), 100)
 
         }
 
@@ -54,12 +56,13 @@ class ImportZPLFragment : IntercrossBaseFragment<FragmentImportZplBinding>(R.lay
                 when (requestCode) {
                     100 -> {
 
-                        val text = FileUtil(requireContext()).readText(intent.data)
+                        val text = FileUtil(requireContext()).readText(requireContext(), intent.data)
                         codeTextView.text = text
 
                         val edit = PreferenceManager.getDefaultSharedPreferences(requireContext()).edit()
                         edit.putString("ZPL_CODE", text.toString())
                         edit.apply()
+
                     }
                 }
             }

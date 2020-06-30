@@ -3,11 +3,12 @@ package org.phenoapps.intercross.util
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.Context
+import android.preference.PreferenceManager
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import androidx.appcompat.app.AlertDialog
 import org.phenoapps.intercross.data.models.Event
-import org.phenoapps.intercross.data.models.PollenGroup
+import org.phenoapps.intercross.data.models.Parent
 
 
 //Bluetooth Utility class for printing ZPL code and choosing bluetooth devices to print from.
@@ -44,6 +45,7 @@ class BluetoothUtil {
         if (mBtName.isBlank()) {
 
             mBluetoothAdapter?.let {
+
                 val pairedDevices = it.bondedDevices
 
                 val map = HashMap<Int, BluetoothDevice>()
@@ -85,6 +87,7 @@ class BluetoothUtil {
 
         } else f()
     }
+
     private var template = "^XA^MNA^MMT,N" +
             "^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS" +
             "^FWR" +
@@ -112,14 +115,35 @@ class BluetoothUtil {
 
     fun print(ctx: Context, events: Array<Event>) {
         choose(ctx) {
-            PrintThread(ctx, template, mBtName).printEvents(events)
+
+            val importedZpl = PreferenceManager.getDefaultSharedPreferences(ctx).getString("ZPL_CODE", "") ?: ""
+
+            if (importedZpl.isNotBlank()) {
+
+                PrintThread(ctx, importedZpl, mBtName).printEvents(events)
+
+
+            } else {
+
+                PrintThread(ctx, template, mBtName).printEvents(events)
+
+            }
         }
     }
 
-    fun print(ctx: Context, group: PollenGroup) {
-        choose(ctx) {
-            PrintThread(ctx, template, mBtName).printGroup(group)
+    fun print(ctx: Context, parents: Array<Parent>) {
+
+        val importedZpl = PreferenceManager.getDefaultSharedPreferences(ctx).getString("ZPL_CODE", "") ?: ""
+
+        if (importedZpl.isNotBlank()) {
+
+            PrintThread(ctx, importedZpl, mBtName).printParents(parents)
+
+
+        } else {
+
+            PrintThread(ctx, template, mBtName).printParents(parents)
+
         }
     }
-
 }

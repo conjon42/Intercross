@@ -3,6 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Intercross.iml" filepath="$PROJECT_DIR$/.idea/modules/Intercross.iml" group="Intercross" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Intercross-app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Intercross-app.iml" group="Intercross/app" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/StudioProjects-Intercross.iml" filepath="$PROJECT_DIR$/.idea/modules/StudioProjects-Intercross.iml" group="Intercross" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/app.iml" group="Intercross/app" />
     </modules>
   </component>

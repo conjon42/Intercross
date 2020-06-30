@@ -26,6 +26,7 @@ import org.phenoapps.intercross.util.Dialogs
  * Users can navigate to and from cross block and wishlist fragments.
  */
 //TODO Trevor when a wishlist is deleted and re-imported, should the current cross table be checked for progress?
+//Update wishlist table
 class WishlistFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.fragment_summary) {
 
     private val eventsModel: EventListViewModel by viewModels {

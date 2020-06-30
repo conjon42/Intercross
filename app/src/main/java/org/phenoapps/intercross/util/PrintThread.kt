@@ -9,7 +9,9 @@ import com.zebra.sdk.comm.ConnectionException
 import com.zebra.sdk.printer.SGD
 import com.zebra.sdk.printer.ZebraPrinterFactory
 import com.zebra.sdk.printer.ZebraPrinterLanguageUnknownException
+import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.models.Event
+import org.phenoapps.intercross.data.models.Parent
 import org.phenoapps.intercross.data.models.PollenGroup
 
 
@@ -18,7 +20,7 @@ class PrintThread(private val ctx: Context, private val template: String,
 
     private var mMode = 0
     private lateinit var mEvents: Array<Event>
-    private lateinit var mGroup: PollenGroup
+    private lateinit var mParents: Array<Parent>
 
     fun printEvents(events: Array<Event>) {
         mEvents = events
@@ -26,8 +28,14 @@ class PrintThread(private val ctx: Context, private val template: String,
         start()
     }
 
-    fun printGroup(group: PollenGroup) {
-        mGroup = group
+    fun printParents(parents: Array<Parent>) {
+        mParents = parents
+        mMode = 1
+        start()
+    }
+
+    fun printGroup(groups: Array<PollenGroup>) {
+        mParents = groups.map { g -> Parent(g.codeId, 1, g.name) }.toTypedArray()
         mMode = 1
         start()
     }
@@ -37,8 +45,13 @@ class PrintThread(private val ctx: Context, private val template: String,
         Looper.prepare()
 
         if (btName.isBlank()) {
-            Toast.makeText(ctx, "No bluetooth device paired.", Toast.LENGTH_SHORT).show()
+
+            val notPaired = ctx.getString(R.string.no_device_paired)
+
+            Toast.makeText(ctx, notPaired, Toast.LENGTH_SHORT).show()
+
         } else {
+
             val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
             val pairedDevices = mBluetoothAdapter.bondedDevices.filter {
@@ -46,25 +59,40 @@ class PrintThread(private val ctx: Context, private val template: String,
             }
 
             if (pairedDevices.isNotEmpty()) {
+
                 val bc = BluetoothConnection(pairedDevices[0].address)
 
                 try {
+
                     bc.open()
+
                     val printer = ZebraPrinterFactory.getInstance(bc)
+
                     val linkOsPrinter = ZebraPrinterFactory.createLinkOsPrinter(printer)
+
                     linkOsPrinter?.let { it ->
+
                         val printerStatus = it.currentStatus
+
                         getPrinterStatus(bc)
-                        //println((it.allSettings["head.resolution.in_dpi"] as Setting).value)
+
+                        val printerOpen = ctx.getString(R.string.printer_open)
+                        val printerPaused = ctx.getString(R.string.printer_paused)
+                        val noPaper = ctx.getString(R.string.printer_empty)
+                        val notConnected = ctx.getString(R.string.printner_not_connected)
 
                         if (printerStatus.isReadyToPrint) {
+
+                            if (template.isNotBlank()) {
+
+                                printer.sendCommand(template)
+
+                            }
 
                             when (mMode) {
                                 0 -> {
                                     mEvents.forEach {
-                                        if (template.isNotBlank()) {
-                                            printer.sendCommand(template)
-                                        }
+
                                         printer.sendCommand("^XA^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF" +
                                                 "^FN1^FD${it.eventDbId}^FS" +
                                                 "^FN2^FDQA,${it.eventDbId}^FS" +
@@ -72,28 +100,28 @@ class PrintThread(private val ctx: Context, private val template: String,
                                     }
                                 }
                                 1 -> {
-                                    if (template.isNotBlank()) {
-                                        printer.sendCommand(template)
+                                    mParents.forEach {
+
+                                        val unknown = ctx.getString(R.string.unknown)
+                                        printer.sendCommand("^XA^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF" +
+                                                "^FN1^FD${it.codeId}^FS" +
+                                                "^FN2^FDQA,${it.codeId}^FS" +
+                                                "^FN3^FD${unknown}^FS^XZ")
                                     }
-//                                    printer.sendCommand("^XA^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF" +
-//                                            "^FN1^FD${mGroup.name}^FS" +
-//                                            "^FN2^FDQA,${mGroup.uuid}^FS" +
-//                                            "^FN3^FD${mGroup.uuid}^FS^XZ")
                                 }
                             }
-
 
                             /*printer.printImage(new ZebraImageAndroid(BitmapFactory.decodeResource(getApplicationContext().getResources(),
                     R.drawable.intercross_small)), 75,500,-1,-1,false);*/
 
                         } else if (printerStatus.isHeadOpen) {
-                             Toast.makeText(ctx, "Printer is open.", Toast.LENGTH_LONG).show()
+                             Toast.makeText(ctx, printerOpen, Toast.LENGTH_LONG).show()
                         } else if (printerStatus.isPaused) {
-                             Toast.makeText(ctx, "Printer is paused.", Toast.LENGTH_LONG).show()
+                             Toast.makeText(ctx, printerPaused, Toast.LENGTH_LONG).show()
                         } else if (printerStatus.isPaperOut) {
-                             Toast.makeText(ctx, "No paper.", Toast.LENGTH_LONG).show()
+                             Toast.makeText(ctx, noPaper, Toast.LENGTH_LONG).show()
                         } else {
-                             Toast.makeText(ctx, "Please check the printer's connection.", Toast.LENGTH_LONG).show()
+                             Toast.makeText(ctx, notConnected, Toast.LENGTH_LONG).show()
                         }
                     }
                 } catch (e: ConnectionException) {

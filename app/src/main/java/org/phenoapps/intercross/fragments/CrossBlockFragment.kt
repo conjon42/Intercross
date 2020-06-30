@@ -21,6 +21,7 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.HeaderAdapter
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.WishlistRepository
+import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
@@ -45,7 +46,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
      */
     open class BlockData
     data class HeaderData(val name: String) : BlockData()
-    data class CellData(val current: Int, val min: Int, val max: Int): BlockData()
+    data class CellData(val current: Int, val min: Int, val max: Int, val onClick: View.OnClickListener): BlockData()
     class EmptyCell: BlockData()
 
     private lateinit var mGesture: GestureDetectorCompat
@@ -58,6 +59,8 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
     private var mEventsEmpty = true
 
+    private lateinit var mEvents: List<Event>
+
     @RequiresApi(Build.VERSION_CODES.M)
     override fun CrossBlockManagerBinding.afterCreateView() {
 
@@ -66,9 +69,9 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
         mGesture = GestureDetectorCompat(requireContext(), this@CrossBlockFragment)
 
-        mParentAdapter = HeaderAdapter()
-        mRowAdapter = HeaderAdapter()
-        mColumnAdapter = HeaderAdapter()
+        mParentAdapter = HeaderAdapter(requireContext())
+        mRowAdapter = HeaderAdapter(requireContext())
+        mColumnAdapter = HeaderAdapter(requireContext())
 
         table.adapter = mParentAdapter
 
@@ -81,6 +84,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
             rows.scrollBy(p1, p2-p4)
 
             rows.addOnScrollListener(scrollListeners[2])
+
         }
 
         scrollListeners.add(object : RecyclerView.OnScrollListener() {
@@ -114,8 +118,6 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
                 table.scrollBy(dx, dy)
 
                 table.addOnScrollListener(scrollListeners[0])
-
-                mParentAdapter.notifyDataSetChanged()
             }
         })
 
@@ -167,7 +169,22 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
                         val res = filter.first()
 
-                        data.add(CellData(res.wishCurrent, res.wishMin, res.wishMax ?: res.wishMin))
+                        data.add(CellData(res.wishCurrent, res.wishMin, res.wishMax ?: res.wishMin, View.OnClickListener {
+
+                            val children = mEvents.filter { event ->
+                                event.femaleObsUnitDbId == res.femaleDbId && event.maleObsUnitDbId == res.maleDbId }
+
+                            if (children.isNotEmpty()) {
+
+                                Dialogs.list(AlertDialog.Builder(requireContext()),
+                                        requireContext().getString(R.string.crosses), children) { id ->
+
+                                    Navigation.findNavController(root)
+                                            .navigate(CrossBlockFragmentDirections.actionToEventDetail(id))
+                                }
+
+                            }
+                        }))
 
                     } else data.add(EmptyCell())
                 }
@@ -177,9 +194,6 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
             mColumnAdapter.submitList(maleHeaders)
             mParentAdapter.submitList(data)
 
-            mParentAdapter.notifyDataSetChanged()
-            mColumnAdapter.notifyDataSetChanged()
-            mRowAdapter.notifyDataSetChanged()
         })
 
         /**
@@ -188,6 +202,8 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
         eventsModel.events.observe(viewLifecycleOwner, Observer {
 
             it?.let {
+
+                mEvents = it
 
                 mEventsEmpty = it.isEmpty()
             }

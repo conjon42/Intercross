@@ -23,6 +23,7 @@ import org.phenoapps.intercross.data.viewmodels.PollenGroupListViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentParentsBinding
+import org.phenoapps.intercross.util.BluetoothUtil
 
 
 class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.fragment_parents) {
@@ -44,6 +45,7 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
     private lateinit var mFemaleAdapter: ParentsAdapter
 
     private var mNextMaleSelection = true
+
     private var mNextFemaleSelection = true
 
     //simple gesture listener to detect left and right swipes,
@@ -180,12 +182,10 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
                 val outParents: List<Parent> = mFemaleAdapter
                         .currentList.filterIsInstance(Parent::class.java)
 
-                viewModel.delete(*(outParents
-                        .filter { p -> p.selected }).toTypedArray())
+                viewModel.delete(*(outParents.filter { p -> p.selected }).toTypedArray())
 
             } else {
 
-                //TODO chaney refactor
                 val outParents = mMaleAdapter.currentList.filterIsInstance(Parent::class.java)
 
                 val outGroups = mMaleAdapter.currentList.filterIsInstance(PollenGroup::class.java)
@@ -208,15 +208,26 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
             val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
                     .getString("org.phenoapps.intercross.PERSON", "")
 
-//            val events = (mMaleAdapter.currentList + mFemaleAdapter.currentList)
-//                    .filter { it.isSelected }
-//                    .toTypedArray()
-//
-//            if (events.isNotEmpty()) {
-//
-//                //TODO add message saying printing females and males
-//                BluetoothUtil().print(requireContext(), events)
-//            }
+            if (tabLayout.getTabAt(0)?.isSelected == true) {
+
+                val outParents = mFemaleAdapter.currentList.filterIsInstance(Parent::class.java)
+
+                BluetoothUtil().print(requireContext(), outParents.filter { p -> p.selected }.toTypedArray())
+
+            } else {
+
+                val outParents = mMaleAdapter.currentList
+                        .filterIsInstance(Parent::class.java)
+                        .filter { p -> p.selected }
+
+                val outAll = outParents + mMaleAdapter.currentList
+                        .filterIsInstance(PollenGroup::class.java)
+                        .filter { p -> p.selected }
+                        .map { group -> Parent(group.codeId, 1, group.name)}
+
+                BluetoothUtil().print(requireContext(), outAll.toTypedArray())
+
+            }
         }
 
 
@@ -254,7 +265,6 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
             when(item.itemId) {
 
                 R.id.action_select_all -> {
-
 
                     if (tabLayout.getTabAt(0)?.isSelected == true) {
 

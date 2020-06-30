@@ -20,6 +20,7 @@ import org.phenoapps.intercross.data.models.PollenGroup
 import org.phenoapps.intercross.data.models.Wishlist
 import org.phenoapps.intercross.fragments.SettingsFragment
 import java.io.BufferedReader
+import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStreamReader
@@ -59,6 +60,8 @@ class FileUtil(private val ctx: Context) {
      * Cross table export file header fields.
      */
 
+    private val crossIdHeader: String by lazy { ctx.getString(R.string.crosses_export_id_header) }
+
     private val crossMomHeader: String by lazy { ctx.getString(R.string.crosses_export_mom_header) }
 
     private val crossDadHeader: String by lazy { ctx.getString(R.string.crosses_export_dad_header) }
@@ -82,7 +85,7 @@ class FileUtil(private val ctx: Context) {
     private val crossSeedsHeader: String by lazy { ctx.getString(R.string.crosses_export_seeds_header) }
 
     private val eventModelHeaderString by lazy {
-        arrayOf(crossMomHeader, crossDadHeader, crossNameHeader,
+        arrayOf(crossIdHeader, crossMomHeader, crossDadHeader, crossNameHeader,
                 crossTimestampHeader, crossPersonHeader, crossExperimentHeader,
                 crossTypeHeader, crossSexHeader, crossFruitsHeader, crossFlowersHeader, crossSeedsHeader)
                 .joinToString(",")
@@ -530,14 +533,15 @@ class FileUtil(private val ctx: Context) {
             return ret
         }
 
-        fun readText(uri: Uri?): CharSequence {
+        fun readText(context: Context, uri: Uri?): CharSequence {
 
             uri?.let {
 
-    //            val lines = File(getPath(uri)).readLines()
-    //
-    //            return lines.joinToString("\n")
+                val lines = File(getFilePath(context, uri)).readLines()
+
+                return lines.joinToString("\n")
             }
+
             return String()
         }
 

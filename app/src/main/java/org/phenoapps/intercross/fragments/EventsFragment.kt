@@ -15,6 +15,8 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.core.widget.addTextChangedListener
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
@@ -22,12 +24,9 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_events.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
-import org.phenoapps.intercross.brapi.BrApiService
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.SettingsRepository
@@ -45,18 +44,13 @@ import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFacto
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
-import org.phenoapps.intercross.util.DateUtil
+import org.phenoapps.intercross.util.CrossUtil
+import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.util.SnackbarQueue
 import java.util.*
 
 class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fragment_events) {
-
-    private val brapi by lazy {
-
-        BrApiService()
-
-    }
 
     private val viewModel: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
@@ -74,12 +68,15 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private var mSettings: Settings = Settings()
 
+    private var mEvents: List<Event> = ArrayList()
+
     private var mEventsEmpty = true
 
     private var mWishlistEmpty = true
 
     private lateinit var mWishlistStore: WishlistViewModel
-    private lateinit var mSharedViewModel: CrossSharedViewModel
+
+    private val mSharedViewModel: CrossSharedViewModel by activityViewModels()
 
     private lateinit var mWishlist: List<Wishlist>
 
@@ -115,47 +112,18 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         if ("demo" in BuildConfig.FLAVOR) {
 
-            val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
 
-            pref.edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
-
-            val url = pref.getString("brapi.url", "")
-
-            val token = "Bearer ${pref.getString("brapi.token", "")}"
-
-            GlobalScope.launch {
-
-                val response = brapi.brapiCrosses(token)
-
-                    response?.let { crossListResponse ->
-
-                        val crosses = crossListResponse.result.data.mapNotNull { cross ->
-
-                            if (cross.crossDbId != null) {
-
-                                Event(cross.crossDbId,
-                                        cross.parent1?.observationUnitDbId ?: "",
-                                        cross.parent2?.observationUnitDbId ?: "")
-
-                            } else null
-
-                        }
-
-                        (recyclerView.adapter as? EventsAdapter)?.submitList(crosses)
-
-                        recyclerView.adapter?.notifyDataSetChanged()
-
-                    }
-            }
+//            pref.edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
+//
         }
+
+        val error = getString(R.string.ErrorCodeExists)
 
         recyclerView.adapter = EventsAdapter()
 
         recyclerView.layoutManager = LinearLayoutManager(context)
 
         mWishlistStore = WishlistViewModel(WishlistRepository.getInstance(db.wishlistDao()))
-
-        mSharedViewModel = CrossSharedViewModel()
 
         firstHint = getFirstOrder(requireContext())
 
@@ -174,7 +142,21 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             it?.let {
 
+                mEvents = it
+
                 mEventsEmpty = it.isEmpty()
+
+                editTextCross.addTextChangedListener {
+
+                    var codes = mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }.distinct()
+
+                    if (editTextCross.text.toString() in codes) {
+
+                        if (crossTextHolder.error == null) crossTextHolder.error = error
+
+                    } else crossTextHolder.error = null
+
+                }
 
                 (recyclerView.adapter as? EventsAdapter)?.submitList(it)
 
@@ -210,16 +192,26 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 if (it.isNotEmpty()) {
 
-                    if ((firstText.text ?: "").isEmpty()) firstText.setText(it)
-                    else if ((secondText.text ?: "").isEmpty()) {
+                    if ((firstText.text ?: "").isBlank()) {
 
-                        secondText.setText(it)
-                        if ((mSettings.isPattern || mSettings.isUUID)) askUserNewExperimentName()
+                        firstText.setText(it)
 
                     }
-                    else if ((editTextCross.text ?: "").isEmpty()) {
+                    else if ((secondText.text ?: "").isBlank()) {
+
+                        secondText.setText(it)
+
+                        if ((mSettings.isPattern || mSettings.isUUID)) {
+
+                            askUserNewExperimentName()
+
+                        }
+
+                    }
+                    else if ((editTextCross.text ?: "").isBlank()) {
 
                         editTextCross.setText(it)
+
                         askUserNewExperimentName()
 
                     }
@@ -272,7 +264,12 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                         mSnackbar.push(SnackbarQueue.SnackJob(root, event.readableName, "Undo") {
 
-                            submitCrossEvent(event.apply { id = null })
+                            CrossUtil(requireContext()).submitCrossEvent(
+                                    event.femaleObsUnitDbId, event.maleObsUnitDbId,
+                                    event.eventDbId, mSettings, settingsModel, viewModel,
+                                    mParents, parentsList
+                            )
+
                         })
                     }
 
@@ -280,25 +277,6 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                 }
             }
         }).attachToRecyclerView(recyclerView)
-    }
-
-    private fun submitCrossEvent(e: Event) {
-
-        /** Insert mom/dad cross ids only if they don't exist in the DB already **/
-        if (!mParents.any { p -> p.codeId == e.femaleObsUnitDbId }) {
-
-            parentsList.insert(Parent(e.femaleObsUnitDbId, 0))
-
-        }
-
-        if (!mParents.any { p -> p.codeId == e.maleObsUnitDbId }) {
-
-            parentsList.insert(Parent(e.maleObsUnitDbId, 1))
-
-        }
-
-        viewModel.insert(e)
-
     }
 
     private fun resetDataEntry() {
@@ -398,10 +376,11 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             if ((PreferenceManager.getDefaultSharedPreferences(requireContext())
                             .getString("org.phenoapps.intercross.PERSON", "") ?: "").isBlank()) {
                 askUserForPerson()
-            } else
-                findNavController()
-                        .navigate(EventsFragmentDirections
-                        .actionToBarcodeScanFragment())
+            } else {
+
+                findNavController().navigate(EventsFragmentDirections.actionToBarcodeScanFragment())
+
+            }
         }
 
         saveButton.setOnClickListener {
@@ -486,63 +465,27 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             if (male.isEmpty()) male = "blank"
 
-            val tPerson = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                    .getString("org.phenoapps.intercross.PERSON", "")
+            val crossIds = mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }
 
-            val experiment = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                    .getString("org.phenoapps.intercross.EXPERIMENT", "")
+            if (!crossIds.any { id -> id == value }) {
 
-            submitCrossEvent(Event(value, female, male, value, DateUtil().getTime(), tPerson
-                    ?: "?", experiment ?: "?"))
+                CrossUtil(requireContext()).submitCrossEvent(female, male, value, mSettings, settingsModel, viewModel, mParents, parentsList)
 
-            FileUtil(requireContext()).ringNotification(true)
+                FileUtil(requireContext()).ringNotification(true)
 
-            //TODO should delete crosses 'undo' wishlist tables?
-            checkWishlist(female, male, value)
+                resetDataEntry()
 
-            resetDataEntry()
+                firstText.requestFocus()
 
-            if (mSettings.isPattern) {
+                Handler().postDelayed({
+                    recyclerView.scrollToPosition(0)
+                }, 250)
 
-                settingsModel.update(mSettings.apply {
-
-                    number += 1
-                })
-            }
-
-            firstText.requestFocus()
-
-            Handler().postDelayed({
-                recyclerView.scrollToPosition(0)
-            }, 250)
+            } else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.cross_id_already_exists))
 
         } else {
             mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "You must enter a cross name."))
             //FileUtil(requireContext()).ringNotification(false)
-        }
-    }
-
-    private fun checkWishlist(f: String, m: String, x: String) {
-
-        mWishlist.find { it.femaleDbId == f && it.maleDbId == m}?.let { item ->
-
-            //TODO: Add Alert Dialog when min or max is achieved.
-
-            val current = item.wishCurrent + 1
-
-            //wishlist item has been found, item should be updated and visualized
-            mWishlistStore.update(item.apply {
-
-                wishCurrent = current
-            })
-
-            if (current >= item.wishMin && item.wishMin != 0) {
-
-                FileUtil(requireContext()).ringNotification(true)
-
-                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "Wishlist complete for $f and $m : $current/${item.wishMin}"))
-
-            } else mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "New Cross Event! $x added."))
         }
     }
 
@@ -580,23 +523,20 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             R.id.action_search_barcode -> {
 
-                findNavController().navigate(R.id.barcode_scan_fragment,
-                        Bundle().apply {
-                            putString("mode", "search")
-                        }
-                )
+                findNavController().navigate(EventsFragmentDirections.actionToBarcodeScanFragment(1))
+
             }
             R.id.action_continuous_barcode -> {
 
                 if ((PreferenceManager.getDefaultSharedPreferences(requireContext())
                                 .getString("org.phenoapps.intercross.PERSON", "") ?: "").isBlank()) {
                     askUserForPerson()
-                } else
-                    findNavController().navigate(R.id.barcode_scan_fragment,
-                            Bundle().apply {
-                                putString("mode", "continuous")
-                            }
-                    )
+                } else {
+
+                    findNavController().navigate(EventsFragmentDirections.actionToBarcodeScanFragment(2))
+
+                }
+
             }
         }
         return super.onOptionsItemSelected(item)

@@ -202,6 +202,11 @@
         <action android:id="@+id/action_to_wishlist"
             app:destination="@id/wishlist_fragment"
             app:popUpTo="@id/events_fragment"/>
+
+        <action android:id="@+id/action_to_event_detail"
+            app:destination="@+id/event_fragment"
+            app:popUpTo="@id/crossblock_fragment"/>
+
     </fragment>
 
 

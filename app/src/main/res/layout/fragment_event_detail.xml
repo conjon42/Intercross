@@ -207,14 +207,6 @@
                     android:text="@{Integer.toString(event.metaData.fruits)}" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <Button
-                android:id="@+id/submitMetaDataButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:backgroundTint="@color/colorAccent"
-                android:text="@string/UpdateMetaData" />
-
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
