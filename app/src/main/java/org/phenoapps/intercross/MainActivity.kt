@@ -34,6 +34,7 @@ import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
 import org.phenoapps.intercross.data.models.PollenGroup
+import org.phenoapps.intercross.data.models.Wishlist
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
 import org.phenoapps.intercross.data.viewmodels.PollenGroupListViewModel
@@ -77,6 +78,8 @@ class MainActivity : AppCompatActivity() {
 
         registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
 
+            //check if uri is null or maybe throws an exception
+
             FileUtil(this).exportCrossesToFile(uri, mEvents, mParents, mGroups)
 
         }
@@ -88,11 +91,16 @@ class MainActivity : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
 
 
+            it?.let { result ->
+
+                result.data
+
+            }
 
         }
     }
 
-    fun authorizeBrApi(target: String? = null) {
+    private fun authorizeBrApi() {
 
         val pref = PreferenceManager.getDefaultSharedPreferences(this)
 
@@ -100,7 +108,7 @@ class MainActivity : AppCompatActivity() {
 
         try {
 
-            val url = String.format("${pref.getString("brapi.base_url", "")}/brapi/authorize?display_name=Intercross&return_url=intercross://%s", target)
+            val url = "https://test-server.brapi.org/brapi/v2/brapi/authorize?display_name=Intercross&return_url=intercross://"
 
             // Go to url with the default browser
             val uri: Uri = Uri.parse(url)
@@ -127,18 +135,72 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Ask the user to either drop table before import or append to the current table.
+     *
+     */
     private val importedFileContent by lazy {
 
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
 
             val tables = FileUtil(this).parseInputFile(uri)
 
-            //TODO Trevor: Should tables be dropped before import?
-            //TODO Trevor: For wishlist drop, should parents also be dropped?
-            parentsList.dropAndInsert(tables.first)
+            /**
+             * Detect if there are changes in the wishlist/parent tables.
+             * If there are, ask the user if they should be appended or start fresh.
+             */
 
-            wishModel.dropAndInsert(tables.second)
+            if (tables.first.isNotEmpty()) {
 
+                if (mParents.isEmpty()) {
+
+                    parentsList.insert(*tables.first.toTypedArray())
+
+                } else {
+
+                    Dialogs.booleanOption(AlertDialog.Builder(this), getString(R.string.ask_user_to_append_or_drop_parents),
+                            getString(R.string.start_fresh),
+                            getString(R.string.cancel),
+                            getString(R.string.append)) { erase ->
+
+                        if (erase) {
+
+                            parentsList.dropAndInsert(tables.first)
+
+                        } else {
+
+                            parentsList.insert(*tables.first.toTypedArray())
+
+                        }
+                    }
+                }
+
+            }
+
+            if (tables.second.isNotEmpty()) {
+
+                if (mWishlist.isEmpty()) {
+
+                    wishModel.insert(*tables.second.toTypedArray())
+
+                } else {
+
+                    Dialogs.booleanOption(AlertDialog.Builder(this), getString(R.string.ask_user_to_append_or_drop_wishlist),
+                            getString(R.string.start_fresh),
+                            getString(R.string.cancel),
+                            getString(R.string.append)) { erase ->
+
+                        if (erase) {
+
+                            wishModel.dropAndInsert(tables.second)
+
+                        } else {
+
+                            wishModel.insert(*tables.second.toTypedArray())
+                        }
+                    }
+                }
+            }
         }
 
     }
@@ -148,6 +210,8 @@ class MainActivity : AppCompatActivity() {
     private var mEvents: List<Event> = ArrayList()
 
     private var mGroups: List<PollenGroup> = ArrayList()
+
+    private var mWishlist: List<Wishlist> = ArrayList()
 
     private var mParents: List<Parent> = ArrayList()
 
@@ -263,7 +327,7 @@ class MainActivity : AppCompatActivity() {
 
         if ("demo" in BuildConfig.FLAVOR) {
 
-            authorizeBrApi()
+            //authorizeBrApi()
 
         }
     }
@@ -290,6 +354,8 @@ class MainActivity : AppCompatActivity() {
         wishModel.wishlist.observe(this, Observer {
 
             it?.let {
+
+                mWishlist = it
 
                 wishlistEmpty = it.isEmpty()
             }
@@ -432,6 +498,7 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
+    //TODO chaney replace with request permission contract
     override fun onRequestPermissionsResult(resultCode: Int, permissions: Array<String>, granted: IntArray) {
         super.onRequestPermissionsResult(resultCode, permissions, granted)
 

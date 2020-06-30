@@ -121,4 +121,11 @@
     <string name="crosses_export_fruits_header">fruits</string>
     <string name="crosses_export_flowers_header">flowers</string>
     <string name="crosses_export_seeds_header">seeds</string>
+    <string name="crosses_export_id_header">crossDbId</string>
+    <string name="ask_user_to_append_or_drop_parents">A parents table already exists.</string>
+    <string name="ask_user_to_append_or_drop_wishlist">A wishlist table already exists.</string>
+    <string name="start_fresh">Start fresh</string>
+    <string name="append">Append</string>
+    <string name="cross_id_already_exists">Cross Id already exists.</string>
+    <string name="parent_already_exists">Parent code already exists.</string>
 </resources>

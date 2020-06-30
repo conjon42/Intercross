@@ -59,6 +59,8 @@ class FileUtil(private val ctx: Context) {
      * Cross table export file header fields.
      */
 
+    private val crossIdHeader: String by lazy { ctx.getString(R.string.crosses_export_id_header) }
+
     private val crossMomHeader: String by lazy { ctx.getString(R.string.crosses_export_mom_header) }
 
     private val crossDadHeader: String by lazy { ctx.getString(R.string.crosses_export_dad_header) }
@@ -82,7 +84,7 @@ class FileUtil(private val ctx: Context) {
     private val crossSeedsHeader: String by lazy { ctx.getString(R.string.crosses_export_seeds_header) }
 
     private val eventModelHeaderString by lazy {
-        arrayOf(crossMomHeader, crossDadHeader, crossNameHeader,
+        arrayOf(crossIdHeader, crossMomHeader, crossDadHeader, crossNameHeader,
                 crossTimestampHeader, crossPersonHeader, crossExperimentHeader,
                 crossTypeHeader, crossSexHeader, crossFruitsHeader, crossFlowersHeader, crossSeedsHeader)
                 .joinToString(",")

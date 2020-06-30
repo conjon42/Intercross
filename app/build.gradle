@@ -198,8 +198,10 @@ dependencies {
     implementation 'com.google.firebase:firebase-crash:16.2.1'
     implementation 'com.google.firebase:firebase-core:17.4.3'
 
-//    //retrofit
-//    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    //retrofit
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.14.9'
 
     //swagger kotlin brapi client dependencies
     implementation "com.squareup.moshi:moshi-kotlin:1.8.0"

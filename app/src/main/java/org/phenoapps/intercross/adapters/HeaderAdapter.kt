@@ -1,5 +1,6 @@
 package org.phenoapps.intercross.adapters
 
+import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.view.LayoutInflater
@@ -16,7 +17,7 @@ typealias Data = CrossBlockFragment.BlockData
 typealias Header = CrossBlockFragment.HeaderData
 typealias Cell = CrossBlockFragment.CellData
 
-class HeaderAdapter : ListAdapter<Data, HeaderAdapter.ViewHolder>(HeaderDiffCallback()) {
+class HeaderAdapter(val context: Context) : ListAdapter<Data, HeaderAdapter.ViewHolder>(HeaderDiffCallback()) {
 
     private class HeaderDiffCallback : DiffUtil.ItemCallback<Data>() {
 
@@ -49,7 +50,7 @@ class HeaderAdapter : ListAdapter<Data, HeaderAdapter.ViewHolder>(HeaderDiffCall
         }
     }
 
-    class ViewHolder(
+    inner class ViewHolder(
             private val binding: ListItemHeaderBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(data: Data) {
@@ -85,6 +86,8 @@ class HeaderAdapter : ListAdapter<Data, HeaderAdapter.ViewHolder>(HeaderDiffCall
 
                         goal = data.max
 
+                        binding.onClick = data.onClick
+
                     }
                     else -> {
 
@@ -94,8 +97,6 @@ class HeaderAdapter : ListAdapter<Data, HeaderAdapter.ViewHolder>(HeaderDiffCall
 
                     }
                 }
-
-                executePendingBindings()
             }
         }
     }

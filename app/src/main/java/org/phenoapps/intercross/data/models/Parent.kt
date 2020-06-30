@@ -11,7 +11,7 @@ import androidx.room.PrimaryKey
  *
  * Primary Key is inherited through the open Base Table class
  */
-@Entity(tableName = "parents", indices = [Index(value = ["name"])])
+@Entity(tableName = "parents", indices = [Index(value = ["codeId"], unique = true)])
 data class Parent(@ColumnInfo(name = "codeId")
                   val codeId: String, val sex: Int): BaseParent() {
 

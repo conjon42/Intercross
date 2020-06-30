@@ -15,6 +15,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
@@ -22,12 +23,9 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_events.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
-import org.phenoapps.intercross.brapi.BrApiService
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.SettingsRepository
@@ -46,17 +44,19 @@ import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFact
 import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
 import org.phenoapps.intercross.util.DateUtil
+import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.util.SnackbarQueue
 import java.util.*
 
 class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fragment_events) {
 
-    private val brapi by lazy {
-
-        BrApiService()
-
-    }
+//    private val brapiCrosses: CrossListViewModel by viewModels {
+//
+//        //val token = PreferenceManager.getDefaultSharedPreferences(context).getString("brapi.token", "") ?: ""
+//
+//        //CrossListViewModelFactory(token)
+//    }
 
     private val viewModel: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
@@ -73,6 +73,8 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
     private lateinit var mParents: List<Parent>
 
     private var mSettings: Settings = Settings()
+
+    private var mEvents: List<Event> = ArrayList()
 
     private var mEventsEmpty = true
 
@@ -115,39 +117,45 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         if ("demo" in BuildConfig.FLAVOR) {
 
-            val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
+//            brapiCrosses.crosses.observe(viewLifecycleOwner, Observer {
+//
+//                Log.d("BRAPCROSSES", it?.size.toString())
+//
+//            })
 
-            pref.edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
-
-            val url = pref.getString("brapi.url", "")
-
-            val token = "Bearer ${pref.getString("brapi.token", "")}"
-
-            GlobalScope.launch {
-
-                val response = brapi.brapiCrosses(token)
-
-                    response?.let { crossListResponse ->
-
-                        val crosses = crossListResponse.result.data.mapNotNull { cross ->
-
-                            if (cross.crossDbId != null) {
-
-                                Event(cross.crossDbId,
-                                        cross.parent1?.observationUnitDbId ?: "",
-                                        cross.parent2?.observationUnitDbId ?: "")
-
-                            } else null
-
-                        }
-
-                        (recyclerView.adapter as? EventsAdapter)?.submitList(crosses)
-
-                        recyclerView.adapter?.notifyDataSetChanged()
-
-                    }
-            }
+//            pref.edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
+//
+//            val url = pref.getString("brapi.url", "")
+//
+//            val token = "Bearer ${pref.getString("brapi.token", "")}"
+//
+//            GlobalScope.launch {
+//
+//                val response = brapi.brapiCrosses(token)
+//
+//                    response?.let { crossListResponse ->
+//
+//                        val crosses = crossListResponse.result.data.mapNotNull { cross ->
+//
+//                            if (cross.crossDbId != null) {
+//
+//                                Event(cross.crossDbId,
+//                                        cross.parent1?.observationUnitDbId ?: "",
+//                                        cross.parent2?.observationUnitDbId ?: "")
+//
+//                            } else null
+//
+//                        }
+//
+//                        (recyclerView.adapter as? EventsAdapter)?.submitList(crosses)
+//
+//                        recyclerView.adapter?.notifyDataSetChanged()
+//
+//                    }
+//            }
         }
+
+        val error = getString(R.string.ErrorCodeExists)
 
         recyclerView.adapter = EventsAdapter()
 
@@ -174,7 +182,21 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             it?.let {
 
+                mEvents = it
+
                 mEventsEmpty = it.isEmpty()
+
+                editTextCross.addTextChangedListener {
+
+                    var codes = mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }.distinct()
+
+                    if (editTextCross.text.toString() in codes) {
+
+                        if (crossTextHolder.error == null) crossTextHolder.error = error
+
+                    } else crossTextHolder.error = null
+
+                }
 
                 (recyclerView.adapter as? EventsAdapter)?.submitList(it)
 
@@ -492,29 +514,35 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             val experiment = PreferenceManager.getDefaultSharedPreferences(requireContext())
                     .getString("org.phenoapps.intercross.EXPERIMENT", "")
 
-            submitCrossEvent(Event(value, female, male, value, DateUtil().getTime(), tPerson
-                    ?: "?", experiment ?: "?"))
+            val crossIds = mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }
 
-            FileUtil(requireContext()).ringNotification(true)
+            if (!crossIds.any { id -> id == value }) {
 
-            //TODO should delete crosses 'undo' wishlist tables?
-            checkWishlist(female, male, value)
+                submitCrossEvent(Event(value, female, male, value, DateUtil().getTime(), tPerson
+                        ?: "?", experiment ?: "?"))
 
-            resetDataEntry()
+                FileUtil(requireContext()).ringNotification(true)
 
-            if (mSettings.isPattern) {
+                //TODO should delete crosses 'undo' wishlist tables?
+                checkWishlist(female, male, value)
 
-                settingsModel.update(mSettings.apply {
+                resetDataEntry()
 
-                    number += 1
-                })
-            }
+                if (mSettings.isPattern) {
 
-            firstText.requestFocus()
+                    settingsModel.update(mSettings.apply {
 
-            Handler().postDelayed({
-                recyclerView.scrollToPosition(0)
-            }, 250)
+                        number += 1
+                    })
+                }
+
+                firstText.requestFocus()
+
+                Handler().postDelayed({
+                    recyclerView.scrollToPosition(0)
+                }, 250)
+
+            } else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.cross_id_already_exists))
 
         } else {
             mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "You must enter a cross name."))
