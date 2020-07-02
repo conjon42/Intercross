@@ -507,7 +507,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         val setPerson = getString(R.string.set_person)
 
         val builder = AlertDialog.Builder(requireContext()).apply {
-            
+
             setNegativeButton(person) { _, _ ->
                 mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, personMustBeSet))
             }
