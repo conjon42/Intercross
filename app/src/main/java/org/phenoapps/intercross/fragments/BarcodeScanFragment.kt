@@ -20,7 +20,7 @@ import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
 import org.phenoapps.intercross.data.models.Settings
-import org.phenoapps.intercross.data.models.Wishlist
+import org.phenoapps.intercross.data.models.WishlistView
 import org.phenoapps.intercross.data.viewmodels.CrossSharedViewModel
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
@@ -46,7 +46,6 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
         val CONTINUOUS = 2
     }
 
-    //TODO General updates / testing
     private val viewModel: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
     }
@@ -71,7 +70,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
     private lateinit var mCallback: BarcodeCallback
 
-    private var mWishlist: List<Wishlist> = ArrayList()
+    private var mWishlist: List<WishlistView> = ArrayList()
 
     private var mEvents = ArrayList<Event>()
 
@@ -107,7 +106,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
                     when(it.getInt("mode")) {
 
-                        0 -> {
+                        SINGLE -> {
 
                             zxingBarcodeScanner.setStatusText(getString(R.string.zxing_status_single))
 
@@ -116,7 +115,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                             findNavController().popBackStack()
 
                         }
-                        1 -> {
+                        SEARCH -> {
                             zxingBarcodeScanner.setStatusText(getString(R.string.zxing_scan_mode_search))
 
                             mSharedViewModel.lastScan.value = result.text.toString()
@@ -127,7 +126,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                                     .actionToEventFragmentFromScan(scannedEvent?.id ?: -1L))
 
                         }
-                        2 -> {
+                        CONTINUOUS -> {
                             zxingBarcodeScanner.setStatusText(getString(R.string.zxing_scan_mode_continuous))
 
                             val order = PreferenceManager.getDefaultSharedPreferences(requireContext())
@@ -250,9 +249,9 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
     private fun startObservers() {
 
-        wishModel.wishlist.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+        wishModel.crossblock.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
             it?.let {
-                mWishlist = it
+                mWishlist = it.filter { wish -> wish.wishType == "cross" }
             }
         })
 
@@ -305,7 +304,8 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                 settingsModel,
                 viewModel,
                 mParents,
-                parentsModel)
+                parentsModel,
+                mWishlist)
 
         mSharedViewModel.name.value = ""
         mSharedViewModel.female.value = ""

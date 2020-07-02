@@ -149,30 +149,32 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
         val data = ArrayList<BlockData>()
 
-        wishModel.crossblock.observe(viewLifecycleOwner, Observer { block ->
+        wishModel.crossblock.observe(viewLifecycleOwner, Observer { wishlist ->
+
+            val block = wishlist.filter { wish -> wish.wishType == "cross" }
 
             val columns = block.size
 
             table.layoutManager = GridLayoutManager(requireContext(), columns,
                     GridLayoutManager.HORIZONTAL, false)
 
-            val maleHeaders = block.map { HeaderData(it.maleName) }
-            val femaleHeaders = block.map { HeaderData(it.femaleName) }
+            val maleHeaders = block.map { HeaderData(it.dadName) }
+            val femaleHeaders = block.map { HeaderData(it.momName) }
 
             for (f in femaleHeaders) {
 
                 for (m in maleHeaders) {
 
-                    val filter = block.filter { m.name == it.maleName && f.name == it.femaleName }
+                    val filter = block.filter { m.name == it.dadName && f.name == it.momName }
 
                     if (filter.isNotEmpty()) {
 
                         val res = filter.first()
 
-                        data.add(CellData(res.wishCurrent, res.wishMin, res.wishMax ?: res.wishMin, View.OnClickListener {
+                        data.add(CellData(res.wishProgress, res.wishMin, res.wishMax, View.OnClickListener {
 
                             val children = mEvents.filter { event ->
-                                event.femaleObsUnitDbId == res.femaleDbId && event.maleObsUnitDbId == res.maleDbId }
+                                event.femaleObsUnitDbId == res.momId && event.maleObsUnitDbId == res.dadId }
 
                             if (children.isNotEmpty()) {
 

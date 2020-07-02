@@ -26,7 +26,8 @@ class HeaderAdapter(val context: Context) : ListAdapter<Data, HeaderAdapter.View
         }
 
         override fun areContentsTheSame(oldItem: Data, newItem: Data): Boolean {
-            TODO("Not yet implemented")
+
+            return oldItem.hashCode() == newItem.hashCode()
         }
     }
 

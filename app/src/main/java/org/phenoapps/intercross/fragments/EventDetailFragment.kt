@@ -17,11 +17,15 @@ import androidx.preference.PreferenceManager
 import kotlinx.android.synthetic.main.fragment_event_detail.*
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.EventsRepository
+import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.models.Event
+import org.phenoapps.intercross.data.models.WishlistView
 import org.phenoapps.intercross.data.viewmodels.EventDetailViewModel
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
+import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventDetailViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentEventDetailBinding
 import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.Dialogs
@@ -31,8 +35,14 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
 
     private lateinit var mEvent: Event
 
+    private var mWishlist: List<WishlistView> = ArrayList()
+
     private val eventsList: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
+    }
+
+    private val wishList: WishlistViewModel by viewModels {
+        WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,7 +63,7 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
 
     }
 
-    private val textUpdateWatcher = object : TextWatcher {
+    private val fruitUpdateWatcher = object : TextWatcher {
 
         override fun afterTextChanged(s: Editable?) {
 
@@ -61,21 +71,109 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
 
                 if (s.toString().isNotBlank()) {
 
+                    /**
+                     * get wish items relavent to the current event
+                     */
+                    val relaventWishes = mWishlist.filter { wish -> wish.momId == mEvent.femaleObsUnitDbId && wish.dadId == mEvent.maleObsUnitDbId }
+
+                    val fruitWishes = relaventWishes.filter { wish -> wish.wishType == "fruit" }
+
                     eventsList.update(mEvent.apply {
 
                         metaData.fruits = fruitText.text.toString().toInt()
 
                     })
+
+                    if (fruitWishes.any { wish -> mEvent.metaData.fruits >= wish.wishMin && wish.wishMin > 0 }) {
+
+                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.minimum_wish_for_fruits_met))
+
+                    }
+
+                }
+
+            } catch (e: NumberFormatException) {
+                e.printStackTrace()
+                Log.d("InputError", e.toString())
+            }
+        }
+
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            //TODO("Not yet implemented")
+        }
+
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            //TODO("Not yet implemented")
+        }
+
+    }
+
+    private val flowerUpdateWatcher = object : TextWatcher {
+
+        override fun afterTextChanged(s: Editable?) {
+
+            try {
+
+                if (s.toString().isNotBlank()) {
+
+                    /**
+                     * get wish items relavent to the current event
+                     */
+                    val relaventWishes = mWishlist.filter { wish -> wish.momId == mEvent.femaleObsUnitDbId && wish.dadId == mEvent.maleObsUnitDbId }
+
+                    val flowerWishes = relaventWishes.filter { wish -> wish.wishType == "flower" }
+
                     eventsList.update(mEvent.apply {
 
                         metaData.flowers = flowerText.text.toString().toInt()
 
                     })
+
+                    if (flowerWishes.any { wish -> mEvent.metaData.flowers >= wish.wishMin && wish.wishMin > 0}) {
+                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.minimum_wish_for_flowers_met))
+                    }
+                }
+
+            } catch (e: NumberFormatException) {
+                e.printStackTrace()
+                Log.d("InputError", e.toString())
+            }
+        }
+
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            //TODO("Not yet implemented")
+        }
+
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            //TODO("Not yet implemented")
+        }
+
+    }
+
+    private val seedUpdateWatcher = object : TextWatcher {
+
+        override fun afterTextChanged(s: Editable?) {
+
+            try {
+
+                if (s.toString().isNotBlank()) {
+
+                    /**
+                     * get wish items relavent to the current event
+                     */
+                    val relaventWishes = mWishlist.filter { wish -> wish.momId == mEvent.femaleObsUnitDbId && wish.dadId == mEvent.maleObsUnitDbId }
+
+                    val seedWishes = relaventWishes.filter { wish -> wish.wishType == "seed" }
+
                     eventsList.update(mEvent.apply {
 
                         metaData.seeds = seedText.text.toString().toInt()
 
                     })
+
+                    if (seedWishes.any { wish -> mEvent.metaData.seeds >= wish.wishMin && wish.wishMin > 0 }) {
+                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.minimum_wish_for_seeds_met))
+                    }
                 }
 
             } catch (e: NumberFormatException) {
@@ -106,6 +204,15 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
 
             metaDataVisibility = getMetaDataVisibility(requireContext())
 
+            wishList.crossblock.observe(viewLifecycleOwner, Observer {
+
+                it?.let { crossblock ->
+
+                    mWishlist = crossblock
+
+                }
+            })
+
             viewModel.event.observeForever {
 
                 it?.let {
@@ -116,13 +223,20 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
 
                     eventDetailLayout.event = it
 
-                    fruitText.addTextChangedListener(textUpdateWatcher)
-                    flowerText.addTextChangedListener(textUpdateWatcher)
-                    seedText.addTextChangedListener(textUpdateWatcher)
+                    //important to execute bindings before adding text watchers
+                    //best fruits/seeds/flowers are updated
+                    executePendingBindings()
+
+                    fruitText.removeTextChangedListener(fruitUpdateWatcher)
+                    flowerText.removeTextChangedListener(flowerUpdateWatcher)
+                    seedText.removeTextChangedListener(seedUpdateWatcher)
+
+                    fruitText.addTextChangedListener(fruitUpdateWatcher)
+                    flowerText.addTextChangedListener(flowerUpdateWatcher)
+                    seedText.addTextChangedListener(seedUpdateWatcher)
                 }
             }
 
-            //TODO add better query/view to return more Parent details (s.a id)
             viewModel.parents.observe(viewLifecycleOwner, Observer { data ->
 
                 data?.let { parents ->

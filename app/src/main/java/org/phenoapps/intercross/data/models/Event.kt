@@ -83,13 +83,13 @@ data class Event(
 
     override fun toString(): String {
 
-        return "$femaleObsUnitDbId,$maleObsUnitDbId,$readableName,$timestamp,$person,$experiment,$type,$sex,${metaData.fruits},${metaData.flowers},${metaData.seeds}"
+        return "$eventDbId,$femaleObsUnitDbId,$maleObsUnitDbId,$readableName,$timestamp,$person,$experiment,$type,$sex,${metaData.fruits},${metaData.flowers},${metaData.seeds}"
 
     }
 
     fun toPollenGroupString(malesRepr: String): String {
 
-        return "$femaleObsUnitDbId,$malesRepr,$readableName,$timestamp,$person,$experiment,${CrossType.POLY},1,${metaData.fruits},${metaData.flowers},${metaData.seeds}"
+        return "$eventDbId,$femaleObsUnitDbId,$malesRepr,$readableName,$timestamp,$person,$experiment,${CrossType.POLY},1,${metaData.fruits},${metaData.flowers},${metaData.seeds}"
 
     }
 }

@@ -110,7 +110,7 @@ class SummaryAdapter(val context: Context) :
                             data.events) { id ->
 
                         Navigation.findNavController(root)
-                                .navigate(SummaryFragmentDirections.actionToEventDetail(id))
+                                .navigate(SummaryFragmentDirections.globalActionToEventDetail(id))
                     }
 
                 }

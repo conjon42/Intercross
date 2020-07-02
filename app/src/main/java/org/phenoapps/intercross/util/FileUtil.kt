@@ -286,7 +286,6 @@ class FileUtil(private val ctx: Context) {
 
                                 headerIndices[wishlistMinHeader]?.let { min ->
 
-                                    //TODO chaney add null name case constructor in Wishlist class
                                     wishlist.add(Wishlist(
                                             femaleDbId = row[femaleId],
                                             maleDbId = row[maleId],
@@ -358,9 +357,7 @@ class FileUtil(private val ctx: Context) {
                     write(newLine)
 
                     crosses.forEachIndexed { index, cross ->
-                        //TODO: Trevor double check how polycrosses should be exported.
 
-                        //TODO: chaney replace this any check with query or pre-event-insert
                         if (groups.any { g -> g.codeId == cross.maleObsUnitDbId }) {
 
                             val males = groups.filter { g -> g.codeId == cross.maleObsUnitDbId }

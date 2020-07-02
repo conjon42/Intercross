@@ -57,7 +57,6 @@ class ParentsAdapter(private val listModel: ParentsListViewModel,
 
                 } else if (p is PollenGroup) {
 
-                    //TODO chaney add color to xml and send as parameter from parent context
                     this.textField.setBackgroundColor(Color.parseColor("#42FF5722"))
 
                     name = p.name

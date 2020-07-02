@@ -64,7 +64,7 @@ class Dialogs {
             var choiceIndex = 0
 
             builder.setTitle(title)
-                    .setSingleChoiceItems(events.map { event -> event.readableName }.toTypedArray(), 0) { view, index -> choiceIndex = index }
+                    .setSingleChoiceItems(events.map { event -> event.eventDbId }.toTypedArray(), 0) { view, index -> choiceIndex = index }
                     .setPositiveButton(R.string.go) { view, index ->
 
                         function(events[choiceIndex].id ?: -1L)

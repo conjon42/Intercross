@@ -17,7 +17,6 @@ import com.mikepenz.aboutlibraries.LibsBuilder
 
 class AboutActivity : MaterialAboutActivity() {
 
-    //todo move to fragments so aboutactivity can extend base activity
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }

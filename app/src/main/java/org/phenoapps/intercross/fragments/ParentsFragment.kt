@@ -233,7 +233,6 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
 //        val gdc = GestureDetectorCompat(context, gestureListener)
 //
-//        //todo create custom view and override performClick()
 //        maleRecycler.setOnTouchListener { _, motionEvent ->
 //            gdc.onTouchEvent(motionEvent)
 //        }

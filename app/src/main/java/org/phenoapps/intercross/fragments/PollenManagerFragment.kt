@@ -25,8 +25,6 @@ import org.phenoapps.intercross.databinding.FragmentPollenManagerBinding
 import org.phenoapps.intercross.util.Dialogs
 import java.util.*
 
-//TODO update fragment with data binding, update button text depending on data to be submitted
-
 class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBinding>(R.layout.fragment_pollen_manager) {
 
     private val args: PollenManagerFragmentArgs by navArgs()
@@ -123,7 +121,6 @@ class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBindin
 
         /**
          * Error check, ensure that the entered code does not exist in the events table.
-         * TODO also check parents codes
          */
         eventList.events.observe(viewLifecycleOwner, Observer {
 
@@ -149,77 +146,86 @@ class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBindin
 
         newButton.setOnClickListener {
 
-            if (mParents.any { parent -> parent.codeId == codeEditText.text.toString() }) {
+            val codeText = codeEditText.text.toString()
 
-                Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.parent_already_exists))
+            if (codeText.isNotBlank()) {
 
-            } else when (args.mode) {
-                /**
-                 * Insert a single female into the database based on the data entry.
-                 */
-                0 -> {
-                    //TODO add text sanitization
-                    parentList.insert(
-                            Parent(codeEditText.text.toString(),
-                                    0,
-                                    nameEditText.text.toString()))
+                var readableName = nameEditText.text.toString()
 
-                    mBinding.root.findNavController().navigate(
-                            PollenManagerFragmentDirections
-                                    .actionReturnToParentsFragment(0))
+                if (readableName.isBlank()) {
+
+                    readableName = codeText
+
                 }
-                /**
-                 * Either enter a group if a list is selected, or a single male with the
-                 * entered data
-                 */
-                1 -> {
-                    val addedMales = ArrayList<PollenGroup>()
 
-                    for (p: Parent in mMales) {
+                if (mParents.any { parent -> parent.codeId == codeEditText.text.toString() }) {
 
-                        if (p.selected) {
+                    Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.parent_already_exists))
 
-                            p.id?.let { id ->
-
-                                addedMales.add(buildGroup(id))
-                            }
-                        }
-                    }
-
-                    for (poly: PollenGroup in mPolycrosses) {
-
-                        if (poly.selected) {
-
-                            poly.id?.let {id ->
-
-                                addedMales.add(buildGroup(id))
-                            }
-                        }
-                    }
-
-                    /***
-                     * check if list has been created, otherwise insert a single male
+                } else when (args.mode) {
+                    /**
+                     * Insert a single female into the database based on the data entry.
                      */
-                    if (addedMales.isEmpty()) {
+                    0 -> {
 
-                        //Todo make a build function to replace this
-                        parentList.insert(
-                                Parent(codeEditText.text.toString(),
-                                        1,
-                                        nameEditText.text.toString()))
+                        parentList.insert(Parent(codeText, 0, readableName))
 
-                    } else {
-
-                        groupList.insert(*addedMales.toTypedArray())
-
+                        mBinding.root.findNavController().navigate(
+                                PollenManagerFragmentDirections
+                                        .actionReturnToParentsFragment(0))
                     }
+                    /**
+                     * Either enter a group if a list is selected, or a single male with the
+                     * entered data
+                     */
+                    1 -> {
+                        val addedMales = ArrayList<PollenGroup>()
 
-                    mBinding.root.findNavController().navigate(
-                            PollenManagerFragmentDirections
-                                    .actionReturnToParentsFragment(1))
+                        for (p: Parent in mMales) {
+
+                            if (p.selected) {
+
+                                p.id?.let { id ->
+
+                                    addedMales.add(buildGroup(id))
+                                }
+                            }
+                        }
+
+                        for (poly: PollenGroup in mPolycrosses) {
+
+                            if (poly.selected) {
+
+                                poly.id?.let { id ->
+
+                                    addedMales.add(buildGroup(id))
+                                }
+                            }
+                        }
+
+                        /***
+                         * check if list has been created, otherwise insert a single male
+                         */
+                        if (addedMales.isEmpty()) {
+
+                            parentList.insert(Parent(codeText, 1, readableName))
+
+                        } else {
+
+                            groupList.insert(*addedMales.toTypedArray())
+
+                        }
+
+                        mBinding.root.findNavController().navigate(
+                                PollenManagerFragmentDirections
+                                        .actionReturnToParentsFragment(1))
+                    }
                 }
-            }
+            } else {
 
+                Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.cross_id_cannot_be_blank))
+
+            }
         }
     }
 
