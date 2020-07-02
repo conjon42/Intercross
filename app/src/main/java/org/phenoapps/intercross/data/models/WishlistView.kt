@@ -4,10 +4,7 @@ import androidx.room.DatabaseView
 
 /***
  * This class represents a defined view for the Intercross schema.
- * This view helps organize and output events-to-parents pairs.
- *
- * Uses left join to return all events that are paired with parents. If the
- * event does not have parents, the event is still returned.
+ * This view helps organize and output wish list progress
  */
 @DatabaseView("""
 SELECT femaleDbId as momId, femaleName as momName, maleDbId as dadId, maleName as dadName, wishMin, wishMax, wishType,
