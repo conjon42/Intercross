@@ -1,14 +1,10 @@
 package org.phenoapps.intercross
 
 import android.Manifest
-import android.content.ActivityNotFoundException
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.net.Uri
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -24,7 +20,6 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
-import com.google.android.gms.common.api.ApiException
 import com.google.android.material.navigation.NavigationView
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.IntercrossDatabase
@@ -84,55 +79,6 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-    }
-
-    private val brapiAuth by lazy {
-
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-
-
-            it?.let { result ->
-
-                result.data
-
-            }
-
-        }
-    }
-
-    private fun authorizeBrApi() {
-
-        val pref = PreferenceManager.getDefaultSharedPreferences(this)
-
-        pref.edit().putString("brapi.token", null).apply()
-
-        try {
-
-            val url = "https://test-server.brapi.org/brapi/v2/brapi/authorize?display_name=Intercross&return_url=intercross://"
-
-            // Go to url with the default browser
-            val uri: Uri = Uri.parse(url)
-
-            val i = Intent(Intent.ACTION_VIEW, uri)
-
-            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-            i.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
-
-            brapiAuth.launch(i)
-
-        } catch (e: ApiException) {
-
-            e.printStackTrace()
-
-            Log.e("BrAPI", "Error starting BrAPI auth", e)
-
-        } catch (e: ActivityNotFoundException) {
-
-            e.printStackTrace()
-
-            Log.e("BrAPI", "Error starting BrAPI activity auth.")
-        }
     }
 
     /**
@@ -324,12 +270,7 @@ class MainActivity : AppCompatActivity() {
         mDatabase = IntercrossDatabase.getInstance(this)
 
         startObservers()
-
-        if ("demo" in BuildConfig.FLAVOR) {
-
-            //authorizeBrApi()
-
-        }
+        
     }
 
     private fun startObservers() {
