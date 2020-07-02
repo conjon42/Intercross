@@ -10,10 +10,12 @@ class WishlistRepository private constructor(
 
     suspend fun createWishlist( fid: String,  mid: String,
                                 fname: String,  mname: String,
-                                wishType: String,  wishCurrent: Int,
+                                wishType: String,
                                 wishMin: Int,  wishMax: Int) {
         withContext(IO) {
-            wishlistDao.insert(Wishlist(fid, mid, fname, mname, wishType, wishCurrent, wishMin, wishMax))
+
+            wishlistDao.insert(Wishlist(fid, mid, fname, mname, wishType, wishMin, wishMax))
+
         }
     }
 
@@ -27,6 +29,8 @@ class WishlistRepository private constructor(
     }
 
     fun getAll() = wishlistDao.getAll()
+
+    fun getAllCounts() = wishlistDao.getAllCounts()
 
     companion object {
         @Volatile private var instance: WishlistRepository? = null

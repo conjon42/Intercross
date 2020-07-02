@@ -14,19 +14,19 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.SummaryAdapter
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.WishlistRepository
+import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentSummaryBinding
 import org.phenoapps.intercross.util.Dialogs
+import java.util.*
 
 /**
  * Summary Fragment is a recycler list of currenty crosses.
  * Users can navigate to and from cross block and wishlist fragments.
  */
-//TODO Trevor when a wishlist is deleted and re-imported, should the current cross table be checked for progress?
-//Update wishlist table
 class WishlistFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.fragment_summary) {
 
     private val eventsModel: EventListViewModel by viewModels {
@@ -41,6 +41,8 @@ class WishlistFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout
 
     private var eventsEmpty = true
 
+    private var mEvents: List<Event> = ArrayList()
+
     override fun FragmentSummaryBinding.afterCreateView() {
 
         PreferenceManager.getDefaultSharedPreferences(requireContext())
@@ -54,20 +56,25 @@ class WishlistFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout
 
             it?.let {
 
+                mEvents = it
+
                 eventsEmpty = it.isEmpty()
             }
         })
 
-        wishModel.wishlist.observe(viewLifecycleOwner, Observer {
+        wishModel.crossblock.observe(viewLifecycleOwner, Observer {
 
             it?.let { crosses ->
 
                 wishlistEmpty = crosses.isEmpty()
 
+                mEvents
                 (recyclerView.adapter as SummaryAdapter)
                         .submitList(crosses.map { res ->
-                            SummaryFragment.WishlistData(res.maleName, res.femaleName,
-                                    res.wishCurrent.toString() + "/" + res.wishMin + "/" + res.wishMax.toString(), ArrayList())
+                            SummaryFragment.WishlistData(res.dadName, res.momName,
+                                    res.wishProgress.toString() + "/" + res.wishMin + "/" + res.wishMax.toString(), mEvents.filter {
+                                event -> event.femaleObsUnitDbId == res.momId && event.maleObsUnitDbId == res.dadId
+                            })
                         })
 
                 recyclerView.adapter?.notifyDataSetChanged()
@@ -99,7 +106,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout
                 if (!wishlistEmpty)
                     Navigation.findNavController(mBinding.root)
                             .navigate(WishlistFragmentDirections.actionToCrossblock())
-                else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
+                else Dialogs.notify(androidx.appcompat.app.AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
 
             }
 
@@ -108,7 +115,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout
                 if (!eventsEmpty)
                     Navigation.findNavController(mBinding.root)
                             .navigate(WishlistFragmentDirections.actionToSummary())
-                else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.summary_empty))
+                else Dialogs.notify(androidx.appcompat.app.AlertDialog.Builder(requireContext()), getString(R.string.summary_empty))
 
             }
         }

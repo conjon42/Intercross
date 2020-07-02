@@ -10,7 +10,6 @@ data class Wishlist(var femaleDbId: String,
                     var femaleName: String=femaleDbId,
                     var maleName: String=maleDbId,
                     var wishType: String,
-                    var wishCurrent: Int=0,
                     var wishMin: Int,
                     var wishMax: Int?): BaseTable() {
 
@@ -20,7 +19,7 @@ data class Wishlist(var femaleDbId: String,
 
     constructor(row: Array<String>) : this(row[0], row[1],
             row[2], row[3],
-            row[4], 0, row[5].toIntOrNull() ?: 0,
+            row[4], row[5].toIntOrNull() ?: 0,
             row[6].toIntOrNull() ?: 0)
 
 }

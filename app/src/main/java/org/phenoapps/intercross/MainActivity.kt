@@ -151,8 +151,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private var wishlistEmpty = true
-
     private var mEvents: List<Event> = ArrayList()
 
     private var mGroups: List<PollenGroup> = ArrayList()
@@ -270,7 +268,7 @@ class MainActivity : AppCompatActivity() {
         mDatabase = IntercrossDatabase.getInstance(this)
 
         startObservers()
-        
+
     }
 
     private fun startObservers() {
@@ -298,7 +296,6 @@ class MainActivity : AppCompatActivity() {
 
                 mWishlist = it
 
-                wishlistEmpty = it.isEmpty()
             }
         })
 
@@ -384,18 +381,18 @@ class MainActivity : AppCompatActivity() {
 
             "summary" -> {
                 if (mEvents.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToSummaryFragment())
-                else if(!wishlistEmpty) mNavController.navigate(EventsFragmentDirections.actionToWishlistFragment())
+                else if(mWishlist.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToWishlistFragment())
                 else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
                         getString(R.string.summary_and_wishlist_empty))
             }
             "crossblock" -> {
-                if (!wishlistEmpty) mNavController.navigate(EventsFragmentDirections.actionToCrossblock())
+                if (mWishlist.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToCrossblock())
                 else if (mEvents.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToSummaryFragment())
                 else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
                         getString(R.string.summary_and_wishlist_empty))
             }
             "wishlist" -> {
-                if (!wishlistEmpty) mNavController.navigate(EventsFragmentDirections.actionToWishlistFragment())
+                if (mWishlist.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToWishlistFragment())
                 else if (mEvents.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToSummaryFragment())
                 else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
                         getString(R.string.summary_and_wishlist_empty))

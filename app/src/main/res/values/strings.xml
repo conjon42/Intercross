@@ -135,7 +135,8 @@
     <string name="ask_user_to_append_or_drop_wishlist">A wishlist table already exists.</string>
     <string name="start_fresh">Start fresh</string>
     <string name="append">Append</string>
-    <string name="cross_id_already_exists">Cross Id already exists.</string>
+    <string name="cross_id_already_exists_as_event">Identifier already used as a cross event.</string>
+    <string name="cross_id_already_exists_as_parent">Identifier already used as a parent.</string>
     <string name="parent_already_exists">Parent code already exists.</string>
     <string name="search_barcode_description">Search by barcode</string>
     <string name="single_scan_description">Scan a single barcode</string>
@@ -147,4 +148,11 @@
     <string name="printer_empty">Printer is empty</string>
     <string name="printner_not_connected">Printer not connected</string>
     <string name="unknown">Unknown</string>
+    <string name="wish_min_complete">Wish minimum completed.</string>
+    <string name="wish_max_complete">Wish maximum completed.</string>
+    <string name="you_must_enter_cross_name">You must enter a cross name.</string>
+    <string name="person">Person</string>
+    <string name="set_person">Set Person</string>
+    <string name="person_must_be_set">Person must be set before crosses can be made.</string>
+    <string name="undo">Undo</string>
 </resources>

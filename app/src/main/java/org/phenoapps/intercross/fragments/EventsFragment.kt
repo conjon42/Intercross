@@ -34,7 +34,7 @@ import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
 import org.phenoapps.intercross.data.models.Settings
-import org.phenoapps.intercross.data.models.Wishlist
+import org.phenoapps.intercross.data.models.WishlistView
 import org.phenoapps.intercross.data.viewmodels.CrossSharedViewModel
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
@@ -72,13 +72,11 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private var mEventsEmpty = true
 
-    private var mWishlistEmpty = true
-
     private lateinit var mWishlistStore: WishlistViewModel
 
     private val mSharedViewModel: CrossSharedViewModel by activityViewModels()
 
-    private lateinit var mWishlist: List<Wishlist>
+    private lateinit var mWishlistProgress: List<WishlistView>
 
     private fun getFirstOrder(context: Context): String {
 
@@ -112,9 +110,10 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         if ("demo" in BuildConfig.FLAVOR) {
 
+            val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
 
-//            pref.edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
-//
+            pref.edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
+
         }
 
         val error = getString(R.string.ErrorCodeExists)
@@ -175,13 +174,11 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             }
         })
 
-        mWishlistStore.wishlist.observe(viewLifecycleOwner, Observer {
+        mWishlistStore.crossblock.observe(viewLifecycleOwner, Observer {
 
             it?.let {
 
-                mWishlistEmpty = it.isEmpty()
-
-                mWishlist = it
+                mWishlistProgress = it
             }
 
         })
@@ -246,6 +243,8 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         //setup recycler adapter
         recyclerView.adapter = EventsAdapter()
 
+        val undoString = getString(R.string.undo)
+
         //setup on item swipe to delete
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
 
@@ -262,12 +261,12 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                         viewModel.deleteById(eid = it)
 
-                        mSnackbar.push(SnackbarQueue.SnackJob(root, event.readableName, "Undo") {
+                        mSnackbar.push(SnackbarQueue.SnackJob(root, event.readableName, undoString) {
 
                             CrossUtil(requireContext()).submitCrossEvent(
                                     event.femaleObsUnitDbId, event.maleObsUnitDbId,
                                     event.eventDbId, mSettings, settingsModel, viewModel,
-                                    mParents, parentsList
+                                    mParents, parentsList, mWishlistProgress
                             )
 
                         })
@@ -465,11 +464,21 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             if (male.isEmpty()) male = "blank"
 
-            val crossIds = mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }
+            val crossIds = mEvents.map { event -> event.eventDbId }
 
             if (!crossIds.any { id -> id == value }) {
 
-                CrossUtil(requireContext()).submitCrossEvent(female, male, value, mSettings, settingsModel, viewModel, mParents, parentsList)
+                val parent = mParents.find { parent -> parent.codeId == value }
+
+                if (parent != null) {
+
+                    Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.cross_id_already_exists_as_parent))
+
+                } else {
+
+                    CrossUtil(requireContext()).submitCrossEvent(female, male, value, mSettings, settingsModel, viewModel, mParents, parentsList, mWishlistProgress)
+
+                }
 
                 FileUtil(requireContext()).ringNotification(true)
 
@@ -481,11 +490,11 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                     recyclerView.scrollToPosition(0)
                 }, 250)
 
-            } else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.cross_id_already_exists))
+            } else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.cross_id_already_exists_as_event))
 
         } else {
-            mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "You must enter a cross name."))
-            //FileUtil(requireContext()).ringNotification(false)
+            mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.you_must_enter_cross_name)))
+            FileUtil(requireContext()).ringNotification(false)
         }
     }
 
@@ -493,20 +502,24 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         mBinding.constraintLayoutParent.requestFocus()
 
-        val builder = AlertDialog.Builder(requireContext()).apply {
+        val person = getString(R.string.person)
+        val personMustBeSet = getString(R.string.person_must_be_set)
+        val setPerson = getString(R.string.set_person)
 
-            setNegativeButton("Cancel") { _, _ ->
-                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, "Person must be set before crosses can be made."))
+        val builder = AlertDialog.Builder(requireContext()).apply {
+            
+            setNegativeButton(person) { _, _ ->
+                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, personMustBeSet))
             }
 
-            setPositiveButton("Set Person") { _, _ ->
+            setPositiveButton(setPerson) { _, _ ->
                 findNavController().navigate(R.id.settings_fragment, Bundle().apply {
                     putString("org.phenoapps.intercross.ASK_PERSON", "true")
                 })
             }
         }
 
-        builder.setTitle("Person must be set before crosses can be made.")
+        builder.setTitle(personMustBeSet)
         builder.show()
     }
 
