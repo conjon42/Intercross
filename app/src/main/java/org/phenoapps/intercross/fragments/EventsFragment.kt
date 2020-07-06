@@ -43,6 +43,7 @@ import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
 import org.phenoapps.intercross.util.CrossUtil
 import org.phenoapps.intercross.util.Dialogs
@@ -64,15 +65,17 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         ParentsListViewModelFactory(ParentsRepository.getInstance(db.parentsDao()))
     }
 
-    private lateinit var mParents: List<Parent>
+    private val wishStore: WishlistViewModel by viewModels {
+        WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
+    }
+
+    private var mParents: List<Parent> = ArrayList()
 
     private var mSettings: Settings = Settings()
 
     private var mEvents: List<Event> = ArrayList()
 
     private var mEventsEmpty = true
-
-    private lateinit var mWishlistStore: WishlistViewModel
 
     private val mSharedViewModel: CrossSharedViewModel by activityViewModels()
 
@@ -121,8 +124,6 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         recyclerView.adapter = EventsAdapter()
 
         recyclerView.layoutManager = LinearLayoutManager(context)
-
-        mWishlistStore = WishlistViewModel(WishlistRepository.getInstance(db.wishlistDao()))
 
         firstHint = getFirstOrder(requireContext())
 
@@ -174,7 +175,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             }
         })
 
-        mWishlistStore.crossblock.observe(viewLifecycleOwner, Observer {
+        wishStore.crossblock.observe(viewLifecycleOwner, Observer {
 
             it?.let {
 

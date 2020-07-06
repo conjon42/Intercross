@@ -5,6 +5,7 @@ import android.text.TextWatcher
 import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import org.phenoapps.intercross.R
@@ -32,13 +33,15 @@ class PatternFragment: IntercrossBaseFragment<FragmentPatternBinding>(R.layout.f
         SettingsViewModelFactory(SettingsRepository.getInstance(db.settingsDao()))
     }
 
+    override fun onPause() {
+        super.onPause()
+
+        settingsModel.insert(buildSettings())
+    }
+
     private var mLastUsed: String = "0"
 
     private var mLastUUID: String = UUID.randomUUID().toString()
-
-    private var mSettingsHaveChanged = false
-
-    private var mPrevCheckedId = -1
 
     override fun FragmentPatternBinding.afterCreateView() {
 
@@ -85,24 +88,9 @@ class PatternFragment: IntercrossBaseFragment<FragmentPatternBinding>(R.layout.f
             }
         }
 
-        saveButton.setOnClickListener {
-
-            settingsModel.insert(buildSettings())
-
-        }
-
         radioGroup2.setOnCheckedChangeListener { _, checkedId ->
 
             closeKeyboard()
-
-            if (mPrevCheckedId == -1) {
-
-                mPrevCheckedId = checkedId
-
-            } else if (mPrevCheckedId != checkedId) {
-
-                mSettingsHaveChanged = true
-            }
 
             when (checkedId) {
                 R.id.uuidButton -> {
@@ -200,29 +188,8 @@ class PatternFragment: IntercrossBaseFragment<FragmentPatternBinding>(R.layout.f
 
     fun onBackButtonPressed() {
 
-        if (mSettingsHaveChanged) {
-            askUserToSave()
-        } else findNavController().popBackStack()
-    }
+        settingsModel.insert(buildSettings())
 
-    private fun askUserToSave() {
-
-        val builder = AlertDialog.Builder(requireContext()).apply {
-
-            setNegativeButton("Cancel") { _, _ ->
-
-                findNavController().popBackStack()
-            }
-
-            setPositiveButton("Save") { _, _ ->
-
-                settingsModel.insert(buildSettings())
-
-                findNavController().popBackStack()
-            }
-        }
-
-        builder.setTitle("Would you like to save your settings?")
-        builder.show()
+        findNavController().popBackStack()
     }
 }

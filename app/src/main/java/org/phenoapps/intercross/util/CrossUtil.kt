@@ -27,12 +27,10 @@ class CrossUtil(val context: Context) {
 
         val cross = when {
 
-            crossName.isNotBlank() -> crossName
-
             settings.isPattern -> {
                 val n = settings.number
                 settings.number += 1
-                settingsModel.update(settings)
+                settingsModel.insert(settings)
                 "${settings.prefix}${n.toString().padStart(settings.pad, '0')}${settings.suffix}"
             }
 
