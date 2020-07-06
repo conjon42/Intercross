@@ -9,6 +9,7 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.QRCodeWriter
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
+import kotlinx.coroutines.coroutineScope
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.models.CrossType
 import org.phenoapps.intercross.data.models.Event

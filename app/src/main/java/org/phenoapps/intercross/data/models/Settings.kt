@@ -9,7 +9,7 @@ import androidx.room.PrimaryKey
 data class Settings (
 
     var isPattern: Boolean = false,
-    var isUUID: Boolean = false,
+    var isUUID: Boolean = true,
     var startFrom: Boolean = false,
     var isAutoIncrement: Boolean = false,
     var pad: Int = 0,
@@ -18,7 +18,7 @@ data class Settings (
     var suffix: String = String(),
     var allowBlank: Boolean = false,
     var order: Int = 0,
-    var collectData: Boolean = true
+    var collectData: Boolean = false
 ) {
 
     @ColumnInfo(name = "sid")

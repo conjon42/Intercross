@@ -16,16 +16,21 @@ import java.util.*
 class CrossUtil(val context: Context) {
 
     fun submitCrossEvent(female: String,
-                                 male: String,
-                                 crossName: String,
-                                 settings: Settings,
-                                 settingsModel: SettingsViewModel,
-                                 eventsModel: EventListViewModel,
-                                 parents: List<Parent>,
-                                 parentModel: ParentsListViewModel,
-                                 wishlistProgress: List<WishlistView>) {
+                         male: String,
+                         crossName: String,
+                         settings: Settings,
+                         settingsModel: SettingsViewModel,
+                         eventsModel: EventListViewModel,
+                         parents: List<Parent>,
+                         parentModel: ParentsListViewModel,
+                         wishlistProgress: List<WishlistView>,
+                         isUndo: Boolean) {
 
         val cross = when {
+
+            isUndo -> {
+                crossName
+            }
 
             settings.isPattern -> {
                 val n = settings.number
@@ -35,7 +40,7 @@ class CrossUtil(val context: Context) {
             }
 
             settings.isUUID -> {
-                UUID.randomUUID().toString()
+                crossName
             }
 
             else -> crossName

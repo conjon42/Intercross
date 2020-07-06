@@ -1,6 +1,8 @@
 package org.phenoapps.intercross.fragments
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.preference.PreferenceManager
@@ -12,10 +14,12 @@ import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
+import androidx.databinding.BindingAdapter
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -23,7 +27,13 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.EncodeHintType
+import com.google.zxing.qrcode.QRCodeWriter
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import kotlinx.android.synthetic.main.fragment_events.*
+import kotlinx.android.synthetic.main.fragment_events.recyclerView
+import kotlinx.android.synthetic.main.fragment_pollen_manager.*
 import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
@@ -71,7 +81,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private var mParents: List<Parent> = ArrayList()
 
-    private var mSettings: Settings = Settings()
+    private lateinit var mSettings: Settings
 
     private var mEvents: List<Event> = ArrayList()
 
@@ -110,6 +120,13 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
     }
 
     override fun FragmentEventsBinding.afterCreateView() {
+
+        if (!::mSettings.isInitialized) {
+
+            mSettings = Settings()
+
+            settingsModel.insert(mSettings)
+        }
 
         if ("demo" in BuildConfig.FLAVOR) {
 
@@ -219,7 +236,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             }
         })
 
-        executePendingBindings()
+        editTextCross.setText(UUID.randomUUID().toString())
 
         activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
 
@@ -267,7 +284,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                             CrossUtil(requireContext()).submitCrossEvent(
                                     event.femaleObsUnitDbId, event.maleObsUnitDbId,
                                     event.eventDbId, mSettings, settingsModel, viewModel,
-                                    mParents, parentsList, mWishlistProgress
+                                    mParents, parentsList, mWishlistProgress, true
                             )
 
                         })
@@ -477,7 +494,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 } else {
 
-                    CrossUtil(requireContext()).submitCrossEvent(female, male, value, mSettings, settingsModel, viewModel, mParents, parentsList, mWishlistProgress)
+                    CrossUtil(requireContext()).submitCrossEvent(female, male, value, mSettings, settingsModel, viewModel, mParents, parentsList, mWishlistProgress, false)
 
                 }
 

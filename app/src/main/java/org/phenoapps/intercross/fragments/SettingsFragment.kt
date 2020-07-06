@@ -41,11 +41,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
                             settings.isPattern -> {
                                 "Pattern"
                             }
-                            settings.isUUID -> {
-                                "UUID"
+                            !settings.isUUID && !settings.isPattern -> {
+                                "None"
                             }
                             else -> {
-                                "None"
+                                "UUID"
                             }
                         }
                     }
