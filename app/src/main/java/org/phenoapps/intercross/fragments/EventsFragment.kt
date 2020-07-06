@@ -121,6 +121,8 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     override fun FragmentEventsBinding.afterCreateView() {
 
+        activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+
         if (!::mSettings.isInitialized) {
 
             mSettings = Settings()
@@ -165,7 +167,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 editTextCross.addTextChangedListener {
 
-                    var codes = mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }.distinct()
+                    val codes = mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }.distinct()
 
                     if (editTextCross.text.toString() in codes) {
 

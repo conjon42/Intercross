@@ -1,5 +1,7 @@
 package org.phenoapps.intercross.fragments
 
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceManager
@@ -45,8 +47,8 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
      * Polymorphism class structure to serve different cell types to the Cross Block Table.
      */
     open class BlockData
-    data class HeaderData(val name: String) : BlockData()
-    data class CellData(val current: Int, val min: Int, val max: Int, val onClick: View.OnClickListener): BlockData()
+    data class HeaderData(val name: String, val code: String) : BlockData()
+    data class CellData(val current: Int, val min: Int, val max: Int, val onClick: View.OnClickListener, val color: Int): BlockData()
     class EmptyCell: BlockData()
 
     private lateinit var mGesture: GestureDetectorCompat
@@ -104,6 +106,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
                 rows.scrollBy(dx, dy)
 
                 rows.addOnScrollListener(scrollListeners[2])
+
             }
         })
 
@@ -153,23 +156,36 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
             val block = wishlist.filter { wish -> wish.wishType == "cross" }
 
-            val columns = block.size
+            val maleHeaders = block.map { HeaderData(it.dadName, it.dadId) }.distinctBy { it.code + it.name }
+            val femaleHeaders = block.map { HeaderData(it.momName, it.momId) }.distinctBy { it.code + it.name }
+
+            val columns = maleHeaders.size
 
             table.layoutManager = GridLayoutManager(requireContext(), columns,
                     GridLayoutManager.HORIZONTAL, false)
-
-            val maleHeaders = block.map { HeaderData(it.dadName) }
-            val femaleHeaders = block.map { HeaderData(it.momName) }
 
             for (f in femaleHeaders) {
 
                 for (m in maleHeaders) {
 
-                    val filter = block.filter { m.name == it.dadName && f.name == it.momName }
+                    val filter = block.filter { m.code == it.dadId && m.name == it.dadName && f.code == it.momId && f.name == it.momName}
 
                     if (filter.isNotEmpty()) {
 
                         val res = filter.first()
+
+                        val stateColor =
+
+                            when {
+
+                                res.wishProgress >= res.wishMax -> Color.RED
+
+                                res.wishProgress >= res.wishMin -> Color.GREEN
+
+                                res.wishProgress > 0 && res.wishProgress < res.wishMin -> Color.YELLOW
+
+                                else -> Color.GRAY
+                            }
 
                         data.add(CellData(res.wishProgress, res.wishMin, res.wishMax, View.OnClickListener {
 
@@ -184,16 +200,15 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
                                     Navigation.findNavController(root)
                                             .navigate(CrossBlockFragmentDirections.actionToEventDetail(id))
                                 }
-
                             }
-                        }))
+                        }, stateColor))
 
                     } else data.add(EmptyCell())
                 }
             }
 
-            mRowAdapter.submitList(femaleHeaders)
-            mColumnAdapter.submitList(maleHeaders)
+            mRowAdapter.submitList(maleHeaders)
+            mColumnAdapter.submitList(femaleHeaders)
             mParentAdapter.submitList(data)
 
         })

@@ -3,8 +3,13 @@ package org.phenoapps.intercross.adapters
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.ColorFilter
+import android.graphics.PorterDuff
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -16,6 +21,7 @@ import org.phenoapps.intercross.fragments.CrossBlockFragment
 typealias Data = CrossBlockFragment.BlockData
 typealias Header = CrossBlockFragment.HeaderData
 typealias Cell = CrossBlockFragment.CellData
+typealias Empty = CrossBlockFragment.EmptyCell
 
 class HeaderAdapter(val context: Context) : ListAdapter<Data, HeaderAdapter.ViewHolder>(HeaderDiffCallback()) {
 
@@ -46,6 +52,32 @@ class HeaderAdapter(val context: Context) : ListAdapter<Data, HeaderAdapter.View
 
             with(holder) {
 
+                val nameText = itemView.findViewById<TextView>(R.id.nameTextView)
+                val progressBar = itemView.findViewById<ProgressBar>(R.id.progressBar)
+                val emptyView = itemView.findViewById<View>(R.id.emptyView)
+
+                when (data) {
+
+                    is CrossBlockFragment.CellData -> {
+                        progressBar.visibility = View.VISIBLE
+                        nameText.visibility = View.GONE
+                        emptyView.visibility = View.GONE
+                    }
+
+                    is CrossBlockFragment.HeaderData -> {
+                        progressBar.visibility = View.GONE
+                        emptyView.visibility = View.GONE
+                        nameText.visibility = View.VISIBLE
+                    }
+
+                    is CrossBlockFragment.EmptyCell -> {
+                        progressBar.visibility = View.GONE
+                        nameText.visibility = View.GONE
+                        emptyView.visibility = View.VISIBLE
+
+                    }
+                }
+
                 bind(data)
             }
         }
@@ -60,41 +92,64 @@ class HeaderAdapter(val context: Context) : ListAdapter<Data, HeaderAdapter.View
 
                 when (data) {
 
-                    is CrossBlockFragment.EmptyCell -> {
+                    is CrossBlockFragment.HeaderData -> {
 
-                        type = 0
+                        name = data.name
 
                     }
+                    is CrossBlockFragment.CellData -> {
 
-                    is Cell -> {
+                        progressBar.visibility = View.VISIBLE
 
-                        type = 1
+                        nameTextView.visibility = View.GONE
 
-                        binding.progressBar.progress = data.current
-
-                        progressBar.progressTintList = ColorStateList.valueOf(
-
-                            when {
-
-                                data.current >= data.max -> Color.RED
-
-                                data.current >= data.min -> Color.GREEN
-
-                                else -> Color.YELLOW
-                            })
+                        emptyView.visibility = View.GONE
 
                         current = data.current
 
                         goal = data.max
 
-                        binding.onClick = data.onClick
+//                        val pd = progressBar.progressDrawable.mutate()
+//
+//                        pd.setColorFilter(when {
+//
+//                            data.current >= data.max -> Color.RED
+//
+//                            data.current >= data.min -> Color.GREEN
+//
+//                            data.current < data.min && data.current > 0 -> Color.YELLOW
+//
+//                            else -> Color.GRAY
+//
+//                        }, PorterDuff.Mode.SRC_IN)
+//
+//                        progressBar.progressDrawable = pd
+//
+////                        progressBar.indeterminateTintList = ColorStateList.valueOf(
+////
+////                            when {
+////
+////                                data.current >= data.max -> Color.RED
+////
+////                                data.current >= data.min -> Color.GREEN
+////
+////                                else -> Color.YELLOW
+////                            })
 
-                    }
-                    else -> {
+                        progressBar.progressDrawable.setColorFilter(when {
 
-                        this.name = (data as Header).name
+                            data.current >= data.max -> Color.RED
 
-                        type = 2
+                            data.current >= data.min -> Color.GREEN
+
+                            data.current < data.min && data.current > 0 -> Color.YELLOW
+
+                            else -> Color.GRAY
+
+                        }, PorterDuff.Mode.SRC_IN)
+
+
+                        onClick = data.onClick
 
                     }
                 }

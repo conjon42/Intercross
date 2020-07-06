@@ -6,9 +6,6 @@
         <import type="android.view.View" />
 
         <variable
-            name='type'
-            type='int'/>
-        <variable
             name='name'
             type='String'/>
         <variable
@@ -20,6 +17,9 @@
         <variable
             name='onClick'
             type="View.OnClickListener"/>
+        <variable
+            name="progressColor"
+            type="int"/>
 
     </data>
 
@@ -41,21 +41,19 @@
             android:gravity="center"
             android:maxLines="1"
             android:text="@{name}"
-            android:textSize="12sp"
-            android:visibility="@{type == 2 ? View.VISIBLE : View.GONE}"/>
+            android:textSize="12sp"/>
 
         <View
+            android:id="@+id/emptyView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/table_cell"
-            android:visibility="@{type == 0 ? View.VISIBLE : View.GONE}" />
+            android:background="@drawable/table_cell"/>
 
         <ProgressBar
-            style="@android:style/Widget.ProgressBar.Horizontal"
             android:id="@+id/progressBar"
+            style="@android:style/Widget.ProgressBar.Horizontal"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="@{type == 1 ? View.VISIBLE : View.GONE}"
             android:progress="@{current}"
             android:max="@{goal}"/>
 
