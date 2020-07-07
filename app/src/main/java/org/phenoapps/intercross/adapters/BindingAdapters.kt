@@ -14,6 +14,7 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.models.CrossType
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Settings
+import org.phenoapps.intercross.util.AsyncLoadBarcode
 import java.util.*
 
 @BindingAdapter("setImageByCrossType")
@@ -44,26 +45,12 @@ fun bindCrossTypeImage(view: ImageView, event: Event?) {
 @BindingAdapter("setQRCode")
 fun bindQRCodeImage(view: ImageView, code: String?) {
 
-    if (!code.isNullOrEmpty()) {
+    code?.let {
 
-        val bitmatrix = QRCodeWriter()
-                .encode(code, BarcodeFormat.QR_CODE, 256, 256,
-                        mapOf(EncodeHintType.ERROR_CORRECTION to ErrorCorrectionLevel.L))
+        view.tag = code
 
-
-        val bmp = Bitmap.createBitmap(bitmatrix.width, bitmatrix.height, Bitmap.Config.RGB_565)
-
-        for (x in 0 until bitmatrix.width) {
-
-            for (y in 0 until bitmatrix.height) {
-
-                bmp.setPixel(x, y, if (bitmatrix.get(x, y)) Color.BLACK else Color.WHITE)
-            }
-        }
-
-        view.setImageBitmap(bmp)
+        AsyncLoadBarcode(view, code).execute(code)
     }
-
 }
 
 @BindingAdapter("setCrossId")
