@@ -213,6 +213,12 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                         firstText.setText(it)
 
+                        if (mSettings.order == 0 && mSettings.allowBlank) {
+
+                            askUserNewExperimentName()
+
+                        } else secondText.requestFocus()
+
                     }
                     else if ((secondText.text ?: "").isBlank()) {
 
@@ -222,7 +228,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                             askUserNewExperimentName()
 
-                        }
+                        } else editTextCross.requestFocus()
 
                     }
                     else if ((editTextCross.text ?: "").isBlank()) {
