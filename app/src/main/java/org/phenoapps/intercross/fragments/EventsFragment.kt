@@ -17,6 +17,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.databinding.BindingAdapter
@@ -167,8 +168,6 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                 }
 
                 (recyclerView.adapter as? EventsAdapter)?.submitList(it)
-
-                recyclerView.adapter?.notifyDataSetChanged()
             }
         })
 
@@ -232,8 +231,6 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                 }
             }
         })
-
-        editTextCross.setText(UUID.randomUUID().toString())
 
         activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
 
@@ -338,6 +335,17 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                             .getString("org.phenoapps.intercross.PERSON", "") ?: "").isBlank()) {
                 askUserForPerson()
             }
+
+//            button.layoutParams = (button.layoutParams as ConstraintLayout.LayoutParams).apply {
+//
+//                verticalBias = when (verticalBias) {
+//
+//                    0f -> 1f
+//
+//                    else -> 0f
+//                }
+//
+//            }
         }
 
         secondText.addTextChangedListener(emptyGuard)
@@ -501,8 +509,12 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             } else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.cross_id_already_exists_as_event))
 
         } else {
+
             mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.you_must_enter_cross_name)))
+
+            //TODO add error resource
             FileUtil(requireContext()).ringNotification(false)
+
         }
     }
 

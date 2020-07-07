@@ -11,6 +11,8 @@ import com.google.zxing.qrcode.QRCodeWriter
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 
 
+//TODO: chaneylc rendered barcodes are not whats printed
+
 class AsyncLoadBarcode(val imageView: ImageView, val TAG: String) : AsyncTask<String?, Void?, Bitmap?>() {
 
     override fun doInBackground(vararg codes: String?): Bitmap? {
@@ -22,7 +24,6 @@ class AsyncLoadBarcode(val imageView: ImageView, val TAG: String) : AsyncTask<St
             val bitmatrix = QRCodeWriter()
                     .encode(code, BarcodeFormat.QR_CODE, 256, 256,
                             mapOf(EncodeHintType.ERROR_CORRECTION to ErrorCorrectionLevel.L))
-
 
             val bmp = Bitmap.createBitmap(bitmatrix.width, bitmatrix.height, Bitmap.Config.RGB_565)
 
