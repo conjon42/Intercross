@@ -121,7 +121,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
                             zxingBarcodeScanner.setStatusText(getString(R.string.zxing_scan_mode_search))
 
-                            val scannedEvent = mEvents.find { event -> event.eventDbId == result.text.toString().toLowerCase() }
+                            val scannedEvent = mEvents.find { event -> event.eventDbId == result.text.toString().toLowerCase(Locale.ROOT) }
 
                             findNavController().navigate(BarcodeScanFragmentDirections
                                     .actionToEventFragmentFromScan(scannedEvent?.id ?: -1L))

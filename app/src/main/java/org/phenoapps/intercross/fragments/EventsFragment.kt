@@ -512,7 +512,6 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.you_must_enter_cross_name)))
 
-            //TODO add error resource
             FileUtil(requireContext()).ringNotification(false)
 
         }

@@ -30,6 +30,7 @@ import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentEventDetailBinding
 import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.Dialogs
+import org.phenoapps.intercross.util.FileUtil
 
 
 class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.layout.fragment_event_detail) {
@@ -197,7 +198,12 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
 
         arguments?.getLong("eid")?.let { rowid ->
 
-            if (rowid == -1L) findNavController().popBackStack()
+            if (rowid == -1L){
+
+                FileUtil(requireContext()).ringNotification(false)
+
+                findNavController().popBackStack()
+            }
 
             val viewModel: EventDetailViewModel by viewModels {
                 EventDetailViewModelFactory(EventsRepository.getInstance(db.eventsDao()), rowid)
