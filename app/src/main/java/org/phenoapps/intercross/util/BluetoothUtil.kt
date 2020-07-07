@@ -114,6 +114,7 @@ class BluetoothUtil {
     """*/
 
     fun print(ctx: Context, events: Array<Event>) {
+
         choose(ctx) {
 
             val importedZpl = PreferenceManager.getDefaultSharedPreferences(ctx).getString("ZPL_CODE", "") ?: ""
@@ -133,17 +134,21 @@ class BluetoothUtil {
 
     fun print(ctx: Context, parents: Array<Parent>) {
 
-        val importedZpl = PreferenceManager.getDefaultSharedPreferences(ctx).getString("ZPL_CODE", "") ?: ""
+        choose(ctx) {
 
-        if (importedZpl.isNotBlank()) {
+            val importedZpl = PreferenceManager.getDefaultSharedPreferences(ctx).getString("ZPL_CODE", "")
+                    ?: ""
 
-            PrintThread(ctx, importedZpl, mBtName).printParents(parents)
+            if (importedZpl.isNotBlank()) {
+
+                PrintThread(ctx, importedZpl, mBtName).printParents(parents)
 
 
-        } else {
+            } else {
 
-            PrintThread(ctx, template, mBtName).printParents(parents)
+                PrintThread(ctx, template, mBtName).printParents(parents)
 
+            }
         }
     }
 }

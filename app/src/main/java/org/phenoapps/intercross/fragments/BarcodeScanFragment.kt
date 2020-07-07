@@ -116,11 +116,10 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
                         }
                         SEARCH -> {
+
                             zxingBarcodeScanner.setStatusText(getString(R.string.zxing_scan_mode_search))
 
-                            mSharedViewModel.lastScan.value = result.text.toString()
-
-                            val scannedEvent = mEvents.find { event -> event.eventDbId == result.text.toString() }
+                            val scannedEvent = mEvents.find { event -> event.eventDbId == result.text.toString().toLowerCase() }
 
                             findNavController().navigate(BarcodeScanFragmentDirections
                                     .actionToEventFragmentFromScan(scannedEvent?.id ?: -1L))
@@ -241,7 +240,6 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                 })
         }
 
-
         setupBarcodeScanner()
 
         startObservers()
@@ -276,20 +274,6 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
         mBarcodeScanner.barcodeView.stopDecoding()
 
-        val crossText = when {
-
-            mSettings.isPattern -> {
-                val n = mSettings.number
-                mSettings.number += 1
-                settingsModel.update(mSettings)
-                "${mSettings.prefix}${n.toString().padStart(mSettings.pad, '0')}${mSettings.suffix}"
-            }
-            mSettings.isUUID -> {
-                UUID.randomUUID().toString()
-            }
-            else -> mSharedViewModel.name.value ?: String()
-        }
-
         val female = mSharedViewModel.female.value ?: String()
 
         var male = mSharedViewModel.male.value ?: String()
@@ -299,7 +283,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
         CrossUtil(requireContext()).submitCrossEvent(
                 female,
                 male,
-                crossText,
+                "",
                 mSettings,
                 settingsModel,
                 viewModel,
