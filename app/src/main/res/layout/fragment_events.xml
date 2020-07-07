@@ -52,7 +52,8 @@
                     android:layout_height="match_parent"
                     android:imeOptions="actionDone"
                     android:inputType="text"
-                    android:visibility="visible" />
+                    android:visibility="visible"
+                    android:selectAllOnFocus="true"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -72,7 +73,8 @@
                     android:ems="10"
                     android:imeOptions="actionDone"
                     android:inputType="text"
-                    android:visibility="visible" />
+                    android:visibility="visible"
+                    android:selectAllOnFocus="true"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -93,7 +95,8 @@
                     android:imeOptions="actionDone"
                     android:inputType="text"
                     android:visibility="visible"
-                    app:setCrossId="@{settings}" />
+                    app:setCrossId="@{settings}"
+                    android:selectAllOnFocus="true"/>
 
             </com.google.android.material.textfield.TextInputLayout>
 
