@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.os.Handler
 import android.preference.PreferenceManager
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContentProviderCompat
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -33,6 +34,7 @@ import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentBarcodeScanBinding
 import org.phenoapps.intercross.util.CrossUtil
 import org.phenoapps.intercross.util.FileUtil
+import org.phenoapps.intercross.util.SnackbarQueue
 import java.util.*
 
 class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.layout.fragment_barcode_scan) {
@@ -128,11 +130,13 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                         CONTINUOUS -> {
                             zxingBarcodeScanner.setStatusText(getString(R.string.zxing_scan_mode_continuous))
 
-                            val order = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                                    .getString(SettingsFragment.ORDER, "0")
+                            val maleFirst = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                                    .getBoolean(SettingsFragment.ORDER, false)
 
-                            when (order) {
-                                "0" -> when {
+                            when (maleFirst) {
+
+                                false -> when {
+
                                     (mSharedViewModel.female.value ?: "").isEmpty() -> {
                                         mSharedViewModel.female.value = result.text.toString()
                                         female.setImageBitmap(result.getBitmapWithResultPoints(Color.RED))
@@ -157,7 +161,9 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                                         submitCross()
                                     }
                                 }
-                                "1" -> when {
+
+                                true -> when {
+
                                     (mSharedViewModel.male.value ?: "").isEmpty() -> {
                                         mSharedViewModel.male.value = result.text.toString()
                                         male.setImageBitmap(result.getBitmapWithResultPoints(Color.BLUE))
@@ -183,7 +189,6 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                                         submitCross()
                                     }
                                 }
-
                             }
                             ""
                         }
@@ -281,6 +286,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
         if (male.isEmpty()) male = "blank"
 
         CrossUtil(requireContext()).submitCrossEvent(
+                mBinding.root,
                 female,
                 male,
                 "",

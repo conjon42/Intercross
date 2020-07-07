@@ -159,5 +159,6 @@
     <string name="minimum_wish_for_fruits_met">Minimum wish for fruits was met.</string>
     <string name="minimum_wish_for_seeds_met">Minimum wish for seeds was met.</string>
     <string name="minimum_wish_for_flowers_met">Minimum wish for flowers was met.</string>
+    <string name="was_created">was created</string>
 
 </resources>

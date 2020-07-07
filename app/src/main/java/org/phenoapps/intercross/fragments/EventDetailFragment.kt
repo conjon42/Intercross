@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
@@ -56,10 +57,10 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
     private fun getMetaDataVisibility(context: Context): Int {
 
         //determine if meta data collection is enabled
-        val collect: String = PreferenceManager.getDefaultSharedPreferences(context)
-                .getString(SettingsFragment.COLLECT_INFO, "0") ?: "0"
+        val collect: Boolean = PreferenceManager.getDefaultSharedPreferences(context)
+                .getBoolean(SettingsFragment.COLLECT_INFO, false)
 
-        return collect.toInt()
+        return if (collect) View.VISIBLE else View.GONE
 
     }
 

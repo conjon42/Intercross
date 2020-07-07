@@ -67,7 +67,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
         }
 
-
         with(findPreference<Preference>("org.phenoapps.intercross.ZPL_IMPORT")){
             this?.let {
                 setOnPreferenceClickListener {
@@ -107,13 +106,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
             preferenceManager.showDialog(findPreference<EditTextPreference>("org.phenoapps.intercross.PERSON"))
         }
 
-        preferenceManager.sharedPreferences.registerOnSharedPreferenceChangeListener { _, key ->
-            val pref = findPreference<Preference>(key)
-
-            if (pref is ListPreference) {
-                pref.setSummary(pref.entry)
-            }
-        }
+//        preferenceManager.sharedPreferences.registerOnSharedPreferenceChangeListener { _, key ->
+//            val pref = findPreference<Preference>(key)
+//
+//            if (pref is ListPreference) {
+//                pref.setSummary(pref.entry)
+//            }
+//        }
     }
 
     companion object {

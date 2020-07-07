@@ -93,30 +93,19 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun getFirstOrder(context: Context): String {
 
-        val order = PreferenceManager.getDefaultSharedPreferences(context)
-                .getString(SettingsFragment.ORDER, "0")
+        val maleFirst = PreferenceManager.getDefaultSharedPreferences(context)
+                .getBoolean(SettingsFragment.ORDER, false)
 
-        return when (order) {
-
-            "0" -> context.getString(R.string.FemaleID)
-
-            else -> context.getString(R.string.MaleID)
-
-        }
+        return if (maleFirst) context.getString(R.string.MaleID) else context.getString(R.string.FemaleID)
     }
 
     private fun getSecondOrder(context: Context): String {
 
-        val order = PreferenceManager.getDefaultSharedPreferences(context)
-                .getString(SettingsFragment.ORDER, "0")
+        val maleFirst = PreferenceManager.getDefaultSharedPreferences(context)
+                .getBoolean(SettingsFragment.ORDER, false)
 
-        return when (order) {
+        return if (maleFirst) context.getString(R.string.FemaleID) else context.getString(R.string.MaleID)
 
-            "1" -> context.getString(R.string.FemaleID)
-
-            else -> context.getString(R.string.MaleID)
-
-        }
     }
 
     override fun FragmentEventsBinding.afterCreateView() {
@@ -289,7 +278,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                         mSnackbar.push(SnackbarQueue.SnackJob(root, event.eventDbId, undoString) {
 
-                            CrossUtil(requireContext()).submitCrossEvent(
+                            CrossUtil(requireContext()).submitCrossEvent(mBinding.root,
                                     event.femaleObsUnitDbId, event.maleObsUnitDbId,
                                     event.eventDbId, mSettings, settingsModel, viewModel,
                                     mParents, parentsList, mWishlistProgress, true
@@ -297,8 +286,6 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                         })
                     }
-
-
                 }
             }
         }).attachToRecyclerView(recyclerView)
@@ -429,13 +416,13 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
     private fun FragmentEventsBinding.isInputValid(): Boolean {
 
         val allowBlank = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getString(SettingsFragment.BLANK, "0")
-        val order = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getString(SettingsFragment.ORDER, "0")
+                .getBoolean(SettingsFragment.BLANK, false)
+        val maleFirst = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .getBoolean(SettingsFragment.ORDER, false)
         val male: String
         val female: String
         val cross: String = editTextCross.text.toString()
-        if (order == "0") {
+        if (!maleFirst) {
             female = firstText.text.toString()
             male = secondText.text.toString()
         } else {
@@ -445,7 +432,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         //calculate how full the save button should be
         var numFilled = 0
-        if (allowBlank == "1") numFilled++
+        if (allowBlank) numFilled++
         else if (male.isNotBlank()) numFilled++
         if (female.isNotBlank()) numFilled++
         if (cross.isNotBlank()) numFilled++
@@ -459,7 +446,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                     else -> R.drawable.button_save_full
                 })
 
-        return ((male.isNotEmpty() || (allowBlank == "1")) && female.isNotEmpty()
+        return ((male.isNotEmpty() || allowBlank) && female.isNotEmpty()
                 && (cross.isNotEmpty() || (mSettings.isUUID || mSettings.isPattern)))
     }
 
@@ -468,25 +455,22 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         val value = editTextCross.text.toString()
 
         val allowBlank = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getString(SettingsFragment.BLANK, "0")
-        val order = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getString(SettingsFragment.ORDER, "0")
+                .getBoolean(SettingsFragment.BLANK, false)
+        val maleFirst = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .getBoolean(SettingsFragment.ORDER, false)
 
         lateinit var male: String
         lateinit var female: String
 
-        when (order) {
-            "0" -> {
-                female = (firstText.text ?: "").toString()
-                male = (secondText.text ?: "").toString()
-            }
-            "1" -> {
-                male = (firstText.text ?: "").toString()
-                female = (secondText.text ?: "").toString()
-            }
+        if (!maleFirst) {
+            female = (firstText.text ?: "").toString()
+            male = (secondText.text ?: "").toString()
+        } else {
+            male = (firstText.text ?: "").toString()
+            female = (secondText.text ?: "").toString()
         }
 
-        if (value.isNotEmpty() && (male.isNotEmpty() || allowBlank == "1")) {
+        if (value.isNotEmpty() && (male.isNotEmpty() || allowBlank)) {
 
             if (male.isEmpty()) male = "blank"
 
@@ -502,11 +486,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 } else {
 
-                    CrossUtil(requireContext()).submitCrossEvent(female, male, value, mSettings, settingsModel, viewModel, mParents, parentsList, mWishlistProgress, false)
+                    CrossUtil(requireContext()).submitCrossEvent(mBinding.root, female, male, value, mSettings, settingsModel, viewModel, mParents, parentsList, mWishlistProgress, false)
 
                 }
-
-                FileUtil(requireContext()).ringNotification(true)
 
                 resetDataEntry()
 

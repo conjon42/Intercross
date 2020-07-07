@@ -2,7 +2,9 @@ package org.phenoapps.intercross.util
 
 import android.content.Context
 import android.preference.PreferenceManager
+import android.view.View
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContentProviderCompat.requireContext
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
@@ -15,7 +17,8 @@ import java.util.*
 
 class CrossUtil(val context: Context) {
 
-    fun submitCrossEvent(female: String,
+    fun submitCrossEvent(root: View,
+                         female: String,
                          male: String,
                          crossName: String,
                          settings: Settings,
@@ -46,8 +49,6 @@ class CrossUtil(val context: Context) {
             else -> crossName
         }
 
-        checkWishlist(female, male, wishlistProgress)
-
         val experiment = PreferenceManager.getDefaultSharedPreferences(context)
                 .getString("org.phenoapps.intercross.EXPERIMENT", "")
 
@@ -76,13 +77,21 @@ class CrossUtil(val context: Context) {
 
         eventsModel.insert(e)
 
+        FileUtil(context).ringNotification(true)
+
+        val wasCreated = context.getString(R.string.was_created)
+
+        SnackbarQueue().push(SnackbarQueue.SnackJob(root, "$cross $wasCreated"))
+
+        checkWishlist(female, male, wishlistProgress)
+
     }
 
     private fun checkWishlist(f: String, m: String, wishlist: List<WishlistView>) {
 
         wishlist.find { it.momId == f && it.dadId == m }?.let { item ->
 
-            if (item.wishProgress >= item.wishMin && item.wishMin != 0) {
+            if (item.wishProgress + 1 >= item.wishMin && item.wishMin != 0) {
 
                 FileUtil(context).ringNotification(true)
 

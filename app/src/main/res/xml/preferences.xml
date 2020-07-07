@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- TODO add string resources -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto" >
-    <PreferenceCategory android:title="Profile"
-        app:iconSpaceReserved="false">
+    <PreferenceCategory android:title="Profile" app:iconSpaceReserved="false">
         <EditTextPreference
             android:title="Person"
             android:icon="@drawable/ic_setting_person"
@@ -14,23 +14,18 @@
             android:title="Experiment" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Naming"
-        app:iconSpaceReserved="false">
-        <ListPreference
-            android:defaultValue="0"
-            android:entries="@array/blank_male_array"
-            android:entryValues="@array/blank_male_array_values"
+    <PreferenceCategory android:title="Naming" app:iconSpaceReserved="false">
+        <SwitchPreference
+            android:defaultValue="false"
             android:icon="@drawable/ic_setting_male_blank"
             android:key="org.phenoapps.intercross.BLANK_MALE_ID"
             android:title="Allow blank male ID" />
-        <ListPreference
-            android:defaultValue="0"
-            android:entries="@array/cross_order_array"
-            android:entryValues="@array/cross_order_array_values"
+        <SwitchPreference
+            android:defaultValue="false"
             android:icon="@drawable/ic_setting_cross_order"
             android:key="org.phenoapps.intercross.CROSS_ORDER"
-            android:summary="%s"
-            android:title="Cross order" />
+            android:summary=""
+            android:title="Scan male first" />
         <Preference
             android:icon="@drawable/ic_setting_pattern_create"
             android:key="org.phenoapps.intercross.CREATE_PATTERN"
@@ -38,24 +33,19 @@
             android:summary="None"/>
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Workflow"
-        app:iconSpaceReserved="false">
-        <ListPreference
-            android:defaultValue="0"
-            android:entries="@array/collect_info_array"
-            android:entryValues="@array/collect_info_array_values"
+    <PreferenceCategory android:title="Workflow" app:iconSpaceReserved="false">
+        <SwitchPreference
+            android:defaultValue="false"
             android:icon="@drawable/ic_setting_additional_info"
             android:key="org.phenoapps.intercross.COLLECT_INFO"
-            android:title="Collect additional information" />
-        <CheckBoxPreference
+            android:title="Collect additional information"/>
+        <SwitchPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_setting_sound"
             android:key="org.phenoapps.intercross.AUDIO_ENABLED"
-            android:title="Audio notifications"
-            android:widgetLayout='@layout/checkbox'/>
+            android:title="Audio notifications"/>
     </PreferenceCategory>
-    <PreferenceCategory android:title="Printing"
-        app:iconSpaceReserved="false">
+    <PreferenceCategory android:title="Printing" app:iconSpaceReserved="false">
         <Preference
             android:icon="@drawable/ic_setting_print_connect"
             android:key="org.phenoapps.intercross.PRINTER_SETUP"
