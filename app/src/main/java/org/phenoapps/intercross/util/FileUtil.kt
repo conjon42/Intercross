@@ -113,7 +113,7 @@ class FileUtil(private val ctx: Context) {
 
         if (lines.isNotEmpty()) {
 
-            val headers = lines[0].split(",")
+            val headers = lines[0].split(",").map { it -> it.replace(" ", "") }
 
             //ensure the headers size > 0
             if (headers.isNotEmpty()) {
