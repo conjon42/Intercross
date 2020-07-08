@@ -163,5 +163,7 @@
     <string name="parents_of_crosses_not_deleted">Parents of crosses cannot be deleted.</string>
     <string name="count">Count</string>
     <string name="wish">Wish</string>
+    <string name="no_child_exists">No child exists.</string>
+    <string name="click_item_for_child_details">Click item for child details.</string>
 
 </resources>

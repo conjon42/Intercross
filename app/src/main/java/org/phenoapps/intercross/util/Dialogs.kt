@@ -1,7 +1,10 @@
 package org.phenoapps.intercross.util
 
 import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.adapters.EventsAdapter
 import org.phenoapps.intercross.data.models.Event
 
 class Dialogs {
@@ -59,20 +62,29 @@ class Dialogs {
         /**
          * Alert dialog wrapper that displays a list of clickable Event models.
          */
-        fun list(builder: AlertDialog.Builder, title: String, events: List<Event>, function: (Long) -> Unit) {
+        //TODO: create adapter variant to show ubiquitous event view s.a in the main fragmnet
+        //TODO: Maybe add search function to filter codes
+        fun list(builder: AlertDialog.Builder, title: String, empty: String, events: List<Event>, function: (Long) -> Unit) {
 
-            var choiceIndex = 0
+            if (events.isNotEmpty()) {
 
-            builder.setTitle(title)
-                    .setSingleChoiceItems(events.map { event -> event.eventDbId }.toTypedArray(), 0) { view, index -> choiceIndex = index }
-                    .setPositiveButton(R.string.go) { view, index ->
+                builder.setTitle(title)
+                        .setItems(events.map { event -> event.eventDbId }.toTypedArray()) { dialog, index ->
 
-                        function(events[choiceIndex].id ?: -1L)
+                            function(events[index].id ?: -1L)
 
-                    }
-                    .setNegativeButton(R.string.cancel) { _, _ -> }
-                    .create()
-                    .show()
+                            dialog.dismiss()
+
+                        }
+                        .setNegativeButton(R.string.cancel) { _, _ -> }
+                        .create()
+                        .show()
+
+            } else {
+
+                notify(builder, empty)
+            }
+
         }
 
         fun onOk(builder: AlertDialog.Builder, title: String, cancel: String, ok: String, function: () -> Unit) {

@@ -192,15 +192,15 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
                             val children = mEvents.filter { event ->
                                 event.femaleObsUnitDbId == res.momId && event.maleObsUnitDbId == res.dadId }
 
-                            if (children.isNotEmpty()) {
+                            Dialogs.list(AlertDialog.Builder(requireContext()),
+                                    requireContext().getString(R.string.click_item_for_child_details),
+                                    requireContext().getString(R.string.no_child_exists),
+                                    children) { id ->
 
-                                Dialogs.list(AlertDialog.Builder(requireContext()),
-                                        requireContext().getString(R.string.crosses), children) { id ->
-
-                                    Navigation.findNavController(root)
-                                            .navigate(CrossBlockFragmentDirections.actionToEventDetail(id))
-                                }
+                                Navigation.findNavController(root)
+                                        .navigate(CrossBlockFragmentDirections.actionToEventDetail(id))
                             }
+
                         }, stateColor))
 
                     } else data.add(EmptyCell())

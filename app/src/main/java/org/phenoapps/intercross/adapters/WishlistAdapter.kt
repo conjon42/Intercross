@@ -99,7 +99,8 @@ class WishlistAdapter(val context: Context) :
                 onClick = View.OnClickListener {
 
                     Dialogs.list(AlertDialog.Builder(context),
-                            context.getString(R.string.crosses),
+                            context.getString(R.string.click_item_for_child_details),
+                            context.getString(R.string.no_child_exists),
                             data.events) { id ->
 
                         Navigation.findNavController(root)
