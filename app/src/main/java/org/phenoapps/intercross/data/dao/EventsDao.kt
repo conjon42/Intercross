@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import org.phenoapps.intercross.data.models.Event
 
 @Dao
@@ -74,6 +75,9 @@ interface EventsDao : BaseDao<Event> {
     @Query("SELECT * FROM events as e WHERE e.codeId = :name LIMIT 1")
     fun getThresh(name: String): LiveData<Event>
 
+    @Transaction
+    @Query("DELETE FROM events")
+    fun drop()
 
     @Insert
     suspend fun insertEvent(event: Event): Long

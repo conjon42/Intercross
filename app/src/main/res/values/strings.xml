@@ -65,6 +65,7 @@
     <string name="female">Female</string>
     <string name="male">Male</string>
     <string name="delete">Delete</string>
+    <string name="delete_all">Delete all</string>
     <string name="print">Print</string>
     <string name="none">None</string>
     <string name="pattern">Pattern</string>

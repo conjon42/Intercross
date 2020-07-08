@@ -9,6 +9,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.SummaryAdapter
@@ -59,7 +60,7 @@ class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.
         recyclerView.adapter = SummaryAdapter(requireContext())
 
         recyclerView.layoutManager = LinearLayoutManager(context)
-        
+
         eventsModel.parents.observe(viewLifecycleOwner, Observer {
 
             it?.let { crosses ->
@@ -85,8 +86,13 @@ class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.
 
                         (recyclerView.adapter as SummaryAdapter).submitList(crossData as List<ListEntry>?)
 
-                        //recyclerView.adapter?.notifyDataSetChanged()
+                        deleteButton.setOnClickListener {
 
+                            eventsModel.deleteAll()
+
+                            findNavController().popBackStack()
+
+                        }
                     }
                 })
             }

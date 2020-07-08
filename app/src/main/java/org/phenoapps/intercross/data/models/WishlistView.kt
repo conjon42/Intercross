@@ -7,7 +7,7 @@ import androidx.room.DatabaseView
  * This view helps organize and output wish list progress
  */
 @DatabaseView("""
-SELECT femaleDbId as momId, femaleName as momName, maleDbId as dadId, maleName as dadName, wishMin, wishMax, wishType,
+SELECT DISTINCT femaleDbId as momId, femaleName as momName, maleDbId as dadId, maleName as dadName, wishMin, wishMax, wishType,
 	(SELECT COUNT(*) 
 	FROM events as child
 	WHERE w.femaleDbId = child.mom and w.maleDbId = child.dad) as wishProgress

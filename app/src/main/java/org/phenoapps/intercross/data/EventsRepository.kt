@@ -17,20 +17,20 @@ class EventsRepository
 
     suspend fun getEvent(eid: Long) = eventsDao.selectById(eid)
 
+    suspend fun drop() {
+
+        withContext(IO) {
+
+            eventsDao.drop()
+
+        }
+    }
+
     fun deleteById(eid: Long) {
 
         runBlocking {
 
             eventsDao.deleteById(eid)
-
-        }
-    }
-
-    suspend fun deleteAll() {
-
-        withContext(IO) {
-
-            eventsDao.deleteAll()
 
         }
     }

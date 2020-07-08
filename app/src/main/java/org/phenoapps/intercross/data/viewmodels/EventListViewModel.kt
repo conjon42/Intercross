@@ -1,5 +1,7 @@
 package org.phenoapps.intercross.data.viewmodels
 
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.models.Event
 
@@ -15,6 +17,15 @@ class EventListViewModel(private val eventRepo: EventsRepository): BaseViewModel
 
         eventRepo.deleteById(eid)
 
+    }
+
+    fun deleteAll() {
+
+        viewModelScope.launch {
+
+            eventRepo.drop()
+
+        }
     }
 
     val parents = eventRepo.getParentCount()

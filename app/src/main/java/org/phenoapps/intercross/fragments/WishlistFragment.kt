@@ -9,6 +9,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.SummaryAdapter
@@ -41,8 +42,6 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
     private var wishlistEmpty = true
 
-    private var eventsEmpty = true
-
     private var mEvents: List<Event> = ArrayList()
 
     override fun FragmentWishlistBinding.afterCreateView() {
@@ -60,7 +59,6 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
                 mEvents = it
 
-                eventsEmpty = it.isEmpty()
             }
         })
 
@@ -80,7 +78,13 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
                             })
                         })
 
-                recyclerView.adapter?.notifyDataSetChanged()
+                deleteButton.setOnClickListener {
+
+                    wishModel.deleteAll()
+
+                    findNavController().popBackStack()
+
+                }
             }
         })
     }
@@ -115,7 +119,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
             R.id.action_nav_summary -> {
 
-                if (!eventsEmpty)
+                if (mEvents.isNotEmpty())
                     Navigation.findNavController(mBinding.root)
                             .navigate(WishlistFragmentDirections.actionToSummary())
                 else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.summary_empty))

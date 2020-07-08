@@ -93,64 +93,18 @@ class MainActivity : AppCompatActivity() {
 
             val tables = FileUtil(this).parseInputFile(uri)
 
-            /**
-             * Detect if there are changes in the wishlist/parent tables.
-             * If there are, ask the user if they should be appended or start fresh.
-             */
-
             if (tables.first.isNotEmpty()) {
 
-                if (mParents.isEmpty()) {
-
-                    parentsList.insert(*tables.first.toTypedArray())
-
-                } else {
-
-                    Dialogs.booleanOption(AlertDialog.Builder(this), getString(R.string.ask_user_to_append_or_drop_parents),
-                            getString(R.string.start_fresh),
-                            getString(R.string.cancel),
-                            getString(R.string.append)) { erase ->
-
-                        if (erase) {
-
-                            parentsList.dropAndInsert(tables.first)
-
-                        } else {
-
-                            parentsList.insert(*tables.first.toTypedArray())
-
-                        }
-                    }
-                }
+                parentsList.insert(*tables.first.toTypedArray())
 
             }
 
             if (tables.second.isNotEmpty()) {
 
-                if (mWishlist.isEmpty()) {
+                wishModel.insert(*tables.second.toTypedArray())
 
-                    wishModel.insert(*tables.second.toTypedArray())
-
-                } else {
-
-                    Dialogs.booleanOption(AlertDialog.Builder(this), getString(R.string.ask_user_to_append_or_drop_wishlist),
-                            getString(R.string.start_fresh),
-                            getString(R.string.cancel),
-                            getString(R.string.append)) { erase ->
-
-                        if (erase) {
-
-                            wishModel.dropAndInsert(tables.second)
-
-                        } else {
-
-                            wishModel.insert(*tables.second.toTypedArray())
-                        }
-                    }
-                }
             }
         }
-
     }
 
     private var mEvents: List<Event> = ArrayList()
@@ -454,8 +408,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-
-
 
         mNavController.currentDestination?.let { it ->
 

@@ -21,6 +21,14 @@ class WishlistViewModel internal constructor(private val repo: WishlistRepositor
 
     val crossblock: LiveData<List<WishlistView>> = repo.getAllCounts()
 
+    fun deleteAll() {
+
+        viewModelScope.launch {
+
+            repo.drop()
+        }
+    }
+
     fun dropAndInsert(wishes: List<Wishlist>) {
 
         viewModelScope.launch {
