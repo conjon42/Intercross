@@ -2,11 +2,13 @@ package org.phenoapps.intercross
 
 import android.content.res.Configuration
 import android.os.Bundle
+import android.os.Handler
 import android.preference.PreferenceManager
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -50,6 +52,8 @@ class MainActivity : AppCompatActivity() {
 //    private val mFirebaseAnalytics by lazy {
 //        FirebaseAnalytics.getInstance(this)
 //    }
+
+    private var doubleBackToExitPressedOnce = false
 
     private val eventsModel: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository.getInstance(mDatabase.eventsDao()))
@@ -413,8 +417,10 @@ class MainActivity : AppCompatActivity() {
         closeKeyboard()
 
         if (mDrawerToggle.onOptionsItemSelected(item)) {
+
             return true
         }
+
         when (item.itemId) {
 
             android.R.id.home -> {
@@ -431,6 +437,7 @@ class MainActivity : AppCompatActivity() {
             }
             else -> return super.onOptionsItemSelected(item)
         }
+
         return true
     }
 
@@ -448,8 +455,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
 
+
+
         mNavController.currentDestination?.let { it ->
+
             when (it.id) {
+
                 R.id.pattern_fragment -> {
 
                     supportFragmentManager.primaryNavigationFragment?.let {
@@ -458,6 +469,21 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 //go back to the last fragment instead of opening the navigation drawer
+                R.id.events_fragment -> {
+
+                    if (doubleBackToExitPressedOnce) {
+
+                        super.onBackPressed();
+
+                        return
+                    }
+
+                    this.doubleBackToExitPressedOnce = true;
+
+                    Toast.makeText(this, "Press back again to exit", Toast.LENGTH_SHORT).show();
+
+                    Handler().postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
+                }
                 else -> super.onBackPressed()
             }
         }
