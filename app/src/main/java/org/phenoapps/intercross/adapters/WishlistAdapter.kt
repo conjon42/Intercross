@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.databinding.ListItemSummaryRowBinding
 import org.phenoapps.intercross.databinding.ListItemWishlistRowBinding
 import org.phenoapps.intercross.fragments.SummaryFragment
 import org.phenoapps.intercross.fragments.SummaryFragmentDirections
@@ -26,8 +25,8 @@ import org.phenoapps.intercross.util.Dialogs
  * CrossData's are not rendered with checkboxes.
  *
  */
-class SummaryAdapter(val context: Context) :
-        ListAdapter<SummaryFragment.ListEntry, SummaryAdapter.ViewHolder>(SummaryDiffCallback()) {
+class WishlistAdapter(val context: Context) :
+        ListAdapter<SummaryFragment.ListEntry, WishlistAdapter.ViewHolder>(SummaryDiffCallback()) {
 
     private class SummaryDiffCallback : DiffUtil.ItemCallback<SummaryFragment.ListEntry>() {
 
@@ -44,31 +43,35 @@ class SummaryAdapter(val context: Context) :
         }
     }
 
+    private lateinit var mParent: ViewGroup
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+
+        mParent = parent
 
         return ViewHolder(
                 DataBindingUtil.inflate(
                         LayoutInflater.from(parent.context),
-                        R.layout.list_item_summary_row, parent, false
+                        R.layout.list_item_wishlist_row, parent, false
                 )
         )
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
-        getItem(position).let { item ->
+        getItem(position).let { wishitem ->
 
             with(holder) {
 
-                itemView.tag = item
+                itemView.tag = wishitem
 
-                bind(item)
+                bind(wishitem)
             }
         }
     }
 
     inner class ViewHolder(
-            private val binding: ListItemSummaryRowBinding) : RecyclerView.ViewHolder(binding.root) {
+            private val binding: ListItemWishlistRowBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(data: SummaryFragment.ListEntry) {
 
@@ -79,6 +82,16 @@ class SummaryAdapter(val context: Context) :
                 femaleParent = data.f
 
                 count = data.count
+
+                if (data.count.contains("/")) {
+
+                    val tokens = data.count.split("/")
+
+                    if (tokens[0].toInt() >= tokens[1].toInt()) {
+
+                        completed = true
+                    }
+                }
 
                 //uses inner view holder to create list of crosses used for that wish item
                 onClick = View.OnClickListener {

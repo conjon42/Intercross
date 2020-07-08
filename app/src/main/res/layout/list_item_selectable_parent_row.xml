@@ -20,19 +20,19 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-            <CheckBox
-                android:id="@+id/doneCheckBox"
-                android:clickable="false"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:checked="@{checked}"
-                android:layout_marginTop="8dp"/>
+        <CheckBox
+            android:id="@+id/doneCheckBox"
+            android:clickable="false"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:checked="@{checked}"
+            android:layout_marginTop="8dp"/>
 
-            <TextView style="@style/CellText"
-                android:id="@+id/textField"
-                android:layout_height="wrap_content"
-                android:layout_width="0dp"
-                android:layout_weight="5"
-                android:text="@{name}"/>
+        <TextView style="@style/CellText.ParentCellText"
+            android:id="@+id/textField"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="5"
+            android:text="@{name}" />
     </LinearLayout>
 </layout>

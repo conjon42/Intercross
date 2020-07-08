@@ -161,5 +161,7 @@
     <string name="minimum_wish_for_flowers_met">Minimum wish for flowers was met.</string>
     <string name="was_created">was created</string>
     <string name="parents_of_crosses_not_deleted">Parents of crosses cannot be deleted.</string>
+    <string name="count">Count</string>
+    <string name="wish">Wish</string>
 
 </resources>

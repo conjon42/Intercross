@@ -59,7 +59,7 @@ class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.
         recyclerView.adapter = SummaryAdapter(requireContext())
 
         recyclerView.layoutManager = LinearLayoutManager(context)
-
+        
         eventsModel.parents.observe(viewLifecycleOwner, Observer {
 
             it?.let { crosses ->
@@ -85,7 +85,7 @@ class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.
 
                         (recyclerView.adapter as SummaryAdapter).submitList(crossData as List<ListEntry>?)
 
-                        recyclerView.adapter?.notifyDataSetChanged()
+                        //recyclerView.adapter?.notifyDataSetChanged()
 
                     }
                 })
@@ -137,7 +137,11 @@ class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.
                 }
             }
 
-        } else Dialogs.notify(AlertDialog.Builder(requireContext()), "Wishlist is empty.")
+        } else {
+
+            Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
+
+        }
 
         return super.onOptionsItemSelected(item)
     }

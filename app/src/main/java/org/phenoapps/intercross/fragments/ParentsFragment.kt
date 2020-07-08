@@ -31,7 +31,6 @@ import org.phenoapps.intercross.databinding.FragmentParentsBinding
 import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.SnackbarQueue
 
-
 class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.fragment_parents) {
 
     private val viewModel: ParentsListViewModel by viewModels {

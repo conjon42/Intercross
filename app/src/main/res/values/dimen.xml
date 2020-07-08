@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="summary_spacing">8dp</dimen>
+    <dimen name="wishlist_spacing">32dp</dimen>
+    <dimen name="zero_spacing">0dp</dimen>
+</resources>
