@@ -21,6 +21,11 @@ import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import com.google.android.material.navigation.NavigationView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.ParentsRepository
@@ -127,6 +132,19 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mNavController: NavController
 
 
+    private fun writeStream(file: File, resourceId: Int) {
+
+        if (!file.isFile) {
+
+            val stream = resources.openRawResource(resourceId)
+
+            file.writeBytes(stream.readBytes())
+
+            stream.close()
+        }
+
+    }
+
     /**
      * Function that creates example files for parents/zpl/wishlist tables in the app's cache directory.
      */
@@ -142,23 +160,24 @@ class MainActivity : AppCompatActivity() {
 
         //create empty files for the examples
         val exampleWish = File(wishlists, "/wishlist_example.csv")
+        val exampleWishLarge = File(wishlists, "/large_wishlist.csv")
         val exampleParents = File(parents, "/parents_example.csv")
-        val exampleZPL = File(zpl, "/zpl_example.zpl")
+        val exampleZpl = File(zpl, "/zpl_example.zpl")
 
-        if (!exampleWish.isFile) {
-            val stream = resources.openRawResource(R.raw.wishlist_example)
-            exampleWish.writeBytes(stream.readBytes())
-            stream.close()
-        }
-        if (!exampleParents.isFile) {
-            val stream = resources.openRawResource(R.raw.parents_example)
-            exampleParents.writeBytes(stream.readBytes())
-            stream.close()
-        }
-        if (!exampleZPL.isFile) {
-            val stream = resources.openRawResource(R.raw.example)
-            exampleZPL.writeBytes(stream.readBytes())
-            stream.close()
+        //blocking code can be run with Dispatchers.IO
+        CoroutineScope(Dispatchers.IO).launch {
+
+            writeStream(exampleWish, R.raw.wishlist_example)
+
+            writeStream(exampleParents, R.raw.parents_example)
+
+            writeStream(exampleZpl, R.raw.example)
+
+            if ("demo" in BuildConfig.FLAVOR) {
+
+                writeStream(exampleWishLarge, R.raw.large_wishlist)
+
+            }
         }
     }
 
