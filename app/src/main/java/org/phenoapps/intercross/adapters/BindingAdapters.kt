@@ -2,8 +2,11 @@ package org.phenoapps.intercross.adapters
 
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.TextView
+import androidx.core.view.marginStart
 import androidx.databinding.BindingAdapter
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
@@ -50,6 +53,16 @@ fun bindQRCodeImage(view: ImageView, code: String?) {
         view.tag = code
 
         AsyncLoadBarcode(view, code).execute(code)
+    }
+}
+
+@BindingAdapter("layoutMarginStart")
+fun bindLayoutMarginStart(view: TextView, spacing: Float) {
+
+    view.layoutParams = (view.layoutParams as ViewGroup.MarginLayoutParams).apply {
+
+        marginStart = spacing.toInt()
+
     }
 }
 

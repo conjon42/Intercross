@@ -77,6 +77,8 @@ class WishlistAdapter(val context: Context) :
 
             with(binding) {
 
+                binding.numCrosses.isSelected = true
+
                 maleParent = data.m
 
                 femaleParent = data.f
