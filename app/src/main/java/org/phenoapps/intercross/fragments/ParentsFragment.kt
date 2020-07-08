@@ -13,23 +13,33 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.ParentsAdapter
+import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.PollenGroupRepository
+import org.phenoapps.intercross.data.dao.EventsDao
 import org.phenoapps.intercross.data.models.BaseParent
+import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
 import org.phenoapps.intercross.data.models.PollenGroup
+import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
 import org.phenoapps.intercross.data.viewmodels.PollenGroupListViewModel
+import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentParentsBinding
 import org.phenoapps.intercross.util.BluetoothUtil
+import org.phenoapps.intercross.util.SnackbarQueue
 
 
 class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.fragment_parents) {
 
     private val viewModel: ParentsListViewModel by viewModels {
         ParentsListViewModelFactory(ParentsRepository.getInstance(db.parentsDao()))
+    }
+
+    private val eventsModel: EventListViewModel by viewModels {
+        EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
     }
 
     private val groupList: PollenGroupListViewModel by viewModels {
@@ -39,6 +49,8 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
     private val parentList: ParentsListViewModel by viewModels {
         ParentsListViewModelFactory(ParentsRepository.getInstance(db.parentsDao()))
     }
+
+    private lateinit var mCrosses: List<Event>
 
     private lateinit var mMaleAdapter: ParentsAdapter
 
@@ -94,6 +106,15 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
         maleRecycler.adapter = mMaleAdapter
         maleRecycler.layoutManager = LinearLayoutManager(ctx)
+
+        eventsModel.events.observe(viewLifecycleOwner, Observer { parents ->
+
+            parents?.let {
+
+                mCrosses = it
+
+            }
+        })
 
         //TODO Trevor: What happens when wishlist import includes different code ids with same name, similarly for cross events
 
@@ -177,27 +198,77 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
          */
         deleteButton.setOnClickListener {
 
+            //variable that tracks whether user tried to delete parents of a cross, this will display a message.
+            var triedToDelete = false
+
             if (tabLayout.getTabAt(0)?.isSelected == true) {
 
-                val outParents: List<Parent> = mFemaleAdapter
-                        .currentList.filterIsInstance(Parent::class.java)
+                val out: List<Parent> = mFemaleAdapter.currentList.filterIsInstance(Parent::class.java)
+                        .filter { p -> p.selected }
 
-                viewModel.delete(*(outParents.filter { p -> p.selected }).toTypedArray())
+
+                //don't delete parents that have been crossed.
+                if (::mCrosses.isInitialized) {
+
+                    //find all parents with crosses (that are selected)
+                    val parentOfCrossed = out.filter { p -> mCrosses.any { crossed -> p.codeId == crossed.femaleObsUnitDbId } }
+
+                    //if the result is empty, just delete the original array, otherwise remove the parents and delete from original
+                    if (parentOfCrossed.isEmpty()) {
+
+                        viewModel.delete(*out.toTypedArray())
+
+                    } else {
+
+                        triedToDelete = true
+
+                        viewModel.delete(*(out-parentOfCrossed).toTypedArray())
+                    }
+
+                }
 
             } else {
 
-                val outParents = mMaleAdapter.currentList.filterIsInstance(Parent::class.java)
+                var outParents = mMaleAdapter.currentList.filterIsInstance(Parent::class.java)
+                        .filter { p -> p.selected }
 
-                val outGroups = mMaleAdapter.currentList.filterIsInstance(PollenGroup::class.java)
+                var outGroups = mMaleAdapter.currentList.filterIsInstance(PollenGroup::class.java)
+                        .filter { g -> g.selected}
 
-                groupList.deleteByCode(outGroups
-                        .filter { group -> group.selected }
-                        .map { g -> g.codeId }.toList())
+                if (::mCrosses.isInitialized) {
 
-                viewModel.delete(*outParents.filter { parent -> parent.selected }.toTypedArray())
+                    val parentOfCrossed = outParents.filter { p -> mCrosses.any { crossed -> p.codeId == crossed.maleObsUnitDbId } }
+                    val parentOfGroup = outGroups.filter { p -> mCrosses.any { crossed -> p.codeId == crossed.maleObsUnitDbId } }
 
+                    if (parentOfCrossed.isEmpty()) {
+
+                        viewModel.delete(*outParents.toTypedArray())
+
+                    } else {
+
+                        triedToDelete = true
+
+                        viewModel.delete(*(outParents-parentOfCrossed).toTypedArray())
+                    }
+
+                    if (parentOfGroup.isEmpty()) {
+
+                        groupList.deleteByCode(parentOfGroup.map { g -> g.codeId })
+
+                    } else {
+
+                        triedToDelete = true
+
+                        groupList.delete(*(outGroups-parentOfGroup).toTypedArray())
+                    }
+                }
             }
 
+            if (triedToDelete) {
+
+                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.parents_of_crosses_not_deleted)))
+
+            }
         }
 
         printButton.setOnClickListener {
