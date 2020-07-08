@@ -24,6 +24,9 @@ import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.async
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.HeaderAdapter
 import org.phenoapps.intercross.data.EventsRepository
