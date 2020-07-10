@@ -1,8 +1,6 @@
 package org.phenoapps.intercross.fragments
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.preference.PreferenceManager
@@ -14,13 +12,10 @@ import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
-import androidx.databinding.BindingAdapter
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -28,13 +23,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.EncodeHintType
-import com.google.zxing.qrcode.QRCodeWriter
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import kotlinx.android.synthetic.main.fragment_events.*
 import kotlinx.android.synthetic.main.fragment_events.recyclerView
-import kotlinx.android.synthetic.main.fragment_pollen_manager.*
 import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
@@ -182,7 +172,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             }
         })
 
-        wishStore.crossblock.observe(viewLifecycleOwner, Observer {
+        wishStore.wishes.observe(viewLifecycleOwner, Observer {
 
             it?.let {
 

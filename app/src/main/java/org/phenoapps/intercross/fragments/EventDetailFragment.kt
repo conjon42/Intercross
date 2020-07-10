@@ -211,7 +211,7 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
 
             metaDataVisibility = getMetaDataVisibility(requireContext())
 
-            wishList.crossblock.observe(viewLifecycleOwner, Observer {
+            wishList.wishes.observe(viewLifecycleOwner, Observer {
 
                 it?.let { crossblock ->
 

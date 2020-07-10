@@ -5,7 +5,6 @@ import android.graphics.Color
 import android.os.Handler
 import android.preference.PreferenceManager
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContentProviderCompat
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -34,7 +33,6 @@ import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentBarcodeScanBinding
 import org.phenoapps.intercross.util.CrossUtil
 import org.phenoapps.intercross.util.FileUtil
-import org.phenoapps.intercross.util.SnackbarQueue
 import java.util.*
 
 class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.layout.fragment_barcode_scan) {
@@ -252,7 +250,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
     private fun startObservers() {
 
-        wishModel.crossblock.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+        wishModel.wishes.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
             it?.let {
                 mWishlist = it.filter { wish -> wish.wishType == "cross" }
             }

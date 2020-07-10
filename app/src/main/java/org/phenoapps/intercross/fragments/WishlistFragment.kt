@@ -12,7 +12,6 @@ import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.adapters.SummaryAdapter
 import org.phenoapps.intercross.adapters.WishlistAdapter
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.WishlistRepository
@@ -21,7 +20,6 @@ import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
-import org.phenoapps.intercross.databinding.FragmentSummaryBinding
 import org.phenoapps.intercross.databinding.FragmentWishlistBinding
 import org.phenoapps.intercross.util.Dialogs
 import java.util.*
@@ -62,7 +60,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
             }
         })
 
-        wishModel.crossblock.observe(viewLifecycleOwner, Observer {
+        wishModel.wishes.observe(viewLifecycleOwner, Observer {
 
             it?.let { block ->
 

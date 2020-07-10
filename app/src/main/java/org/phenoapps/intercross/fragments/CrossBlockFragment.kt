@@ -1,11 +1,11 @@
 package org.phenoapps.intercross.fragments
 
+import android.annotation.SuppressLint
 import android.graphics.Color
+import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.GestureDetector
 import android.view.Menu
 import android.view.MenuInflater
@@ -34,6 +34,7 @@ import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.CrossBlockManagerBinding
+import org.phenoapps.intercross.util.AsyncLoadCrossblock
 import org.phenoapps.intercross.util.Dialogs
 
 
@@ -70,9 +71,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun CrossBlockManagerBinding.afterCreateView() {
-
-        val viewModelJob = Job()
-
+        
         PreferenceManager.getDefaultSharedPreferences(requireContext())
                 .edit().putString("last_visited_summary", "crossblock").apply()
 
@@ -157,71 +156,11 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
         rows.adapter = mRowAdapter
 
-        val data = ArrayList<BlockData>()
 
-        wishModel.crossblock.observe(viewLifecycleOwner, Observer { wishlist ->
+        wishModel.crossblock.observe(viewLifecycleOwner, Observer { block ->
 
-            CoroutineScope(Main + viewModelJob).launch {
+            AsyncLoadCrossblock(requireContext(), mBinding.root, block, mEvents, table, rows, columns).execute()
 
-                val block = wishlist.filter { wish -> wish.wishType == "cross" }
-
-                val maleHeaders = block.map { HeaderData(it.dadName, it.dadId) }.distinctBy { it.code }
-                val femaleHeaders = block.map { HeaderData(it.momName, it.momId) }.distinctBy { it.code }
-
-                val columns = maleHeaders.size
-
-                table.layoutManager = GridLayoutManager(requireContext(), columns,
-                        GridLayoutManager.HORIZONTAL, false)
-
-                for (f in femaleHeaders) {
-
-                    val possibleMales = block.filter { f.code == it.momId && f.name == it.momName }
-
-                    for (m in maleHeaders) {
-
-                        val filter = possibleMales.filter { m.code == it.dadId && m.name == it.dadName }
-
-                        if (filter.isNotEmpty()) {
-
-                            val res = filter.first()
-
-                            val stateColor =
-
-                                    when {
-
-                                        res.wishProgress >= res.wishMax -> Color.RED
-
-                                        res.wishProgress >= res.wishMin -> Color.GREEN
-
-                                        res.wishProgress > 0 && res.wishProgress < res.wishMin -> Color.YELLOW
-
-                                        else -> Color.GRAY
-                                    }
-
-                            data.add(CellData(res.wishProgress, res.wishMin, res.wishMax, View.OnClickListener {
-
-                                val children = mEvents.filter { event ->
-                                    event.femaleObsUnitDbId == res.momId && event.maleObsUnitDbId == res.dadId }
-
-                                Dialogs.list(AlertDialog.Builder(requireContext()),
-                                        requireContext().getString(R.string.click_item_for_child_details),
-                                        requireContext().getString(R.string.no_child_exists),
-                                        children) { id ->
-
-                                    Navigation.findNavController(root)
-                                            .navigate(CrossBlockFragmentDirections.actionToEventDetail(id))
-                                }
-
-                            }, stateColor))
-
-                        } else data.add(EmptyCell())
-                    }
-                }
-
-                mRowAdapter.submitList(maleHeaders)
-                mColumnAdapter.submitList(femaleHeaders)
-                mParentAdapter.submitList(data)
-            }
         })
 
         /**

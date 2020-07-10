@@ -32,6 +32,12 @@ class WishlistRepository private constructor(
 
     fun getAllCounts() = wishlistDao.getAllCounts()
 
+    fun getCrossblock() = wishlistDao.getCrossblock()
+
+    fun getMaleHeaders() = wishlistDao.getMaleHeaders()
+
+    fun getFemaleHeaders() = wishlistDao.getFemaleHeaders()
+
     companion object {
         @Volatile private var instance: WishlistRepository? = null
 
