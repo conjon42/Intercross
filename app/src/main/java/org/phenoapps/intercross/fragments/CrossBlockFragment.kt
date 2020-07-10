@@ -71,7 +71,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun CrossBlockManagerBinding.afterCreateView() {
-        
+
         PreferenceManager.getDefaultSharedPreferences(requireContext())
                 .edit().putString("last_visited_summary", "crossblock").apply()
 
