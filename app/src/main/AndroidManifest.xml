@@ -40,7 +40,11 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".AboutActivity" />
+        <!--- This is required or the LibBuilder class will crash the app -->
+<!--        https://github.com/mikepenz/AboutLibraries/issues/279-->
+        <activity
+            android:name="com.mikepenz.aboutlibraries.ui.LibsActivity"
+            android:theme="@style/Theme.MaterialComponents.NoActionBar" />
 
     </application>
 

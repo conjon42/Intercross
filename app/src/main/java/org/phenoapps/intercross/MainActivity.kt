@@ -332,7 +332,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.action_nav_about -> {
 
-                    mNavController.navigate(R.id.aboutActivity)
+                    mNavController.navigate(EventsFragmentDirections.actionToAbout())
 
                 }
             }

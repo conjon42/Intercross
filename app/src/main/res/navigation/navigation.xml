@@ -10,7 +10,7 @@
     <fragment
         android:id="@+id/events_fragment"
         android:name="org.phenoapps.intercross.fragments.EventsFragment"
-        android:label="Events"
+        android:label="@string/events_fragment_label"
         tools:layout="@layout/fragment_events">
 
         <action
@@ -44,12 +44,21 @@
             android:id="@+id/action_to_crossblock"
             app:destination="@+id/crossblock_fragment"
             app:popUpTo="@id/events_fragment"/>
+        <action
+            android:id="@+id/action_to_about"
+            app:destination="@+id/about_fragment"
+            app:popUpTo="@id/events_fragment"/>
     </fragment>
+
+    <fragment
+        android:id="@+id/about_fragment"
+        android:name="org.phenoapps.intercross.fragments.AboutFragment"
+        android:label="@string/about_title"/>
 
     <fragment
         android:id="@+id/barcode_scan_fragment"
         android:name="org.phenoapps.intercross.fragments.BarcodeScanFragment"
-        android:label="Barcode Scan"
+        android:label="@string/barcode_scan_label"
         tools:layout="@layout/fragment_barcode_scan">
         <action
             android:id="@+id/action_to_event_fragment_from_scan"
@@ -62,7 +71,7 @@
     <fragment
         android:id="@+id/event_fragment"
         android:name="org.phenoapps.intercross.fragments.EventDetailFragment"
-        android:label="Event"
+        android:label="@string/event_detail_label"
         tools:layout="@layout/fragment_event_detail">
         <argument
             android:name="eid"
@@ -83,7 +92,7 @@
     <fragment
         android:id="@+id/parents_fragment"
         android:name="org.phenoapps.intercross.fragments.ParentsFragment"
-        android:label="Parents"
+        android:label="@string/parent_label"
         tools:layout="@layout/fragment_parents">
 
         <action android:id="@+id/action_parents_to_create_event"
@@ -98,7 +107,7 @@
     <fragment
         android:id="@+id/settings_fragment"
         android:name="org.phenoapps.intercross.fragments.SettingsFragment"
-        android:label="Settings">
+        android:label="@string/settings_label">
         <action
             android:id="@+id/action_to_pattern_fragment"
             app:destination="@id/pattern_fragment"
@@ -112,21 +121,21 @@
     <fragment
         android:id="@+id/pattern_fragment"
         android:name="org.phenoapps.intercross.fragments.PatternFragment"
-        android:label="Patterns"
+        android:label="@string/patterns_label"
         tools:layout="@layout/fragment_pattern">
     </fragment>
 
     <fragment
         android:id="@+id/import_zpl_fragment"
         android:name="org.phenoapps.intercross.fragments.ImportZPLFragment"
-        android:label="Import ZPL"
+        android:label="@string/import_zpl_label"
         tools:layout="@layout/fragment_import_zpl">
     </fragment>
 
     <fragment
         android:id="@+id/pollen_manager_fragment"
         android:name="org.phenoapps.intercross.fragments.PollenManagerFragment"
-        android:label="Pollen Manager"
+        android:label="@string/pollen_manager_label"
         tools:layout="@layout/fragment_pollen_manager">
 
         <argument
@@ -145,20 +154,12 @@
 
     </fragment>
 
-    <activity
-        android:id="@+id/aboutActivity"
-        android:name="org.phenoapps.intercross.AboutActivity"
-        android:configChanges="keyboardHidden|screenSize|keyboard|orientation"
-        android:theme="@style/AppTheme"
-        android:windowSoftInputMode="adjustPan">
-    </activity>
-
     <!-- Summary, Cross Block, and Wishlist Fragment Definitions !-->
 
     <fragment
         android:id="@+id/wishlist_fragment"
         android:name="org.phenoapps.intercross.fragments.WishlistFragment"
-        android:label="Wishlist Summary"
+        android:label="@string/wishlist_label"
         tools:layout="@layout/fragment_summary">
 
         <action
@@ -174,7 +175,7 @@
     <fragment
         android:id="@+id/summary_fragment"
         android:name="org.phenoapps.intercross.fragments.SummaryFragment"
-        android:label="Summary"
+        android:label="@string/summary_label"
         tools:layout="@layout/fragment_summary">
         <action
             android:id="@+id/action_to_wishlist"
@@ -191,7 +192,7 @@
     <fragment
         android:id="@+id/crossblock_fragment"
         android:name="org.phenoapps.intercross.fragments.CrossBlockFragment"
-        android:label="Cross Block"
+        android:label="@string/cross_block_label"
         tools:layout="@layout/cross_block_manager">
 
         <action

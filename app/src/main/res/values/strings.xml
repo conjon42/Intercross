@@ -14,7 +14,6 @@
     <string name="prefix">prefix</string>
 
     <!-- About dialog -->
-    <string name="about_title">About</string>
     <string name="about_version_title">Version</string>
     <string name="about_title_other_apps">Other PhenoApps</string>
     <string name="about_project_lead_title">Project Lead</string>
@@ -29,7 +28,8 @@
     <string name="about_translators_title">Translators</string>
     <string name="about_translators_text" translatable="false">Irazema Fuentes-Bueno,  Sandra Dunckel,  Shuangye Wu,  Narinder Singh,  Daljit Singh,  Erena Edae,  Tatiana Danilova,  Rodrigo Pedrozo,  Cristiano Lemes da Silva,  Sophie Bouchet,  Hiroyoshi Iwata,  Goro Ishikawa,  Khaled El-Shamaa, Mokhlesur Rahman, Alice Brunazzi</string>
     <string name="about_contributors_funding_title">Funding</string>
-    <string name="about_contributors_funding_text" translatable="false">Development of Field Book has been supported by the Collaborative Crop Research Program of The McKnight Foundation, the National Science Foundation (#1543958), and the National Institute of Food and Agriculture (#2019-67021-29931).</string>
+    <string name="about_contributors_funding_text_first" translatable="false">Development of </string>
+    <string name="about_contributors_funding_text_after" translatable="false"> has been supported by the Collaborative Crop Research Program of The McKnight Foundation, the National Science Foundation (#1543958), and the National Institute of Food and Agriculture (#2019-67021-29931).</string>
     <string name="about_rate">Rate this app</string>
     <string name="about_technical_title">Technical Details</string>
     <string name="about_github_title">GitHub</string>
@@ -166,5 +166,17 @@
     <string name="wish">Wish</string>
     <string name="no_child_exists">No child exists.</string>
     <string name="click_item_for_child_details">Click item for child details.</string>
+    <string name="about_title">About</string>
+    <string name="barcode_scan_label">Barcode Scan</string>
+    <string name="events_fragment_label">Events</string>
+    <string name="event_detail_label">Event</string>
+    <string name="parent_label">Parents</string>
+    <string name="settings_label">Settings</string>
+    <string name="patterns_label">Patterns</string>
+    <string name="import_zpl_label">Import ZPL</string>
+    <string name="pollen_manager_label">Pollen Manager</string>
+    <string name="wishlist_label">Wishlist Summary</string>
+    <string name="summary_label">Summary</string>
+    <string name="cross_block_label">Cross Block</string>
 
 </resources>
