@@ -31,13 +31,13 @@ class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBindin
 
     private lateinit var mAdapter: ParentsAdapter
 
-    private lateinit var mEvents: List<Event>
+    private var mEvents: List<Event> = ArrayList()
 
-    private lateinit var mParents: List<Parent>
+    private var mParents: List<Parent> = ArrayList()
 
-    private lateinit var mMales: List<Parent>
+    private var mMales: List<Parent> = ArrayList()
 
-    private lateinit var mGroups: List<PollenGroup>
+    private var mGroups: List<PollenGroup> = ArrayList()
 
     private var mPolycrosses: List<PollenGroup> = ArrayList()
 
@@ -130,7 +130,7 @@ class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBindin
 
                 codeEditText.addTextChangedListener {
 
-                    var codes = mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }.distinct()
+                    val codes = mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }.distinct()
 
                     if (codeEditText.text.toString() in codes) {
 
@@ -236,10 +236,8 @@ class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBindin
             val act = requireActivity()
 
             newButton.text =
-                if (::mMales.isInitialized &&
-                        mMales.any { male -> male.selected }
-                        || (::mGroups.isInitialized
-                                && mGroups.any { group -> group.selected })) {
+                if (mMales.any { male -> male.selected }
+                        || mGroups.any { group -> group.selected }) {
 
                     act.getString(R.string.add_male_group)
 

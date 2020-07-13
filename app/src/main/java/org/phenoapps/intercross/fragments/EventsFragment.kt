@@ -72,7 +72,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private var mParents: List<Parent> = ArrayList()
 
-    private lateinit var mSettings: Settings
+    private var mSettings: Settings = Settings()
 
     private var mEvents: List<Event> = ArrayList()
 
@@ -80,7 +80,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private val mSharedViewModel: CrossSharedViewModel by activityViewModels()
 
-    private lateinit var mWishlistProgress: List<WishlistView>
+    private var mWishlistProgress: List<WishlistView> = ArrayList()
 
     private fun getFirstOrder(context: Context): String {
 
@@ -103,19 +103,22 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
-        if (!::mSettings.isInitialized) {
-
-            mSettings = Settings()
-
-            settingsModel.insert(mSettings)
-        }
+        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
 
         if ("demo" in BuildConfig.FLAVOR) {
 
-            val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
-
             pref.edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
 
+        }
+
+        if (pref.getBoolean("first_load", true)) {
+
+            settingsModel.insert(mSettings
+                    .apply {
+                        isUUID = true
+                    })
+
+            pref.edit().putBoolean("first_load", false).apply()
         }
 
         val error = getString(R.string.ErrorCodeExists)
@@ -268,7 +271,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                             CrossUtil(requireContext()).submitCrossEvent(mBinding.root,
                                     event.femaleObsUnitDbId, event.maleObsUnitDbId,
                                     event.eventDbId, mSettings, settingsModel, viewModel,
-                                    mParents, parentsList, mWishlistProgress, true
+                                    mParents, parentsList, mWishlistProgress
                             )
 
                         })
@@ -484,7 +487,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 } else {
 
-                    CrossUtil(requireContext()).submitCrossEvent(mBinding.root, female, male, value, mSettings, settingsModel, viewModel, mParents, parentsList, mWishlistProgress, false)
+                    CrossUtil(requireContext()).submitCrossEvent(mBinding.root, female, male, value, mSettings, settingsModel, viewModel, mParents, parentsList, mWishlistProgress)
 
                 }
 

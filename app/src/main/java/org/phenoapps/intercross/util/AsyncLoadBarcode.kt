@@ -23,7 +23,7 @@ class AsyncLoadBarcode(val imageView: ImageView, val TAG: String) : AsyncTask<St
 
             val bitmatrix = QRCodeWriter()
                     .encode(code, BarcodeFormat.QR_CODE, 256, 256,
-                            mapOf(EncodeHintType.ERROR_CORRECTION to ErrorCorrectionLevel.L))
+                            mapOf(EncodeHintType.ERROR_CORRECTION to ErrorCorrectionLevel.Q))
 
             val bmp = Bitmap.createBitmap(bitmatrix.width, bitmatrix.height, Bitmap.Config.RGB_565)
 

@@ -26,27 +26,34 @@ class CrossUtil(val context: Context) {
                          eventsModel: EventListViewModel,
                          parents: List<Parent>,
                          parentModel: ParentsListViewModel,
-                         wishlistProgress: List<WishlistView>,
-                         isUndo: Boolean) {
+                         wishlistProgress: List<WishlistView>) {
 
-        val cross = when {
+        var name = crossName
 
-            isUndo -> {
-                crossName
+        if (settings.isPattern) {
+
+            //if this submit is from the barcode fragment the cross name is empty
+
+            if (name.isBlank()) {
+
+                name = settings.pattern
+
             }
 
-            settings.isPattern -> {
-                val n = settings.number
-                settings.number += 1
-                settingsModel.insert(settings)
-                "${settings.prefix}${n.toString().padStart(settings.pad, '0')}${settings.suffix}"
-            }
+            //in the case the user inputs a name while in pattern mode, use the name and don't update the pattern
+            if (name == settings.pattern) {
 
-            settings.isUUID -> {
-                crossName
-            }
+                settingsModel.insert(settings.apply {
+                    number += 1
+                })
 
-            else -> crossName
+            }
+        }
+
+        if (settings.isUUID && name.isBlank()) {
+
+            name = UUID.randomUUID().toString()
+
         }
 
         val experiment = PreferenceManager.getDefaultSharedPreferences(context)
@@ -55,7 +62,7 @@ class CrossUtil(val context: Context) {
         val person = PreferenceManager.getDefaultSharedPreferences(context)
                 .getString("org.phenoapps.intercross.PERSON", "")
 
-        val e = Event(cross,
+        val e = Event(name,
                 female,
                 male,
                 "",
@@ -81,7 +88,7 @@ class CrossUtil(val context: Context) {
 
         val wasCreated = context.getString(R.string.was_created)
 
-        SnackbarQueue().push(SnackbarQueue.SnackJob(root, "$cross $wasCreated"))
+        SnackbarQueue().push(SnackbarQueue.SnackJob(root, "$name $wasCreated"))
 
         checkWishlist(female, male, wishlistProgress)
 

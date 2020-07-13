@@ -30,7 +30,7 @@
             android:icon="@drawable/ic_setting_pattern_create"
             android:key="org.phenoapps.intercross.CREATE_PATTERN"
             android:title="Create cross ID pattern"
-            android:summary="None"/>
+            android:summary="UUID"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Workflow" app:iconSpaceReserved="false">
