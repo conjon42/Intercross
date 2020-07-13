@@ -6,6 +6,7 @@
     <color name="colorAccentTransparent">#42FF5722</color>
     <color name="colorDisabled">#FBE9E7</color>
 
+    <color name="progressBlank">#AAAAAAAA</color>
     <color name="progressStart">#9000FF00</color>
     <color name="progressMid">#90FFFF00</color>
     <color name="progressEnd">#90FF0000</color>

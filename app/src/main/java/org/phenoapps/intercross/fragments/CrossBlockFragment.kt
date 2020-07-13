@@ -65,9 +65,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
     private lateinit var mColumnAdapter: HeaderAdapter
 
-    private var mEventsEmpty = true
-
-    private lateinit var mEvents: List<Event>
+    private var mEvents: List<Event> = ArrayList()
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun CrossBlockManagerBinding.afterCreateView() {
@@ -156,13 +154,6 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
         rows.adapter = mRowAdapter
 
-
-        wishModel.crossblock.observe(viewLifecycleOwner, Observer { block ->
-
-            AsyncLoadCrossblock(requireContext(), mBinding.root, block, mEvents, table, rows, columns).execute()
-
-        })
-
         /**
          * list for events model, disable options menu for summary if the list is empty
          */
@@ -172,7 +163,11 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
                 mEvents = it
 
-                mEventsEmpty = it.isEmpty()
+                wishModel.crossblock.observe(viewLifecycleOwner, Observer { block ->
+
+                    AsyncLoadCrossblock(requireContext(), mBinding.root, block, mEvents, table, rows, columns).execute()
+
+                })
             }
         })
     }
@@ -202,7 +197,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
             R.id.action_nav_summary -> {
 
-                if (!mEventsEmpty) {
+                if (mEvents.isNotEmpty()) {
                     Navigation.findNavController(mBinding.root)
                             .navigate(CrossBlockFragmentDirections.actionToSummary())
                 } else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.summary_empty))

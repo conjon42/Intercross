@@ -8,6 +8,7 @@ import android.os.AsyncTask
 import android.view.View
 import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -55,13 +56,13 @@ class AsyncLoadCrossblock(val context: Context,
 
                         when {
 
-                            res.wishProgress >= res.wishMax -> Color.RED
+                            res.wishProgress >= res.wishMax -> ContextCompat.getColor(context, R.color.progressEnd)
 
-                            res.wishProgress >= res.wishMin -> Color.GREEN
+                            res.wishProgress >= res.wishMin -> ContextCompat.getColor(context, R.color.progressMid)
 
-                            res.wishProgress > 0 && res.wishProgress < res.wishMin -> Color.YELLOW
+                            res.wishProgress > 0 && res.wishProgress < res.wishMin -> ContextCompat.getColor(context, R.color.progressStart)
 
-                            else -> Color.GRAY
+                            else -> ContextCompat.getColor(context, R.color.progressBlank)
                         }
 
                     data.add(CrossBlockFragment.CellData(res.wishProgress, res.wishMin, res.wishMax, View.OnClickListener {

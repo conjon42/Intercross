@@ -178,5 +178,9 @@
     <string name="wishlist_label">Wishlist Summary</string>
     <string name="summary_label">Summary</string>
     <string name="cross_block_label">Cross Block</string>
+    <string name="no_crosses_made">None</string>
+    <string name="wishlist_min_legend_label">Less than minimum</string>
+    <string name="wishlist_achieved_legend_label">Minimum</string>
+    <string name="wishlist_maximum_met_legend_label">Maximum</string>
 
 </resources>
