@@ -49,7 +49,7 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
         ParentsListViewModelFactory(ParentsRepository.getInstance(db.parentsDao()))
     }
 
-    private lateinit var mCrosses: List<Event>
+    private var mCrosses: List<Event> = ArrayList()
 
     private lateinit var mMaleAdapter: ParentsAdapter
 
@@ -207,7 +207,7 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
 
                 //don't delete parents that have been crossed.
-                if (::mCrosses.isInitialized) {
+                if (mCrosses.isNotEmpty()) {
 
                     //find all parents with crosses (that are selected)
                     val parentOfCrossed = out.filter { p -> mCrosses.any { crossed -> p.codeId == crossed.femaleObsUnitDbId } }
@@ -228,13 +228,13 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
             } else {
 
-                var outParents = mMaleAdapter.currentList.filterIsInstance(Parent::class.java)
+                val outParents = mMaleAdapter.currentList.filterIsInstance(Parent::class.java)
                         .filter { p -> p.selected }
 
-                var outGroups = mMaleAdapter.currentList.filterIsInstance(PollenGroup::class.java)
+                val outGroups = mMaleAdapter.currentList.filterIsInstance(PollenGroup::class.java)
                         .filter { g -> g.selected}
 
-                if (::mCrosses.isInitialized) {
+                if (mCrosses.isNotEmpty()) {
 
                     val parentOfCrossed = outParents.filter { p -> mCrosses.any { crossed -> p.codeId == crossed.maleObsUnitDbId } }
                     val parentOfGroup = outGroups.filter { p -> mCrosses.any { crossed -> p.codeId == crossed.maleObsUnitDbId } }
@@ -272,11 +272,11 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
         printButton.setOnClickListener {
 
-            val experiment = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                    .getString("org.phenoapps.intercross.EXPERIMENT", "")
-
-            val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                    .getString("org.phenoapps.intercross.PERSON", "")
+//            val experiment = PreferenceManager.getDefaultSharedPreferences(requireContext())
+//                    .getString("org.phenoapps.intercross.EXPERIMENT", "")
+//
+//            val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
+//                    .getString("org.phenoapps.intercross.PERSON", "")
 
             if (tabLayout.getTabAt(0)?.isSelected == true) {
 

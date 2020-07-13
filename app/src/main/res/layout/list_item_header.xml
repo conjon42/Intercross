@@ -40,6 +40,7 @@
             android:ellipsize="end"
             android:gravity="center"
             android:maxLines="1"
+            android:scrollbars="none"
             android:text="@{name}"
             android:textSize="12sp"/>
 

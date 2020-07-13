@@ -269,9 +269,11 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
                                         Dialogs.notify(AlertDialog.Builder(requireContext()),
                                             getString(R.string.parent_event_does_not_exist))
 
-                                    } else findNavController()
-                                            .navigate(EventDetailFragmentDirections
-                                            .actionToParentEvent(mom.id ?: -1L))
+                                    } else {
+                                        findNavController()
+                                                .navigate(EventDetailFragmentDirections
+                                                        .actionToParentEvent(mom.id ?: -1L))
+                                    }
                                 }
 
                             }
@@ -285,7 +287,10 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
                                         Dialogs.notify(AlertDialog.Builder(requireContext()),
                                                 getString(R.string.parent_event_does_not_exist))
 
-                                    } else findNavController().navigate(EventDetailFragmentDirections.actionToParentEvent(dad.id ?: -1L))
+                                    } else {
+                                        findNavController().navigate(EventDetailFragmentDirections
+                                                .actionToParentEvent(dad.id ?: -1L))
+                                    }
                                 }
                             }
                         }
@@ -304,27 +309,27 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        when(item.itemId) {
+        if (::mEvent.isInitialized) {
 
-            R.id.action_print -> {
+            when (item.itemId) {
 
-                if (::mEvent.isInitialized) {
+                R.id.action_print -> {
 
                     BluetoothUtil().print(requireContext(), arrayOf(mEvent))
 
                 }
-            }
-            R.id.action_delete -> {
+                R.id.action_delete -> {
 
-                Dialogs.onOk(AlertDialog.Builder(requireContext()),
-                        getString(R.string.delete_cross_entry_title),
-                        getString(R.string.cancel),
-                        getString(R.string.zxing_button_ok)) {
+                    Dialogs.onOk(AlertDialog.Builder(requireContext()),
+                            getString(R.string.delete_cross_entry_title),
+                            getString(R.string.cancel),
+                            getString(R.string.zxing_button_ok)) {
 
-                    eventsList.deleteById(mEvent.id ?: -1L)
+                        eventsList.deleteById(mEvent.id ?: -1L)
 
-                    findNavController().popBackStack()
+                        findNavController().popBackStack()
 
+                    }
                 }
             }
         }

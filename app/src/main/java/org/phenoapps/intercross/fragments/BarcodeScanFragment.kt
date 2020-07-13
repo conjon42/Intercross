@@ -293,7 +293,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                 viewModel,
                 mParents,
                 parentsModel,
-                mWishlist, false)
+                mWishlist)
 
         mSharedViewModel.name.value = ""
         mSharedViewModel.female.value = ""

@@ -66,8 +66,6 @@ class FileUtil(private val ctx: Context) {
 
     private val crossDadHeader: String by lazy { ctx.getString(R.string.crosses_export_dad_header) }
 
-    private val crossNameHeader: String by lazy { ctx.getString(R.string.crosses_export_name_header) }
-
     private val crossTimestampHeader: String by lazy { ctx.getString(R.string.crosses_export_date_header) }
 
     private val crossPersonHeader: String by lazy { ctx.getString(R.string.crosses_export_person_header) }
@@ -76,8 +74,6 @@ class FileUtil(private val ctx: Context) {
 
     private val crossTypeHeader: String by lazy { ctx.getString(R.string.crosses_export_type_header) }
 
-    private val crossSexHeader: String by lazy { ctx.getString(R.string.crosses_export_sex_header) }
-
     private val crossFruitsHeader: String by lazy { ctx.getString(R.string.crosses_export_fruits_header) }
 
     private val crossFlowersHeader: String by lazy { ctx.getString(R.string.crosses_export_flowers_header) }
@@ -85,9 +81,9 @@ class FileUtil(private val ctx: Context) {
     private val crossSeedsHeader: String by lazy { ctx.getString(R.string.crosses_export_seeds_header) }
 
     private val eventModelHeaderString by lazy {
-        arrayOf(crossIdHeader, crossMomHeader, crossDadHeader, crossNameHeader,
+        arrayOf(crossIdHeader, crossMomHeader, crossDadHeader,
                 crossTimestampHeader, crossPersonHeader, crossExperimentHeader,
-                crossTypeHeader, crossSexHeader, crossFruitsHeader, crossFlowersHeader, crossSeedsHeader)
+                crossTypeHeader, crossFruitsHeader, crossFlowersHeader, crossSeedsHeader)
                 .joinToString(",")
     }
 
@@ -109,7 +105,7 @@ class FileUtil(private val ctx: Context) {
 
         val parents = ArrayList<Parent>()
 
-        val lines = parseTextFile(uri, ",")
+        val lines = parseTextFile(uri)
 
         if (lines.isNotEmpty()) {
 
@@ -497,17 +493,17 @@ class FileUtil(private val ctx: Context) {
         private val Uri.isGooglePhotosUri: Boolean
             get() = authority == "com.google.android.apps.photos.content"
 
-        private fun parseExcelSheet(filePath: String): List<String> {
-    //        val workbook = WorkbookFactory.create(File(filePath))
-    //        return if (workbook.numberOfSheets > 0) {
-    //            workbook.getSheetAt(0).rowIterator().asSequence().toList().map {
-    //                it.cellIterator().asSequence().joinToString(",")
-    //            }
-    //        } else ArrayList()
-            return ArrayList()
-        }
+//        private fun parseExcelSheet(filePath: String): List<String> {
+//    //        val workbook = WorkbookFactory.create(File(filePath))
+//    //        return if (workbook.numberOfSheets > 0) {
+//    //            workbook.getSheetAt(0).rowIterator().asSequence().toList().map {
+//    //                it.cellIterator().asSequence().joinToString(",")
+//    //            }
+//    //        } else ArrayList()
+//            return ArrayList()
+//        }
 
-        private fun parseTextFile(it: Uri, delim: String): List<String> {
+        private fun parseTextFile(it: Uri): List<String> {
 
             var ret = ArrayList<String>()
 
