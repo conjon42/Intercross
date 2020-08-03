@@ -86,7 +86,7 @@ class SnackbarQueue {
             }
         }
 
-        Timer().scheduleAtFixedRate(reset, 0, 5000)
+        Timer().scheduleAtFixedRate(reset, 0, 1500)
         Timer().scheduleAtFixedRate(task, 0, 1000)
 
     }

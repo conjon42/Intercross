@@ -87,9 +87,11 @@ data class Event(
 
     }
 
-    fun toPollenGroupString(malesRepr: String): String {
+    fun toPollenGroupString(malesRepr: String, groupName: String?): String {
 
-        return "$eventDbId,$femaleObsUnitDbId,$malesRepr,$timestamp,$person,$experiment,${CrossType.POLY},${metaData.fruits},${metaData.flowers},${metaData.seeds}"
+        var group = groupName ?: maleObsUnitDbId
+
+        return "$eventDbId,$femaleObsUnitDbId,$maleObsUnitDbId::$group::$malesRepr,$timestamp,$person,$experiment,${CrossType.POLY},${metaData.fruits},${metaData.flowers},${metaData.seeds}"
 
     }
 }

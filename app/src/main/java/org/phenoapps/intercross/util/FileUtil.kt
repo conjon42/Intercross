@@ -13,11 +13,10 @@ import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.WorkerThread
+import androidx.appcompat.app.AlertDialog
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.data.models.Event
-import org.phenoapps.intercross.data.models.Parent
-import org.phenoapps.intercross.data.models.PollenGroup
-import org.phenoapps.intercross.data.models.Wishlist
+import org.phenoapps.intercross.data.models.*
+import org.phenoapps.intercross.data.models.embedded.EventMetaData
 import org.phenoapps.intercross.fragments.SettingsFragment
 import java.io.BufferedReader
 import java.io.File
@@ -38,6 +37,8 @@ class FileUtil(private val ctx: Context) {
 
     private val parentsSexHeader: String by lazy { ctx.getString(R.string.parents_header_sex) }
 
+    private val parentHeaders = setOf(parentsCodeIdHeader, parentsNameHeader, parentsSexHeader)
+
     /**
      * Wishlist input file header fields. These are queried from the strings XML.
      */
@@ -55,6 +56,15 @@ class FileUtil(private val ctx: Context) {
 
     private val wishlistMaxHeader: String by lazy { ctx.getString(R.string.wishlist_header_max) }
 
+    private val wishlistHeaders = setOf(
+            wishlistFemaleIdHeader,
+            wishlistMaleIdHeader,
+            wishlistMaleNameHeader,
+            wishlistFemaleIdHeader,
+            wishlistFemaleNameHeader,
+            wishlistTypeHeader,
+            wishlistMinHeader,
+            wishlistMaxHeader)
 
     /**
      * Cross table export file header fields.
@@ -80,11 +90,12 @@ class FileUtil(private val ctx: Context) {
 
     private val crossSeedsHeader: String by lazy { ctx.getString(R.string.crosses_export_seeds_header) }
 
+    private val crossHeaders = setOf(crossIdHeader, crossMomHeader, crossDadHeader,
+            crossTimestampHeader, crossPersonHeader, crossExperimentHeader,
+            crossTypeHeader, crossFruitsHeader, crossFlowersHeader, crossSeedsHeader)
+
     private val eventModelHeaderString by lazy {
-        arrayOf(crossIdHeader, crossMomHeader, crossDadHeader,
-                crossTimestampHeader, crossPersonHeader, crossExperimentHeader,
-                crossTypeHeader, crossFruitsHeader, crossFlowersHeader, crossSeedsHeader)
-                .joinToString(",")
+        crossHeaders.joinToString(",")
     }
 
     /***
@@ -99,11 +110,13 @@ class FileUtil(private val ctx: Context) {
      *
      * TODO Localizations must require that the parents input file header should not contain the wishlist type header.
      */
-    fun parseInputFile(uri: Uri): Pair<List<Parent>, List<Wishlist>> {
+    fun parseInputFile(uri: Uri): Array<List<BaseTable>> {
 
         val wishlist = ArrayList<Wishlist>()
 
         val parents = ArrayList<Parent>()
+
+        val crosses = ArrayList<Event>()
 
         val lines = parseTextFile(uri)
 
@@ -114,21 +127,57 @@ class FileUtil(private val ctx: Context) {
             //ensure the headers size > 0
             if (headers.isNotEmpty()) {
 
+                var diffHeaders: Set<String>
+
                 if (headers.find { it == wishlistTypeHeader }.isNullOrBlank()) {
 
-                    //import parents file
-                    loadParents(headers, lines-lines[0], parents)
+                    if (headers.find { it == crossTypeHeader }.isNullOrBlank()) {
+
+                        diffHeaders = parentHeaders-headers.toSet()
+
+                        if (diffHeaders.isEmpty()) {
+
+                            loadParents(headers, lines - lines[0], parents)
+
+                        }
+
+                    } else {
+
+                        diffHeaders = crossHeaders-headers.toSet()
+
+                        if (diffHeaders.isEmpty()) {
+
+                            loadCrosses(headers, lines-lines[0], crosses)
+
+                        }
+                    }
 
                 } else {
 
-                    loadWishlist(headers, lines-lines[0], wishlist, parents)
+                    diffHeaders = wishlistHeaders-headers.toSet()
+
+                    if (diffHeaders.isEmpty()) {
+
+                        loadWishlist(headers, lines - lines[0], wishlist, parents)
+
+                    }
+
+                }
+
+                if (diffHeaders.isNotEmpty()) {
+
+                    Dialogs.notify(
+                            AlertDialog.Builder(ctx),
+                            ctx.getString(R.string.missing_headers),
+                            message = diffHeaders.joinToString("\n"))
+
 
                 }
             }
 
         }
 
-        return parents to wishlist
+        return arrayOf(crosses, parents, wishlist)
     }
 
 
@@ -200,6 +249,76 @@ class FileUtil(private val ctx: Context) {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private fun loadCrosses(headers: List<String>,
+                            lines: List<String>,
+                            crosses: ArrayList<Event>) {
+
+        //the headers must include at least the code id header
+        if (!headers.find { it == crossIdHeader }.isNullOrBlank()) {
+
+            val headerToIndex = headers
+                    .mapIndexed { index, s -> s to index }
+                    .toMap()
+
+            lines.forEach { it ->
+
+                val row = it.split(",").map { it.trim() }
+
+                headerToIndex[crossIdHeader]?.let { crossIdKey ->
+
+                    headerToIndex[crossMomHeader]?.let { momKey ->
+
+                        headerToIndex[crossDadHeader]?.let { dadKey ->
+
+                            headerToIndex[crossTimestampHeader]?.let { time ->
+
+                                headerToIndex[crossPersonHeader]?.let { personKey ->
+
+                                    headerToIndex[crossExperimentHeader]?.let { expKey ->
+
+                                        headerToIndex[crossTypeHeader]?.let { typeKey ->
+
+                                            headerToIndex[crossFruitsHeader]?.let { fruitKey ->
+
+                                                headerToIndex[crossFlowersHeader]?.let { flowerKey ->
+
+                                                    headerToIndex[crossSeedsHeader]?.let { seedsKey ->
+
+                                                        crosses.add(
+                                                                Event(
+                                                                        row[crossIdKey],
+                                                                        row[momKey],
+                                                                        row[dadKey],
+                                                                        timestamp = row[time],
+                                                                        person = row[personKey],
+                                                                        experiment = row[expKey],
+                                                                        type = when (row[typeKey]) {
+                                                                            "BIPARENTAL" -> CrossType.BIPARENTAL
+                                                                            "OPEN" -> CrossType.OPEN
+                                                                            "POLY" -> CrossType.POLY
+                                                                            "SELF" -> CrossType.SELF
+                                                                            else -> CrossType.UNKNOWN
+                                                                        },
+                                                                        metaData = EventMetaData(
+                                                                                fruits = row[fruitKey].toInt(),
+                                                                                flowers = row[flowerKey].toInt(),
+                                                                                seeds = row[seedsKey].toInt()) ))
+
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
             }
         }
     }
@@ -356,14 +475,16 @@ class FileUtil(private val ctx: Context) {
 
                         if (groups.any { g -> g.codeId == cross.maleObsUnitDbId }) {
 
+                            var groupName = groups.find { g -> g.codeId == cross.maleObsUnitDbId }?.name
+
                             val males = groups.filter { g -> g.codeId == cross.maleObsUnitDbId }
                                     .map { g ->
                                         parents.find { c -> c.id == g.maleId }.let {
-                                            it?.name
+                                            it?.codeId
                                         }
-                                    }.joinToString(",", "{", "}")
+                                    }.joinToString(";", "{", "}")
 
-                            write(cross.toPollenGroupString(males).toByteArray())
+                            write(cross.toPollenGroupString(males, groupName).toByteArray())
 
                             write(newLine)
 

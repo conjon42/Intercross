@@ -39,8 +39,6 @@ class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBindin
 
     private var mGroups: List<PollenGroup> = ArrayList()
 
-    private var mPolycrosses: List<PollenGroup> = ArrayList()
-
     private val eventList: EventListViewModel by viewModels {
 
         EventsListViewModelFactory(
@@ -100,8 +98,7 @@ class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBindin
                             /**
                              * Transform polycrosses to simple parent object before submitting to parent adapter.
                              */
-                            mAdapter.submitList(gs
-                                    .distinctBy { g -> g.codeId }+males.distinctBy { m -> m.codeId })
+                            mAdapter.submitList(males.distinctBy { m -> m.codeId })
 
                             updateButtonText()
                         }
@@ -192,17 +189,6 @@ class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBindin
                             }
                         }
 
-                        for (poly: PollenGroup in mPolycrosses) {
-
-                            if (poly.selected) {
-
-                                poly.id?.let { id ->
-
-                                    addedMales.add(buildGroup(id))
-                                }
-                            }
-                        }
-
                         /***
                          * check if list has been created, otherwise insert a single male
                          */
@@ -236,16 +222,19 @@ class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBindin
             val act = requireActivity()
 
             newButton.text =
-                if (mMales.any { male -> male.selected }
-                        || mGroups.any { group -> group.selected }) {
+                when {
+                    mMales.any { male -> male.selected } -> {
 
-                    act.getString(R.string.add_male_group)
+                        act.getString(R.string.add_male_group)
 
-                } else if (args.mode == 0) {
+                    }
+                    args.mode == 0 -> {
 
-                    act.getString(R.string.add_female)
+                        act.getString(R.string.add_female)
 
-                } else act.getString(R.string.add_male)
+                    }
+                    else -> act.getString(R.string.add_male)
+                }
         }
 
     }

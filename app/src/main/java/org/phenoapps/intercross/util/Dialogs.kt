@@ -46,7 +46,7 @@ class Dialogs {
         /**
          * Simple alert dialog to notify the user of a message.
          */
-        fun notify(builder: AlertDialog.Builder, title: String) {
+        fun notify(builder: AlertDialog.Builder, title: String, message: String = "") {
 
             builder.apply {
 
@@ -54,6 +54,8 @@ class Dialogs {
 
                 }
             }
+
+            builder.setMessage(message)
 
             builder.setTitle(title)
             builder.show()

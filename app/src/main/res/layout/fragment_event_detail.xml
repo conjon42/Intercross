@@ -169,31 +169,12 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/seedTextLayout"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/Seeds"
-                    android:layout_below="@id/flowerTextLayout">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/seedText"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:imeOptions="actionDone"
-                        android:inputType="number"
-                        android:text="@{Integer.toString(event.metaData.seeds)}"
-                        android:selectAllOnFocus="true"/>
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/fruitTextLayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/Fruits"
-                    android:layout_below="@id/seedTextLayout">
+                    android:layout_below="@id/flowerTextLayout">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/fruitText"
@@ -206,6 +187,24 @@
                         android:selectAllOnFocus="true"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/seedTextLayout"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/Seeds"
+                    android:layout_below="@id/fruitTextLayout">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/seedText"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:imeOptions="actionDone"
+                        android:inputType="number"
+                        android:text="@{Integer.toString(event.metaData.seeds)}"
+                        android:selectAllOnFocus="true"/>
+                </com.google.android.material.textfield.TextInputLayout>
             </RelativeLayout>
         </RelativeLayout>
     </ScrollView>

@@ -230,6 +230,12 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
 
                     eventDetailLayout.event = it
 
+                    eventDetailLayout.timestamp = if ("_" in it.timestamp) {
+
+                         it.timestamp.split("_")[0]
+
+                    } else it.timestamp
+
                     //important to execute bindings before adding text watchers
                     //best fruits/seeds/flowers are updated
                     executePendingBindings()
@@ -247,6 +253,10 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
             viewModel.parents.observe(viewLifecycleOwner, Observer { data ->
 
                 data?.let { parents ->
+
+                    eventDetailLayout.female = parents.momReadableName
+
+                    eventDetailLayout.male = parents.dadReadableName
 
                     momName = parents.momReadableName
 

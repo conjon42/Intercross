@@ -26,6 +26,9 @@ interface ParentsDao : BaseDao<Parent> {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertIgnore(vararg parents: Parent)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(parent: Parent): Long
+
     @Transaction
     @Query("DELETE FROM parents")
     suspend fun drop()

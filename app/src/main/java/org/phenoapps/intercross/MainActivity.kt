@@ -31,10 +31,7 @@ import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.PollenGroupRepository
 import org.phenoapps.intercross.data.WishlistRepository
-import org.phenoapps.intercross.data.models.Event
-import org.phenoapps.intercross.data.models.Parent
-import org.phenoapps.intercross.data.models.PollenGroup
-import org.phenoapps.intercross.data.models.Wishlist
+import org.phenoapps.intercross.data.models.*
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
 import org.phenoapps.intercross.data.viewmodels.PollenGroupListViewModel
@@ -46,11 +43,10 @@ import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.ActivityMainBinding
 import org.phenoapps.intercross.fragments.EventsFragmentDirections
 import org.phenoapps.intercross.fragments.PatternFragment
-import org.phenoapps.intercross.util.DateUtil
-import org.phenoapps.intercross.util.Dialogs
-import org.phenoapps.intercross.util.FileUtil
-import org.phenoapps.intercross.util.SnackbarQueue
+import org.phenoapps.intercross.util.*
 import java.io.File
+import java.util.*
+import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {
 
@@ -96,19 +92,83 @@ class MainActivity : AppCompatActivity() {
 
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
 
-            val tables = FileUtil(this).parseInputFile(uri)
+            //TODO documentation says uri can't be null, but it can...might want to check this for a bug
+            uri?.let {
 
-            if (tables.first.isNotEmpty()) {
+                val tables = FileUtil(this).parseInputFile(it)
 
-                parentsList.insert(*tables.first.toTypedArray())
+                CoroutineScope(Dispatchers.IO).launch {
 
+                    if (tables.size == 3) {
+
+                        if (tables[0].isNotEmpty()) {
+
+                            val crosses = tables[0].filterIsInstance(Event::class.java)
+
+                            val polycrosses = crosses.filter { it.type == CrossType.POLY }
+
+                            val nonPolys = crosses - polycrosses
+
+                            polycrosses.forEach { poly ->
+
+                                val maleGroup = poly.maleObsUnitDbId
+
+                                if (maleGroup.isNotBlank()
+                                        && "::" in maleGroup
+                                        && "{" in maleGroup
+                                        && "}" in maleGroup) {
+
+                                    val tokens = maleGroup.split("::")
+
+                                    val groupId = tokens[0]
+
+                                    val groupName = tokens[1]
+
+                                    var males = tokens[2]
+
+                                    males = males.replace("{", "").replace("}", "")
+
+                                    males.split(";").forEach {
+
+                                        val pid = parentsList.insertForId(Parent(it, 1))
+
+                                        groupList.insert(PollenGroup(groupId, groupName, pid))
+                                    }
+
+                                    eventsModel.insert(poly.apply {
+
+                                        maleObsUnitDbId = groupId
+
+                                    })
+                                }
+
+                            }
+
+                            nonPolys.forEach { cross ->
+
+                                parentsList.insert(Parent(cross.maleObsUnitDbId, 1), Parent(cross.femaleObsUnitDbId, 0))
+
+                            }
+
+                            eventsModel.insert(*nonPolys.toTypedArray())
+
+                        }
+
+                        if (tables[1].isNotEmpty()) {
+
+                            parentsList.insert(*tables[1].filterIsInstance(Parent::class.java).toTypedArray())
+
+                        }
+
+                        if (tables[2].isNotEmpty()) {
+
+                            wishModel.insert(*tables[2].filterIsInstance(Wishlist::class.java).toTypedArray())
+
+                        }
+                    }
+                }
             }
 
-            if (tables.second.isNotEmpty()) {
-
-                wishModel.insert(*tables.second.toTypedArray())
-
-            }
         }
     }
 
@@ -154,6 +214,9 @@ class MainActivity : AppCompatActivity() {
         val wishlists = File(this@MainActivity.externalCacheDir, "Wishlist")
         val parents = File(this@MainActivity.externalCacheDir, "Parents")
         val zpl = File(this@MainActivity.externalCacheDir, "ZPL")
+        val crosses = File(this@MainActivity.externalCacheDir, "Crosses")
+
+        crosses.mkdirs()
         wishlists.mkdirs()
         parents.mkdirs()
         zpl.mkdirs()
@@ -162,14 +225,20 @@ class MainActivity : AppCompatActivity() {
         val exampleWish = File(wishlists, "/wishlist_example.csv")
         val exampleWishLarge = File(wishlists, "/large_wishlist.csv")
         val exampleParents = File(parents, "/parents_example.csv")
+        val badParents = File(parents, "/bad_parents_example.csv")
         val exampleZpl = File(zpl, "/zpl_example.zpl")
+        val exampleCrosses = File(crosses, "/crosses_example.csv")
 
         //blocking code can be run with Dispatchers.IO
         CoroutineScope(Dispatchers.IO).launch {
 
+            writeStream(exampleCrosses, R.raw.crosses_example)
+
             writeStream(exampleWish, R.raw.wishlist_example)
 
             writeStream(exampleParents, R.raw.parents_example)
+
+            writeStream(badParents, R.raw.bad_parents_example)
 
             writeStream(exampleZpl, R.raw.example)
 
@@ -306,9 +375,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.action_nav_parents -> {
 
-                    if (mParents.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToParentsFragment())
-                    else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
-                            getString(R.string.parents_table_empty))
+                    mNavController.navigate(EventsFragmentDirections.actionToParentsFragment())
 
                 }
                 R.id.action_nav_import -> {

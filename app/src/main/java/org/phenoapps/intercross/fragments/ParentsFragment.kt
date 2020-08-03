@@ -224,6 +224,10 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
                         viewModel.delete(*(out-parentOfCrossed).toTypedArray())
                     }
 
+                } else {
+
+                    viewModel.delete(*out.toTypedArray())
+
                 }
 
             } else {
@@ -232,7 +236,7 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
                         .filter { p -> p.selected }
 
                 val outGroups = mMaleAdapter.currentList.filterIsInstance(PollenGroup::class.java)
-                        .filter { g -> g.selected}
+                        .filter { g -> g.selected }
 
                 if (mCrosses.isNotEmpty()) {
 
@@ -252,14 +256,21 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
                     if (parentOfGroup.isEmpty()) {
 
-                        groupList.deleteByCode(parentOfGroup.map { g -> g.codeId })
+                        groupList.deleteByCode(outGroups.map { g -> g.codeId })
 
                     } else {
 
                         triedToDelete = true
 
-                        groupList.delete(*(outGroups-parentOfGroup).toTypedArray())
+                        groupList.deleteByCode(((outGroups-parentOfGroup).map { g -> g.codeId }))
                     }
+
+                } else {
+
+                    viewModel.delete(*outParents.toTypedArray())
+
+                    groupList.deleteByCode(outGroups.map { g -> g.codeId })
+
                 }
             }
 

@@ -21,7 +21,9 @@ import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentWishlistBinding
+import org.phenoapps.intercross.util.CrossUtil
 import org.phenoapps.intercross.util.Dialogs
+import org.phenoapps.intercross.util.SnackbarQueue
 import java.util.*
 
 /**
@@ -57,32 +59,36 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
                 mEvents = it
 
-            }
-        })
+                wishModel.wishes.observe(viewLifecycleOwner, Observer {
 
-        wishModel.wishes.observe(viewLifecycleOwner, Observer {
+                    it?.let { block ->
 
-            it?.let { block ->
+                        val crosses = block.filter { wish -> wish.wishType == "cross" }
 
-                val crosses = block.filter { wish -> wish.wishType == "cross" }
+                        wishlistEmpty = crosses.isEmpty()
 
-                wishlistEmpty = crosses.isEmpty()
+                        (recyclerView.adapter as WishlistAdapter)
+                                .submitList(crosses.map { res ->
+                                    SummaryFragment.WishlistData(res.dadName, res.momName,
+                                            res.wishProgress.toString() + "/" + res.wishMin + "/" + res.wishMax.toString(), mEvents.filter {
+                                        event -> event.femaleObsUnitDbId == res.momId && event.maleObsUnitDbId == res.dadId
+                                    })
+                                })
 
-                (recyclerView.adapter as WishlistAdapter)
-                        .submitList(crosses.map { res ->
-                            SummaryFragment.WishlistData(res.dadName, res.momName,
-                                    res.wishProgress.toString() + "/" + res.wishMin + "/" + res.wishMax.toString(), mEvents.filter {
-                                event -> event.femaleObsUnitDbId == res.momId && event.maleObsUnitDbId == res.dadId
-                            })
-                        })
+                        deleteButton.setOnClickListener {
 
-                deleteButton.setOnClickListener {
+                            Dialogs.onOk(AlertDialog.Builder(requireContext()),
+                                    getString(R.string.delete_all_wishlist_title),
+                                    getString(R.string.cancel),
+                                    getString(R.string.zxing_button_ok)) {
 
-                    wishModel.deleteAll()
+                                wishModel.deleteAll()
 
-                    findNavController().popBackStack()
-
-                }
+                                findNavController().popBackStack()
+                            }
+                        }
+                    }
+                })
             }
         })
     }
@@ -108,19 +114,32 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
             R.id.action_nav_crossblock -> {
 
-                if (!wishlistEmpty)
+                if (!wishlistEmpty) {
+
                     Navigation.findNavController(mBinding.root)
                             .navigate(WishlistFragmentDirections.actionToCrossblock())
-                else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
+
+                }
+                else {
+
+                    Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
+
+                }
 
             }
 
             R.id.action_nav_summary -> {
 
-                if (mEvents.isNotEmpty())
+                if (mEvents.isNotEmpty()) {
+
                     Navigation.findNavController(mBinding.root)
                             .navigate(WishlistFragmentDirections.actionToSummary())
-                else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.summary_empty))
+                }
+                else {
+
+                    Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.summary_empty))
+
+                }
 
             }
         }

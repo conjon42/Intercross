@@ -123,7 +123,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         val error = getString(R.string.ErrorCodeExists)
 
-        recyclerView.adapter = EventsAdapter()
+        recyclerView.adapter = EventsAdapter(this@EventsFragment, viewModel)
 
         recyclerView.layoutManager = LinearLayoutManager(context)
 
@@ -246,7 +246,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
     private fun FragmentEventsBinding.setupRecyclerView() {
 
         //setup recycler adapter
-        recyclerView.adapter = EventsAdapter()
+        recyclerView.adapter = EventsAdapter(this@EventsFragment, viewModel)
 
         val undoString = getString(R.string.undo)
 

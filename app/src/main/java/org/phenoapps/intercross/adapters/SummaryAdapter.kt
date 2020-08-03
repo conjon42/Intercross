@@ -6,11 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.databinding.ListItemSummaryRowBinding
 import org.phenoapps.intercross.databinding.ListItemWishlistRowBinding
 import org.phenoapps.intercross.fragments.SummaryFragment
@@ -26,7 +28,7 @@ import org.phenoapps.intercross.util.Dialogs
  * CrossData's are not rendered with checkboxes.
  *
  */
-class SummaryAdapter(val context: Context) :
+class SummaryAdapter(private val owner: LifecycleOwner, private val viewModel: EventListViewModel, val context: Context) :
         ListAdapter<SummaryFragment.ListEntry, SummaryAdapter.ViewHolder>(SummaryDiffCallback()) {
 
     private class SummaryDiffCallback : DiffUtil.ItemCallback<SummaryFragment.ListEntry>() {
@@ -83,7 +85,7 @@ class SummaryAdapter(val context: Context) :
                 //uses inner view holder to create list of crosses used for that wish item
                 onClick = View.OnClickListener {
 
-                    val adapter = EventsAdapter()
+                    val adapter = EventsAdapter(owner, viewModel)
                     adapter.submitList(data.events)
 
                     Dialogs.list(AlertDialog.Builder(context),

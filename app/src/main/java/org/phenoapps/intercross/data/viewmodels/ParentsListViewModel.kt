@@ -48,4 +48,10 @@ class ParentsListViewModel(private val repo: ParentsRepository): BaseViewModel<P
             repo.insert(*parents.toTypedArray())
         }
     }
+
+    fun insertForId(parent: Parent): Long {
+
+        return repo.insert(parent)
+
+    }
 }

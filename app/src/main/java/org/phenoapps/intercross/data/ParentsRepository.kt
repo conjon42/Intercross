@@ -10,6 +10,8 @@ class ParentsRepository private constructor(
 
     fun selectAll(sex: Int) = parentsDao.selectAll(sex)
 
+    fun insert(parent: Parent): Long = parentsDao.insert(parent)
+
     suspend fun drop() = parentsDao.drop()
 
     suspend fun updateSelection(selection: Int) = parentsDao.updateSelection(selection)

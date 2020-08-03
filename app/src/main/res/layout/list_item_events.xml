@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+<layout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
@@ -15,69 +16,84 @@
         <variable
             name="event"
             type="Event"/>
+
+        <variable
+            name="male"
+            type="String" />
+
+        <variable
+            name="female"
+            type="String" />
+
+        <variable
+            name="timestamp"
+            type="String" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@drawable/cell"
+        android:layout_margin="8dp"
+        android:onClick="@{clickListener}">
 
-        <LinearLayout
-            android:id="@+id/labelLayout"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/femaleTextView"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/event_label_background"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@{female}"
+            android:gravity="start"
+            android:ellipsize="end"
+            android:singleLine="true"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintBottom_toTopOf="@id/maleTextView"
+            app:layout_constraintEnd_toStartOf="@id/barcodeView"
+            app:layout_constraintTop_toTopOf="parent"/>
 
-<!--                <ImageView-->
-<!--                    android:id="@+id/crossTypeImageView"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    app:setImageByCrossType="@{event.type}"/>-->
+        <TextView
+            android:id="@+id/maleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{male}"
+            android:gravity="start"
+            android:ellipsize="end"
+            android:singleLine="true"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/barcodeView"
+            app:layout_constraintTop_toBottomOf="@id/femaleTextView" />
 
-                <LinearLayout
-                    android:id="@+id/linearLayout3"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/cell"
-                    android:onClick="@{clickListener}"
-                    android:orientation="horizontal">
+        <ImageView
+            android:id="@+id/barcodeView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/barcode_preview_image"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@id/maleTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:setQRCode="@{event.eventDbId}" />
 
-                    <ImageView
-                        android:id="@+id/barcodeView"
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        android:contentDescription="@string/barcode_preview_image"
-                        app:setQRCode="@{event.eventDbId}"/>
+        <TextView
+            android:id="@+id/timestampTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{timestamp}"
+            android:ellipsize="end"
+            app:layout_constraintBottom_toTopOf="@id/personTextView"
+            app:layout_constraintStart_toEndOf="@id/barcodeView"
+            app:layout_constraintTop_toTopOf="parent" />
 
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="@{event.eventDbId}" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="@{event.timestamp}" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="@{event.person}" />
-                    </LinearLayout>
-            </LinearLayout>
-        </LinearLayout>
+        <TextView
+            android:id="@+id/personTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{event.person}"
+            android:ellipsize="end"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/barcodeView"
+            app:layout_constraintTop_toBottomOf="@id/timestampTextView" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>

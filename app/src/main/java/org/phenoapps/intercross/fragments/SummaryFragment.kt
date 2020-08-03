@@ -57,7 +57,7 @@ class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.
         PreferenceManager.getDefaultSharedPreferences(requireContext())
                 .edit().putString("last_visited_summary", "summary").apply()
 
-        recyclerView.adapter = SummaryAdapter(requireContext())
+        recyclerView.adapter = SummaryAdapter(this@SummaryFragment, eventsModel, requireContext())
 
         recyclerView.layoutManager = LinearLayoutManager(context)
 
@@ -88,10 +88,17 @@ class SummaryFragment : IntercrossBaseFragment<FragmentSummaryBinding>(R.layout.
 
                         deleteButton.setOnClickListener {
 
-                            eventsModel.deleteAll()
+                            Dialogs.onOk(AlertDialog.Builder(requireContext()),
+                                    getString(R.string.delete_cross_entry_title),
+                                    getString(R.string.cancel),
+                                    getString(R.string.zxing_button_ok)) {
 
-                            findNavController().popBackStack()
+                                eventsModel.deleteAll()
 
+                                findNavController().popBackStack()
+
+
+                            }
                         }
                     }
                 })
