@@ -81,7 +81,7 @@ fun bindCrossId(view: EditText, settings: Settings?) {
 
                 }
 
-                isUUID-> {
+                isUUID -> {
 
                     view.setText(UUID.randomUUID().toString())
 

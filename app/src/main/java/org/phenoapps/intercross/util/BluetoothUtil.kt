@@ -88,12 +88,26 @@ class BluetoothUtil {
         } else f()
     }
 
-    private var template = "^XA^MNA^MMT,N" +
-            "^DFR:DEFAULT_INTERCROSS_SAMPLE.GRF^FS" +
-            "^FWR" +
-            "^FO50,25^A0,20,20^FB200,4,,c,^FN1^FS" +
-            "^FO150,30^BQ,,5,H^FN2^FS" +
-            "^FO325,15^A0,20,20^FB200,4,,c,^FN3^FS^XZ"
+    //qr code with magnification 5 is about 150dots which is <1in
+    //ZQ510 printer is 208 dots/in, 8dots/mm
+    //command to store the template format
+    private var template = "^XA" +      //start of ZPL command
+            "^MNA^MMT,N" +              //set as non-continuous label
+            "^DFR:TEMPLATE.ZPL^FS" +    //download format as TEMPLATE.ZPL
+            "^FO75,50^BQ,2,5,Q^FN1^FS" + //qr code for code id
+            "^A0N,32,32" +                 //sets font
+            "^FO250,50" +
+            "^FB300,1,1,L,0^FN2^FS" +
+            "^A0N,32,32" +                 //sets font
+            "^FO250,100" +
+            "^FB300,1,1,L,0^FN3^FS" +
+            "^A0N,32,32" +                 //sets font
+            "^FO250,150" +
+            "^FB300,1,1,L,0^FN4^FS" +
+            "^A0N,32,32" +                 //sets font
+            "^FO250,200" +
+            "^FB300,1,1,L,0^FN5^FS" +
+            "^XZ"
 
     /*var template = """
         ^XA

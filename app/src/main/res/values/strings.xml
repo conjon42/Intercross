@@ -152,6 +152,9 @@
     <string name="wish_min_complete">Wish minimum completed.</string>
     <string name="wish_max_complete">Wish maximum completed.</string>
     <string name="you_must_enter_cross_name">You must enter a cross name.</string>
+    <string name="you_must_enter_female_name">You must enter a female name.</string>
+    <string name="you_must_enter_male_name">You must enter a male name.</string>
+
     <string name="person">Person</string>
     <string name="set_person">Set Person</string>
     <string name="person_must_be_set">Person must be set before crosses can be made.</string>

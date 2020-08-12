@@ -6,6 +6,7 @@ import android.os.Handler
 import android.preference.PreferenceManager
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -25,6 +26,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_events.*
 import kotlinx.android.synthetic.main.fragment_events.recyclerView
+import kotlinx.android.synthetic.main.fragment_events.view.*
 import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
@@ -82,6 +84,8 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private var mWishlistProgress: List<WishlistView> = ArrayList()
 
+    private var mFocused: View? = null
+
     private fun getFirstOrder(context: Context): String {
 
         val maleFirst = PreferenceManager.getDefaultSharedPreferences(context)
@@ -121,8 +125,6 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             pref.edit().putBoolean("first_load", false).apply()
         }
 
-        val error = getString(R.string.ErrorCodeExists)
-
         recyclerView.adapter = EventsAdapter(this@EventsFragment, viewModel)
 
         recyclerView.layoutManager = LinearLayoutManager(context)
@@ -130,6 +132,20 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         firstHint = getFirstOrder(requireContext())
 
         secondHint = getSecondOrder(requireContext())
+
+        startObservers()
+
+        activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
+
+        setupUI()
+
+    }
+
+    private fun startObservers() {
+
+        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
+
+        val error = getString(R.string.ErrorCodeExists)
 
         parentsList.parents.observe(viewLifecycleOwner, Observer {
 
@@ -150,14 +166,23 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 editTextCross.addTextChangedListener {
 
-                    val codes = mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }.distinct()
+                    val value = editTextCross.text.toString()
 
-                    if (editTextCross.text.toString() in codes) {
+                    if (value.isNotBlank()) {
 
-                        if (crossTextHolder.error == null) crossTextHolder.error = error
+                        val codes = mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }.distinct()
 
-                    } else crossTextHolder.error = null
+                        if (editTextCross.text.toString() in codes) {
 
+                            if (crossTextHolder.error == null) crossTextHolder.error = error
+
+                        } else crossTextHolder.error = null
+
+                    } else {
+
+                        crossTextHolder.error = null
+
+                    }
                 }
 
                 (recyclerView.adapter as? EventsAdapter)?.submitList(it)
@@ -188,47 +213,100 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             it?.let {
 
-                if (it.isNotEmpty()) {
+                if (it.isNotBlank()) {
 
-                    if ((firstText.text ?: "").isBlank()) {
+                    //Log.d("IntercrossNextScan", mFocused?.id.toString())
 
-                        firstText.setText(it)
+                    when (mFocused?.id) {
 
-                        if (mSettings.order == 0 && mSettings.allowBlank) {
+                        firstText.id -> {
 
-                            askUserNewExperimentName()
+                            afterFirstText(it)
 
-                        } else secondText.requestFocus()
+                        }
+                        secondText.id -> {
 
-                    }
-                    else if ((secondText.text ?: "").isBlank()) {
+                            afterSecondText(it)
 
-                        secondText.setText(it)
+                        }
+                        editTextCross.id -> {
 
-                        if ((mSettings.isPattern || mSettings.isUUID)) {
+                            afterThirdText(it)
 
-                            askUserNewExperimentName()
+                        }
+                        else -> {
 
-                        } else editTextCross.requestFocus()
+                            /**
+                             * if nothing is focused check each text field and apply current settings
+                             */
+                            val first = firstText.text.toString()
+                            val second = secondText.text.toString()
+                            val third = editTextCross.text.toString()
 
-                    }
-                    else if ((editTextCross.text ?: "").isBlank()) {
+                            val order = pref.getBoolean(SettingsFragment.ORDER, false)
+                            val blank = pref.getBoolean(SettingsFragment.BLANK, false)
 
-                        editTextCross.setText(it)
+                            //first check first text, if male first and allow blank males then skip to second text
+                            if (first.isBlank() && !(order && blank)) {
 
-                        askUserNewExperimentName()
+                                afterFirstText(it)
 
+                            } else if (second.isBlank() && !(!order && blank)) {
+
+                                afterSecondText(it)
+
+                            } else afterThirdText(it)
+                        }
                     }
 
                     mSharedViewModel.lastScan.value = ""
                 }
             }
         })
+    }
 
-        activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
+    private fun afterFirstText(value: String) {
 
-        setupUI()
+        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
 
+        val order = pref.getBoolean(SettingsFragment.ORDER, false)
+        val blank = pref.getBoolean(SettingsFragment.BLANK, false)
+
+        firstText.setText(value)
+
+        if (!order && blank) {
+
+            askUserNewExperimentName()
+
+        } else secondText.requestFocus()
+    }
+
+    private fun afterSecondText(value: String) {
+
+        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
+
+        val order = pref.getBoolean(SettingsFragment.ORDER, false)
+        val blank = pref.getBoolean(SettingsFragment.BLANK, false)
+
+        secondText.setText(value)
+
+        if ((mSettings.isPattern || mSettings.isUUID)) {
+
+            askUserNewExperimentName()
+
+        } else editTextCross.requestFocus()
+    }
+
+    private fun afterThirdText(value: String) {
+
+        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
+
+        val order = pref.getBoolean(SettingsFragment.ORDER, false)
+        val blank = pref.getBoolean(SettingsFragment.BLANK, false)
+
+        editTextCross.setText(value)
+
+        askUserNewExperimentName()
     }
 
     private fun FragmentEventsBinding.setupUI() {
@@ -301,6 +379,8 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                 editTextCross.setText(UUID.randomUUID().toString())
             }
         }
+
+        firstText.requestFocus()
     }
 
     private fun FragmentEventsBinding.setupTextInput() {
@@ -323,22 +403,14 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         }
 
         val focusListener = View.OnFocusChangeListener { v, hasFocus ->
-            //if (hasFocus) mFocused = v
+
+            if (hasFocus) mFocused = v
+
             if (hasFocus && (PreferenceManager.getDefaultSharedPreferences(requireContext())
                             .getString("org.phenoapps.intercross.PERSON", "") ?: "").isBlank()) {
                 askUserForPerson()
             }
 
-//            button.layoutParams = (button.layoutParams as ConstraintLayout.LayoutParams).apply {
-//
-//                verticalBias = when (verticalBias) {
-//
-//                    0f -> 1f
-//
-//                    else -> 0f
-//                }
-//
-//            }
         }
 
         secondText.addTextChangedListener(emptyGuard)
@@ -350,31 +422,57 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         editTextCross.onFocusChangeListener = focusListener
 
         firstText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
+
             if (i == EditorInfo.IME_ACTION_DONE) {
-                if ((firstText.text ?: "").isNotEmpty()) secondText.requestFocus()
+
+                val value = firstText.text.toString()
+
+                if (value.isNotBlank()) {
+
+                    afterFirstText(value)
+
+                } else secondText.requestFocus()
+
                 return@OnEditorActionListener true
             }
+
             false
         })
 
         //if auto generation is enabled save after the second text is submitted
         secondText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
+
             if (i == EditorInfo.IME_ACTION_DONE) {
-                if (!(mSettings.isPattern || mSettings.isUUID) && (secondText.text ?: "").isNotEmpty()) {
-                    editTextCross.requestFocus()
-                } else {
-                    askUserNewExperimentName()
-                }
+
+                val value = secondText.text.toString()
+
+                if (value.isNotBlank()) {
+
+                    afterSecondText(value)
+
+                } else editTextCross.requestFocus()
+
                 return@OnEditorActionListener true
             }
+
             false
         })
 
         editTextCross.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
+
             if (i == EditorInfo.IME_ACTION_DONE) {
-                askUserNewExperimentName()
+
+                val value = editTextCross.text.toString()
+
+                if (value.isNotBlank()) {
+
+                    afterThirdText(value)
+
+                }
+
                 return@OnEditorActionListener true
             }
+
             false
         })
 
@@ -447,8 +545,8 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                     else -> R.drawable.button_save_full
                 })
 
-        return ((male.isNotEmpty() || allowBlank) && female.isNotEmpty()
-                && (cross.isNotEmpty() || (mSettings.isUUID || mSettings.isPattern)))
+        return ((male.isNotBlank() || allowBlank) && female.isNotBlank()
+                && (cross.isNotBlank() || (mSettings.isUUID || mSettings.isPattern)))
     }
 
     private fun askUserNewExperimentName() {
@@ -471,9 +569,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             female = (secondText.text ?: "").toString()
         }
 
-        if (value.isNotEmpty() && (male.isNotEmpty() || allowBlank)) {
+        if (value.isNotBlank() && (male.isNotBlank() || allowBlank) && female.isNotBlank()) {
 
-            if (male.isEmpty()) male = "blank"
+            if (male.isBlank()) male = "blank"
 
             val crossIds = mEvents.map { event -> event.eventDbId }
 
@@ -493,8 +591,6 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 resetDataEntry()
 
-                firstText.requestFocus()
-
                 Handler().postDelayed({
                     recyclerView.scrollToPosition(0)
                 }, 250)
@@ -503,7 +599,19 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         } else {
 
-            mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.you_must_enter_cross_name)))
+            if (female.isBlank()) {
+
+                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.you_must_enter_female_name)))
+
+            } else if (value.isBlank()) {
+
+                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.you_must_enter_cross_name)))
+
+            } else {
+
+                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.you_must_enter_male_name)))
+
+            }
 
             FileUtil(requireContext()).ringNotification(false)
 

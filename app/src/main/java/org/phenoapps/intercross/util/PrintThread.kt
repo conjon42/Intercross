@@ -13,6 +13,7 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
 import org.phenoapps.intercross.data.models.PollenGroup
+import java.util.*
 
 
 class PrintThread(private val ctx: Context, private val template: String,
@@ -91,22 +92,36 @@ class PrintThread(private val ctx: Context, private val template: String,
 
                             when (mMode) {
                                 0 -> {
+
                                     mEvents.forEach {
 
-                                        printer.sendCommand("^XA^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF" +
+                                        var timestamp = it.timestamp
+
+                                        if ("_" in timestamp) {
+
+                                            timestamp = timestamp.split("_")[0]
+
+                                        }
+
+                                        printer.sendCommand("^XA^XFR:TEMPLATE.ZPL" +
                                                 "^FN1^FD${it.eventDbId}^FS" +
-                                                "^FN2^FDQA,${it.eventDbId}^FS" +
-                                                "^FN3^FD${it.timestamp}^FS^XZ")
+                                                "^FN2^FD${it.femaleObsUnitDbId}^FS" +
+                                                "^FN3^FD${it.maleObsUnitDbId}^FS" +
+                                                "^FN4^FD${timestamp}^FS" +
+                                                "^FN5^FD${it.person}^FS^XZ")
                                     }
                                 }
                                 1 -> {
                                     mParents.forEach {
 
                                         val unknown = ctx.getString(R.string.unknown)
-                                        printer.sendCommand("^XA^XFR:DEFAULT_INTERCROSS_SAMPLE.GRF" +
+                                        printer.sendCommand("^XA^XFR:TEMPLATE.ZPL" +
+                                                "^XA^XFR:TEMPLATE.ZPL" +
                                                 "^FN1^FD${it.codeId}^FS" +
-                                                "^FN2^FDQA,${it.codeId}^FS" +
-                                                "^FN3^FD${unknown}^FS^XZ")
+                                                "^FN2^FD${it.name}^FS" +
+                                                "^FN3^FD${unknown}^FS" +
+                                                "^FN4^FD^FS" +
+                                                "^FN5^FD^FS^XZ")
                                     }
                                 }
                             }

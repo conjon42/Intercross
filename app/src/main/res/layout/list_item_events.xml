@@ -34,34 +34,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/cell"
-        android:layout_margin="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:onClick="@{clickListener}">
-
-        <TextView
-            android:id="@+id/femaleTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@{female}"
-            android:gravity="start"
-            android:ellipsize="end"
-            android:singleLine="true"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/maleTextView"
-            app:layout_constraintEnd_toStartOf="@id/barcodeView"
-            app:layout_constraintTop_toTopOf="parent"/>
-
-        <TextView
-            android:id="@+id/maleTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@{male}"
-            android:gravity="start"
-            android:ellipsize="end"
-            android:singleLine="true"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/barcodeView"
-            app:layout_constraintTop_toBottomOf="@id/femaleTextView" />
 
         <ImageView
             android:id="@+id/barcodeView"
@@ -70,30 +46,61 @@
             android:contentDescription="@string/barcode_preview_image"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@id/maleTextView"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
             app:setQRCode="@{event.eventDbId}" />
 
         <TextView
+            android:id="@+id/femaleTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@{female}"
+            android:gravity="start"
+            android:ellipsize="end"
+            android:singleLine="true"
+            app:layout_constraintStart_toEndOf="@id/barcodeView"
+            app:layout_constraintBottom_toTopOf="@id/maleTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/maleTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@{male}"
+            android:gravity="start"
+            android:ellipsize="end"
+            android:singleLine="true"
+            app:layout_constraintStart_toEndOf="@id/barcodeView"
+            app:layout_constraintBottom_toTopOf="@id/timestampTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/femaleTextView" />
+
+        <TextView
             android:id="@+id/timestampTextView"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@{timestamp}"
+            android:gravity="start"
             android:ellipsize="end"
-            app:layout_constraintBottom_toTopOf="@id/personTextView"
+            android:singleLine="true"
             app:layout_constraintStart_toEndOf="@id/barcodeView"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintBottom_toTopOf="@id/personTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/maleTextView" />
 
         <TextView
             android:id="@+id/personTextView"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@{event.person}"
+            android:gravity="start"
             android:ellipsize="end"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:singleLine="true"
             app:layout_constraintStart_toEndOf="@id/barcodeView"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/timestampTextView" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>

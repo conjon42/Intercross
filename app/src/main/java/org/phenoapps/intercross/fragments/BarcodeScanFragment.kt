@@ -281,13 +281,15 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
         var male = mSharedViewModel.male.value ?: String()
 
+        val cross = mSharedViewModel.name.value ?: String()
+
         if (male.isEmpty()) male = "blank"
 
         CrossUtil(requireContext()).submitCrossEvent(
                 mBinding.root,
                 female,
                 male,
-                "",
+                cross,
                 mSettings,
                 settingsModel,
                 viewModel,
