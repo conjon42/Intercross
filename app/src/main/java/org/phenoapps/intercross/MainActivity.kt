@@ -3,7 +3,6 @@ package org.phenoapps.intercross
 import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Handler
-import android.preference.PreferenceManager
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -20,6 +19,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import androidx.preference.PreferenceManager
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -242,7 +242,7 @@ class MainActivity : AppCompatActivity() {
 
             writeStream(exampleZpl, R.raw.example)
 
-            if ("demo" in BuildConfig.FLAVOR) {
+            if ("demo" in BuildConfig.BUILD_TYPE) {
 
                 writeStream(exampleWishLarge, R.raw.large_wishlist)
 
@@ -317,7 +317,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startObservers() {
 
-        eventsModel.events.observe(this, Observer {
+        eventsModel.events.observe(this, {
 
             it?.let {
 
@@ -326,7 +326,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        parentsList.parents.observe(this, Observer {
+        parentsList.parents.observe(this, {
 
             it?.let {
 
@@ -334,7 +334,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        wishModel.wishlist.observe(this, Observer {
+        wishModel.wishlist.observe(this, {
 
             it?.let {
 
@@ -343,7 +343,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        groupList.groups.observe(this, Observer {
+        groupList.groups.observe(this, {
 
             it?.let {
 
@@ -511,14 +511,14 @@ class MainActivity : AppCompatActivity() {
 
                     if (doubleBackToExitPressedOnce) {
 
-                        super.onBackPressed();
+                        super.onBackPressed()
 
                         return
                     }
 
-                    this.doubleBackToExitPressedOnce = true;
+                    this.doubleBackToExitPressedOnce = true
 
-                    Toast.makeText(this, "Press back again to exit", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Press back again to exit", Toast.LENGTH_SHORT).show()
 
                     Handler().postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
                 }

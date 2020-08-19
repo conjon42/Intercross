@@ -1,10 +1,11 @@
 package org.phenoapps.intercross.util
 
 import android.content.Context
-import android.preference.PreferenceManager
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.preference.PreferenceManager
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
@@ -62,11 +63,13 @@ class CrossUtil(val context: Context) {
         val person = PreferenceManager.getDefaultSharedPreferences(context)
                 .getString("org.phenoapps.intercross.PERSON", "")
 
+        val date = DateUtil().getTime()
+
         val e = Event(name,
                 female,
                 male,
                 "",
-                DateUtil().getTime(), person ?: "?", experiment ?: "?")
+                date, person ?: "?", experiment ?: "?")
 
 
         /** Insert mom/dad cross ids only if they don't exist in the DB already **/
@@ -85,6 +88,8 @@ class CrossUtil(val context: Context) {
         eventsModel.insert(e)
 
         FileUtil(context).ringNotification(true)
+
+        FirebaseCrashlytics.getInstance().log("Cross created: $name $date")
 
         val wasCreated = context.getString(R.string.was_created)
 

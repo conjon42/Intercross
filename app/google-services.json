@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "459655994230",
+    "firebase_url": "https://intercross-ee243.firebaseio.com",
+    "project_id": "intercross-ee243",
+    "storage_bucket": "intercross-ee243.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:459655994230:android:b5be63114e490c57c77857",
+        "android_client_info": {
+          "package_name": "org.phenoapps.intercross"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "459655994230-en4uibg8itqirmu6b3ude1jnge6p7hfo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB41NNp2PewL2R0Tqd4NU9mP8p4JuE-eTo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "459655994230-en4uibg8itqirmu6b3ude1jnge6p7hfo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

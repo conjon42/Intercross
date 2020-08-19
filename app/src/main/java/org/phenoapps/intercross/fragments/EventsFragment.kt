@@ -3,7 +3,6 @@ package org.phenoapps.intercross.fragments
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
-import android.preference.PreferenceManager
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -21,6 +20,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -109,7 +109,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
 
-        if ("demo" in BuildConfig.FLAVOR) {
+        if ("demo" in BuildConfig.BUILD_TYPE) {
 
             pref.edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
 
@@ -147,7 +147,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         val error = getString(R.string.ErrorCodeExists)
 
-        parentsList.parents.observe(viewLifecycleOwner, Observer {
+        parentsList.parents.observe(viewLifecycleOwner, {
 
             it?.let {
 
@@ -156,7 +156,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             }
         })
 
-        viewModel.events.observe(viewLifecycleOwner, Observer {
+        viewModel.events.observe(viewLifecycleOwner, {
 
             it?.let {
 
@@ -189,7 +189,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             }
         })
 
-        settingsModel.settings.observe(viewLifecycleOwner, Observer {
+        settingsModel.settings.observe(viewLifecycleOwner, {
 
             it?.let {
 
@@ -200,7 +200,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             }
         })
 
-        wishStore.wishes.observe(viewLifecycleOwner, Observer {
+        wishStore.wishes.observe(viewLifecycleOwner, {
 
             it?.let {
 
@@ -209,7 +209,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         })
 
-        mSharedViewModel.lastScan.observe(viewLifecycleOwner, Observer {
+        mSharedViewModel.lastScan.observe(viewLifecycleOwner, {
 
             it?.let {
 
@@ -241,7 +241,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                              */
                             val first = firstText.text.toString()
                             val second = secondText.text.toString()
-                            val third = editTextCross.text.toString()
+                            //val third = editTextCross.text.toString()
 
                             val order = pref.getBoolean(SettingsFragment.ORDER, false)
                             val blank = pref.getBoolean(SettingsFragment.BLANK, false)
@@ -283,10 +283,10 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun afterSecondText(value: String) {
 
-        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
+//        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
 
-        val order = pref.getBoolean(SettingsFragment.ORDER, false)
-        val blank = pref.getBoolean(SettingsFragment.BLANK, false)
+//        val order = pref.getBoolean(SettingsFragment.ORDER, false)
+//        val blank = pref.getBoolean(SettingsFragment.BLANK, false)
 
         secondText.setText(value)
 
@@ -299,10 +299,10 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun afterThirdText(value: String) {
 
-        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
+//        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
 
-        val order = pref.getBoolean(SettingsFragment.ORDER, false)
-        val blank = pref.getBoolean(SettingsFragment.BLANK, false)
+//        val order = pref.getBoolean(SettingsFragment.ORDER, false)
+//        val blank = pref.getBoolean(SettingsFragment.BLANK, false)
 
         editTextCross.setText(value)
 

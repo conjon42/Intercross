@@ -5,9 +5,22 @@ apply plugin: 'kotlin-kapt'
 apply plugin: "androidx.navigation.safeargs.kotlin"
 apply plugin: 'com.mikepenz.aboutlibraries.plugin'
 
+apply plugin: 'com.google.gms.google-services' // Google Services Gradle plugin
+
+// Apply the Crashlytics Gradle plugin
+apply plugin: 'com.google.firebase.crashlytics'
+
 android {
 
-    compileSdkVersion 28
+    signingConfigs {
+        config {
+            storeFile file('/home/chaneylc/keystore')
+            storePassword 'nexus5xmariboTexas'
+            keyAlias 'IntercrossKeyStore'
+            keyPassword 'wh3atg3n3tics'
+        }
+    }
+    compileSdkVersion 29
 
     buildFeatures {
         dataBinding = true
@@ -16,12 +29,13 @@ android {
     defaultConfig {
         applicationId "org.phenoapps.intercross"
         minSdkVersion 21
-        targetSdkVersion 28
+        targetSdkVersion 29
         versionCode 7
-        versionName "0.9.3"
+        versionName "1.0.0"
         vectorDrawables.useSupportLibrary true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
+        signingConfig signingConfigs.config
     }
 
     buildTypes {
@@ -46,22 +60,6 @@ android {
         }
     }
 
-    flavorDimensions "version"
-
-    productFlavors {
-
-        demo {
-            dimension "version"
-            applicationIdSuffix ".demo"
-            versionNameSuffix "-demo"
-        }
-        full {
-            dimension "version"
-            applicationIdSuffix ".full"
-            versionNameSuffix "-full"
-        }
-    }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -74,7 +72,7 @@ android {
 
 dependencies {
 
-    def lifecycle_version = "2.3.0-alpha05"
+    def lifecycle_version = "2.3.0-alpha06"
 
     def nav_version = "2.3.0"
 
@@ -85,6 +83,8 @@ dependencies {
     def room_lifecycle_version = "2.2.5"
 
     def multidex_version = "2.0.1"
+
+    def firebase_version = "17.5.0"
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     kapt 'com.android.databinding:compiler:3.1.4'
@@ -130,7 +130,7 @@ dependencies {
 
     debugImplementation "androidx.fragment:fragment-testing:1.2.5"
 
-    implementation "androidx.fragment:fragment:1.3.0-alpha06"
+    implementation "androidx.fragment:fragment:1.3.0-alpha07"
 
     //Kotlin Extension Modules
     // ViewModel
@@ -149,16 +149,16 @@ dependencies {
     //androidx
     implementation 'androidx.preference:preference:1.1.1'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation "androidx.appcompat:appcompat:1.1.0"
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta8'
-    implementation 'androidx.core:core:1.3.0'
-    implementation 'androidx.core:core-ktx:1.3.0'
+    implementation "androidx.appcompat:appcompat:1.2.0"
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-rc1'
+    implementation 'androidx.core:core:1.3.1'
+    implementation 'androidx.core:core-ktx:1.3.1'
     implementation 'androidx.room:room-runtime:2.2.5'
     implementation 'androidx.legacy:legacy-support-core-utils:1.0.0'
-    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation "androidx.collection:collection-ktx:1.1.0"
-    implementation "androidx.activity:activity-ktx:1.2.0-alpha06"
-    implementation "androidx.fragment:fragment-ktx:1.3.0-alpha06"
+    implementation "androidx.activity:activity-ktx:1.2.0-alpha07"
+    implementation "androidx.fragment:fragment-ktx:1.3.0-alpha07"
     implementation 'androidx.legacy:legacy-support-v13:1.0.0'
     implementation 'androidx.vectordrawable:vectordrawable:1.1.0'
     implementation 'androidx.legacy:legacy-support-core-utils:1.0.0'
@@ -176,7 +176,7 @@ dependencies {
     implementation 'com.journeyapps:zxing-android-embedded:3.6.0'
 
     implementation 'com.google.code.gson:gson:2.8.6'
-    implementation 'com.google.android.material:material:1.3.0-alpha01'
+    implementation 'com.google.android.material:material:1.3.0-alpha02'
 
     implementation "androidx.multidex:multidex:$multidex_version"
 
@@ -194,7 +194,10 @@ dependencies {
 
     //firebase
     implementation 'com.google.firebase:firebase-crash:16.2.1'
-    implementation 'com.google.firebase:firebase-core:17.4.3'
+    implementation "com.google.firebase:firebase-core:$firebase_version"
+// Recommended: Add the Firebase SDK for Google Analytics.
+    implementation 'com.google.firebase:firebase-analytics-ktx:17.5.0'
+    implementation "com.google.firebase:firebase-crashlytics:17.2.1"
 }
 
 repositories {
