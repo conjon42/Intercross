@@ -1,4 +1,4 @@
-femaleDbId   ,   maleDbId,femaleName,maleName,wishType,wishMin,wishMax
+femaleDbId,maleDbId,femaleName,maleName,wishType,wishMin,wishMax
 13RPN00000,13RPN00040,testF,testM,cross,9,10
 13RPN00001,13RPN00041,testF,testM,cross,9,10
 13RPN00002,13RPN00042,testF,testM,cross,9,10

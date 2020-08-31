@@ -19,7 +19,18 @@ android {
             keyAlias 'IntercrossKeyStore'
             keyPassword 'wh3atg3n3tics'
         }
+
+        playStoreConfig {
+            Properties keystoreProps = new Properties()
+            keystoreProps.load(new FileInputStream(file('keystore.config')))
+
+            keyAlias keystoreProps['keyAlias']
+            keyPassword keystoreProps['keyPassword']
+            storePassword keystoreProps['storePassword']
+            storeFile file('intercross.keystore.jks')
+        }
     }
+
     compileSdkVersion 29
 
     buildFeatures {
@@ -47,7 +58,7 @@ android {
             debuggable false
             jniDebuggable false
             renderscriptDebuggable false
-            //signingConfig playStoreConfig //Add your own signing config
+            signingConfig signingConfigs.playStoreConfig //Add your own signing config
             pseudoLocalesEnabled false
             zipAlignEnabled true
             shrinkResources true
