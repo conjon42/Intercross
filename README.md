@@ -1,6 +1,10 @@
 # Intercross <a href="https://play.google.com/store/apps/details?id=org.phenoapps.intercross"><img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" height="50"></a>
 
-FiIntercross is an Android application for managing crosses in plant breeding programs. Intercross can connect with Zebra label printers to print barcoded labels for each cross.
+Intercross tracks parental and cross IDs as crosses are made, who makes each cross, and where each cross is made. Cross labels can be printed to Zebra label printers and lists of crosses can be exported to local files.
+
+Intercross is part of the broader PhenoApps initiative, an effort to modernize plant breeding and genetics data collection and organization via by developing new strategies and tools for data capture.
+
+Development of Intercross has been supported by the National Science Foundation under Grant No. (1543958). Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.
 
 ## Contributors
 ### Developers
