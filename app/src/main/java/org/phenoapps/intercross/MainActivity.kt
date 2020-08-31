@@ -225,7 +225,6 @@ class MainActivity : AppCompatActivity() {
         val exampleWish = File(wishlists, "/wishlist_example.csv")
         val exampleWishLarge = File(wishlists, "/large_wishlist.csv")
         val exampleParents = File(parents, "/parents_example.csv")
-        val badParents = File(parents, "/bad_parents_example.csv")
         val exampleZpl = File(zpl, "/zpl_example.zpl")
         val exampleCrosses = File(crosses, "/crosses_example.csv")
 
@@ -237,8 +236,6 @@ class MainActivity : AppCompatActivity() {
             writeStream(exampleWish, R.raw.wishlist_example)
 
             writeStream(exampleParents, R.raw.parents_example)
-
-            writeStream(badParents, R.raw.bad_parents_example)
 
             writeStream(exampleZpl, R.raw.example)
 
