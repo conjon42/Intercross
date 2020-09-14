@@ -622,7 +622,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         mBinding.constraintLayoutParent.requestFocus()
 
-        val person = getString(R.string.person)
+        val person = getString(R.string.cancel)
         val personMustBeSet = getString(R.string.person_must_be_set)
         val setPerson = getString(R.string.set_person)
 

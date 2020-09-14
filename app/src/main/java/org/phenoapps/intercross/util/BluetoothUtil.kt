@@ -94,19 +94,22 @@ class BluetoothUtil {
     private var template = "^XA" +      //start of ZPL command
             "^MNA^MMT,N" +              //set as non-continuous label
             "^DFR:TEMPLATE.ZPL^FS" +    //download format as TEMPLATE.ZPL
-            "^FO75,50^BQ,2,5,Q^FN1^FS" + //qr code for code id
+            "^FO75,0^BQN,2,4,H^FN1^FS" + //qr code for code id
             "^A0N,32,32" +                 //sets font
-            "^FO250,50" +
+            "^FO250,0" +
             "^FB300,1,1,L,0^FN2^FS" +
             "^A0N,32,32" +                 //sets font
-            "^FO250,100" +
+            "^FO250,50" +
             "^FB300,1,1,L,0^FN3^FS" +
             "^A0N,32,32" +                 //sets font
-            "^FO250,150" +
+            "^FO250,100" +
             "^FB300,1,1,L,0^FN4^FS" +
             "^A0N,32,32" +                 //sets font
-            "^FO250,200" +
+            "^FO250,150" +
             "^FB300,1,1,L,0^FN5^FS" +
+            "^A0N,32,32" +                 //sets font
+            "^FO250,200" +
+            "^FB300,1,1,L,0^FN1^FS" +
             "^XZ"
 
     /*var template = """

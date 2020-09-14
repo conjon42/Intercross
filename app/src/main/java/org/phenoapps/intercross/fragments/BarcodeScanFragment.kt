@@ -4,6 +4,7 @@ import android.Manifest
 import android.graphics.Color
 import android.os.Handler
 import android.preference.PreferenceManager
+import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -117,9 +118,15 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                         }
                         SEARCH -> {
 
+                            Log.d("RESULT", result.text.toString())
+
                             zxingBarcodeScanner.setStatusText(getString(R.string.zxing_scan_mode_search))
 
-                            val scannedEvent = mEvents.find { event -> event.eventDbId == result.text.toString().toLowerCase(Locale.ROOT) }
+                            val scannedEvent = mEvents.find { event ->
+                                Log.d("RESULT", event.eventDbId)
+
+                                event.eventDbId == result.text.toString()
+                            }
 
                             findNavController().navigate(BarcodeScanFragmentDirections
                                     .actionToEventFragmentFromScan(scannedEvent?.id ?: -1L))

@@ -104,7 +104,7 @@ class PrintThread(private val ctx: Context, private val template: String,
                                         }
 
                                         printer.sendCommand("^XA^XFR:TEMPLATE.ZPL" +
-                                                "^FN1^FD${it.eventDbId}^FS" +
+                                                "^FN1^FDMM,A${it.eventDbId}^FS" +
                                                 "^FN2^FD${it.femaleObsUnitDbId}^FS" +
                                                 "^FN3^FD${it.maleObsUnitDbId}^FS" +
                                                 "^FN4^FD${timestamp}^FS" +
@@ -117,7 +117,7 @@ class PrintThread(private val ctx: Context, private val template: String,
                                         val unknown = ctx.getString(R.string.unknown)
                                         printer.sendCommand("^XA^XFR:TEMPLATE.ZPL" +
                                                 "^XA^XFR:TEMPLATE.ZPL" +
-                                                "^FN1^FD${it.codeId}^FS" +
+                                                "^FN1^FDMM,A${it.codeId}^FS" +
                                                 "^FN2^FD${it.name}^FS" +
                                                 "^FN3^FD${unknown}^FS" +
                                                 "^FN4^FD^FS" +
