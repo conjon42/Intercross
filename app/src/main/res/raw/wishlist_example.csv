@@ -1,5 +1,4 @@
 femaleDbId,maleDbId,femaleName,maleName,wishType,wishMin,wishMax
-f,m,a,b,cross,1,1
 13RPN00001,13RPN00018,Kharkof,Scout 66,cross,5,10
 13RPN00001,13RPN00019,Kharkof,Kharkof,cross,1,5
 13RPN00001,13RPN00020,Kharkof,TAM-107,cross,2,2
