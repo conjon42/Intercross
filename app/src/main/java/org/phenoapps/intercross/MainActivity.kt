@@ -78,7 +78,18 @@ class MainActivity : AppCompatActivity() {
 
             //check if uri is null or maybe throws an exception
 
-            FileUtil(this).exportCrossesToFile(uri, mEvents, mParents, mGroups)
+            uri?.let { nonNullUri ->
+
+                try {
+
+                    FileUtil(this).exportCrossesToFile(nonNullUri, mEvents, mParents, mGroups)
+
+                } catch (e: Exception) {
+
+                    e.printStackTrace()
+
+                }
+            }
 
         }
 
