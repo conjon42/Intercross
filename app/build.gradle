@@ -12,18 +12,18 @@ apply plugin: 'com.google.firebase.crashlytics'
 
 android {
 
-    signingConfigs {
-
-        playStoreConfig {
-            Properties keystoreProps = new Properties()
-            keystoreProps.load(new FileInputStream(file('keystore.config')))
-
-            keyAlias keystoreProps['keyAlias']
-            keyPassword keystoreProps['keyPassword']
-            storePassword keystoreProps['storePassword']
-            storeFile file('intercross.keystore.jks')
-        }
-    }
+//    signingConfigs {
+//
+//        playStoreConfig {
+//            Properties keystoreProps = new Properties()
+//            keystoreProps.load(new FileInputStream(file('keystore.config')))
+//
+//            keyAlias keystoreProps['keyAlias']
+//            keyPassword keystoreProps['keyPassword']
+//            storePassword keystoreProps['storePassword']
+//            storeFile file('intercross.keystore.jks')
+//        }
+//    }
 
     compileSdkVersion 29
 
@@ -40,7 +40,7 @@ android {
         vectorDrawables.useSupportLibrary true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
-        signingConfig signingConfigs.config
+//        signingConfig signingConfigs.config
     }
 
     buildTypes {
@@ -52,7 +52,7 @@ android {
             debuggable false
             jniDebuggable false
             renderscriptDebuggable false
-            signingConfig signingConfigs.playStoreConfig //Add your own signing config
+            //signingConfig signingConfigs.playStoreConfig //Add your own signing config
             pseudoLocalesEnabled false
             zipAlignEnabled true
             shrinkResources true
@@ -155,7 +155,7 @@ dependencies {
     implementation 'androidx.preference:preference:1.1.1'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation "androidx.appcompat:appcompat:1.2.0"
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-rc1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.core:core:1.3.1'
     implementation 'androidx.core:core-ktx:1.3.1'
     implementation 'androidx.room:room-runtime:2.2.5'
@@ -203,8 +203,8 @@ dependencies {
 // Recommended: Add the Firebase SDK for Google Analytics.
     implementation 'com.google.firebase:firebase-analytics-ktx:17.5.0'
     implementation "com.google.firebase:firebase-crashlytics:17.2.1"
-}
 
-repositories {
-    mavenCentral()
+    implementation "org.brapi:brapi-java-client:2.0-SNAPSHOT"
+
+    implementation "org.brapi:brapi-java-model:2.0-SNAPSHOT"
 }

@@ -56,4 +56,12 @@
             android:title="ZPL Import">
         </Preference>
     </PreferenceCategory>
+
+    <PreferenceCategory android:title="BrAPI V2" app:iconSpaceReserved="false">
+        <EditTextPreference
+            android:title="@string/pref_brapi_server_title"
+            android:defaultValue="@string/brapi_base_url_default"
+            android:icon="@drawable/ic_pref_brapi_server"
+            android:key="org.phenoapps.intercross.BRAPI_BASE_URL"/>
+    </PreferenceCategory>
 </PreferenceScreen>

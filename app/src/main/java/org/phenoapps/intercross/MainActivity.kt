@@ -16,16 +16,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.ParentsRepository
@@ -388,17 +385,42 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.action_nav_import -> {
 
-                    val mimeType = "*/*"
+                    //show a dialog asking user to import from local file or brapi
+                    AlertDialog.Builder(this)
+                        .setSingleChoiceItems(arrayOf("Local", "BrAPI"), 0) { dialog, which ->
+                            when (which) {
+                                //import file from local directory
+                                0 -> importedFileContent.launch("*/*")
 
-                    importedFileContent.launch(mimeType)
+                                //start brapi import fragment
+                                1 -> mNavController.navigate(EventsFragmentDirections
+                                    .actionToWishlistImport())
 
+                            }
+
+                            dialog.dismiss()
+                        }
+                        .show()
                 }
                 R.id.action_nav_export -> {
 
-                    val defaultFileNamePrefix = getString(R.string.default_crosses_export_file_name)
+                    AlertDialog.Builder(this)
+                        .setSingleChoiceItems(arrayOf("Local", "BrAPI"), 0) { dialog, which ->
+                            when (which) {
+                                0 -> {
+                                    val defaultFileNamePrefix = getString(R.string.default_crosses_export_file_name)
+                                    exportCrossesFile.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
+                                }
 
-                    exportCrossesFile.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
+                                //TODO create BrapiExport
+                                else -> {
+                                    mNavController.navigate(EventsFragmentDirections.actionToBrapiExport())
+                                }
+                            }
 
+                            dialog.dismiss()
+                        }
+                        .show()
                 }
                 R.id.action_nav_summary -> {
 
