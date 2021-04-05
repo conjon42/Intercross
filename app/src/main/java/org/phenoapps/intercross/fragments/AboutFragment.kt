@@ -17,7 +17,6 @@ import com.danielstone.materialaboutlibrary.model.MaterialAboutList
 import com.michaelflisar.changelog.ChangelogBuilder
 import com.michaelflisar.changelog.classes.ImportanceChangelogSorter
 import com.mikepenz.aboutlibraries.LibsBuilder
-import com.mikepenz.aboutlibraries.util.getFields
 import org.phenoapps.intercross.R
 
 
@@ -46,7 +45,7 @@ class AboutFragment : MaterialAboutFragment() {
         appCardBuilder.addItem(MaterialAboutActionItem.Builder()
                 .text(getString(R.string.changelog_title))
                 .icon(R.drawable.ic_about_changelog)
-                .setOnClickAction { showChangelog(false, false) }
+                .setOnClickAction { showChangelog(managedShow = false, rateButton = false) }
                 .build())
         appCardBuilder.addItem(ConvenienceBuilder.createRateActionItem(c,
                 ContextCompat.getDrawable(requireContext(), R.drawable.ic_about_rate),

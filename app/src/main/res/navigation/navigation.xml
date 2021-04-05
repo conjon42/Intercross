@@ -43,6 +43,67 @@
         <action android:id="@+id/action_to_about"
             app:destination="@+id/about_fragment"
             app:popUpTo="@id/events_fragment"/>
+        <action
+            android:id="@+id/action_to_parents_import"
+            app:destination="@+id/brapi_parents_import_fragment"
+            app:popUpTo="@id/events_fragment"/>
+        <action
+            android:id="@+id/action_to_brapi_export"
+            app:destination="@+id/brapi_export_fragment"
+            app:popUpTo="@id/events_fragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/brapi_trials_fragment"
+        android:name="org.phenoapps.intercross.fragments.BrapiTrialsFragment"
+        android:label="@string/brapi_trials_import">
+        <argument android:name="project"
+            android:defaultValue=""/>
+        <argument android:name="programDbIds"
+            android:defaultValue=""/>
+        <action android:id="@+id/action_to_germplasm_fragment"
+            app:enterAnim="@anim/slide_in"
+            app:destination="@+id/brapi_germplasm_fragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/brapi_germplasm_fragment"
+        android:name="org.phenoapps.intercross.fragments.BrapiGermplasmFragment"
+        android:label="@string/brapi_germplasm_import"/>
+
+    <fragment
+        android:id="@+id/brapi_wishlist_import_fragment"
+        android:name="org.phenoapps.intercross.fragments.BrapiWishlistImportFragment"
+        android:label="@string/brapi_wishlist_import"/>
+
+    <!-- programs filter fragment -->
+    <fragment
+        android:id="@+id/brapi_parents_import_fragment"
+        android:name="org.phenoapps.intercross.fragments.BrapiProgramsFragment"
+        android:label="@string/brapi_parents_import">
+        <action android:id="@+id/action_to_trials_fragment"
+            app:enterAnim="@anim/slide_in"
+            app:destination="@+id/brapi_trials_fragment">
+            <argument
+                android:name="programDbIds"
+                app:argType="string"
+                android:defaultValue=""/>
+        </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/cross_project_creator_fragment"
+        android:name="org.phenoapps.intercross.fragments.CrossProjectCreatorFragment"
+        android:label="@string/fragment_cross_project_creator_label"/>
+
+    <fragment
+        android:id="@+id/brapi_export_fragment"
+        android:name="org.phenoapps.intercross.fragments.BrapiExportFragment"
+        android:label="@string/brapi_export">
+        <action
+            android:id="@+id/action_to_project_creator"
+            app:destination="@id/cross_project_creator_fragment"
+            app:popUpTo="@id/brapi_export_fragment"/>
     </fragment>
 
     <fragment

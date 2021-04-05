@@ -34,18 +34,28 @@ buildscript {
     }
 }
 
+static def getLocalProp(key) {
+    def Properties props = new Properties()
+    props.load(new FileInputStream(new File('local.properties')))
+    return props[key]
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
 
 allprojects {
     repositories {
         jcenter()
+        maven { url "https://dl.bintray.com/pheno-apps/pheno-apps-java-client-library" }
+        maven { url "https://jitpack.io" }
         google()
         maven {
-            url "https://jitpack.io"
+            url = "https://maven.pkg.github.com/Breeding-Insight/brapi"
+            credentials {
+                username = getLocalProp("GITHUB_USERNAME")
+                password = getLocalProp("GITHUB_TOKEN")
+            }
         }
     }
-}
-
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
 }

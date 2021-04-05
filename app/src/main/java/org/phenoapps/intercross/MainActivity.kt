@@ -366,33 +366,21 @@ class MainActivity : AppCompatActivity() {
 
     fun launchImport() {
 
-        importedFileContent.launch("*/*")
-
-    }
-
-    private fun showImportDialog() {
-
-        val mimeType = "*/*"
-
-        with(AlertDialog.Builder(this@MainActivity)) {
-
-            setSingleChoiceItems(arrayOf("CSV", "Database"), 0) { dialog, which ->
-
+        //show a dialog asking user to import from local file or brapi
+        AlertDialog.Builder(this)
+            .setSingleChoiceItems(arrayOf("Local", "BrAPI"), 0) { dialog, which ->
                 when (which) {
+                    //import file from local directory
+                    0 -> importedFileContent.launch("*/*")
 
-                    0 -> importedFileContent.launch(mimeType)
-
-                    1 -> importDatabase.launch(mimeType)
+                    //start brapi import fragment
+                    1 -> mNavController.navigate(CrossCountFragmentDirections.globalActionToWishlistImport())
 
                 }
 
                 dialog.dismiss()
             }
-
-            setTitle(R.string.import_string)
-
-            show()
-        }
+            .show()
     }
 
     fun showImportOrExportDialog(onDismiss: () -> Unit) {
