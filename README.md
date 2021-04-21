@@ -15,7 +15,7 @@ Development of Intercross has been supported by the National Science Foundation 
 <!-- markdownlint-disable -->
 <table>
   <tr>
-    <td align="center"><a href="https://github.com/trife"><img src="https://avatars.githubusercontent.com/u/1869534?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Trevor Rife</b></sub></a><br /><a href="#projectManagement-trife" title="Project Management">📆</a> <a href="#design-trife" title="Design">🎨</a> <a href="https://github.com/PhenoApps/Intercross/pulls?q=is%3Apr+reviewed-by%3Atrife" title="Reviewed Pull Requests">👀</a></td>
+    <td align="center"><a href="https://github.com/trife"><img src="https://avatars.githubusercontent.com/u/1869534?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Trevor Rife</b></sub></a><br /><a href="#projectManagement-trife" title="Project Management">📆</a> <a href="#design-trife" title="Design">🎨</a></td>
     <td align="center"><a href="https://github.com/chaneylc"><img src="https://avatars.githubusercontent.com/u/5421632?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Chaney Courtney</b></sub></a><br /><a href="https://github.com/PhenoApps/Intercross/commits?author=chaneylc" title="Code">💻</a> <a href="https://github.com/PhenoApps/Intercross/commits?author=chaneylc" title="Tests">⚠️</a> <a href="https://github.com/PhenoApps/Intercross/commits?author=chaneylc" title="Documentation">📖</a></td>
   </tr>
 </table>
