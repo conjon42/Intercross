@@ -10,8 +10,6 @@ Intercross is part of the broader PhenoApps initiative, an effort to modernize p
 Development of Intercross has been supported by the National Science Foundation under Grant No. (1543958). Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.
 
 ## Contributors
-### Developers
-Chaney Courtney
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
@@ -23,10 +21,8 @@ Chaney Courtney
 
 <!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->
-
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-Trevor Rife
 
 ## License
     Licensed under the GNU General Public License version 2 (GPLv2)
