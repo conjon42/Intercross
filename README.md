@@ -1,4 +1,4 @@
-# Intercross <a href="https://play.google.com/store/apps/details?id=org.phenoapps.intercross"><img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" height="50"></a>
+# Intercross <a href="https://play.google.com/store/apps/details?id=org.phenoapps.intercross"><img src="hhttps://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="50"></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
