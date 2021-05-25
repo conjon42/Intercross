@@ -29,7 +29,7 @@ class CrossUtil(val context: Context) {
                          eventsModel: EventListViewModel,
                          parents: List<Parent>,
                          parentModel: ParentsListViewModel,
-                         wishlistProgress: List<WishlistView>) {
+                         wishlistProgress: List<WishlistView>): Long {
 
         var name = crossName
 

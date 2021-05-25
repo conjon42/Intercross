@@ -43,6 +43,9 @@ interface EventsDao : BaseDao<Event> {
                     WHERE d.codeId = x.dad and m.codeId = x.mom AND x.eid = :eid""")
     suspend fun selectEventParents(eid: Long): List<Event>
 
+    @Query("SELECT eid FROM events WHERE codeId = :code AND mom = :mom AND dad = :dad AND date = :date")
+    fun getRowid(code: String, mom: String, dad: String, date: String): Long
+
     @Query("SELECT * FROM events WHERE eid = :eid LIMIT 1")
     suspend fun selectById(eid: Long): Event
 
@@ -81,5 +84,5 @@ interface EventsDao : BaseDao<Event> {
     fun drop()
 
     @Insert
-    suspend fun insertEvent(event: Event): Long
+    fun insertEvent(event: Event): Long
 }
