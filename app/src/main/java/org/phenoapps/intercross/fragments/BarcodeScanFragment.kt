@@ -12,6 +12,10 @@ import com.google.zxing.ResultPoint
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.DecoratedBarcodeView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.ParentsRepository
@@ -61,6 +65,8 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
     private val wishModel: WishlistViewModel by viewModels {
         WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
     }
+
+    private val scope = CoroutineScope(Dispatchers.IO)
 
     private val mSharedViewModel: CrossSharedViewModel by activityViewModels()
 
@@ -285,29 +291,46 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
         if (male.isEmpty()) male = "blank"
 
-        CrossUtil(requireContext()).submitCrossEvent(
-                mBinding.root,
-                female,
-                male,
-                cross,
-                mSettings,
-                settingsModel,
-                viewModel,
-                mParents,
-                parentsModel,
-                mWishlist)
+        scope.launch {
 
-        mSharedViewModel.name.value = ""
-        mSharedViewModel.female.value = ""
-        mSharedViewModel.male.value = ""
+            context?.let { ctx ->
 
-        Handler().postDelayed({
-            mBinding.cross.setImageResource(0)
-            mBinding.female.setImageResource(0)
-            mBinding.male.setImageResource(0)
-            mBarcodeScanner.barcodeView.decodeSingle(mCallback)
-        }, 2000)
+                with(CrossUtil(ctx)) {
 
+                    val eid =
+                        withContext(Dispatchers.Default) {
+                            submitCrossEvent(
+                                mBinding.root,
+                                female,
+                                male,
+                                cross,
+                                mSettings,
+                                settingsModel,
+                                viewModel,
+                                mParents,
+                                parentsModel,
+                                mWishlist)
+                    }
+
+                    activity?.runOnUiThread {
+
+                        mSharedViewModel.name.value = ""
+                        mSharedViewModel.female.value = ""
+                        mSharedViewModel.male.value = ""
+
+                        Handler().postDelayed({
+                            mBinding.cross.setImageResource(0)
+                            mBinding.female.setImageResource(0)
+                            mBinding.male.setImageResource(0)
+                            mBarcodeScanner.barcodeView.decodeSingle(mCallback)
+                        }, 2000)
+
+                        checkPrefToOpenCrossEvent(findNavController(),
+                            BarcodeScanFragmentDirections.actionToEventFragmentFromScan(eid))
+                    }
+                }
+            }
+        }
     }
 
     override fun onResume() {
