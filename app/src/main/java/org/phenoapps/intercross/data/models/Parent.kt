@@ -11,9 +11,9 @@ import androidx.room.PrimaryKey
  *
  * Primary Key is inherited through the open Base Table class
  */
-@Entity(tableName = "parents", indices = [Index(value = ["codeId"], unique = true)])
+@Entity(tableName = "parents", indices = [Index(value = ["codeId"], unique = false)])
 data class Parent(@ColumnInfo(name = "codeId")
-                  val codeId: String, val sex: Int): BaseParent() {
+                  val codeId: String, var sex: Int): BaseParent() {
 
     /**
      * Selected column is only used for saving check box states.

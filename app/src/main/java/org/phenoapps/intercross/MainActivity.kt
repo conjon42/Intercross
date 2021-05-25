@@ -156,8 +156,16 @@ class MainActivity : AppCompatActivity() {
 
                         if (tables[1].isNotEmpty()) {
 
-                            parentsList.insert(*tables[1].filterIsInstance(Parent::class.java).toTypedArray())
+                            tables[1].filterIsInstance(Parent::class.java).forEach { parent ->
 
+                                //issue 39 introduced sex = 2, which means to import the line as both male and female parents.
+                                if (parent.sex == 2) {
+                                    with (parent) {
+                                        parentsList.insert(Parent(codeId, 0, name))
+                                        parentsList.insert(Parent(codeId, 1, name))
+                                    }
+                                } else parentsList.insert(parent)
+                            }
                         }
 
                         if (tables[2].isNotEmpty()) {
