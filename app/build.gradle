@@ -13,12 +13,6 @@ apply plugin: 'com.google.firebase.crashlytics'
 android {
 
     signingConfigs {
-        config {
-            storeFile file('/home/chaneylc/keystore')
-            storePassword 'nexus5xmariboTexas'
-            keyAlias 'IntercrossKeyStore'
-            keyPassword 'wh3atg3n3tics'
-        }
 
         playStoreConfig {
             Properties keystoreProps = new Properties()
@@ -46,7 +40,6 @@ android {
         vectorDrawables.useSupportLibrary true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
-        signingConfig signingConfigs.config
     }
 
     buildTypes {
