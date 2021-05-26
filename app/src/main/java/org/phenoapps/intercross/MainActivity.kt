@@ -84,6 +84,18 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private val exportDatabase by lazy {
+
+        registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
+
+            uri?.let { x ->
+
+                FileUtil(this).exportDatabase(x)
+
+            }
+        }
+    }
+
     /**
      * Ask the user to either drop table before import or append to the current table.
      *
@@ -386,8 +398,25 @@ class MainActivity : AppCompatActivity() {
 
                     val defaultFileNamePrefix = getString(R.string.default_crosses_export_file_name)
 
-                    exportCrossesFile.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
+                    with(AlertDialog.Builder(this@MainActivity)) {
 
+                        setSingleChoiceItems(arrayOf("CSV", "Database"), 0) { dialog, which ->
+
+                            when (which) {
+
+                                0 -> exportCrossesFile.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
+
+                                1 -> exportDatabase.launch("intercross.db")
+
+                            }
+
+                            dialog.dismiss()
+                        }
+
+                        setTitle(R.string.export)
+
+                        show()
+                    }
                 }
                 R.id.action_nav_summary -> {
 

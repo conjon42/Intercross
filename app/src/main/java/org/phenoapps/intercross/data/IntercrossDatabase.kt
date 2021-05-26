@@ -31,6 +31,8 @@ abstract class IntercrossDatabase : RoomDatabase() {
 
     companion object {
 
+        const val DATABASE_NAME = "intercross.db"
+
         //singleton pattern
         @Volatile private var instance: IntercrossDatabase? = null
 
@@ -44,8 +46,9 @@ abstract class IntercrossDatabase : RoomDatabase() {
 
         private fun buildDatabase(ctx: Context): IntercrossDatabase {
 
-            return Room.databaseBuilder(ctx, IntercrossDatabase::class.java, "INTERCROSS")
-                    .build()
+            return Room.databaseBuilder(ctx, IntercrossDatabase::class.java, DATABASE_NAME)
+                .setJournalMode(JournalMode.TRUNCATE)
+                .build()
         }
     }
 }

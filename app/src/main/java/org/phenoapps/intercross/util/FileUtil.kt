@@ -15,14 +15,11 @@ import android.util.Log
 import androidx.annotation.WorkerThread
 import androidx.appcompat.app.AlertDialog
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.models.*
 import org.phenoapps.intercross.data.models.embedded.EventMetaData
 import org.phenoapps.intercross.fragments.SettingsFragment
-import java.io.BufferedReader
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.IOException
-import java.io.InputStreamReader
+import java.io.*
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -623,6 +620,51 @@ class FileUtil(private val ctx: Context) {
 //    //        } else ArrayList()
 //            return ArrayList()
 //        }
+        fun exportDatabase(uri: Uri) {
+
+            //IntercrossDatabase.getInstance(ctx).close()
+
+            val stream = ctx.getDatabasePath(IntercrossDatabase.DATABASE_NAME).inputStream()
+
+            val out = ctx.contentResolver.openOutputStream(uri)
+
+            stream.use { input ->
+
+                out.use { output ->
+
+                    output?.let { outstream ->
+
+                        input.copyTo(outstream)
+
+                    }
+                }
+            }
+
+//            try {
+//
+//                val dbFile = File(dbPath)
+//
+//                with(File(ctx.filesDir, filename).bufferedWriter()) {
+//                    dbFile.bufferedReader().lineSequence().iterator().forEach { line ->
+//                        write(line)
+//                        newLine()
+//                    }
+//                }
+//
+//            } catch (e: IOException) {
+//
+//                e.printStackTrace()
+//                Log.e("FileUtil", e.message ?: "")
+//
+//            } catch (e: NoSuchFileException) {
+//                e.printStackTrace()
+//
+//            } catch (e: FileAlreadyExistsException) {
+//                e.printStackTrace()
+//
+//            }
+
+        }
 
         private fun parseTextFile(it: Uri): List<String> {
 
