@@ -6,14 +6,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.databinding.ListItemWishlistRowBinding
+import org.phenoapps.intercross.data.viewmodels.EventListViewModel
+import org.phenoapps.intercross.databinding.ListItemCrossCountRowBinding
 import org.phenoapps.intercross.fragments.CrossCountFragment
-import org.phenoapps.intercross.fragments.SummaryFragmentDirections
+import org.phenoapps.intercross.fragments.CrossCountFragmentDirections
 import org.phenoapps.intercross.util.Dialogs
 
 
@@ -25,8 +27,8 @@ import org.phenoapps.intercross.util.Dialogs
  * CrossData's are not rendered with checkboxes.
  *
  */
-class WishlistAdapter(val context: Context) :
-        ListAdapter<CrossCountFragment.ListEntry, WishlistAdapter.ViewHolder>(SummaryDiffCallback()) {
+class CrossCountAdapter(private val owner: LifecycleOwner, private val viewModel: EventListViewModel, val context: Context) :
+        ListAdapter<CrossCountFragment.ListEntry, CrossCountAdapter.ViewHolder>(SummaryDiffCallback()) {
 
     private class SummaryDiffCallback : DiffUtil.ItemCallback<CrossCountFragment.ListEntry>() {
 
@@ -43,41 +45,35 @@ class WishlistAdapter(val context: Context) :
         }
     }
 
-    private lateinit var mParent: ViewGroup
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-
-        mParent = parent
 
         return ViewHolder(
                 DataBindingUtil.inflate(
                         LayoutInflater.from(parent.context),
-                        R.layout.list_item_wishlist_row, parent, false
+                        R.layout.list_item_cross_count_row, parent, false
                 )
         )
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
-        getItem(position).let { wishitem ->
+        getItem(position).let { item ->
 
             with(holder) {
 
-                itemView.tag = wishitem
+                itemView.tag = item
 
-                bind(wishitem)
+                bind(item)
             }
         }
     }
 
     inner class ViewHolder(
-            private val binding: ListItemWishlistRowBinding) : RecyclerView.ViewHolder(binding.root) {
+            private val binding: ListItemCrossCountRowBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(data: CrossCountFragment.ListEntry) {
 
             with(binding) {
-
-                binding.numCrosses.isSelected = true
 
                 maleParent = data.m
 
@@ -85,18 +81,11 @@ class WishlistAdapter(val context: Context) :
 
                 count = data.count
 
-                if (data.count.contains("/")) {
-
-                    val tokens = data.count.split("/")
-
-                    if (tokens[0].toInt() >= tokens[1].toInt()) {
-
-                        completed = true
-                    }
-                }
-
                 //uses inner view holder to create list of crosses used for that wish item
                 onClick = View.OnClickListener {
+
+                    val adapter = EventsAdapter(owner, viewModel)
+                    adapter.submitList(data.events)
 
                     Dialogs.list(
                         AlertDialog.Builder(context),
@@ -105,7 +94,7 @@ class WishlistAdapter(val context: Context) :
                             data.events) { id ->
 
                         Navigation.findNavController(root)
-                                .navigate(SummaryFragmentDirections.globalActionToEventDetail(id))
+                                .navigate(CrossCountFragmentDirections.globalActionToEventDetail(id))
                     }
 
                 }

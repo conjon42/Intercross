@@ -187,5 +187,14 @@
     <string name="wishlist_maximum_met_legend_label">Maximum</string>
     <string name="delete_all_wishlist_title">Delete entire wishlist?</string>
     <string name="missing_headers">Missing headers in import file.</string>
+    <string name="meta">Meta</string>
+    <string name="type">Type</string>
+    <string name="sex">Sex</string>
+    <string name="summary_title">Summary</string>
+    <string name="cross_type_biparental">Biparental</string>
+    <string name="cross_type_open">Open</string>
+    <string name="cross_type_self">Self</string>
+    <string name="cross_type_unknown">Unknown</string>
+    <string name="cross_type_poly">Polycross</string>
 
 </resources>

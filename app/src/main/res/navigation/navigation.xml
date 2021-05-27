@@ -27,8 +27,8 @@
             app:popUpTo="@id/events_fragment">
         </action>
         <action
-            android:id="@+id/action_to_summary_fragment"
-            app:destination="@+id/summary_fragment"
+            android:id="@+id/action_to_cross_count_fragment"
+            app:destination="@+id/cross_count_fragment"
             app:popUpTo="@id/events_fragment">
         </action>
         <action
@@ -45,6 +45,10 @@
             app:destination="@+id/crossblock_fragment"
             app:popUpTo="@id/events_fragment"/>
         <action
+            android:id="@+id/action_to_summary"
+            app:destination="@+id/summary_fragment"
+            app:popUpTo="@id/events_fragment"/>
+        <action
             android:id="@+id/action_to_about"
             app:destination="@+id/about_fragment"
             app:popUpTo="@id/events_fragment"/>
@@ -54,6 +58,11 @@
         android:id="@+id/about_fragment"
         android:name="org.phenoapps.intercross.fragments.AboutFragment"
         android:label="@string/about_title"/>
+
+    <fragment
+        android:id="@+id/summary_fragment"
+        android:name="org.phenoapps.intercross.fragments.SummaryFragment"
+        android:label="@string/summary_title"/>
 
     <fragment
         android:id="@+id/barcode_scan_fragment"
@@ -160,11 +169,11 @@
         android:id="@+id/wishlist_fragment"
         android:name="org.phenoapps.intercross.fragments.WishlistFragment"
         android:label="@string/wishlist_label"
-        tools:layout="@layout/fragment_summary">
+        tools:layout="@layout/fragment_cross_count">
 
         <action
-            android:id="@+id/action_to_summary"
-            app:destination="@id/summary_fragment"
+            android:id="@+id/action_to_cross_count"
+            app:destination="@id/cross_count_fragment"
             app:popUpTo="@id/events_fragment"/>
 
         <action android:id="@+id/action_to_crossblock"
@@ -173,10 +182,10 @@
     </fragment>
 
     <fragment
-        android:id="@+id/summary_fragment"
-        android:name="org.phenoapps.intercross.fragments.SummaryFragment"
+        android:id="@+id/cross_count_fragment"
+        android:name="org.phenoapps.intercross.fragments.CrossCountFragment"
         android:label="@string/summary_label"
-        tools:layout="@layout/fragment_summary">
+        tools:layout="@layout/fragment_cross_count">
         <action
             android:id="@+id/action_to_wishlist"
             app:destination="@id/wishlist_fragment"
@@ -196,8 +205,8 @@
         tools:layout="@layout/cross_block_manager">
 
         <action
-            android:id="@+id/action_to_summary"
-            app:destination="@id/summary_fragment"
+            android:id="@+id/action_to_cross_count"
+            app:destination="@id/cross_count_fragment"
             app:popUpTo="@id/events_fragment"/>
 
         <action android:id="@+id/action_to_wishlist"

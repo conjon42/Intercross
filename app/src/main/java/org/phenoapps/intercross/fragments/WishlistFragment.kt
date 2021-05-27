@@ -1,7 +1,6 @@
 package org.phenoapps.intercross.fragments
 
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -10,6 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.WishlistAdapter
@@ -21,10 +21,7 @@ import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentWishlistBinding
-import org.phenoapps.intercross.util.CrossUtil
 import org.phenoapps.intercross.util.Dialogs
-import org.phenoapps.intercross.util.SnackbarQueue
-import java.util.*
 
 /**
  * Summary Fragment is a recycler list of currenty crosses.
@@ -53,13 +50,13 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        eventsModel.events.observe(viewLifecycleOwner, Observer {
+        eventsModel.events.observe(viewLifecycleOwner, {
 
             it?.let {
 
                 mEvents = it
 
-                wishModel.wishes.observe(viewLifecycleOwner, Observer {
+                wishModel.wishes.observe(viewLifecycleOwner, {
 
                     it?.let { block ->
 
@@ -69,7 +66,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
                         (recyclerView.adapter as WishlistAdapter)
                                 .submitList(crosses.map { res ->
-                                    SummaryFragment.WishlistData(res.dadName, res.momName,
+                                    CrossCountFragment.WishlistData(res.dadName, res.momName,
                                             res.wishProgress.toString() + "/" + res.wishMin + "/" + res.wishMax.toString(), mEvents.filter {
                                         event -> event.femaleObsUnitDbId == res.momId && event.maleObsUnitDbId == res.dadId
                                     })
@@ -125,7 +122,6 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
                     Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
 
                 }
-
             }
 
             R.id.action_nav_summary -> {
@@ -133,14 +129,13 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
                 if (mEvents.isNotEmpty()) {
 
                     Navigation.findNavController(mBinding.root)
-                            .navigate(WishlistFragmentDirections.actionToSummary())
+                            .navigate(WishlistFragmentDirections.actionToCrossCount())
                 }
                 else {
 
                     Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.summary_empty))
 
                 }
-
             }
         }
 

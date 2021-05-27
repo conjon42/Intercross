@@ -199,7 +199,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
                 if (mEvents.isNotEmpty()) {
                     Navigation.findNavController(mBinding.root)
-                            .navigate(CrossBlockFragmentDirections.actionToSummary())
+                            .navigate(CrossBlockFragmentDirections.actionToCrossCount())
                 } else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.summary_empty))
             }
         }

@@ -1,6 +1,10 @@
 package org.phenoapps.intercross
 
+import android.annotation.TargetApi
+import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.view.MenuItem
@@ -8,29 +12,24 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.annotation.CallSuper
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.phenoapps.intercross.data.EventsRepository
-import org.phenoapps.intercross.data.IntercrossDatabase
-import org.phenoapps.intercross.data.ParentsRepository
-import org.phenoapps.intercross.data.PollenGroupRepository
-import org.phenoapps.intercross.data.WishlistRepository
+import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.data.models.*
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
@@ -76,12 +75,12 @@ class MainActivity : AppCompatActivity() {
 
         registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
 
-            //check if uri is null or maybe throws an exception
+            uri?.let { nonNullUri ->
 
-            FileUtil(this).exportCrossesToFile(uri, mEvents, mParents, mGroups)
+                FileUtil(this).exportCrossesToFile(nonNullUri, mEvents, mParents, mGroups)
 
+            }
         }
-
     }
 
     /**
@@ -399,6 +398,10 @@ class MainActivity : AppCompatActivity() {
                     mNavController.navigate(EventsFragmentDirections.actionToAbout())
 
                 }
+                R.id.action_summary -> {
+
+                    mNavController.navigate(EventsFragmentDirections.actionToSummary())
+                }
             }
 
             mDrawerLayout.closeDrawers()
@@ -419,20 +422,20 @@ class MainActivity : AppCompatActivity() {
         when (lastSummaryFragment) {
 
             "summary" -> {
-                if (mEvents.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToSummaryFragment())
+                if (mEvents.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToCrossCountFragment())
                 else if(mWishlist.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToWishlistFragment())
                 else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
                         getString(R.string.summary_and_wishlist_empty))
             }
             "crossblock" -> {
                 if (mWishlist.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToCrossblock())
-                else if (mEvents.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToSummaryFragment())
+                else if (mEvents.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToCrossCountFragment())
                 else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
                         getString(R.string.summary_and_wishlist_empty))
             }
             "wishlist" -> {
                 if (mWishlist.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToWishlistFragment())
-                else if (mEvents.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToSummaryFragment())
+                else if (mEvents.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToCrossCountFragment())
                 else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
                         getString(R.string.summary_and_wishlist_empty))
             }

@@ -13,6 +13,10 @@
         android:icon="@drawable/ic_nv_parents"
         android:title="@string/parents" />
     <item
+        android:id="@+id/action_summary"
+        android:icon="@drawable/ic_summary"
+        android:title="@string/summary_title" />
+    <item
         android:id="@+id/action_nav_export"
         android:icon="@drawable/ic_nv_export"
         android:title="@string/export" />
