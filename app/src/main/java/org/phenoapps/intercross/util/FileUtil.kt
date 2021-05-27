@@ -535,81 +535,81 @@ class FileUtil(private val ctx: Context) {
     //
     //    }
 
-        @WorkerThread
-        fun getFilePath(context: Context, uri: Uri): String? = context.run {
-            when {
+    @WorkerThread
+    fun getFilePath(context: Context, uri: Uri): String? = context.run {
+        when {
 
-                Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT ->
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT ->
+                getDataColumn(uri, null, null)
+
+            else -> getPathKitkatPlus(uri)
+        }
+    }
+
+    private fun Context.getPathKitkatPlus(uri: Uri): String? {
+        when {
+            DocumentsContract.isDocumentUri(applicationContext, uri) -> {
+                val docId = DocumentsContract.getDocumentId(uri)
+                when {
+                    uri.isExternalStorageDocument -> {
+                        val parts = docId.split(":")
+                        if ("primary".equals(parts[0], true)) {
+                            return "${Environment.getExternalStorageDirectory()}/${parts[1]}"
+                        }
+                    }
+                    uri.isDownloadsDocument -> {
+                        val contentUri = ContentUris.withAppendedId(
+                                Uri.parse("content://downloads/public_downloads"),
+                                docId.toLong()
+                        )
+                        return getDataColumn(contentUri, null, null)
+                    }
+                    uri.isMediaDocument -> {
+                        val parts = docId.split(":")
+                        val contentUri = when (parts[0].toLowerCase(Locale.ROOT)) {
+                            "image" -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                            "video" -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                            "audio" -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+                            else -> return null
+                        }
+                        return getDataColumn(contentUri, "_id=?", arrayOf(parts[1]))
+                    }
+                }
+            }
+            "content".equals(uri.scheme, true) -> {
+                return if (uri.isGooglePhotosUri) {
+                    uri.lastPathSegment
+                } else {
                     getDataColumn(uri, null, null)
-
-                else -> getPathKitkatPlus(uri)
-            }
-        }
-
-        private fun Context.getPathKitkatPlus(uri: Uri): String? {
-            when {
-                DocumentsContract.isDocumentUri(applicationContext, uri) -> {
-                    val docId = DocumentsContract.getDocumentId(uri)
-                    when {
-                        uri.isExternalStorageDocument -> {
-                            val parts = docId.split(":")
-                            if ("primary".equals(parts[0], true)) {
-                                return "${Environment.getExternalStorageDirectory()}/${parts[1]}"
-                            }
-                        }
-                        uri.isDownloadsDocument -> {
-                            val contentUri = ContentUris.withAppendedId(
-                                    Uri.parse("content://downloads/public_downloads"),
-                                    docId.toLong()
-                            )
-                            return getDataColumn(contentUri, null, null)
-                        }
-                        uri.isMediaDocument -> {
-                            val parts = docId.split(":")
-                            val contentUri = when (parts[0].toLowerCase(Locale.ROOT)) {
-                                "image" -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                                "video" -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-                                "audio" -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-                                else -> return null
-                            }
-                            return getDataColumn(contentUri, "_id=?", arrayOf(parts[1]))
-                        }
-                    }
-                }
-                "content".equals(uri.scheme, true) -> {
-                    return if (uri.isGooglePhotosUri) {
-                        uri.lastPathSegment
-                    } else {
-                        getDataColumn(uri, null, null)
-                    }
-                }
-                "file".equals(uri.scheme, true) -> {
-                    return uri.path
                 }
             }
-            return null
-        }
-
-        private fun Context.getDataColumn(uri: Uri, selection: String?, args: Array<String>?): String? {
-            contentResolver?.query(uri, arrayOf("_data"), selection, args, null)?.use {
-                if (it.moveToFirst()) {
-                    return it.getString(it.getColumnIndexOrThrow("_data"))
-                }
+            "file".equals(uri.scheme, true) -> {
+                return uri.path
             }
-            return null
         }
+        return null
+    }
 
-        private val Uri.isExternalStorageDocument: Boolean
-            get() = authority == "com.android.externalstorage.documents"
+    private fun Context.getDataColumn(uri: Uri, selection: String?, args: Array<String>?): String? {
+        contentResolver?.query(uri, arrayOf("_data"), selection, args, null)?.use {
+            if (it.moveToFirst()) {
+                return it.getString(it.getColumnIndexOrThrow("_data"))
+            }
+        }
+        return null
+    }
 
-        private val Uri.isDownloadsDocument: Boolean
-            get() = authority == "com.android.providers.downloads.documents"
+    private val Uri.isExternalStorageDocument: Boolean
+        get() = authority == "com.android.externalstorage.documents"
 
-        private val Uri.isMediaDocument: Boolean
-            get() = authority == "com.android.providers.media.documents"
+    private val Uri.isDownloadsDocument: Boolean
+        get() = authority == "com.android.providers.downloads.documents"
 
-        private val Uri.isGooglePhotosUri: Boolean
-            get() = authority == "com.google.android.apps.photos.content"
+    private val Uri.isMediaDocument: Boolean
+        get() = authority == "com.android.providers.media.documents"
+
+    private val Uri.isGooglePhotosUri: Boolean
+        get() = authority == "com.google.android.apps.photos.content"
 
 //        private fun parseExcelSheet(filePath: String): List<String> {
 //    //        val workbook = WorkbookFactory.create(File(filePath))
@@ -620,85 +620,85 @@ class FileUtil(private val ctx: Context) {
 //    //        } else ArrayList()
 //            return ArrayList()
 //        }
-        fun exportDatabase(uri: Uri) {
 
-            //IntercrossDatabase.getInstance(ctx).close()
+    /**
+     * Opens an input stream from the user-selected uri and copies it to the app specific database.
+     */
+    fun importDatabase(uri: Uri) {
 
-            val stream = ctx.getDatabasePath(IntercrossDatabase.DATABASE_NAME).inputStream()
+        val stream = ctx.getDatabasePath(IntercrossDatabase.DATABASE_NAME).outputStream()
 
-            val out = ctx.contentResolver.openOutputStream(uri)
+        val inputStream = ctx.contentResolver.openInputStream(uri)
 
-            stream.use { input ->
+        stream.use { output ->
 
-                out.use { output ->
+            inputStream.use { input ->
 
-                    output?.let { outstream ->
+                input?.let { ins ->
 
-                        input.copyTo(outstream)
+                    input.copyTo(output)
 
-                    }
                 }
             }
-
-//            try {
-//
-//                val dbFile = File(dbPath)
-//
-//                with(File(ctx.filesDir, filename).bufferedWriter()) {
-//                    dbFile.bufferedReader().lineSequence().iterator().forEach { line ->
-//                        write(line)
-//                        newLine()
-//                    }
-//                }
-//
-//            } catch (e: IOException) {
-//
-//                e.printStackTrace()
-//                Log.e("FileUtil", e.message ?: "")
-//
-//            } catch (e: NoSuchFileException) {
-//                e.printStackTrace()
-//
-//            } catch (e: FileAlreadyExistsException) {
-//                e.printStackTrace()
-//
-//            }
-
         }
+    }
 
-        private fun parseTextFile(it: Uri): List<String> {
 
-            var ret = ArrayList<String>()
+    /**
+     * Opens the default database location /data/data/org.../databases/intercross.db as an input stream
+     * The stream is then copied to the parameter uri which is chosen by the user.
+     */
+    fun exportDatabase(uri: Uri) {
 
-            try {
+        val stream = ctx.getDatabasePath(IntercrossDatabase.DATABASE_NAME).inputStream()
 
-                val stream = ctx.contentResolver.openInputStream(it)
+        val out = ctx.contentResolver.openOutputStream(uri)
 
-                stream?.let {
+        stream.use { input ->
 
-                    val reader = BufferedReader(InputStreamReader(it))
+            out.use { output ->
 
-                    ret = ArrayList(reader.readLines())
+                output?.let { outstream ->
+
+                    input.copyTo(outstream)
+
                 }
-            } catch (fo: FileNotFoundException) {
-                fo.printStackTrace()
-            } catch (io: IOException) {
-                io.printStackTrace()
             }
+        }
+    }
 
-            return ret
+    private fun parseTextFile(it: Uri): List<String> {
+
+        var ret = ArrayList<String>()
+
+        try {
+
+            val stream = ctx.contentResolver.openInputStream(it)
+
+            stream?.let {
+
+                val reader = BufferedReader(InputStreamReader(it))
+
+                ret = ArrayList(reader.readLines())
+            }
+        } catch (fo: FileNotFoundException) {
+            fo.printStackTrace()
+        } catch (io: IOException) {
+            io.printStackTrace()
         }
 
-        fun readText(context: Context, uri: Uri?): CharSequence {
+        return ret
+    }
 
-            uri?.let {
+    fun readText(context: Context, uri: Uri?): CharSequence {
 
-                val lines = File(getFilePath(context, uri)).readLines()
+        uri?.let {
 
-                return lines.joinToString("\n")
-            }
+            val lines = File(getFilePath(context, uri)).readLines()
 
-            return String()
+            return lines.joinToString("\n")
         }
 
+        return String()
+    }
 }

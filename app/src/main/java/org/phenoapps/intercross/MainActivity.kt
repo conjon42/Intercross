@@ -84,6 +84,10 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    /**
+     * User selects a new uri document with CreateDocument(), default name is intercross.db
+     * which can be changed where this is launched.
+     */
     private val exportDatabase by lazy {
 
         registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
@@ -92,6 +96,26 @@ class MainActivity : AppCompatActivity() {
 
                 FileUtil(this).exportDatabase(x)
 
+            }
+        }
+    }
+
+    /**
+     * Used in main activity to import a user-chosen database.
+     * User selects a uri from a GetContent() call which is passed to FileUtil to copy streams.
+     * Finally, the app is recreated to use the new database.
+     */
+    private val importDatabase by lazy {
+
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+
+            uri?.let { x ->
+
+                FileUtil(this).importDatabase(x)
+
+                finish()
+
+                startActivity(intent)
             }
         }
     }
@@ -391,7 +415,25 @@ class MainActivity : AppCompatActivity() {
 
                     val mimeType = "*/*"
 
-                    importedFileContent.launch(mimeType)
+                    with(AlertDialog.Builder(this@MainActivity)) {
+
+                        setSingleChoiceItems(arrayOf("CSV", "Database"), 0) { dialog, which ->
+
+                            when (which) {
+
+                                0 -> importedFileContent.launch(mimeType)
+
+                                1 -> importDatabase.launch(mimeType)
+
+                            }
+
+                            dialog.dismiss()
+                        }
+
+                        setTitle(R.string.export)
+
+                        show()
+                    }
 
                 }
                 R.id.action_nav_export -> {
