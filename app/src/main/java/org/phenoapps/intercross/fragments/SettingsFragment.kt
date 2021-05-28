@@ -53,6 +53,19 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
         }
 
+        with(findPreference<Preference>("org.phenoapps.intercross.ABOUT")){
+
+            this?.let {
+
+                setOnPreferenceClickListener {
+
+                    findNavController().navigate(SettingsFragmentDirections
+                        .actionToAbout())
+
+                    true
+                }
+            }
+        }
         with(findPreference<Preference>("org.phenoapps.intercross.CREATE_PATTERN")){
 
             this?.let {

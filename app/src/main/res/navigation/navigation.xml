@@ -125,6 +125,10 @@
             android:id="@+id/action_to_import_zpl_fragment"
             app:destination="@id/import_zpl_fragment"
             app:launchSingleTop="true" />
+        <action
+            android:id="@+id/action_to_about"
+            app:destination="@id/about_fragment"
+            app:launchSingleTop="true" />
     </fragment>
 
     <fragment
@@ -196,6 +200,10 @@
             app:popUpTo="@id/events_fragment"/>
         <action android:id="@+id/action_to_event_detail"
             app:destination="@id/event_fragment"/>
+        <action
+            android:id="@+id/action_to_summary"
+            app:destination="@+id/summary_fragment"
+            app:popUpTo="@id/events_fragment"/>
     </fragment>
 
     <fragment
@@ -230,4 +238,16 @@
     <action
         android:id="@+id/global_action_to_event_detail"
         app:destination="@id/event_fragment"/>
+
+    <action
+        android:id="@+id/global_action_to_events"
+        app:destination="@id/events_fragment"/>
+
+    <action
+        android:id="@+id/global_action_to_parents"
+        app:destination="@id/parents_fragment"/>
+
+    <action
+        android:id="@+id/global_action_to_cross_count"
+        app:destination="@id/cross_count_fragment"/>
 </navigation>

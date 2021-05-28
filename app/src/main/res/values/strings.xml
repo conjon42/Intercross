@@ -196,5 +196,8 @@
     <string name="cross_type_self">Self</string>
     <string name="cross_type_unknown">Unknown</string>
     <string name="cross_type_poly">Polycross</string>
+    <string name="export_or_import">Export or Import</string>
+    <string name="home">Home</string>
+    <string name="import_string">Import</string>
 
 </resources>

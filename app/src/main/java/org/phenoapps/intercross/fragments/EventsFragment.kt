@@ -28,6 +28,7 @@ import kotlinx.android.synthetic.main.fragment_events.*
 import kotlinx.android.synthetic.main.fragment_events.recyclerView
 import kotlinx.android.synthetic.main.fragment_events.view.*
 import org.phenoapps.intercross.BuildConfig
+import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
 import org.phenoapps.intercross.data.EventsRepository
@@ -48,10 +49,7 @@ import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFact
 import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
-import org.phenoapps.intercross.util.CrossUtil
-import org.phenoapps.intercross.util.Dialogs
-import org.phenoapps.intercross.util.FileUtil
-import org.phenoapps.intercross.util.SnackbarQueue
+import org.phenoapps.intercross.util.*
 import java.util.*
 
 class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fragment_events) {
@@ -136,6 +134,8 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         startObservers()
 
         activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
+
+        bottomNavBar.selectedItemId = R.id.action_nav_home
 
         setupUI()
 
@@ -317,8 +317,41 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         setupButtons()
 
+        setupBottomNavBar()
+
         setHasOptionsMenu(true)
 
+    }
+
+    private fun FragmentEventsBinding.setupBottomNavBar() {
+
+        bottomNavBar.setOnNavigationItemSelectedListener { item ->
+
+            when (item.itemId) {
+
+                R.id.action_nav_settings -> {
+
+                    findNavController().navigate(R.id.global_action_to_settings_fragment)
+                }
+                R.id.action_nav_parents -> {
+
+                    findNavController().navigate(EventsFragmentDirections.actionToParentsFragment())
+
+                }
+                R.id.action_nav_export -> {
+
+                    (activity as MainActivity).showImportOrExportDialog()
+
+                }
+                R.id.action_nav_cross_count -> {
+
+                    findNavController().navigate(EventsFragmentDirections.actionToCrossCountFragment())
+
+                }
+            }
+
+            true
+        }
     }
 
     private fun FragmentEventsBinding.setupRecyclerView() {

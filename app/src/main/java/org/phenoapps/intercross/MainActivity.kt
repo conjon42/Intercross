@@ -1,31 +1,17 @@
 package org.phenoapps.intercross
 
-import android.annotation.TargetApi
-import android.content.Context
-import android.content.Intent
-import android.content.res.Configuration
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
-import android.view.MenuItem
-import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.annotation.CallSuper
-import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
-import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -219,13 +205,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var mSnackbar: SnackbarQueue
 
-    private lateinit var mDrawerLayout: DrawerLayout
-    private lateinit var mDrawerToggle: ActionBarDrawerToggle
-
     private lateinit var mBinding: ActivityMainBinding
 
     private lateinit var mNavController: NavController
-
 
     private fun writeStream(file: File, resourceId: Int) {
 
@@ -282,27 +264,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-
-        //change the hamburger toggle to a back button whenever the fragment is
-        //not the main events fragment
-        mNavController.addOnDestinationChangedListener { _, destination, _ ->
-            when (destination.id) {
-                R.id.events_fragment -> {
-                    mDrawerToggle.isDrawerIndicatorEnabled = true
-                    mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
-
-                }
-                else -> {
-                    mDrawerToggle.isDrawerIndicatorEnabled = false
-                    mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-
-                }
-            }
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -316,26 +277,10 @@ class MainActivity : AppCompatActivity() {
             title = ""
             this?.let {
                 it.themedContext
-                setDisplayHomeAsUpEnabled(true)
-                setHomeButtonEnabled(true)
+                setDisplayHomeAsUpEnabled(false)
+                setHomeButtonEnabled(false)
             }
         }
-
-        mDrawerLayout = mBinding.drawerLayout
-
-        //TODO name not showing up until app re-open
-        mDrawerToggle = object : ActionBarDrawerToggle(this, mDrawerLayout,
-                R.string.drawer_open, R.string.drawer_close) {
-            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-                super.onDrawerSlide(drawerView, slideOffset)
-                closeKeyboard()
-            }
-        }
-
-        mDrawerToggle.isDrawerIndicatorEnabled = true
-        mDrawerLayout.addDrawerListener(mDrawerToggle)
-
-        setupNavDrawer()
 
         mSnackbar = SnackbarQueue()
 
@@ -386,102 +331,80 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun setupNavDrawer() {
+    private fun showExportDialog() {
 
-        // Setup drawer view
-        val nvDrawer = findViewById<NavigationView>(R.id.nvView)
+        val defaultFileNamePrefix = getString(R.string.default_crosses_export_file_name)
 
-        nvDrawer.getHeaderView(0).apply {
-            findViewById<TextView>(R.id.navHeaderText)
-                    .text = PreferenceManager
-                    .getDefaultSharedPreferences(this@MainActivity)
-                    .getString("org.phenoapps.intercross.PERSON", "")
-        }
+        with(AlertDialog.Builder(this@MainActivity)) {
 
-        nvDrawer.setNavigationItemSelectedListener { menuItem ->
-            when (menuItem.itemId) {
+            setSingleChoiceItems(arrayOf("CSV", "Database"), 0) { dialog, which ->
 
-                R.id.action_nav_settings -> {
+                when (which) {
 
-                    mNavController.navigate(R.id.global_action_to_settings_fragment)
-                }
-                R.id.action_nav_parents -> {
+                    0 -> exportCrossesFile.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
 
-                    mNavController.navigate(EventsFragmentDirections.actionToParentsFragment())
+                    1 -> exportDatabase.launch("intercross.db")
 
                 }
-                R.id.action_nav_import -> {
 
-                    val mimeType = "*/*"
-
-                    with(AlertDialog.Builder(this@MainActivity)) {
-
-                        setSingleChoiceItems(arrayOf("CSV", "Database"), 0) { dialog, which ->
-
-                            when (which) {
-
-                                0 -> importedFileContent.launch(mimeType)
-
-                                1 -> importDatabase.launch(mimeType)
-
-                            }
-
-                            dialog.dismiss()
-                        }
-
-                        setTitle(R.string.export)
-
-                        show()
-                    }
-
-                }
-                R.id.action_nav_export -> {
-
-                    val defaultFileNamePrefix = getString(R.string.default_crosses_export_file_name)
-
-                    with(AlertDialog.Builder(this@MainActivity)) {
-
-                        setSingleChoiceItems(arrayOf("CSV", "Database"), 0) { dialog, which ->
-
-                            when (which) {
-
-                                0 -> exportCrossesFile.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
-
-                                1 -> exportDatabase.launch("intercross.db")
-
-                            }
-
-                            dialog.dismiss()
-                        }
-
-                        setTitle(R.string.export)
-
-                        show()
-                    }
-                }
-                R.id.action_nav_summary -> {
-
-                    navigateToLastSummaryFragment()
-
-                }
-                R.id.action_nav_about -> {
-
-                    mNavController.navigate(EventsFragmentDirections.actionToAbout())
-
-                }
-                R.id.action_summary -> {
-
-                    mNavController.navigate(EventsFragmentDirections.actionToSummary())
-                }
+                dialog.dismiss()
             }
 
-            mDrawerLayout.closeDrawers()
+            setTitle(R.string.export)
 
-            true
+            show()
         }
     }
 
-    private fun navigateToLastSummaryFragment() {
+    private fun showImportDialog() {
+
+        val mimeType = "*/*"
+
+        with(AlertDialog.Builder(this@MainActivity)) {
+
+            setSingleChoiceItems(arrayOf("CSV", "Database"), 0) { dialog, which ->
+
+                when (which) {
+
+                    0 -> importedFileContent.launch(mimeType)
+
+                    1 -> importDatabase.launch(mimeType)
+
+                }
+
+                dialog.dismiss()
+            }
+
+            setTitle(R.string.import_string)
+
+            show()
+        }
+    }
+
+    fun showImportOrExportDialog() {
+
+        with(AlertDialog.Builder(this@MainActivity)) {
+
+            setSingleChoiceItems(arrayOf("Import", "Export"), 0) { dialog, which ->
+
+                when (which) {
+
+                    0 -> showImportDialog()
+
+                    1 -> showExportDialog()
+
+                }
+
+                dialog.dismiss()
+            }
+
+            setTitle(R.string.export_or_import)
+
+            show()
+        }
+    }
+
+    fun navigateToLastSummaryFragment() {
 
         val lastSummaryFragment = PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
                 .getString("last_visited_summary", "summary")
@@ -518,50 +441,6 @@ class MainActivity : AppCompatActivity() {
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
 
         imm.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
-    }
-
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        val dl = findViewById<DrawerLayout>(R.id.drawer_layout)
-
-        closeKeyboard()
-
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
-
-            return true
-        }
-
-        when (item.itemId) {
-
-            android.R.id.home -> {
-
-                mNavController.currentDestination?.let {
-                    when (it.id) {
-                        R.id.events_fragment -> {
-                            dl.openDrawer(GravityCompat.START)
-                        }
-                        //go back to the last fragment instead of opening the navigation drawer
-                        else -> mNavController.popBackStack()
-                    }
-                }
-            }
-            else -> return super.onOptionsItemSelected(item)
-        }
-
-        return true
-    }
-
-    override fun onPostCreate(savedInstanceState: Bundle?) {
-        super.onPostCreate(savedInstanceState)
-
-        mDrawerToggle.syncState()
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-
-        mDrawerToggle.onConfigurationChanged(newConfig)
     }
 
     override fun onBackPressed() {

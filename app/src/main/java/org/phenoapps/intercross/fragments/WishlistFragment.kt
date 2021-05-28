@@ -6,7 +6,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
@@ -124,7 +123,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
                 }
             }
 
-            R.id.action_nav_summary -> {
+            R.id.action_nav_cross_count -> {
 
                 if (mEvents.isNotEmpty()) {
 

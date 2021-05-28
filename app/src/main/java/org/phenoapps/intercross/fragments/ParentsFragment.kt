@@ -9,8 +9,10 @@ import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
+import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.ParentsAdapter
 import org.phenoapps.intercross.data.EventsRepository
@@ -27,6 +29,7 @@ import org.phenoapps.intercross.data.viewmodels.PollenGroupListViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModelFactory
+import org.phenoapps.intercross.databinding.FragmentEventsBinding
 import org.phenoapps.intercross.databinding.FragmentParentsBinding
 import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.SnackbarQueue
@@ -322,6 +325,10 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 //            gdc.onTouchEvent(motionEvent)
 //        })
 
+        bottomNavBar.selectedItemId = R.id.action_nav_parents
+
+        setupBottomNavBar()
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -386,6 +393,36 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
         }
 
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun FragmentParentsBinding.setupBottomNavBar() {
+
+        bottomNavBar.setOnNavigationItemSelectedListener { item ->
+
+            when (item.itemId) {
+
+                R.id.action_nav_settings -> {
+
+                    findNavController().navigate(R.id.global_action_to_settings_fragment)
+                }
+                R.id.action_nav_export -> {
+
+                    (activity as MainActivity).showImportOrExportDialog()
+
+                }
+                R.id.action_nav_home -> {
+
+                    findNavController().navigate(ParentsFragmentDirections.globalActionToEvents())
+
+                }
+                R.id.action_nav_cross_count -> {
+
+                    findNavController().navigate(ParentsFragmentDirections.globalActionToCrossCount())
+                }
+            }
+
+            true
+        }
     }
 
     private fun FragmentParentsBinding.swipeLeft() {

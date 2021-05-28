@@ -6,11 +6,11 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.CrossCountAdapter
 import org.phenoapps.intercross.data.EventsRepository
@@ -61,13 +61,13 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        eventsModel.parents.observe(viewLifecycleOwner, Observer {
+        eventsModel.parents.observe(viewLifecycleOwner, {
 
             it?.let { crosses ->
 
                 val crossData = ArrayList<CrossData>()
 
-                eventsModel.events.observe(viewLifecycleOwner, Observer { data ->
+                eventsModel.events.observe(viewLifecycleOwner, { data ->
 
                     data?.let { events ->
 
@@ -114,6 +114,11 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
                 mWishlistEmpty = it.isEmpty()
             }
         })
+
+        bottomNavBar.selectedItemId = R.id.action_nav_cross_count
+
+        setupBottomNavBar()
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -132,29 +137,72 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        if (!mWishlistEmpty) {
+        when(item.itemId) {
 
-            when(item.itemId) {
+            R.id.action_nav_crossblock -> {
 
-                R.id.action_nav_crossblock -> {
+                if (!mWishlistEmpty) {
 
                     Navigation.findNavController(mBinding.root)
                             .navigate(CrossCountFragmentDirections.actionToCrossblock())
-                }
+                } else {
 
-                R.id.action_nav_wishlist -> {
+                    Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
 
-                    Navigation.findNavController(mBinding.root)
-                            .navigate(CrossCountFragmentDirections.actionToWishlist())
                 }
             }
 
-        } else {
+            R.id.action_nav_wishlist -> {
 
-            Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
+                if (!mWishlistEmpty) {
 
+                    Navigation.findNavController(mBinding.root)
+                            .navigate(CrossCountFragmentDirections.actionToWishlist())
+                } else {
+
+                    Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
+
+                }
+            }
+
+            R.id.action_nav_summary -> {
+
+                Navigation.findNavController(mBinding.root)
+                    .navigate(CrossCountFragmentDirections.actionToSummary())
+            }
         }
 
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun FragmentCrossCountBinding.setupBottomNavBar() {
+
+        bottomNavBar.setOnNavigationItemSelectedListener { item ->
+
+            when (item.itemId) {
+
+                R.id.action_nav_settings -> {
+
+                    findNavController().navigate(R.id.global_action_to_settings_fragment)
+                }
+                R.id.action_nav_parents -> {
+
+                    findNavController().navigate(CrossCountFragmentDirections.globalActionToParents())
+
+                }
+                R.id.action_nav_export -> {
+
+                    (activity as MainActivity).showImportOrExportDialog()
+
+                }
+                R.id.action_nav_home -> {
+
+                    findNavController().navigate(CrossCountFragmentDirections.globalActionToEvents())
+
+                }
+            }
+
+            true
+        }
     }
 }

@@ -1,8 +1,5 @@
 package org.phenoapps.intercross.fragments
 
-import android.annotation.SuppressLint
-import android.graphics.Color
-import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceManager
@@ -18,12 +15,7 @@ import androidx.core.view.GestureDetectorCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.HeaderAdapter
 import org.phenoapps.intercross.data.EventsRepository
@@ -195,7 +187,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
                         .navigate(CrossBlockFragmentDirections.actionToWishlist())
             }
 
-            R.id.action_nav_summary -> {
+            R.id.action_nav_cross_count -> {
 
                 if (mEvents.isNotEmpty()) {
                     Navigation.findNavController(mBinding.root)

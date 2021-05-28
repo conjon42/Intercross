@@ -7,7 +7,7 @@
         android:title="@string/navigate_to_wishlist"
         app:showAsAction="ifRoom"/>
     <item
-        android:id="@+id/action_nav_summary"
+        android:id="@+id/action_nav_cross_count"
         android:icon="@drawable/ic_summary"
         android:title="@string/navigate_to_summary"
         app:showAsAction="ifRoom"/>
