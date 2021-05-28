@@ -84,6 +84,42 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
+     * User selects a new uri document with CreateDocument(), default name is intercross.db
+     * which can be changed where this is launched.
+     */
+    private val exportDatabase by lazy {
+
+        registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
+
+            uri?.let { x ->
+
+                FileUtil(this).exportDatabase(x)
+
+            }
+        }
+    }
+
+    /**
+     * Used in main activity to import a user-chosen database.
+     * User selects a uri from a GetContent() call which is passed to FileUtil to copy streams.
+     * Finally, the app is recreated to use the new database.
+     */
+    private val importDatabase by lazy {
+
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+
+            uri?.let { x ->
+
+                FileUtil(this).importDatabase(x)
+
+                finish()
+
+                startActivity(intent)
+            }
+        }
+    }
+
+    /**
      * Ask the user to either drop table before import or append to the current table.
      *
      */
@@ -378,15 +414,50 @@ class MainActivity : AppCompatActivity() {
 
                     val mimeType = "*/*"
 
-                    importedFileContent.launch(mimeType)
+                    with(AlertDialog.Builder(this@MainActivity)) {
+
+                        setSingleChoiceItems(arrayOf("CSV", "Database"), 0) { dialog, which ->
+
+                            when (which) {
+
+                                0 -> importedFileContent.launch(mimeType)
+
+                                1 -> importDatabase.launch(mimeType)
+
+                            }
+
+                            dialog.dismiss()
+                        }
+
+                        setTitle(R.string.export)
+
+                        show()
+                    }
 
                 }
                 R.id.action_nav_export -> {
 
                     val defaultFileNamePrefix = getString(R.string.default_crosses_export_file_name)
 
-                    exportCrossesFile.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
+                    with(AlertDialog.Builder(this@MainActivity)) {
 
+                        setSingleChoiceItems(arrayOf("CSV", "Database"), 0) { dialog, which ->
+
+                            when (which) {
+
+                                0 -> exportCrossesFile.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
+
+                                1 -> exportDatabase.launch("intercross.db")
+
+                            }
+
+                            dialog.dismiss()
+                        }
+
+                        setTitle(R.string.export)
+
+                        show()
+                    }
                 }
                 R.id.action_nav_summary -> {
 
