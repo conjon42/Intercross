@@ -655,13 +655,13 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         mBinding.constraintLayoutParent.requestFocus()
 
-        val person = getString(R.string.person)
+        val cancel = getString(android.R.string.cancel)
         val personMustBeSet = getString(R.string.person_must_be_set)
         val setPerson = getString(R.string.set_person)
 
         val builder = AlertDialog.Builder(requireContext()).apply {
 
-            setNegativeButton(person) { _, _ ->
+            setNegativeButton(cancel) { _, _ ->
                 mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, personMustBeSet))
             }
 
