@@ -44,6 +44,11 @@
             android:icon="@drawable/ic_setting_sound"
             android:key="org.phenoapps.intercross.AUDIO_ENABLED"
             android:title="Audio notifications"/>
+        <SwitchPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_book_open"
+            android:key="org.phenoapps.intercross.OPEN_CROSS_IMMEDIATELY"
+            android:title="Open Cross After Creating"/>
     </PreferenceCategory>
     <PreferenceCategory android:title="Printing" app:iconSpaceReserved="false">
         <Preference

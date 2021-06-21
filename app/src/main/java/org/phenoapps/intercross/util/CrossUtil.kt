@@ -1,9 +1,11 @@
 package org.phenoapps.intercross.util
 
 import android.content.Context
+import android.os.Looper
 import android.view.View
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.navigation.NavController
+import androidx.navigation.NavDirections
 import androidx.preference.PreferenceManager
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import org.phenoapps.intercross.R
@@ -27,7 +29,7 @@ class CrossUtil(val context: Context) {
                          eventsModel: EventListViewModel,
                          parents: List<Parent>,
                          parentModel: ParentsListViewModel,
-                         wishlistProgress: List<WishlistView>) {
+                         wishlistProgress: List<WishlistView>): Long {
 
         var name = crossName
 
@@ -85,7 +87,7 @@ class CrossUtil(val context: Context) {
 
         }
 
-        eventsModel.insert(e)
+        val eid = eventsModel.insert(e)
 
         FileUtil(context).ringNotification(true)
 
@@ -93,10 +95,13 @@ class CrossUtil(val context: Context) {
 
         val wasCreated = context.getString(R.string.was_created)
 
+        if (Looper.myLooper() == null) Looper.prepare()
+
         SnackbarQueue().push(SnackbarQueue.SnackJob(root, "$name $wasCreated"))
 
         checkWishlist(female, male, wishlistProgress)
 
+        return eid
     }
 
     private fun checkWishlist(f: String, m: String, wishlist: List<WishlistView>) {
@@ -117,6 +122,21 @@ class CrossUtil(val context: Context) {
 
                 }
             }
+        }
+    }
+
+    /**
+     * Function implemented for issue_34, checks a new workflow preference whether or not to open the cross after creation
+     */
+    fun checkPrefToOpenCrossEvent(controller: NavController, direction: NavDirections) {
+
+        val pref = PreferenceManager.getDefaultSharedPreferences(context)
+
+        val openCross = pref?.getBoolean("org.phenoapps.intercross.OPEN_CROSS_IMMEDIATELY", false) ?: false
+
+        if (openCross) {
+            controller.navigate(
+                direction)
         }
     }
 }

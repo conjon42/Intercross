@@ -17,6 +17,8 @@ class EventsRepository
 
     suspend fun getEvent(eid: Long) = eventsDao.selectById(eid)
 
+    fun getRowid(e: Event): Long = eventsDao.getRowid(e.eventDbId, e.femaleObsUnitDbId, e.maleObsUnitDbId, e.timestamp)
+
     suspend fun drop() {
 
         withContext(IO) {
@@ -34,6 +36,8 @@ class EventsRepository
 
         }
     }
+
+    fun insert(event: Event): Long = eventsDao.insertEvent(event)
 
     fun loadCrosses() = eventsDao.selectAllLive()
 
