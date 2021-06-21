@@ -138,11 +138,11 @@ class HeaderAdapter(val context: Context) : ListAdapter<Data, HeaderAdapter.View
 
                         progressBar.progressDrawable.setColorFilter(when {
 
-                            data.current >= data.max -> Color.RED
+                            data.current >= data.max -> Color.GREEN
 
-                            data.current >= data.min -> Color.GREEN
+                            data.current >= data.min -> Color.YELLOW
 
-                            data.current < data.min && data.current > 0 -> Color.YELLOW
+                            data.current < data.min && data.current > 0 -> Color.RED
 
                             else -> Color.GRAY
 
