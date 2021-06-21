@@ -274,7 +274,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         firstText.setText(value)
 
-        if (!order && blank) {
+        if (!order && !blank) {
 
             askUserNewExperimentName()
 
