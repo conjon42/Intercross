@@ -12,6 +12,7 @@ import android.preference.PreferenceManager
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.WorkerThread
 import androidx.appcompat.app.AlertDialog
 import org.phenoapps.intercross.R
@@ -679,13 +680,15 @@ class FileUtil(private val ctx: Context) {
 
                 val reader = BufferedReader(InputStreamReader(it))
 
-                ret = ArrayList(reader.readLines())
+                    ret = ArrayList(reader.readLines().map { line ->
+                        line.replace("\uFEFF", "") //erase BOM
+                    })
+                }
+            } catch (fo: FileNotFoundException) {
+                fo.printStackTrace()
+            } catch (io: IOException) {
+                io.printStackTrace()
             }
-        } catch (fo: FileNotFoundException) {
-            fo.printStackTrace()
-        } catch (io: IOException) {
-            io.printStackTrace()
-        }
 
         return ret
     }
