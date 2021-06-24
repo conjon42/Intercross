@@ -241,13 +241,19 @@
 
     <action
         android:id="@+id/global_action_to_events"
-        app:destination="@id/events_fragment"/>
+        app:destination="@id/events_fragment"
+        app:popUpTo="@id/events_fragment"
+        app:launchSingleTop="true"/>
 
     <action
         android:id="@+id/global_action_to_parents"
-        app:destination="@id/parents_fragment"/>
+        app:destination="@id/parents_fragment"
+        app:launchSingleTop="true"
+        app:popUpTo="@id/parents_fragment"/>
 
     <action
         android:id="@+id/global_action_to_cross_count"
-        app:destination="@id/cross_count_fragment"/>
+        app:destination="@id/cross_count_fragment"
+        app:popUpTo="@id/cross_count_fragment"
+        app:launchSingleTop="true"/>
 </navigation>

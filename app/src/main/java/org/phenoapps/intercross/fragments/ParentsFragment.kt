@@ -331,6 +331,13 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        mBinding.bottomNavBar.selectedItemId = R.id.action_nav_parents
+
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)

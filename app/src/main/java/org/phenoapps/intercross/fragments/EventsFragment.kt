@@ -131,6 +131,13 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        mBinding.bottomNavBar.selectedItemId = R.id.action_nav_home
+
+    }
+
     private fun startObservers() {
 
         val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
