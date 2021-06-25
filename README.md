@@ -1,6 +1,6 @@
 # Intercross <a href="https://play.google.com/store/apps/details?id=org.phenoapps.intercross"><img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" height="50"></a>
 
-FiIntercross is an Android application for managing crosses in plant breeding programs. Intercross can connect with Zebra label printers to print barcoded labels for each cross.
+Intercross is an Android application for managing crosses in plant breeding programs. Intercross can connect with Zebra label printers to print barcoded labels for each cross.
 
 ## Contributors
 ### Developers
