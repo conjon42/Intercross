@@ -8,7 +8,7 @@
         <ScrollView
             android:id="@+id/data_summary_scroll_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -43,34 +43,37 @@
 
                 </com.google.android.material.tabs.TabLayout>
 
-                <com.github.mikephil.charting.charts.PieChart
-                    android:id="@+id/data_summary_pie_chart"
-                    android:layout_width="match_parent"
-                    android:layout_height="512dp"
-                    android:layout_margin="16dp"
-                    android:layout_gravity="center"
-                    android:background="@drawable/cell"
-                    android:layout_below="@id/data_summary_tab_layout"/>
-
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/data_summary_recycler_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
+                    android:layout_margin="8dp"
                     android:background="@drawable/cell"
                     xmlns:tools="http://schemas.android.com/tools"
                     tools:listitem="@layout/list_item_summary"
                     tools:itemCount="2"
-                    android:layout_below="@id/data_summary_pie_chart"/>
+                    android:layout_below="@id/data_summary_tab_layout"/>
 
-                <com.google.android.material.bottomnavigation.BottomNavigationView
-                    android:id="@+id/bottom_nav_bar"
+                <com.github.mikephil.charting.charts.PieChart
+                    android:id="@+id/data_summary_pie_chart"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:menu="@menu/menu_bot_nav"
+                    android:layout_height="512dp"
+                    android:layout_margin="8dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/cell"
                     android:layout_below="@id/data_summary_recycler_view"/>
+
             </RelativeLayout>
         </ScrollView>
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_nav_bar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:menu="@menu/menu_bot_nav"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

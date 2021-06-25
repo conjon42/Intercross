@@ -10,6 +10,7 @@ import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.WishlistAdapter
 import org.phenoapps.intercross.data.EventsRepository
@@ -19,6 +20,7 @@ import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
+import org.phenoapps.intercross.databinding.CrossBlockManagerBinding
 import org.phenoapps.intercross.databinding.FragmentWishlistBinding
 import org.phenoapps.intercross.util.Dialogs
 
@@ -41,6 +43,8 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
     private var mEvents: List<Event> = ArrayList()
 
     override fun FragmentWishlistBinding.afterCreateView() {
+
+        setupBottomNavBar()
 
         PreferenceManager.getDefaultSharedPreferences(requireContext())
                 .edit().putString("last_visited_summary", "wishlist").apply()
@@ -89,6 +93,40 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
         })
     }
 
+    private fun FragmentWishlistBinding.setupBottomNavBar() {
+
+        bottomNavBar.setOnNavigationItemSelectedListener { item ->
+
+            when (item.itemId) {
+
+                R.id.action_nav_home -> {
+
+                    findNavController().navigate(WishlistFragmentDirections.globalActionToEvents())
+                }
+                R.id.action_nav_settings -> {
+
+                    findNavController().navigate(WishlistFragmentDirections.globalActionToSettingsFragment())
+                }
+                R.id.action_nav_parents -> {
+
+                    findNavController().navigate(WishlistFragmentDirections.globalActionToParents())
+
+                }
+                R.id.action_nav_export -> {
+
+                    (activity as MainActivity).showImportOrExportDialog()
+
+                }
+                R.id.action_nav_cross_count -> {
+
+                    findNavController().navigate(WishlistFragmentDirections.globalActionToCrossCount())
+
+                }
+            }
+
+            true
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -135,6 +173,11 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
                     Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.summary_empty))
 
                 }
+            }
+
+            R.id.action_nav_summary -> {
+
+                findNavController().navigate(WishlistFragmentDirections.actionToSummary())
             }
         }
 

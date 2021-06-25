@@ -15,7 +15,9 @@ import androidx.core.view.GestureDetectorCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
+import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.HeaderAdapter
 import org.phenoapps.intercross.data.EventsRepository
@@ -26,6 +28,7 @@ import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.CrossBlockManagerBinding
+import org.phenoapps.intercross.databinding.FragmentDataSummaryBinding
 import org.phenoapps.intercross.util.AsyncLoadCrossblock
 import org.phenoapps.intercross.util.Dialogs
 
@@ -61,6 +64,8 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun CrossBlockManagerBinding.afterCreateView() {
+
+        setupBottomNavBar()
 
         PreferenceManager.getDefaultSharedPreferences(requireContext())
                 .edit().putString("last_visited_summary", "crossblock").apply()
@@ -164,6 +169,41 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
         })
     }
 
+    private fun CrossBlockManagerBinding.setupBottomNavBar() {
+
+        bottomNavBar.setOnNavigationItemSelectedListener { item ->
+
+            when (item.itemId) {
+
+                R.id.action_nav_home -> {
+
+                    findNavController().navigate(CrossBlockFragmentDirections.globalActionToEvents())
+                }
+                R.id.action_nav_settings -> {
+
+                    findNavController().navigate(CrossBlockFragmentDirections.globalActionToSettingsFragment())
+                }
+                R.id.action_nav_parents -> {
+
+                    findNavController().navigate(CrossBlockFragmentDirections.globalActionToParents())
+
+                }
+                R.id.action_nav_export -> {
+
+                    (activity as MainActivity).showImportOrExportDialog()
+
+                }
+                R.id.action_nav_cross_count -> {
+
+                    findNavController().navigate(CrossBlockFragmentDirections.globalActionToCrossCount())
+
+                }
+            }
+
+            true
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -193,6 +233,10 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
                     Navigation.findNavController(mBinding.root)
                             .navigate(CrossBlockFragmentDirections.actionToCrossCount())
                 } else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.summary_empty))
+            }
+            R.id.action_nav_summary -> {
+
+                findNavController().navigate(WishlistFragmentDirections.actionToSummary())
             }
         }
         return super.onOptionsItemSelected(item)

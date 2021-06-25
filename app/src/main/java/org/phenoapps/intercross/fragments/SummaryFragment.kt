@@ -1,12 +1,18 @@
 package org.phenoapps.intercross.fragments
 
 import android.graphics.Color
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
 import android.widget.ArrayAdapter
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.charts.PieChart
@@ -17,18 +23,25 @@ import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.PercentFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
 import com.google.android.material.tabs.TabLayout
+import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.SummaryAdapter
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.ParentsRepository
+import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.models.CrossType
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
+import org.phenoapps.intercross.data.models.Wishlist
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
+import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentDataSummaryBinding
+import org.phenoapps.intercross.databinding.FragmentEventsBinding
+import org.phenoapps.intercross.util.Dialogs
 import java.util.*
 
 /**
@@ -38,6 +51,7 @@ import java.util.*
  * Summary fragment can be chosen from the main menu (currently the nav drawer)
  * This fragment has a tab layout to select three different categories:
  * 1. Sex: this category displays total males, females and unknowns (these are crosses) while m/fs are parents
+ *  a. unknowns are no longer displayed issue37b
  * 2. Type: accumulated cross types e.g Biparental, Open, Self
  * 3. Meta: accumulated meta data fields (currently only fruits, seeds and flowers)
  *
@@ -54,8 +68,13 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
         ParentsListViewModelFactory(ParentsRepository.getInstance(db.parentsDao()))
     }
 
+    private val wishModel: WishlistViewModel by viewModels {
+        WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
+    }
+
     private lateinit var mEvents: List<Event>
     private lateinit var mParents: List<Parent>
+    private lateinit var mWishlist: List<Wishlist>
 
     //a quick wrapper function for tab selection
     private fun tabSelected(onSelect: (TabLayout.Tab?) -> Unit) = object : TabLayout.OnTabSelectedListener {
@@ -68,6 +87,8 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
 
     override fun FragmentDataSummaryBinding.afterCreateView() {
 
+        setHasOptionsMenu(true)
+
         //initialize pie chart parameters, this is mostly taken from the github examples
         setupPieChart()
 
@@ -75,6 +96,8 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
         //if somehow events are injected after afterCreateView, the graph won't update
         //but that could only happen if someone used the database inspector
         startObservers()
+
+        setupBottomNavBar()
 
         //val sex = getString(R.string.sex)
         val type = getString(R.string.type)
@@ -106,6 +129,74 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
         })
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+
+        inflater.inflate(R.menu.data_summary_toolbar, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        when (item.itemId) {
+
+            R.id.action_nav_cross_count -> {
+                if (::mEvents.isInitialized && mEvents.isNotEmpty()) {
+                    findNavController().navigate(SummaryFragmentDirections.actionToCrossCount())
+                } else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.summary_empty))
+
+            }
+            R.id.action_nav_crossblock -> {
+                if (::mWishlist.isInitialized && mWishlist.isNotEmpty()) {
+                    findNavController().navigate(SummaryFragmentDirections.actionToCrossblock())
+                } else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
+
+            }
+            R.id.action_nav_wishlist -> {
+                if (::mWishlist.isInitialized && mWishlist.isNotEmpty()) {
+                    findNavController().navigate(SummaryFragmentDirections.actionToWishlist())
+                } else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
+
+            }
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun FragmentDataSummaryBinding.setupBottomNavBar() {
+
+        bottomNavBar.setOnNavigationItemSelectedListener { item ->
+
+            when (item.itemId) {
+
+                R.id.action_nav_home -> {
+
+                    findNavController().navigate(SummaryFragmentDirections.globalActionToEvents())
+                }
+                R.id.action_nav_settings -> {
+
+                    findNavController().navigate(SummaryFragmentDirections.globalActionToSettingsFragment())
+                }
+                R.id.action_nav_parents -> {
+
+                    findNavController().navigate(SummaryFragmentDirections.globalActionToParents())
+
+                }
+                R.id.action_nav_export -> {
+
+                    (activity as MainActivity).showImportOrExportDialog()
+
+                }
+                R.id.action_nav_cross_count -> {
+
+                    findNavController().navigate(SummaryFragmentDirections.globalActionToCrossCount())
+
+                }
+            }
+
+            true
+        }
+    }
+
     /**
      * Cascade-load event and parent data, once the data is loaded trigger the first tab data to load.
      */
@@ -121,6 +212,11 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
 
                 setData(setSexData())
             }
+        }
+
+        wishModel.wishlist.observeOnce { wishes ->
+
+            mWishlist = wishes
         }
     }
 
@@ -162,15 +258,17 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
         // add a selection listener
         //chart.setOnChartValueSelectedListener(this)
 
-        val l: Legend = dataSummaryPieChart.legend
-        l.verticalAlignment = Legend.LegendVerticalAlignment.TOP
-        l.horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
-        l.orientation = Legend.LegendOrientation.VERTICAL
-        l.setDrawInside(false)
-        l.xEntrySpace = 7f
-        l.yEntrySpace = 0f
-        l.yOffset = 0f
+        //issue 37b remove legend
+//        val l: Legend = dataSummaryPieChart.legend
+//        l.verticalAlignment = Legend.LegendVerticalAlignment.TOP
+//        l.horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
+//        l.orientation = Legend.LegendOrientation.VERTICAL
+//        l.setDrawInside(false)
+//        l.xEntrySpace = 7f
+//        l.yEntrySpace = 0f
+//        l.yOffset = 0f
 
+        dataSummaryPieChart.legend.isEnabled = false
         // entry label styling
 
         // entry label styling
@@ -187,15 +285,16 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
             val females = mParents.count { it.sex == 0 }.toFloat()
             if (females > 0f) add(PieEntry(females, "Females"))
         }
-        if (::mEvents.isInitialized) {
-            if (::mParents.isInitialized) {
-                val unk = mEvents.size.toFloat() + mParents.count { it.sex == -1 }.toFloat()
-                if (unk > 0f) add(PieEntry(unk, "Unknown"))
-            } else {
-                val unk = mEvents.size.toFloat()
-                if (unk > 0f) add(PieEntry(unk, "Unknown"))
-            }
-        }
+        //issue 37b remove unknown sexes from pie chart
+//        if (::mEvents.isInitialized) {
+//            if (::mParents.isInitialized) {
+//                val unk = mEvents.size.toFloat() + mParents.count { it.sex == -1 }.toFloat()
+//                if (unk > 0f) add(PieEntry(unk, "Unknown"))
+//            } else {
+//                val unk = mEvents.size.toFloat()
+//                if (unk > 0f) add(PieEntry(unk, "Unknown"))
+//            }
+//        }
     },"Sex Statistics")
 
     private fun setTypeData(): PieDataSet = PieDataSet(ArrayList<PieEntry>().apply {

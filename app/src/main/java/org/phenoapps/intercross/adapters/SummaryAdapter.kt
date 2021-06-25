@@ -60,7 +60,7 @@ class SummaryAdapter:
 
                 labelText = data.label
 
-                countValue = data.value
+                countValue = data.value.toInt()
 
             }
         }
