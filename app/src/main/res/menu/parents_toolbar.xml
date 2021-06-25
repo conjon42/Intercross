@@ -6,4 +6,9 @@
         android:icon="@drawable/ic_check_all"
         android:title="@string/SelectAllRows"
         app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/action_import"
+        android:icon="@drawable/ic_nv_import_white"
+        android:title="@string/import_file"
+        app:showAsAction="ifRoom"/>
 </menu>

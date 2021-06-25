@@ -331,6 +331,12 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        mBinding.bottomNavBar.selectedItemId = R.id.action_nav_parents
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -351,6 +357,11 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
             when(item.itemId) {
 
+                R.id.action_import -> {
+
+                    (activity as MainActivity).launchImport()
+
+                }
                 R.id.action_select_all -> {
 
                     if (tabLayout.getTabAt(0)?.isSelected == true) {
@@ -407,7 +418,10 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
                 }
                 R.id.action_nav_export -> {
 
-                    (activity as MainActivity).showImportOrExportDialog()
+                    (activity as MainActivity).showImportOrExportDialog {
+
+                        bottomNavBar.selectedItemId = R.id.action_nav_parents
+                    }
 
                 }
                 R.id.action_nav_home -> {

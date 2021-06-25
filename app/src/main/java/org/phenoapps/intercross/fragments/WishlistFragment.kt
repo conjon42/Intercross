@@ -10,6 +10,7 @@ import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.tabs.TabLayout
 import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.WishlistAdapter
@@ -43,6 +44,8 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
     private var mEvents: List<Event> = ArrayList()
 
     override fun FragmentWishlistBinding.afterCreateView() {
+
+        bottomNavBar.selectedItemId = R.id.action_nav_cross_count
 
         setupBottomNavBar()
 
@@ -84,11 +87,73 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
                                 wishModel.deleteAll()
 
-                                findNavController().popBackStack()
+                                findNavController().navigate(WishlistFragmentDirections.globalActionToCrossCount())
                             }
                         }
                     }
                 })
+            }
+        })
+
+        summaryTabLayout.getTabAt(1)?.select()
+
+        setupTabLayout()
+    }
+
+    //a quick wrapper function for tab selection
+    private fun tabSelected(onSelect: (TabLayout.Tab?) -> Unit) = object : TabLayout.OnTabSelectedListener {
+        override fun onTabSelected(tab: TabLayout.Tab?) {
+            onSelect(tab)
+        }
+        override fun onTabUnselected(tab: TabLayout.Tab?) {}
+        override fun onTabReselected(tab: TabLayout.Tab?) {}
+    }
+
+    private fun FragmentWishlistBinding.setupTabLayout() {
+
+        summaryTabLayout.addOnTabSelectedListener(tabSelected { tab ->
+
+            when (tab?.text) {
+                getString(R.string.summary) -> {
+
+                    if (mEvents.isNotEmpty()) {
+
+                        Navigation.findNavController(mBinding.root)
+                            .navigate(WishlistFragmentDirections.actionToSummary())
+                    } else {
+
+                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.crosses_empty))
+                        summaryTabLayout.getTabAt(1)?.select()
+
+                    }
+                }
+
+                getString(R.string.cross_count) -> {
+
+                    if (mEvents.isNotEmpty()) {
+
+                        Navigation.findNavController(mBinding.root)
+                            .navigate(WishlistFragmentDirections.actionToCrossCount())
+                    } else {
+
+                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.crosses_empty))
+                        summaryTabLayout.getTabAt(1)?.select()
+
+                    }
+                }
+                getString(R.string.crossblock) -> {
+
+                    if (!wishlistEmpty) {
+
+                        Navigation.findNavController(mBinding.root)
+                            .navigate(WishlistFragmentDirections.actionToCrossblock())
+                    } else {
+
+                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
+                        summaryTabLayout.getTabAt(1)?.select()
+
+                    }
+                }
             }
         })
     }
@@ -114,7 +179,10 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
                 }
                 R.id.action_nav_export -> {
 
-                    (activity as MainActivity).showImportOrExportDialog()
+                    (activity as MainActivity).showImportOrExportDialog {
+
+                        findNavController().navigate(R.id.wishlist_fragment)
+                    }
 
                 }
                 R.id.action_nav_cross_count -> {
@@ -146,38 +214,11 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
         when(item.itemId) {
 
-            R.id.action_nav_crossblock -> {
+            R.id.action_import -> {
 
-                if (!wishlistEmpty) {
+                (activity as MainActivity).launchImport()
 
-                    Navigation.findNavController(mBinding.root)
-                            .navigate(WishlistFragmentDirections.actionToCrossblock())
-
-                }
-                else {
-
-                    Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
-
-                }
-            }
-
-            R.id.action_nav_cross_count -> {
-
-                if (mEvents.isNotEmpty()) {
-
-                    Navigation.findNavController(mBinding.root)
-                            .navigate(WishlistFragmentDirections.actionToCrossCount())
-                }
-                else {
-
-                    Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.summary_empty))
-
-                }
-            }
-
-            R.id.action_nav_summary -> {
-
-                findNavController().navigate(WishlistFragmentDirections.actionToSummary())
+                findNavController().navigate(R.id.wishlist_fragment)
             }
         }
 

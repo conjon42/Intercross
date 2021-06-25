@@ -12,6 +12,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.mikephil.charting.animation.Easing
@@ -39,6 +40,7 @@ import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
+import org.phenoapps.intercross.databinding.FragmentCrossCountBinding
 import org.phenoapps.intercross.databinding.FragmentDataSummaryBinding
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
 import org.phenoapps.intercross.util.Dialogs
@@ -87,7 +89,9 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
 
     override fun FragmentDataSummaryBinding.afterCreateView() {
 
-        setHasOptionsMenu(true)
+        setHasOptionsMenu(false)
+
+        (activity as MainActivity).supportActionBar?.hide()
 
         //initialize pie chart parameters, this is mostly taken from the github examples
         setupPieChart()
@@ -96,6 +100,8 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
         //if somehow events are injected after afterCreateView, the graph won't update
         //but that could only happen if someone used the database inspector
         startObservers()
+
+        bottomNavBar.selectedItemId = R.id.action_nav_cross_count
 
         setupBottomNavBar()
 
@@ -112,6 +118,59 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
                 else -> setSexData()
             })
         })
+
+        summaryTabLayout.getTabAt(3)?.select()
+
+        setupTabLayout()
+    }
+
+    private fun FragmentDataSummaryBinding.setupTabLayout() {
+
+        summaryTabLayout.addOnTabSelectedListener(tabSelected { tab ->
+
+            when (tab?.text) {
+                getString(R.string.crossblock) -> {
+
+                    if (::mWishlist.isInitialized && mWishlist.isNotEmpty()) {
+
+                        Navigation.findNavController(mBinding.root)
+                            .navigate(SummaryFragmentDirections.actionToCrossblock())
+                    } else {
+
+                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
+                        summaryTabLayout.getTabAt(3)?.select()
+
+                    }
+                }
+
+                getString(R.string.cross_count) -> {
+
+                    if (::mEvents.isInitialized && mEvents.isNotEmpty()) {
+
+                        Navigation.findNavController(mBinding.root)
+                            .navigate(SummaryFragmentDirections.actionToCrossCount())
+                    } else {
+
+                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.crosses_empty))
+                        summaryTabLayout.getTabAt(3)?.select()
+
+                    }
+                }
+                getString(R.string.wishlist) -> {
+
+                    if (::mWishlist.isInitialized && mWishlist.isNotEmpty()) {
+
+                        Navigation.findNavController(mBinding.root)
+                            .navigate(SummaryFragmentDirections.actionToWishlist())
+                    } else {
+
+                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
+                        summaryTabLayout.getTabAt(3)?.select()
+
+                    }
+                }
+            }
+        })
     }
 
     //used to load label/value pair data into the adapter's view holder
@@ -127,39 +186,6 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
                 }
             }
         })
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-
-        inflater.inflate(R.menu.data_summary_toolbar, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        when (item.itemId) {
-
-            R.id.action_nav_cross_count -> {
-                if (::mEvents.isInitialized && mEvents.isNotEmpty()) {
-                    findNavController().navigate(SummaryFragmentDirections.actionToCrossCount())
-                } else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.summary_empty))
-
-            }
-            R.id.action_nav_crossblock -> {
-                if (::mWishlist.isInitialized && mWishlist.isNotEmpty()) {
-                    findNavController().navigate(SummaryFragmentDirections.actionToCrossblock())
-                } else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
-
-            }
-            R.id.action_nav_wishlist -> {
-                if (::mWishlist.isInitialized && mWishlist.isNotEmpty()) {
-                    findNavController().navigate(SummaryFragmentDirections.actionToWishlist())
-                } else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
-
-            }
-        }
-
-        return super.onOptionsItemSelected(item)
     }
 
     private fun FragmentDataSummaryBinding.setupBottomNavBar() {
@@ -183,7 +209,10 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
                 }
                 R.id.action_nav_export -> {
 
-                    (activity as MainActivity).showImportOrExportDialog()
+                    (activity as MainActivity).showImportOrExportDialog {
+
+                        findNavController().navigate(R.id.summary_fragment)
+                    }
 
                 }
                 R.id.action_nav_cross_count -> {

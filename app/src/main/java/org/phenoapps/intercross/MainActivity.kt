@@ -364,6 +364,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun launchImport() {
+
+        importedFileContent.launch("*/*")
+
+    }
+
     private fun showImportDialog() {
 
         val mimeType = "*/*"
@@ -389,7 +395,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun showImportOrExportDialog() {
+    fun showImportOrExportDialog(onDismiss: () -> Unit) {
 
         with(AlertDialog.Builder(this@MainActivity)) {
 
@@ -404,6 +410,12 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 dialog.dismiss()
+            }
+
+            setOnDismissListener {
+
+                onDismiss()
+
             }
 
             setTitle(R.string.export_or_import)

@@ -12,6 +12,7 @@ import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.SettingsRepository
@@ -106,6 +107,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
             true
         }
+
+        setHasOptionsMenu(false)
+
+        (activity as MainActivity).supportActionBar?.hide()
+
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 

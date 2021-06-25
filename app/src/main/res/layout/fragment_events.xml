@@ -21,8 +21,15 @@
         android:id="@+id/constraint_layout_parent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
         android:focusable="true"
         android:focusableInTouchMode="true">
+
+        <androidx.constraintlayout.widget.Group
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/fragment_events_group"
+            app:constraint_referenced_ids="dataEntryLayout, recyclerView, bottom_nav_bar"/>
 
         <RelativeLayout
             android:id="@+id/dataEntryLayout"
@@ -137,24 +144,34 @@
             tools:listitem="@layout/list_item_events" />
 
         <ImageButton
-            android:id="@+id/button"
+            android:id="@+id/fragment_events_search_button"
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:layout_margin="16dp"
-            android:layout_marginTop="389dp"
-            android:layout_marginEnd="8dp"
-            android:adjustViewBounds="false"
             android:background="@drawable/capture_button_background"
             android:contentDescription="@string/button_to_scan_next_text"
             android:cropToPadding="false"
             android:elevation="5dp"
-            android:fitsSystemWindows="true"
+            android:scaleType="fitCenter"
+            android:tint="#ffffff"
+            app:layout_constraintBottom_toTopOf="@id/bottom_nav_bar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintVertical_bias="1.0"
+            app:srcCompat="@drawable/ic_tb_white_search" />
+
+        <ImageButton
+            android:id="@+id/button"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_margin="16dp"
+            android:background="@drawable/capture_button_background"
+            android:contentDescription="@string/button_to_scan_next_text"
+            android:cropToPadding="false"
+            android:elevation="5dp"
             android:scaleType="fitCenter"
             android:tint="#ffffff"
             app:layout_constraintBottom_toTopOf="@id/bottom_nav_bar"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/dataEntryLayout"
-            app:layout_constraintVertical_bias="1.0"
             app:srcCompat="@drawable/ic_barcode_scan" />
 
         <com.google.android.material.bottomnavigation.BottomNavigationView

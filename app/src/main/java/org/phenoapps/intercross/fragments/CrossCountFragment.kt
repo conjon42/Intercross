@@ -10,6 +10,7 @@ import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.tabs.TabLayout
 import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.CrossCountAdapter
@@ -61,6 +62,19 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
         recyclerView.layoutManager = LinearLayoutManager(context)
 
+        startObservers()
+
+        bottomNavBar.selectedItemId = R.id.action_nav_cross_count
+
+        setupBottomNavBar()
+
+        summaryTabLayout.getTabAt(0)?.select()
+
+        setupTabLayout()
+    }
+
+    private fun startObservers() {
+
         eventsModel.parents.observe(viewLifecycleOwner, {
 
             it?.let { crosses ->
@@ -74,24 +88,24 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
                         crosses.forEach { parentrow ->
 
                             crossData.add(
-                                    CrossData(
-                                            parentrow.dad,
-                                            parentrow.mom,
-                                            parentrow.count.toString(),
-                                            events.filter { e -> e.maleObsUnitDbId == parentrow.dad
-                                                    && e.femaleObsUnitDbId == parentrow.mom })
+                                CrossData(
+                                    parentrow.dad,
+                                    parentrow.mom,
+                                    parentrow.count.toString(),
+                                    events.filter { e -> e.maleObsUnitDbId == parentrow.dad
+                                            && e.femaleObsUnitDbId == parentrow.mom })
                             )
 
                         }
 
-                        (recyclerView.adapter as CrossCountAdapter).submitList(crossData as List<ListEntry>?)
+                        (mBinding.recyclerView.adapter as CrossCountAdapter).submitList(crossData as List<ListEntry>?)
 
-                        deleteButton.setOnClickListener {
+                        mBinding.deleteButton.setOnClickListener {
 
                             Dialogs.onOk(AlertDialog.Builder(requireContext()),
-                                    getString(R.string.delete_cross_entry_title),
-                                    getString(R.string.cancel),
-                                    getString(R.string.zxing_button_ok)) {
+                                getString(R.string.delete_cross_entry_title),
+                                getString(R.string.cancel),
+                                getString(R.string.zxing_button_ok)) {
 
                                 eventsModel.deleteAll()
 
@@ -114,11 +128,55 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
                 mWishlistEmpty = it.isEmpty()
             }
         })
+    }
 
-        bottomNavBar.selectedItemId = R.id.action_nav_cross_count
+    //a quick wrapper function for tab selection
+    private fun tabSelected(onSelect: (TabLayout.Tab?) -> Unit) = object : TabLayout.OnTabSelectedListener {
+        override fun onTabSelected(tab: TabLayout.Tab?) {
+            onSelect(tab)
+        }
+        override fun onTabUnselected(tab: TabLayout.Tab?) {}
+        override fun onTabReselected(tab: TabLayout.Tab?) {}
+    }
 
-        setupBottomNavBar()
+    private fun FragmentCrossCountBinding.setupTabLayout() {
 
+        summaryTabLayout.addOnTabSelectedListener(tabSelected { tab ->
+
+            when (tab?.text) {
+                getString(R.string.crossblock) -> {
+
+                    if (!mWishlistEmpty) {
+
+                        Navigation.findNavController(mBinding.root)
+                            .navigate(CrossCountFragmentDirections.actionToCrossblock())
+                    } else {
+
+                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
+                        summaryTabLayout.getTabAt(0)?.select()
+
+                    }
+                }
+
+                getString(R.string.summary) ->
+                    Navigation.findNavController(mBinding.root)
+                        .navigate(CrossCountFragmentDirections.actionToSummary())
+
+                getString(R.string.wishlist) -> {
+
+                    if (!mWishlistEmpty) {
+
+                        Navigation.findNavController(mBinding.root)
+                            .navigate(CrossCountFragmentDirections.actionToWishlist())
+                    } else {
+
+                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
+                        summaryTabLayout.getTabAt(0)?.select()
+
+                    }
+                }
+            }
+        })
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -128,9 +186,15 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
         setHasOptionsMenu(true)
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        mBinding.bottomNavBar.selectedItemId = R.id.action_nav_cross_count
+    }
+
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
 
-        inflater.inflate(R.menu.summary_toolbar, menu)
+        inflater.inflate(R.menu.cross_count_toolbar, menu)
 
         super.onCreateOptionsMenu(menu, inflater)
     }
@@ -139,36 +203,11 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
         when(item.itemId) {
 
-            R.id.action_nav_crossblock -> {
+            R.id.action_import -> {
 
-                if (!mWishlistEmpty) {
+                (activity as MainActivity).launchImport()
 
-                    Navigation.findNavController(mBinding.root)
-                            .navigate(CrossCountFragmentDirections.actionToCrossblock())
-                } else {
-
-                    Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
-
-                }
-            }
-
-            R.id.action_nav_wishlist -> {
-
-                if (!mWishlistEmpty) {
-
-                    Navigation.findNavController(mBinding.root)
-                            .navigate(CrossCountFragmentDirections.actionToWishlist())
-                } else {
-
-                    Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
-
-                }
-            }
-
-            R.id.action_nav_summary -> {
-
-                Navigation.findNavController(mBinding.root)
-                    .navigate(CrossCountFragmentDirections.actionToSummary())
+                findNavController().navigate(R.id.cross_count_fragment)
             }
         }
 
@@ -192,7 +231,10 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
                 }
                 R.id.action_nav_export -> {
 
-                    (activity as MainActivity).showImportOrExportDialog()
+                    (activity as MainActivity).showImportOrExportDialog {
+
+                        bottomNavBar.selectedItemId = R.id.action_nav_cross_count
+                    }
 
                 }
                 R.id.action_nav_home -> {

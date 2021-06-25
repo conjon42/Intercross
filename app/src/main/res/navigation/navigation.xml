@@ -7,49 +7,40 @@
     app:startDestination="@+id/events_fragment">
 
     <!-- Events Fragment is the main entry fragment that shows the entire crossing table -->
-    <fragment
-        android:id="@+id/events_fragment"
+    <fragment android:id="@+id/events_fragment"
         android:name="org.phenoapps.intercross.fragments.EventsFragment"
         android:label="@string/events_fragment_label"
         tools:layout="@layout/fragment_events">
 
-        <action
-            android:id="@+id/action_to_barcode_scan_fragment"
+        <action android:id="@+id/action_to_barcode_scan_fragment"
             app:destination="@id/barcode_scan_fragment">
             <argument
                 android:name="mode"
                 app:argType="integer"
                 android:defaultValue="0"/>
         </action>
-        <action
-            android:id="@+id/action_to_event_fragment"
+        <action android:id="@+id/action_to_event_fragment"
             app:destination="@id/event_fragment"
             app:popUpTo="@id/events_fragment">
         </action>
-        <action
-            android:id="@+id/action_to_cross_count_fragment"
+        <action android:id="@+id/action_to_cross_count_fragment"
             app:destination="@+id/cross_count_fragment"
             app:popUpTo="@id/events_fragment">
         </action>
-        <action
-            android:id="@+id/action_to_wishlist_fragment"
+        <action android:id="@+id/action_to_wishlist_fragment"
             app:destination="@+id/wishlist_fragment"
             app:popUpTo="@id/events_fragment">
         </action>
-        <action
-            android:id="@+id/action_to_parents_fragment"
+        <action android:id="@+id/action_to_parents_fragment"
             app:destination="@+id/parents_fragment"
             app:popUpTo="@id/events_fragment"/>
-        <action
-            android:id="@+id/action_to_crossblock"
+        <action android:id="@+id/action_to_crossblock"
             app:destination="@+id/crossblock_fragment"
             app:popUpTo="@id/events_fragment"/>
-        <action
-            android:id="@+id/action_to_summary"
+        <action android:id="@+id/action_to_summary"
             app:destination="@+id/summary_fragment"
             app:popUpTo="@id/events_fragment"/>
-        <action
-            android:id="@+id/action_to_about"
+        <action android:id="@+id/action_to_about"
             app:destination="@+id/about_fragment"
             app:popUpTo="@id/events_fragment"/>
     </fragment>
@@ -219,8 +210,7 @@
         android:label="@string/cross_block_label"
         tools:layout="@layout/cross_block_manager">
 
-        <action
-            android:id="@+id/action_to_cross_count"
+        <action android:id="@+id/action_to_cross_count"
             app:destination="@id/cross_count_fragment"
             app:popUpTo="@id/events_fragment"/>
 
@@ -239,25 +229,26 @@
 
 
     <!-- Global Actions used by Navigation Drawer -->
-    <action
-        android:id="@+id/global_action_to_settings_fragment"
+    <action android:id="@+id/global_action_to_settings_fragment"
         app:destination="@id/settings_fragment"
         app:launchSingleTop="true"
         app:popUpTo="@id/settings_fragment"/>
 
-    <action
-        android:id="@+id/global_action_to_event_detail"
+    <action android:id="@+id/global_action_to_event_detail"
         app:destination="@id/event_fragment"/>
 
-    <action
-        android:id="@+id/global_action_to_events"
-        app:destination="@id/events_fragment"/>
+    <action android:id="@+id/global_action_to_events"
+        app:destination="@id/events_fragment"
+        app:popUpTo="@id/events_fragment"
+        app:launchSingleTop="true"/>
 
-    <action
-        android:id="@+id/global_action_to_parents"
-        app:destination="@id/parents_fragment"/>
+    <action android:id="@+id/global_action_to_parents"
+        app:destination="@id/parents_fragment"
+        app:popUpTo="@string/parents"
+        app:launchSingleTop="true"/>
 
-    <action
-        android:id="@+id/global_action_to_cross_count"
-        app:destination="@id/cross_count_fragment"/>
+    <action android:id="@+id/global_action_to_cross_count"
+        app:destination="@id/cross_count_fragment"
+        app:popUpTo="@id/cross_count_fragment"
+        app:launchSingleTop="true"/>
 </navigation>

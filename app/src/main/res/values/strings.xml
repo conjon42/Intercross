@@ -199,5 +199,10 @@
     <string name="export_or_import">Export or Import</string>
     <string name="home">Home</string>
     <string name="import_string">Import</string>
+    <string name="summary">Summary</string>
+    <string name="crossblock">Cross Block</string>
+    <string name="wishlist">Wishes</string>
+    <string name="cross_count">Cross Count</string>
+    <string name="crosses_empty">Crosses need to be created first.</string>
 
 </resources>
