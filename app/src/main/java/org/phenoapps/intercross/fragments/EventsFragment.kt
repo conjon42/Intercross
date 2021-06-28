@@ -119,6 +119,12 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             pref.edit().putBoolean("first_load", false).apply()
         }
 
+        if (mSettings.isUUID) {
+
+            mBinding.editTextCross.setText(UUID.randomUUID().toString())
+
+        }
+
         recyclerView.adapter = EventsAdapter(this@EventsFragment, viewModel)
 
         recyclerView.layoutManager = LinearLayoutManager(context)
