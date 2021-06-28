@@ -124,6 +124,21 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
         setupTabLayout()
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        (activity as MainActivity).supportActionBar?.hide()
+
+        mBinding.summaryTabLayout.getTabAt(3)?.select()
+
+        mBinding.bottomNavBar.menu.findItem(R.id.action_nav_cross_count).isEnabled = false
+
+        mBinding.bottomNavBar.selectedItemId = R.id.action_nav_cross_count
+
+        mBinding.bottomNavBar.menu.findItem(R.id.action_nav_cross_count).isEnabled = true
+
+    }
+
     private fun FragmentDataSummaryBinding.setupTabLayout() {
 
         summaryTabLayout.addOnTabSelectedListener(tabSelected { tab ->

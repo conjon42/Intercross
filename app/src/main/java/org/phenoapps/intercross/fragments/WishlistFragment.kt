@@ -203,6 +203,19 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
         setHasOptionsMenu(true)
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        mBinding.summaryTabLayout.getTabAt(1)?.select()
+
+        mBinding.bottomNavBar.menu.findItem(R.id.action_nav_cross_count).isEnabled = false
+
+        mBinding.bottomNavBar.selectedItemId = R.id.action_nav_cross_count
+
+        mBinding.bottomNavBar.menu.findItem(R.id.action_nav_cross_count).isEnabled = true
+
+    }
+
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
 
         inflater.inflate(R.menu.wishlist_toolbar, menu)

@@ -2,6 +2,8 @@ package org.phenoapps.intercross.fragments
 
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.preference.PreferenceManager
 import android.view.GestureDetector
 import android.view.Menu
@@ -183,6 +185,21 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
         summaryTabLayout.getTabAt(2)?.select()
 
         setupTabLayout()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        (activity as MainActivity).supportActionBar?.hide()
+
+        mBinding.summaryTabLayout.getTabAt(2)?.select()
+
+        mBinding.bottomNavBar.menu.findItem(R.id.action_nav_cross_count).isEnabled = false
+
+        mBinding.bottomNavBar.selectedItemId = R.id.action_nav_cross_count
+
+        mBinding.bottomNavBar.menu.findItem(R.id.action_nav_cross_count).isEnabled = true
+
     }
 
     //a quick wrapper function for tab selection
