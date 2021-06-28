@@ -199,5 +199,14 @@
     <string name="export_or_import">Export or Import</string>
     <string name="home">Home</string>
     <string name="import_string">Import</string>
+    <string name="frag_event_detail_add_new_metadata">Add New Metadata</string>
+    <string name="submit">Submit</string>
+    <string name="dialog_confirm_remove_metadata">Press OK to delete metadata field.</string>
+    <string name="dialog_confirm_remove_for_all">This will delete the chosen field for all crosses.</string>
+    <string name="dialog_metadata_property_hint">Property Name</string>
+    <string name="dialog_metadata_default_hint">Default Value</string>
+    <string name="dialog_metadata_title">New Property Creator</string>
+    <string name="dialog_metadata_value_must_be_integer">Please enter an integer for the property value.</string>
+    <string name="dialog_metadata_property_must_not_be_empty">Please enter a property name.</string>
 
 </resources>

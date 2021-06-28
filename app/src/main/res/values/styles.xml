@@ -61,4 +61,9 @@
         <item name="android:background">@drawable/text_cell</item>
     </style>
 
+    <style name="Dialog">
+        <item name="android:windowNoTitle">false</item>
+        <item name="android:windowIsFloating">true</item>
+    </style>
+
 </resources>
