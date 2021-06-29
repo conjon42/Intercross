@@ -269,23 +269,31 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun afterFirstText(value: String) {
 
+        mBinding.firstText.setText(value)
+
+        mBinding.secondText.requestFocus()
+    }
+
+    private fun afterSecondText(value: String) {
+
         val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
 
         val order = pref.getBoolean(SettingsFragment.ORDER, false)
         val blank = pref.getBoolean(SettingsFragment.BLANK, false)
 
-        mBinding.firstText.setText(value)
-
-        if (!order && !blank) {
-
-            askUserNewExperimentName()
-
-        } else mBinding.secondText.requestFocus()
-    }
-
-    private fun afterSecondText(value: String) {
-
         mBinding.secondText.setText(value)
+
+        //check if female first, then check if string is empty to show error message
+        if (!order) {
+
+            if (value.isEmpty() && !blank) {
+
+                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.you_must_enter_male_name)))
+
+                return
+            }
+
+        }
 
         if ((mSettings.isPattern || mSettings.isUUID)) {
 
@@ -469,11 +477,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 val value = firstText.text.toString()
 
-                if (value.isNotBlank()) {
-
-                    afterFirstText(value)
-
-                } else secondText.requestFocus()
+                afterFirstText(value)
 
                 return@OnEditorActionListener true
             }
@@ -488,11 +492,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 val value = secondText.text.toString()
 
-                if (value.isNotBlank()) {
-
-                    afterSecondText(value)
-
-                } else editTextCross.requestFocus()
+                afterSecondText(value)
 
                 return@OnEditorActionListener true
             }
@@ -720,14 +720,24 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.you_must_enter_female_name)))
 
+                if (!maleFirst) {
+                    mBinding.firstText.requestFocus()
+                } else mBinding.secondText.requestFocus()
+
             } else if (value.isBlank()) {
 
                 mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.you_must_enter_cross_name)))
+
+                mBinding.editTextCross.requestFocus()
 
             } else {
 
                 mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.you_must_enter_male_name)))
 
+                //request focus on the edit text that is missing
+                if (maleFirst) {
+                    mBinding.firstText.requestFocus()
+                } else mBinding.secondText.requestFocus()
             }
 
             FileUtil(requireContext()).ringNotification(false)
