@@ -397,31 +397,37 @@ class MainActivity : AppCompatActivity() {
 
     fun showImportOrExportDialog(onDismiss: () -> Unit) {
 
-        with(AlertDialog.Builder(this@MainActivity)) {
+        val defaultFileNamePrefix = getString(R.string.default_crosses_export_file_name)
 
-            setSingleChoiceItems(arrayOf("Import", "Export"), 0) { dialog, which ->
+        exportCrossesFile.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
 
-                when (which) {
+        onDismiss()
 
-                    0 -> showImportDialog()
-
-                    1 -> showExportDialog()
-
-                }
-
-                dialog.dismiss()
-            }
-
-            setOnDismissListener {
-
-                onDismiss()
-
-            }
-
-            setTitle(R.string.export_or_import)
-
-            show()
-        }
+//        with(AlertDialog.Builder(this@MainActivity)) {
+//
+//            setSingleChoiceItems(arrayOf("Import", "Export"), 0) { dialog, which ->
+//
+//                when (which) {
+//
+//                    0 -> showImportDialog()
+//
+//                    1 -> showExportDialog()
+//
+//                }
+//
+//                dialog.dismiss()
+//            }
+//
+//            setOnDismissListener {
+//
+//                onDismiss()
+//
+//            }
+//
+//            setTitle(R.string.export_or_import)
+//
+//            show()
+//        }
     }
 
     fun navigateToLastSummaryFragment() {
