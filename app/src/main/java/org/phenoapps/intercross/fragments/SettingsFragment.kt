@@ -90,6 +90,30 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
         }
 
+        with (findPreference<Preference>("org.phenoapps.intercross.DATABASE_IMPORT")) {
+            this?.let {
+                setOnPreferenceClickListener {
+                    activity?.let { act ->
+                        (act as? MainActivity)?.importDatabase?.launch("*/*")
+                    }
+
+                    true
+                }
+            }
+        }
+
+        with (findPreference<Preference>("org.phenoapps.intercross.DATABASE_EXPORT")) {
+            this?.let {
+                setOnPreferenceClickListener {
+                    activity?.let { act ->
+                        (act as? MainActivity)?.exportDatabase?.launch("intercross.db")
+                    }
+
+                    true
+                }
+            }
+        }
+
         val printSetup = findPreference<Preference>("org.phenoapps.intercross.PRINTER_SETUP")
         printSetup?.setOnPreferenceClickListener {
             val intent = activity?.packageManager

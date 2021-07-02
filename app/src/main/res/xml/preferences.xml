@@ -50,6 +50,7 @@
             android:key="org.phenoapps.intercross.OPEN_CROSS_IMMEDIATELY"
             android:title="Open Cross After Creating"/>
     </PreferenceCategory>
+
     <PreferenceCategory android:title="Printing" app:iconSpaceReserved="false">
         <Preference
             android:icon="@drawable/ic_setting_print_connect"
@@ -61,6 +62,19 @@
             android:title="ZPL Import">
         </Preference>
     </PreferenceCategory>
+
+    <PreferenceCategory android:title="Database" app:iconSpaceReserved="false">
+        <Preference
+            android:icon="@drawable/ic_nv_import"
+            android:key="org.phenoapps.intercross.DATABASE_IMPORT"
+            android:title="Import Database" />
+        <Preference
+            android:icon="@drawable/ic_nv_export"
+            android:key="org.phenoapps.intercross.DATABASE_EXPORT"
+            android:title="Export Database">
+        </Preference>
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="About" app:iconSpaceReserved="false">
         <Preference
             android:icon="@drawable/ic_nv_about"

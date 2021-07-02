@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity() {
      * User selects a new uri document with CreateDocument(), default name is intercross.db
      * which can be changed where this is launched.
      */
-    private val exportDatabase by lazy {
+    val exportDatabase by lazy {
 
         registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
 
@@ -90,7 +90,7 @@ class MainActivity : AppCompatActivity() {
      * User selects a uri from a GetContent() call which is passed to FileUtil to copy streams.
      * Finally, the app is recreated to use the new database.
      */
-    private val importDatabase by lazy {
+    val importDatabase by lazy {
 
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
 
@@ -397,31 +397,37 @@ class MainActivity : AppCompatActivity() {
 
     fun showImportOrExportDialog(onDismiss: () -> Unit) {
 
-        with(AlertDialog.Builder(this@MainActivity)) {
+        val defaultFileNamePrefix = getString(R.string.default_crosses_export_file_name)
 
-            setSingleChoiceItems(arrayOf("Import", "Export"), 0) { dialog, which ->
+        exportCrossesFile.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
 
-                when (which) {
+        onDismiss()
 
-                    0 -> showImportDialog()
-
-                    1 -> showExportDialog()
-
-                }
-
-                dialog.dismiss()
-            }
-
-            setOnDismissListener {
-
-                onDismiss()
-
-            }
-
-            setTitle(R.string.export_or_import)
-
-            show()
-        }
+//        with(AlertDialog.Builder(this@MainActivity)) {
+//
+//            setSingleChoiceItems(arrayOf("Import", "Export"), 0) { dialog, which ->
+//
+//                when (which) {
+//
+//                    0 -> showImportDialog()
+//
+//                    1 -> showExportDialog()
+//
+//                }
+//
+//                dialog.dismiss()
+//            }
+//
+//            setOnDismissListener {
+//
+//                onDismiss()
+//
+//            }
+//
+//            setTitle(R.string.export_or_import)
+//
+//            show()
+//        }
     }
 
     fun navigateToLastSummaryFragment() {
