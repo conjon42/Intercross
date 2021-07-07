@@ -1,0 +1,5 @@
+femaleDbId,maleDbId,femaleName,maleName,wishType,wishMin,wishMax
+1,2,Kharkof,Scout 66,cross,5,10
+3,4,Kharkof,Kharkof,cross,1,5
+5,6,Kharkof,TAM-107,cross,2,2
+

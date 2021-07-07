@@ -62,6 +62,9 @@ class CrossUtil(val context: Context) {
 
         }
 
+        val isCommutative = PreferenceManager.getDefaultSharedPreferences(context)
+            .getBoolean("org.phenoapps.intercross.COMMUTATIVE_CROSSING", false)
+
         val experiment = PreferenceManager.getDefaultSharedPreferences(context)
                 .getString("org.phenoapps.intercross.EXPERIMENT", "")
 
@@ -113,7 +116,8 @@ class CrossUtil(val context: Context) {
 
         SnackbarQueue().push(SnackbarQueue.SnackJob(root, "$name $wasCreated"))
 
-        checkWishlist(female, male, wishlistProgress)
+        if (isCommutative) checkCommutativeWishlist(female, male, wishlistProgress)
+        else checkWishlist(female, male, wishlistProgress)
 
         return eid
     }
@@ -144,6 +148,27 @@ class CrossUtil(val context: Context) {
         Event.metadataDefault
     }
 
+    private fun checkCommutativeWishlist(f: String, m: String, wishlist: List<WishlistView>) {
+
+        wishlist.filter { (it.momId == f && it.dadId == m)
+                || (it.momId == m && it.dadId == f) }.forEach { item ->
+
+            if (item.wishProgress + 1 >= item.wishMin && item.wishMin != 0) {
+
+                FileUtil(context).ringNotification(true)
+
+                if (item.wishProgress >= item.wishMax && item.wishMax != 0) {
+
+                    Dialogs.notify(AlertDialog.Builder(context), context.getString(R.string.wish_max_complete))
+
+                } else {
+
+                    Dialogs.notify(AlertDialog.Builder(context), context.getString(R.string.wish_min_complete))
+
+                }
+            }
+        }
+    }
 
     private fun checkWishlist(f: String, m: String, wishlist: List<WishlistView>) {
 

@@ -341,59 +341,61 @@ class FileUtil(private val ctx: Context) {
 
             lines.forEach { rawRow ->
 
-                val row = rawRow.split(',').map { it.trim() }
+                if (rawRow.isNotBlank()) {
 
-                var readableMaleName: String? = null
+                    val row = rawRow.split(',').map { it.trim() }
 
-                var readableFemaleName: String? = null
+                    var readableMaleName: String? = null
 
-                var wishlistMax: Int? = null
+                    var readableFemaleName: String? = null
 
-                /*
-                Try to parse all optional columns.
-                 */
-                if (wishlistMaleNameHeader in headerIndices) {
+                    var wishlistMax: Int? = null
 
-                    headerIndices[wishlistMaleNameHeader]?.let { key ->
+                    /*
+                    Try to parse all optional columns.
+                     */
+                    if (wishlistMaleNameHeader in headerIndices) {
 
-                        readableMaleName = row[key]
+                        headerIndices[wishlistMaleNameHeader]?.let { key ->
+
+                            readableMaleName = row[key]
+                        }
                     }
-                }
 
-                if (wishlistFemaleNameHeader in headerIndices) {
+                    if (wishlistFemaleNameHeader in headerIndices) {
 
-                    headerIndices[wishlistFemaleNameHeader]?.let { key ->
+                        headerIndices[wishlistFemaleNameHeader]?.let { key ->
 
-                        readableFemaleName = row[key]
+                            readableFemaleName = row[key]
+                        }
                     }
-                }
 
-                if (wishlistMaxHeader in headerIndices) {
+                    if (wishlistMaxHeader in headerIndices) {
 
-                    headerIndices[wishlistMaxHeader]?.let { key ->
+                        headerIndices[wishlistMaxHeader]?.let { key ->
 
-                        wishlistMax = row[key].toInt()
+                            wishlistMax = row[key].toInt()
+                        }
                     }
-                }
 
-                /**
-                 * finally ensure that required columns exist, and add wishlists to ref array
-                 */
+                    /**
+                     * finally ensure that required columns exist, and add wishlists to ref array
+                     */
 
-                if (wishlistMaleIdHeader in headerIndices
+                    if (wishlistMaleIdHeader in headerIndices
                         && wishlistFemaleIdHeader in headerIndices
                         && wishlistTypeHeader in headerIndices
                         && wishlistMinHeader in headerIndices) {
 
-                    headerIndices[wishlistMaleIdHeader]?.let { maleId ->
+                        headerIndices[wishlistMaleIdHeader]?.let { maleId ->
 
-                        headerIndices[wishlistFemaleIdHeader]?.let { femaleId ->
+                            headerIndices[wishlistFemaleIdHeader]?.let { femaleId ->
 
-                            headerIndices[wishlistTypeHeader]?.let { type ->
+                                headerIndices[wishlistTypeHeader]?.let { type ->
 
-                                headerIndices[wishlistMinHeader]?.let { min ->
+                                    headerIndices[wishlistMinHeader]?.let { min ->
 
-                                    wishlist.add(Wishlist(
+                                        wishlist.add(Wishlist(
                                             femaleDbId = row[femaleId],
                                             maleDbId = row[maleId],
                                             femaleName = readableFemaleName ?: row[femaleId],
@@ -401,18 +403,19 @@ class FileUtil(private val ctx: Context) {
                                             wishType = row[type],
                                             wishMin = row[min].toInt(),
                                             wishMax = wishlistMax
-                                    ))
+                                        ))
 
-                                    /**
-                                     * Add all parents parsed from the wishlist
-                                     */
-                                    parents.add(Parent(row[femaleId], 0).apply {
-                                        name = readableFemaleName ?: row[femaleId]
-                                    })
+                                        /**
+                                         * Add all parents parsed from the wishlist
+                                         */
+                                        parents.add(Parent(row[femaleId], 0).apply {
+                                            name = readableFemaleName ?: row[femaleId]
+                                        })
 
-                                    parents.add(Parent(row[maleId], 1).apply {
-                                        name = readableMaleName ?: row[maleId]
-                                    })
+                                        parents.add(Parent(row[maleId], 1).apply {
+                                            name = readableMaleName ?: row[maleId]
+                                        })
+                                    }
                                 }
                             }
                         }

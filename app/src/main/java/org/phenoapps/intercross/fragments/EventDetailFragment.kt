@@ -44,14 +44,8 @@ class EventDetailFragment:
 
     private lateinit var mEvent: Event
 
-    private var mWishlist: List<WishlistView> = ArrayList()
-
     private val eventsList: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
-    }
-
-    private val wishList: WishlistViewModel by viewModels {
-        WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
     }
 
     private lateinit var eventDetailViewModel: EventDetailViewModel
@@ -222,15 +216,6 @@ class EventDetailFragment:
     }
 
     private fun FragmentEventDetailBinding.refreshObservers() {
-
-        wishList.wishes.observe(viewLifecycleOwner, {
-
-            it?.let { crossblock ->
-
-                mWishlist = crossblock
-
-            }
-        })
 
         if (::eventDetailViewModel.isInitialized) {
 

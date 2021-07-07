@@ -149,6 +149,8 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         val error = getString(R.string.ErrorCodeExists)
 
+        val isCommutative = pref.getBoolean("org.phenoapps.intercross.COMMUTATIVE_CROSSING", false)
+
         parentsList.parents.observe(viewLifecycleOwner, {
 
             it?.let {
@@ -202,14 +204,28 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             }
         })
 
-        wishStore.wishes.observe(viewLifecycleOwner, {
+        if (isCommutative) {
 
-            it?.let {
+            wishStore.commutativeWishes.observe(viewLifecycleOwner, {
 
-                mWishlistProgress = it.filter { wish -> wish.wishType == "cross" }
-            }
+                it?.let {
 
-        })
+                    mWishlistProgress = it.filter { wish -> wish.wishType == "cross" }
+                }
+
+            })
+
+        } else {
+
+            wishStore.wishes.observe(viewLifecycleOwner, {
+
+                it?.let {
+
+                    mWishlistProgress = it.filter { wish -> wish.wishType == "cross" }
+                }
+
+            })
+        }
 
         mSharedViewModel.lastScan.observe(viewLifecycleOwner, {
 
