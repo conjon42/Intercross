@@ -46,10 +46,18 @@ task clean(type: Delete) {
 
 allprojects {
     repositories {
-        jcenter()
-        maven { url "https://dl.bintray.com/pheno-apps/pheno-apps-java-client-library" }
+        mavenCentral()
         maven { url "https://jitpack.io" }
         google()
+
+        maven {
+            url = "https://maven.pkg.github.com/phenoapps/phenolib"
+            credentials {
+                username = getLocalProp("GITHUB_USERNAME")
+                password = getLocalProp("GITHUB_TOKEN")
+            }
+        }
+
         maven {
             url = "https://maven.pkg.github.com/Breeding-Insight/brapi"
             credentials {

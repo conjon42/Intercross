@@ -316,4 +316,9 @@
         app:destination="@id/cross_count_fragment"
         app:popUpTo="@id/cross_count_fragment"
         app:launchSingleTop="true"/>
+
+    <action android:id="@+id/global_action_to_wishlist_import"
+        app:destination="@+id/brapi_wishlist_import_fragment"
+        app:launchSingleTop="true"
+        app:popUpTo="@id/cross_count_fragment"/>
 </navigation>
