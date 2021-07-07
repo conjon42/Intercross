@@ -75,6 +75,12 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
     private fun startObservers() {
 
+        val isCommutativeCrossing = PreferenceManager.getDefaultSharedPreferences(context)
+            .getBoolean("org.phenoapps.intercross.COMMUTATIVE_CROSSING", false)
+
+        if (isCommutativeCrossing) {
+
+        }
         eventsModel.parents.observe(viewLifecycleOwner, {
 
             it?.let { crosses ->
@@ -100,24 +106,24 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
                         (mBinding.recyclerView.adapter as CrossCountAdapter).submitList(crossData as List<ListEntry>?)
 
-                        mBinding.deleteButton.setOnClickListener {
 
-                            Dialogs.onOk(AlertDialog.Builder(requireContext()),
-                                getString(R.string.delete_cross_entry_title),
-                                getString(R.string.cancel),
-                                getString(R.string.zxing_button_ok)) {
-
-                                eventsModel.deleteAll()
-
-                                findNavController().popBackStack()
-
-                            }
-                        }
                     }
                 })
             }
         })
+        mBinding.deleteButton.setOnClickListener {
 
+            Dialogs.onOk(AlertDialog.Builder(requireContext()),
+                getString(R.string.delete_cross_entry_title),
+                getString(R.string.cancel),
+                getString(R.string.zxing_button_ok)) {
+
+                eventsModel.deleteAll()
+
+                findNavController().popBackStack()
+
+            }
+        }
         /**
          * Keep track if wishlist repo is empty to disable options items menu
          */

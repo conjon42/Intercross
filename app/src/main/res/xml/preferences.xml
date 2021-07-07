@@ -49,6 +49,11 @@
             android:icon="@drawable/ic_book_open"
             android:key="org.phenoapps.intercross.OPEN_CROSS_IMMEDIATELY"
             android:title="Open Cross After Creating"/>
+        <SwitchPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_receipt_long_black_24dp"
+            android:key="org.phenoapps.intercross.COMMUTATIVE_CROSSING"
+            android:title="Commutative Crossing"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Printing" app:iconSpaceReserved="false">
