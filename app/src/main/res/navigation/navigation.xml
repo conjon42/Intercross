@@ -145,6 +145,10 @@
         <argument
             android:name="eid"
             app:argType="long"/>
+        <action android:id="@+id/action_to_event_refresh"
+            app:destination="@id/event_fragment"
+            app:popUpTo="@id/events_fragment"
+            app:launchSingleTop="true"/>
         <action android:id="@+id/action_to_parent_event"
             app:destination="@id/event_fragment"
             app:popUpTo="@id/events_fragment">

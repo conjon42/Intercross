@@ -16,6 +16,8 @@ class EventDetailViewModel(
         emit(data)
     }
 
+    val metadata = eventsRepository.getMetadata(eventId)
+
     val parents = eventsRepository.getParents(eventId)
 
 }

@@ -15,6 +15,9 @@ import android.util.Log
 import android.widget.Toast
 import androidx.annotation.WorkerThread
 import androidx.appcompat.app.AlertDialog
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
+import com.google.gson.JsonPrimitive
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.models.*
@@ -82,15 +85,9 @@ class FileUtil(private val ctx: Context) {
 
     private val crossTypeHeader: String by lazy { ctx.getString(R.string.crosses_export_type_header) }
 
-    private val crossFruitsHeader: String by lazy { ctx.getString(R.string.crosses_export_fruits_header) }
-
-    private val crossFlowersHeader: String by lazy { ctx.getString(R.string.crosses_export_flowers_header) }
-
-    private val crossSeedsHeader: String by lazy { ctx.getString(R.string.crosses_export_seeds_header) }
-
     private val crossHeaders = setOf(crossIdHeader, crossMomHeader, crossDadHeader,
             crossTimestampHeader, crossPersonHeader, crossExperimentHeader,
-            crossTypeHeader, crossFruitsHeader, crossFlowersHeader, crossSeedsHeader)
+            crossTypeHeader)
 
     private val eventModelHeaderString by lazy {
         crossHeaders.joinToString(",")
@@ -266,6 +263,8 @@ class FileUtil(private val ctx: Context) {
 
                 val row = it.split(",").map { it.trim() }
 
+                val metadataFields = row.size - crossHeaders.size
+
                 headerToIndex[crossIdHeader]?.let { crossIdKey ->
 
                     headerToIndex[crossMomHeader]?.let { momKey ->
@@ -280,35 +279,31 @@ class FileUtil(private val ctx: Context) {
 
                                         headerToIndex[crossTypeHeader]?.let { typeKey ->
 
-                                            headerToIndex[crossFruitsHeader]?.let { fruitKey ->
-
-                                                headerToIndex[crossFlowersHeader]?.let { flowerKey ->
-
-                                                    headerToIndex[crossSeedsHeader]?.let { seedsKey ->
-
-                                                        crosses.add(
-                                                                Event(
-                                                                        row[crossIdKey],
-                                                                        row[momKey],
-                                                                        row[dadKey],
-                                                                        timestamp = row[time],
-                                                                        person = row[personKey],
-                                                                        experiment = row[expKey],
-                                                                        type = when (row[typeKey]) {
-                                                                            "BIPARENTAL" -> CrossType.BIPARENTAL
-                                                                            "OPEN" -> CrossType.OPEN
-                                                                            "POLY" -> CrossType.POLY
-                                                                            "SELF" -> CrossType.SELF
-                                                                            else -> CrossType.UNKNOWN
-                                                                        },
-                                                                        metaData = EventMetaData(
-                                                                                fruits = row[fruitKey].toInt(),
-                                                                                flowers = row[flowerKey].toInt(),
-                                                                                seeds = row[seedsKey].toInt()) ))
-
-                                                    }
-                                                }
-                                            }
+                                            crosses.add(
+                                                    Event(
+                                                            row[crossIdKey],
+                                                            row[momKey],
+                                                            row[dadKey],
+                                                            timestamp = row[time],
+                                                            person = row[personKey],
+                                                            experiment = row[expKey],
+                                                            type = when (row[typeKey]) {
+                                                                "BIPARENTAL" -> CrossType.BIPARENTAL
+                                                                "OPEN" -> CrossType.OPEN
+                                                                "POLY" -> CrossType.POLY
+                                                                "SELF" -> CrossType.SELF
+                                                                else -> CrossType.UNKNOWN
+                                                            },
+                                                            //only metadata values (not default values) are persisted across import/exports
+                                                            metadata = JsonObject().apply {
+                                                                for (i in crossHeaders.size until crossHeaders.size+metadataFields) {
+                                                                    this.add(headers[i], JsonArray(2).apply {
+                                                                        add(JsonPrimitive(row[i]))
+                                                                        add(JsonPrimitive(0))
+                                                                    })
+                                                                }
+                                                            }.toString()
+                                                    ))
                                         }
                                     }
                                 }
@@ -316,7 +311,6 @@ class FileUtil(private val ctx: Context) {
                         }
                     }
                 }
-
             }
         }
     }
@@ -463,41 +457,46 @@ class FileUtil(private val ctx: Context) {
 
             ctx.contentResolver.openOutputStream(uri).apply {
 
-                this?.let {
+                if (crosses.isNotEmpty()) {
 
-                    write(eventModelHeaderString.toByteArray())
+                    this?.let {
 
-                    write(newLine)
+                        val first = crosses.first()
 
-                    crosses.forEachIndexed { index, cross ->
+                        //add metadata properties as headers to the export file
+                        write((eventModelHeaderString + first.getMetadataHeaders()).toByteArray())
 
-                        if (groups.any { g -> g.codeId == cross.maleObsUnitDbId }) {
+                        write(newLine)
 
-                            var groupName = groups.find { g -> g.codeId == cross.maleObsUnitDbId }?.name
+                        crosses.forEachIndexed { index, cross ->
 
-                            val males = groups.filter { g -> g.codeId == cross.maleObsUnitDbId }
+                            if (groups.any { g -> g.codeId == cross.maleObsUnitDbId }) {
+
+                                var groupName = groups.find { g -> g.codeId == cross.maleObsUnitDbId }?.name
+
+                                val males = groups.filter { g -> g.codeId == cross.maleObsUnitDbId }
                                     .map { g ->
                                         parents.find { c -> c.id == g.maleId }.let {
                                             it?.codeId
                                         }
                                     }.joinToString(";", "{", "}")
 
-                            write(cross.toPollenGroupString(males, groupName).toByteArray())
+                                write(cross.toPollenGroupString(males, groupName).toByteArray())
 
-                            write(newLine)
+                                write(newLine)
 
-                        } else {
+                            } else {
 
-                            write(cross.toString().toByteArray())
+                                write(cross.toString().toByteArray())
 
-                            write(newLine)
+                                write(newLine)
 
+                            }
                         }
+
+                        close()
                     }
-
-                    close()
                 }
-
             }
 
         } catch (exception: FileNotFoundException) {
