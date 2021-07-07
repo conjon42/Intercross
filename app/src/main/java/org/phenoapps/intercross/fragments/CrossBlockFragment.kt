@@ -230,32 +230,12 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
                     }
                 }
 
-                getString(R.string.cross_count) -> {
-
-                    if (mEvents.isNotEmpty()) {
-
-                        Navigation.findNavController(mBinding.root)
-                            .navigate(CrossBlockFragmentDirections.actionToCrossCount())
-                    } else {
-
-                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.crosses_empty))
-                        summaryTabLayout.getTabAt(2)?.select()
-
-                    }
-                }
-                getString(R.string.wishlist) -> {
-
-                    if (::mWishlist.isInitialized && mWishlist.isNotEmpty()) {
-
-                        Navigation.findNavController(mBinding.root)
-                            .navigate(CrossBlockFragmentDirections.actionToWishlist())
-                    } else {
-
-                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
-                        summaryTabLayout.getTabAt(2)?.select()
-
-                    }
-                }
+                getString(R.string.cross_count) ->
+                    Navigation.findNavController(mBinding.root)
+                        .navigate(CrossBlockFragmentDirections.actionToCrossCount())
+                getString(R.string.wishlist) ->
+                    Navigation.findNavController(mBinding.root)
+                        .navigate(CrossBlockFragmentDirections.actionToWishlist())
             }
         })
     }

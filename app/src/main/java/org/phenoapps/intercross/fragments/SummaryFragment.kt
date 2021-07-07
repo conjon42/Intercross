@@ -24,6 +24,10 @@ import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.PercentFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
 import com.google.android.material.tabs.TabLayout
+import com.google.gson.JsonArray
+import com.google.gson.JsonParser
+import com.google.gson.JsonPrimitive
+import com.google.gson.JsonSyntaxException
 import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.SummaryAdapter
@@ -158,32 +162,12 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
                     }
                 }
 
-                getString(R.string.cross_count) -> {
-
-                    if (::mEvents.isInitialized && mEvents.isNotEmpty()) {
-
-                        Navigation.findNavController(mBinding.root)
-                            .navigate(SummaryFragmentDirections.actionToCrossCount())
-                    } else {
-
-                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.crosses_empty))
-                        summaryTabLayout.getTabAt(3)?.select()
-
-                    }
-                }
-                getString(R.string.wishlist) -> {
-
-                    if (::mWishlist.isInitialized && mWishlist.isNotEmpty()) {
-
-                        Navigation.findNavController(mBinding.root)
-                            .navigate(SummaryFragmentDirections.actionToWishlist())
-                    } else {
-
-                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
-                        summaryTabLayout.getTabAt(3)?.select()
-
-                    }
-                }
+                getString(R.string.cross_count) ->
+                    Navigation.findNavController(mBinding.root)
+                        .navigate(SummaryFragmentDirections.actionToCrossCount())
+                getString(R.string.wishlist) ->
+                    Navigation.findNavController(mBinding.root)
+                        .navigate(SummaryFragmentDirections.actionToWishlist())
             }
         })
     }
@@ -367,20 +351,41 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
             }
     },"Cross Type Statistics")
 
+    /**
+     * Extension function that returns a list of property/value pairs for all metadata fields
+     * For example Event eid=1 metadata={fruits=[1,2], seeds=[9,7]} would return
+     * [fruits to 1, seeds to 9]
+     */
+    private fun Event.toEntrySet(): List<Pair<String, Int>> = try {
+
+        val element = JsonParser.parseString(this.metadata)
+
+        if (element.isJsonObject) {
+
+            val json = element.asJsonObject
+
+            json.entrySet().filter { it.key != null }.map { it.key to it.value.asJsonArray.get(0).asInt }
+
+        } else throw JsonSyntaxException("Malformed metadata format found: ${element.asString}")
+
+    } catch (e: JsonSyntaxException) {
+
+        e.printStackTrace()
+
+        listOf()
+    }
+
     private fun setMetaData(): PieDataSet = PieDataSet(ArrayList<PieEntry>().apply {
 
         if (::mEvents.isInitialized) {
-//            val fruits = mEvents.map { it.metaData.fruits }.sum().toFloat()
-//            val seeds = mEvents.map { it.metaData.seeds }.sum().toFloat()
-//            val flowers = mEvents.map { it.metaData.flowers }.sum().toFloat()
-//            if (fruits > 0f) add(PieEntry(fruits, getString(R.string.crosses_export_fruits_header)))
-//            if (seeds > 0f) add(PieEntry(seeds, getString(R.string.crosses_export_seeds_header)))
-//            if (flowers > 0f) add(
-//                PieEntry(
-//                    flowers,
-//                    getString(R.string.crosses_export_flowers_header)
-//                )
-//            )
+
+            mEvents.flatMap { it.toEntrySet() } // [(seeds, 1), (flowers, 1), (seeds, 2), ....]
+                .groupBy { it.first }   //[(seeds, [1, 2]), (flowers, [1]), ...]
+                .map { it.key to it.value.sumBy { values -> values.second } } //[(seeds, 3), (flowers, 1), ...]
+                .map { PieEntry(
+                    it.second.toFloat(),
+                    it.first
+                ) }.forEach(::add)
         }
     },"Meta Data Statistics")
 

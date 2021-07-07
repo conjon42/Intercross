@@ -106,24 +106,24 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
                         (mBinding.recyclerView.adapter as CrossCountAdapter).submitList(crossData as List<ListEntry>?)
 
+                        mBinding.deleteButton.setOnClickListener {
 
+                            Dialogs.onOk(AlertDialog.Builder(requireContext()),
+                                getString(R.string.delete_all_cross_title),
+                                getString(R.string.cancel),
+                                getString(R.string.zxing_button_ok)) {
+
+                                eventsModel.deleteAll()
+
+                                findNavController().popBackStack()
+
+                            }
+                        }
                     }
                 })
             }
         })
-        mBinding.deleteButton.setOnClickListener {
 
-            Dialogs.onOk(AlertDialog.Builder(requireContext()),
-                getString(R.string.delete_cross_entry_title),
-                getString(R.string.cancel),
-                getString(R.string.zxing_button_ok)) {
-
-                eventsModel.deleteAll()
-
-                findNavController().popBackStack()
-
-            }
-        }
         /**
          * Keep track if wishlist repo is empty to disable options items menu
          */
@@ -168,19 +168,9 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
                     Navigation.findNavController(mBinding.root)
                         .navigate(CrossCountFragmentDirections.actionToSummary())
 
-                getString(R.string.wishlist) -> {
-
-                    if (!mWishlistEmpty) {
-
-                        Navigation.findNavController(mBinding.root)
-                            .navigate(CrossCountFragmentDirections.actionToWishlist())
-                    } else {
-
-                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
-                        summaryTabLayout.getTabAt(0)?.select()
-
-                    }
-                }
+                getString(R.string.wishlist) ->
+                    Navigation.findNavController(mBinding.root)
+                        .navigate(CrossCountFragmentDirections.actionToWishlist())
             }
         })
     }

@@ -128,19 +128,10 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
                     }
                 }
 
-                getString(R.string.cross_count) -> {
+                getString(R.string.cross_count) ->
+                    Navigation.findNavController(mBinding.root)
+                        .navigate(WishlistFragmentDirections.actionToCrossCount())
 
-                    if (mEvents.isNotEmpty()) {
-
-                        Navigation.findNavController(mBinding.root)
-                            .navigate(WishlistFragmentDirections.actionToCrossCount())
-                    } else {
-
-                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.crosses_empty))
-                        summaryTabLayout.getTabAt(1)?.select()
-
-                    }
-                }
                 getString(R.string.crossblock) -> {
 
                     if (!wishlistEmpty) {
