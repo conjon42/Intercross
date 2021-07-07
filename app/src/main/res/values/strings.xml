@@ -330,5 +330,6 @@
     <string name="wishlist">Wishes</string>
     <string name="cross_count">Cross Count</string>
     <string name="crosses_empty">Crosses need to be created first.</string>
+    <string name="delete_all_cross_title">Delete all crosses?</string>
 
 </resources>

@@ -10,6 +10,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.NavController
+import androidx.navigation.NavDirections
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.CoroutineScope
@@ -26,6 +27,8 @@ import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFact
 import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.ActivityMainBinding
+import org.phenoapps.intercross.fragments.CrossCountFragment
+import org.phenoapps.intercross.fragments.CrossCountFragmentDirections
 import org.phenoapps.intercross.fragments.EventsFragmentDirections
 import org.phenoapps.intercross.fragments.PatternFragment
 import org.phenoapps.intercross.util.*
@@ -385,37 +388,24 @@ class MainActivity : AppCompatActivity() {
 
     fun showImportOrExportDialog(onDismiss: () -> Unit) {
 
-        val defaultFileNamePrefix = getString(R.string.default_crosses_export_file_name)
+        AlertDialog.Builder(this)
+            .setSingleChoiceItems(arrayOf("Local", "BrAPI"), 0) { dialog, which ->
+                when (which) {
+                    0 -> {
+                        val defaultFileNamePrefix = getString(R.string.default_crosses_export_file_name)
+                        exportCrossesFile.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
+                    }
+                    else -> {
+                        mNavController.navigate(EventsFragmentDirections.actionToBrapiExport())
+                    }
+                }
 
-        exportCrossesFile.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
+                dialog.dismiss()
+            }
+            .show()
 
         onDismiss()
 
-//        with(AlertDialog.Builder(this@MainActivity)) {
-//
-//            setSingleChoiceItems(arrayOf("Import", "Export"), 0) { dialog, which ->
-//
-//                when (which) {
-//
-//                    0 -> showImportDialog()
-//
-//                    1 -> showExportDialog()
-//
-//                }
-//
-//                dialog.dismiss()
-//            }
-//
-//            setOnDismissListener {
-//
-//                onDismiss()
-//
-//            }
-//
-//            setTitle(R.string.export_or_import)
-//
-//            show()
-//        }
     }
 
     fun navigateToLastSummaryFragment() {

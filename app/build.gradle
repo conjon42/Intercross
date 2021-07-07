@@ -16,12 +16,15 @@ android {
 
         playStoreConfig {
             Properties keystoreProps = new Properties()
-            keystoreProps.load(new FileInputStream(file('keystore.config')))
 
-            keyAlias keystoreProps['keyAlias']
-            keyPassword keystoreProps['keyPassword']
-            storePassword keystoreProps['storePassword']
-            storeFile file('intercross.keystore.jks')
+            if (file('keystore.config').exists()) {
+                keystoreProps.load(new FileInputStream(file('keystore.config')))
+
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+                storePassword keystoreProps['storePassword']
+                storeFile file('intercross.keystore.jks')
+            }
         }
     }
 
