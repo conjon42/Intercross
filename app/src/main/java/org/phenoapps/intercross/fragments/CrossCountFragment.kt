@@ -78,9 +78,98 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
         val isCommutativeCrossing = PreferenceManager.getDefaultSharedPreferences(context)
             .getBoolean("org.phenoapps.intercross.COMMUTATIVE_CROSSING", false)
 
-        if (isCommutativeCrossing) {
+        /**
+         * issue 25 added a commutative cross count where order does not matter.
+         */
+        if (isCommutativeCrossing) loadCommutativeCrossCounts()
+        else loadNonCommutativeCrossCounts()
 
+        //delete all crosses button confirmation dialog
+        mBinding.deleteButton.setOnClickListener {
+
+            Dialogs.onOk(AlertDialog.Builder(requireContext()),
+                getString(R.string.delete_all_cross_title),
+                getString(R.string.cancel),
+                getString(R.string.zxing_button_ok)) {
+
+                eventsModel.deleteAll()
+
+                findNavController().popBackStack()
+
+            }
         }
+
+        /**
+         * Keep track if wishlist repo is empty to disable options items menu
+         */
+        wishModel.wishlist.observe(viewLifecycleOwner, {
+
+            it?.let {
+
+                mWishlistEmpty = it.isEmpty()
+            }
+        })
+    }
+
+    //a quick wrapper function for tab selection
+    private fun tabSelected(onSelect: (TabLayout.Tab?) -> Unit) = object : TabLayout.OnTabSelectedListener {
+        override fun onTabSelected(tab: TabLayout.Tab?) {
+            onSelect(tab)
+        }
+        override fun onTabUnselected(tab: TabLayout.Tab?) {}
+        override fun onTabReselected(tab: TabLayout.Tab?) {}
+    }
+
+    private fun loadCommutativeCrossCounts() {
+
+        eventsModel.parents.observe(viewLifecycleOwner, {
+
+            it?.let { crosses ->
+
+                val crossData = ArrayList<CrossData>()
+
+                eventsModel.events.observe(viewLifecycleOwner, { data ->
+
+                    data?.let { events ->
+
+                        crosses.forEach { parentrow ->
+
+                            crossData.add(
+                                CrossData(
+                                    parentrow.dad,
+                                    parentrow.mom,
+                                    parentrow.count.toString(),
+                                    events.filter { e ->
+                                        (e.maleObsUnitDbId == parentrow.dad && e.femaleObsUnitDbId == parentrow.mom)
+                                                || (e.maleObsUnitDbId == parentrow.mom && e.femaleObsUnitDbId == parentrow.dad)})
+                            )
+
+                        }
+
+                        (mBinding.recyclerView.adapter as CrossCountAdapter).submitList(
+                            crossData.groupBy { cross ->
+                                if (cross.m < cross.f) "${cross.m}${cross.f}".hashCode()
+                                else "${cross.f}${cross.m}".hashCode()
+                            }.map { entry ->
+                                if (entry.value.size == 1) {
+                                    entry.value[0]
+                                } else {
+                                    val actualCount = entry.value
+                                        .sumBy { match -> match.count.toInt() }.toString()
+                                    with(entry.value[0]) {
+                                        CrossData(m, f, actualCount, this.events)
+                                    }
+                                }
+                            } as List<ListEntry>?)
+
+                    }
+                })
+            }
+        })
+    }
+
+    private fun loadNonCommutativeCrossCounts() {
+
         eventsModel.parents.observe(viewLifecycleOwner, {
 
             it?.let { crosses ->
@@ -106,43 +195,10 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
                         (mBinding.recyclerView.adapter as CrossCountAdapter).submitList(crossData as List<ListEntry>?)
 
-                        mBinding.deleteButton.setOnClickListener {
-
-                            Dialogs.onOk(AlertDialog.Builder(requireContext()),
-                                getString(R.string.delete_all_cross_title),
-                                getString(R.string.cancel),
-                                getString(R.string.zxing_button_ok)) {
-
-                                eventsModel.deleteAll()
-
-                                findNavController().popBackStack()
-
-                            }
-                        }
                     }
                 })
             }
         })
-
-        /**
-         * Keep track if wishlist repo is empty to disable options items menu
-         */
-        wishModel.wishlist.observe(viewLifecycleOwner, {
-
-            it?.let {
-
-                mWishlistEmpty = it.isEmpty()
-            }
-        })
-    }
-
-    //a quick wrapper function for tab selection
-    private fun tabSelected(onSelect: (TabLayout.Tab?) -> Unit) = object : TabLayout.OnTabSelectedListener {
-        override fun onTabSelected(tab: TabLayout.Tab?) {
-            onSelect(tab)
-        }
-        override fun onTabUnselected(tab: TabLayout.Tab?) {}
-        override fun onTabReselected(tab: TabLayout.Tab?) {}
     }
 
     private fun FragmentCrossCountBinding.setupTabLayout() {
