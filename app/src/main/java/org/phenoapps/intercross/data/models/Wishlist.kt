@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "wishlist")
-data class Wishlist(var femaleDbId: String,
+data class Wishlist constructor(var femaleDbId: String,
                     var maleDbId: String,
                     var femaleName: String=femaleDbId,
                     var maleName: String=maleDbId,
@@ -21,5 +21,4 @@ data class Wishlist(var femaleDbId: String,
             row[2], row[3],
             row[4], row[5].toIntOrNull() ?: 0,
             row[6].toIntOrNull() ?: 0)
-
 }

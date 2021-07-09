@@ -14,6 +14,35 @@
         android:layout_height="match_parent"
         android:background="@drawable/cell">
 
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/summary_tab_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/cross_count" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/wishlist" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/crossblock" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/summary" />
+        </com.google.android.material.tabs.TabLayout>
+
         <TextView
             android:id="@+id/maleHeader"
             style="@style/CellText.Header"
@@ -26,7 +55,7 @@
             app:layout_constraintHorizontal_weight="2"
             app:layout_constraintStart_toStartOf="@id/recyclerView"
             app:layout_constraintEnd_toStartOf="@id/femaleHeader"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/summary_tab_layout" />
 
         <TextView
             android:id="@+id/femaleHeader"
@@ -37,7 +66,7 @@
             app:layout_constraintHorizontal_weight="2"
             app:layout_constraintEnd_toStartOf="@id/countHeader"
             app:layout_constraintStart_toEndOf="@id/maleHeader"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/summary_tab_layout" />
 
         <TextView
             android:id="@+id/countHeader"
@@ -49,7 +78,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toEndOf="@id/femaleHeader"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/summary_tab_layout"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
@@ -71,7 +100,7 @@
             android:layout_height="wrap_content"
             android:text="@string/delete_all"
             android:backgroundTint="@color/colorAccent"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/bottom_nav_bar"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 

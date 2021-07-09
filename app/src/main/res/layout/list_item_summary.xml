@@ -8,7 +8,7 @@
             type="String" />
         <variable
             name="countValue"
-            type="Float" />
+            type="int" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -31,7 +31,7 @@
             android:id="@+id/summary_item_value_text"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:text="@{countValue.toString()}"
+            android:text="@{String.valueOf(countValue)}"
             tools:text="42"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

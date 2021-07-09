@@ -8,6 +8,9 @@ import androidx.navigation.NavController
 import androidx.navigation.NavDirections
 import androidx.preference.PreferenceManager
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.gson.JsonParser
+import com.google.gson.JsonPrimitive
+import com.google.gson.JsonSyntaxException
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
@@ -67,12 +70,23 @@ class CrossUtil(val context: Context) {
 
         val date = DateUtil().getTime()
 
+        val eventsList = eventsModel.events.value
+
+        //use the default metadata values to populate the new cross event
+        val metadata = if (eventsList?.isNotEmpty() == true) {
+
+            eventsList.first().metadata.toDefaultJson()
+
+        } else Event.metadataDefault
+
         val e = Event(name,
                 female,
                 male,
                 "",
-                date, person ?: "?", experiment ?: "?")
-
+                date,
+         person ?: "?",
+      experiment ?: "?",
+                metadata = metadata)
 
         /** Insert mom/dad cross ids only if they don't exist in the DB already **/
         if (!parents.any { p -> p.codeId == e.femaleObsUnitDbId }) {
@@ -102,6 +116,33 @@ class CrossUtil(val context: Context) {
 
         return eid
     }
+
+    //takes a json string and resets its value with its default value
+    private fun String.toDefaultJson(): String = try {
+
+        val element = JsonParser.parseString(this)
+
+        if (element.isJsonObject) {
+
+            val json = element.asJsonObject
+
+            json.entrySet().forEach {
+                with(json.getAsJsonArray(it.key)) {
+                    this[0] = this[1].asJsonPrimitive
+                }
+            }
+
+            json.toString()
+
+        } else Event.metadataDefault
+
+    } catch (e: JsonSyntaxException) {
+
+        e.printStackTrace()
+
+        Event.metadataDefault
+    }
+
 
     private fun checkWishlist(f: String, m: String, wishlist: List<WishlistView>) {
 

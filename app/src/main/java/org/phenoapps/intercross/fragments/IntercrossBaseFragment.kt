@@ -10,6 +10,9 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import org.phenoapps.intercross.MainActivity
+import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.util.SnackbarQueue
 
@@ -40,6 +43,15 @@ abstract class IntercrossBaseFragment<T : ViewDataBinding>(
 
             root
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (findNavController().currentDestination?.id
+            !in setOf(R.id.crossblock_fragment, R.id.summary_fragment,
+                R.id.events_fragment, R.id.barcode_scan_fragment))
+            (activity as MainActivity).supportActionBar?.show()
     }
 
     override fun onDestroyView() {

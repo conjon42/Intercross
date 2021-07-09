@@ -10,6 +10,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.NavController
+import androidx.navigation.NavDirections
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.CoroutineScope
@@ -26,6 +27,8 @@ import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFact
 import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.ActivityMainBinding
+import org.phenoapps.intercross.fragments.CrossCountFragment
+import org.phenoapps.intercross.fragments.CrossCountFragmentDirections
 import org.phenoapps.intercross.fragments.EventsFragmentDirections
 import org.phenoapps.intercross.fragments.PatternFragment
 import org.phenoapps.intercross.util.*
@@ -73,7 +76,7 @@ class MainActivity : AppCompatActivity() {
      * User selects a new uri document with CreateDocument(), default name is intercross.db
      * which can be changed where this is launched.
      */
-    private val exportDatabase by lazy {
+    val exportDatabase by lazy {
 
         registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
 
@@ -90,7 +93,7 @@ class MainActivity : AppCompatActivity() {
      * User selects a uri from a GetContent() call which is passed to FileUtil to copy streams.
      * Finally, the app is recreated to use the new database.
      */
-    private val importDatabase by lazy {
+    val importDatabase by lazy {
 
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
 
@@ -364,52 +367,45 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showImportDialog() {
+    fun launchImport() {
 
-        val mimeType = "*/*"
-
-        with(AlertDialog.Builder(this@MainActivity)) {
-
-            setSingleChoiceItems(arrayOf("CSV", "Database"), 0) { dialog, which ->
-
+        //show a dialog asking user to import from local file or brapi
+        AlertDialog.Builder(this)
+            .setSingleChoiceItems(arrayOf("Local", "BrAPI"), 0) { dialog, which ->
                 when (which) {
+                    //import file from local directory
+                    0 -> importedFileContent.launch("*/*")
 
-                    0 -> importedFileContent.launch(mimeType)
-
-                    1 -> importDatabase.launch(mimeType)
+                    //start brapi import fragment
+                    1 -> mNavController.navigate(CrossCountFragmentDirections.globalActionToWishlistImport())
 
                 }
 
                 dialog.dismiss()
             }
-
-            setTitle(R.string.import_string)
-
-            show()
-        }
+            .show()
     }
 
-    fun showImportOrExportDialog() {
+    fun showImportOrExportDialog(onDismiss: () -> Unit) {
 
-        with(AlertDialog.Builder(this@MainActivity)) {
-
-            setSingleChoiceItems(arrayOf("Import", "Export"), 0) { dialog, which ->
-
+        AlertDialog.Builder(this)
+            .setSingleChoiceItems(arrayOf("Local", "BrAPI"), 0) { dialog, which ->
                 when (which) {
-
-                    0 -> showImportDialog()
-
-                    1 -> showExportDialog()
-
+                    0 -> {
+                        val defaultFileNamePrefix = getString(R.string.default_crosses_export_file_name)
+                        exportCrossesFile.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
+                    }
+                    else -> {
+                        mNavController.navigate(EventsFragmentDirections.actionToBrapiExport())
+                    }
                 }
 
                 dialog.dismiss()
             }
+            .show()
 
-            setTitle(R.string.export_or_import)
+        onDismiss()
 
-            show()
-        }
     }
 
     fun navigateToLastSummaryFragment() {

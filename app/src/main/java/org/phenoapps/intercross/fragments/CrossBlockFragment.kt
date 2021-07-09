@@ -2,6 +2,8 @@ package org.phenoapps.intercross.fragments
 
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.preference.PreferenceManager
 import android.view.GestureDetector
 import android.view.Menu
@@ -15,17 +17,22 @@ import androidx.core.view.GestureDetectorCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.tabs.TabLayout
+import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.HeaderAdapter
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.models.Event
+import org.phenoapps.intercross.data.models.WishlistView
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.CrossBlockManagerBinding
+import org.phenoapps.intercross.databinding.FragmentDataSummaryBinding
 import org.phenoapps.intercross.util.AsyncLoadCrossblock
 import org.phenoapps.intercross.util.Dialogs
 
@@ -57,10 +64,20 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
     private lateinit var mColumnAdapter: HeaderAdapter
 
+    private lateinit var mWishlist: List<WishlistView>
+
     private var mEvents: List<Event> = ArrayList()
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun CrossBlockManagerBinding.afterCreateView() {
+
+        setHasOptionsMenu(false)
+
+        (activity as MainActivity).supportActionBar?.hide()
+
+        bottomNavBar.selectedItemId = R.id.action_nav_cross_count
+
+        setupBottomNavBar()
 
         PreferenceManager.getDefaultSharedPreferences(requireContext())
                 .edit().putString("last_visited_summary", "crossblock").apply()
@@ -157,11 +174,108 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
                 wishModel.crossblock.observe(viewLifecycleOwner, Observer { block ->
 
+                    mWishlist = block
+
                     AsyncLoadCrossblock(requireContext(), mBinding.root, block, mEvents, table, rows, columns).execute()
 
                 })
             }
         })
+
+        summaryTabLayout.getTabAt(2)?.select()
+
+        setupTabLayout()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        (activity as MainActivity).supportActionBar?.hide()
+
+        mBinding.summaryTabLayout.getTabAt(2)?.select()
+
+        mBinding.bottomNavBar.menu.findItem(R.id.action_nav_cross_count).isEnabled = false
+
+        mBinding.bottomNavBar.selectedItemId = R.id.action_nav_cross_count
+
+        mBinding.bottomNavBar.menu.findItem(R.id.action_nav_cross_count).isEnabled = true
+
+    }
+
+    //a quick wrapper function for tab selection
+    private fun tabSelected(onSelect: (TabLayout.Tab?) -> Unit) = object : TabLayout.OnTabSelectedListener {
+        override fun onTabSelected(tab: TabLayout.Tab?) {
+            onSelect(tab)
+        }
+        override fun onTabUnselected(tab: TabLayout.Tab?) {}
+        override fun onTabReselected(tab: TabLayout.Tab?) {}
+    }
+
+    private fun CrossBlockManagerBinding.setupTabLayout() {
+
+        summaryTabLayout.addOnTabSelectedListener(tabSelected { tab ->
+
+            when (tab?.text) {
+                getString(R.string.summary) -> {
+
+                    if (mEvents.isNotEmpty()) {
+
+                        Navigation.findNavController(mBinding.root)
+                            .navigate(CrossBlockFragmentDirections.actionToSummary())
+                    } else {
+
+                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.crosses_empty))
+                        summaryTabLayout.getTabAt(2)?.select()
+
+                    }
+                }
+
+                getString(R.string.cross_count) ->
+                    Navigation.findNavController(mBinding.root)
+                        .navigate(CrossBlockFragmentDirections.actionToCrossCount())
+                getString(R.string.wishlist) ->
+                    Navigation.findNavController(mBinding.root)
+                        .navigate(CrossBlockFragmentDirections.actionToWishlist())
+            }
+        })
+    }
+
+    private fun CrossBlockManagerBinding.setupBottomNavBar() {
+
+        bottomNavBar.setOnNavigationItemSelectedListener { item ->
+
+            when (item.itemId) {
+
+                R.id.action_nav_home -> {
+
+                    findNavController().navigate(CrossBlockFragmentDirections.globalActionToEvents())
+                }
+                R.id.action_nav_settings -> {
+
+                    findNavController().navigate(CrossBlockFragmentDirections.globalActionToSettingsFragment())
+                }
+                R.id.action_nav_parents -> {
+
+                    findNavController().navigate(CrossBlockFragmentDirections.globalActionToParents())
+
+                }
+                R.id.action_nav_export -> {
+
+                    (activity as MainActivity).showImportOrExportDialog {
+
+                        findNavController().navigate(R.id.crossblock_fragment)
+                    }
+
+                }
+                R.id.action_nav_cross_count -> {
+
+                    findNavController().navigate(CrossBlockFragmentDirections.globalActionToCrossCount())
+
+                }
+            }
+
+            true
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -169,33 +283,6 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
         super.onCreate(savedInstanceState)
 
         setHasOptionsMenu(true)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-
-        inflater.inflate(R.menu.crossblock_toolbar, menu)
-
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        when(item.itemId) {
-
-            R.id.action_nav_wishlist -> {
-                Navigation.findNavController(mBinding.root)
-                        .navigate(CrossBlockFragmentDirections.actionToWishlist())
-            }
-
-            R.id.action_nav_cross_count -> {
-
-                if (mEvents.isNotEmpty()) {
-                    Navigation.findNavController(mBinding.root)
-                            .navigate(CrossBlockFragmentDirections.actionToCrossCount())
-                } else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.summary_empty))
-            }
-        }
-        return super.onOptionsItemSelected(item)
     }
 
     override fun onShowPress(p0: MotionEvent?) {

@@ -38,6 +38,9 @@ interface EventsDao : BaseDao<Event> {
     """)
     fun getParents(eid: Long): LiveData<ParentData>
 
+    @Query("SELECT metadata FROM events WHERE eid = :eid")
+    fun getMetadata(eid: Long): LiveData<String>
+
     @Query("""SELECT m.*, d.*
                     FROM events as m, events as d, events as x
                     WHERE d.codeId = x.dad and m.codeId = x.mom AND x.eid = :eid""")

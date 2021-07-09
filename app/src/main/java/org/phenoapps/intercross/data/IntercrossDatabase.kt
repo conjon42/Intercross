@@ -10,6 +10,7 @@ import org.phenoapps.intercross.data.dao.ParentsDao
 import org.phenoapps.intercross.data.dao.PollenGroupDao
 import org.phenoapps.intercross.data.dao.SettingsDao
 import org.phenoapps.intercross.data.dao.WishlistDao
+import org.phenoapps.intercross.data.migrations.MigrationV2MetaData
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
 import org.phenoapps.intercross.data.models.PollenGroup
@@ -17,9 +18,10 @@ import org.phenoapps.intercross.data.models.Settings
 import org.phenoapps.intercross.data.models.Wishlist
 import org.phenoapps.intercross.data.models.WishlistView
 
+//added database migration from version 1 -> version 2 6/28/2021 see MigrationV2MetaData for documentation.
 @Database(entities = [Event::class, Parent::class,
     Wishlist::class, Settings::class, PollenGroup::class],
-        views = [WishlistView::class], version = 1)
+        views = [WishlistView::class], version = 2)
 @TypeConverters(Converters::class)
 abstract class IntercrossDatabase : RoomDatabase() {
 
@@ -47,7 +49,9 @@ abstract class IntercrossDatabase : RoomDatabase() {
         private fun buildDatabase(ctx: Context): IntercrossDatabase {
 
             return Room.databaseBuilder(ctx, IntercrossDatabase::class.java, DATABASE_NAME)
-                .setJournalMode(JournalMode.TRUNCATE)
+                .fallbackToDestructiveMigrationOnDowngrade() //allows flexible dev tests for going back db versions
+                .addMigrations(MigrationV2MetaData()) //v1 -> v2 migration added JSON based metadata
+                .setJournalMode(JournalMode.TRUNCATE) //truncate mode makes it easier to export/import database w/o having to manage WAL files.
                 .build()
         }
     }

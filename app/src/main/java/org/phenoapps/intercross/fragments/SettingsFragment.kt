@@ -1,17 +1,21 @@
 package org.phenoapps.intercross.fragments
 
+import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import org.phenoapps.intercross.GeneralKeys
+import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.SettingsRepository
@@ -89,6 +93,40 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
         }
 
+        with(findPreference<EditTextPreference>(GeneralKeys.BRAPI_BASE_URL)) {
+            this?.let {
+                setOnPreferenceChangeListener { _, newValue ->
+                    context.getSharedPreferences("Settings", MODE_PRIVATE)
+                            .edit().putString(GeneralKeys.BRAPI_BASE_URL, newValue.toString()).apply()
+                    true
+                }
+            }
+        }
+
+        with (findPreference<Preference>("org.phenoapps.intercross.DATABASE_IMPORT")) {
+            this?.let {
+                setOnPreferenceClickListener {
+                    activity?.let { act ->
+                        (act as? MainActivity)?.importDatabase?.launch("*/*")
+                    }
+
+                    true
+                }
+            }
+        }
+
+        with (findPreference<Preference>("org.phenoapps.intercross.DATABASE_EXPORT")) {
+            this?.let {
+                setOnPreferenceClickListener {
+                    activity?.let { act ->
+                        (act as? MainActivity)?.exportDatabase?.launch("intercross.db")
+                    }
+
+                    true
+                }
+            }
+        }
+
         val printSetup = findPreference<Preference>("org.phenoapps.intercross.PRINTER_SETUP")
         printSetup?.setOnPreferenceClickListener {
             val intent = activity?.packageManager
@@ -106,6 +144,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
             true
         }
+
+        setHasOptionsMenu(false)
+
+        (activity as MainActivity).supportActionBar?.hide()
+
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
