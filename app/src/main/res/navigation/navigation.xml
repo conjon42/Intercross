@@ -309,8 +309,8 @@
 
     <action android:id="@+id/global_action_to_parents"
         app:destination="@id/parents_fragment"
-        app:popUpTo="@string/parents"
-        app:launchSingleTop="true"/>
+        app:launchSingleTop="true"
+        app:popUpTo="@id/parents_fragment"/>
 
     <action android:id="@+id/global_action_to_cross_count"
         app:destination="@id/cross_count_fragment"

@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.util.TypedValue
 import android.view.*
 import android.view.inputmethod.EditorInfo
@@ -21,7 +20,6 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.*
 import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.MainActivity
@@ -140,6 +138,13 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         (activity as MainActivity).supportActionBar?.hide()
 
         setupUI()
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        mBinding.bottomNavBar.selectedItemId = R.id.action_nav_home
 
     }
 
@@ -321,12 +326,6 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         setHasOptionsMenu(true)
 
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        mBinding.bottomNavBar.selectedItemId = R.id.action_nav_home
     }
 
     private fun FragmentEventsBinding.setupBottomNavBar() {
