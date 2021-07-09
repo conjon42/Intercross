@@ -183,12 +183,6 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
         setHasOptionsMenu(true)
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        mBinding.bottomNavBar.selectedItemId = R.id.action_nav_cross_count
-    }
-
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
 
         inflater.inflate(R.menu.cross_count_toolbar, menu)
