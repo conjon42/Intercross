@@ -264,26 +264,12 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun afterFirstText(value: String) {
 
-        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
-
-        val order = pref.getBoolean(SettingsFragment.ORDER, false)
-        val blank = pref.getBoolean(SettingsFragment.BLANK, false)
-
         mBinding.firstText.setText(value)
 
-        if (!order && !blank) {
-
-            askUserNewExperimentName()
-
-        } else mBinding.secondText.requestFocus()
+        mBinding.secondText.requestFocus()
     }
 
     private fun afterSecondText(value: String) {
-
-//        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
-
-//        val order = pref.getBoolean(SettingsFragment.ORDER, false)
-//        val blank = pref.getBoolean(SettingsFragment.BLANK, false)
 
         mBinding.secondText.setText(value)
 
@@ -473,11 +459,16 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         //if auto generation is enabled save after the second text is submitted
         secondText.setOnEditorActionListener(TextView.OnEditorActionListener { _, i, _ ->
 
+            val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
+
+            val order = pref.getBoolean(SettingsFragment.ORDER, false)
+            val blank = pref.getBoolean(SettingsFragment.BLANK, false)
+
             if (i == EditorInfo.IME_ACTION_DONE) {
 
                 val value = secondText.text.toString()
 
-                if (value.isNotBlank()) {
+                if (value.isNotBlank() || (!order && blank)) {
 
                     afterSecondText(value)
 
