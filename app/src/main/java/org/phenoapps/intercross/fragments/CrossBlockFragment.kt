@@ -2,22 +2,16 @@ package org.phenoapps.intercross.fragments
 
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.preference.PreferenceManager
 import android.view.GestureDetector
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.GestureDetectorCompat
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
 import org.phenoapps.intercross.MainActivity
@@ -32,7 +26,6 @@ import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.CrossBlockManagerBinding
-import org.phenoapps.intercross.databinding.FragmentDataSummaryBinding
 import org.phenoapps.intercross.util.AsyncLoadCrossblock
 import org.phenoapps.intercross.util.Dialogs
 
@@ -79,8 +72,11 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
         setupBottomNavBar()
 
-        PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .edit().putString("last_visited_summary", "crossblock").apply()
+        val pref = PreferenceManager.getDefaultSharedPreferences(context)
+
+        pref.edit().putString("last_visited_summary", "crossblock").apply()
+
+        val isCommutative = pref.getBoolean("org.phenoapps.intercross.COMMUTATIVE_CROSSING", false)
 
         mGesture = GestureDetectorCompat(requireContext(), this@CrossBlockFragment)
 
@@ -166,19 +162,32 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
         /**
          * list for events model, disable options menu for summary if the list is empty
          */
-        eventsModel.events.observe(viewLifecycleOwner, Observer {
+        eventsModel.events.observe(viewLifecycleOwner, {
 
             it?.let {
 
                 mEvents = it
 
-                wishModel.crossblock.observe(viewLifecycleOwner, Observer { block ->
+                if (isCommutative) {
 
-                    mWishlist = block
+                    wishModel.commutativeCrossblock.observe(viewLifecycleOwner, { block ->
 
-                    AsyncLoadCrossblock(requireContext(), mBinding.root, block, mEvents, table, rows, columns).execute()
+                        mWishlist = block
 
-                })
+                        AsyncLoadCrossblock(requireContext(), mBinding.root, block, mEvents, table, rows, columns).execute()
+
+                    })
+
+                } else {
+
+                    wishModel.crossblock.observe(viewLifecycleOwner, { block ->
+
+                        mWishlist = block
+
+                        AsyncLoadCrossblock(requireContext(), mBinding.root, block, mEvents, table, rows, columns).execute()
+
+                    })
+                }
             }
         })
 

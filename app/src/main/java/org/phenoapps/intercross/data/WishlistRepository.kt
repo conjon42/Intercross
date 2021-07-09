@@ -32,7 +32,11 @@ class WishlistRepository private constructor(
 
     fun getAllCounts() = wishlistDao.getAllCounts()
 
+    fun getAllCommutativeWishCounts() = wishlistDao.getAllCommutativeWishCounts()
+
     fun getCrossblock() = wishlistDao.getCrossblock()
+
+    fun getCommutativeCrossblock() = wishlistDao.getCommutativeCrossBlock()
 
     fun getMaleHeaders() = wishlistDao.getMaleHeaders()
 

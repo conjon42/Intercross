@@ -56,48 +56,80 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
         recyclerView.layoutManager = LinearLayoutManager(context)
 
+        val isCommutative = PreferenceManager.getDefaultSharedPreferences(context)
+            .getBoolean("org.phenoapps.intercross.COMMUTATIVE_CROSSING", false)
+
         eventsModel.events.observe(viewLifecycleOwner, {
 
             it?.let {
 
                 mEvents = it
 
-                wishModel.wishes.observe(viewLifecycleOwner, {
-
-                    it?.let { block ->
-
-                        val crosses = block.filter { wish -> wish.wishType == "cross" }
-
-                        wishlistEmpty = crosses.isEmpty()
-
-                        (recyclerView.adapter as WishlistAdapter)
-                                .submitList(crosses.map { res ->
-                                    CrossCountFragment.WishlistData(res.dadName, res.momName,
-                                            res.wishProgress.toString() + "/" + res.wishMin + "/" + res.wishMax.toString(), mEvents.filter {
-                                        event -> event.femaleObsUnitDbId == res.momId && event.maleObsUnitDbId == res.dadId
-                                    })
-                                })
-
-                        deleteButton.setOnClickListener {
-
-                            Dialogs.onOk(AlertDialog.Builder(requireContext()),
-                                    getString(R.string.delete_all_wishlist_title),
-                                    getString(R.string.cancel),
-                                    getString(R.string.zxing_button_ok)) {
-
-                                wishModel.deleteAll()
-
-                                findNavController().navigate(WishlistFragmentDirections.globalActionToCrossCount())
-                            }
-                        }
-                    }
-                })
+                if (isCommutative) loadCommutativeWishlist()
+                else loadWishlist()
             }
         })
+
+        deleteButton.setOnClickListener {
+
+            Dialogs.onOk(AlertDialog.Builder(requireContext()),
+                getString(R.string.delete_all_wishlist_title),
+                getString(R.string.cancel),
+                getString(R.string.zxing_button_ok)) {
+
+                wishModel.deleteAll()
+
+                findNavController().navigate(WishlistFragmentDirections.globalActionToCrossCount())
+            }
+        }
 
         summaryTabLayout.getTabAt(1)?.select()
 
         setupTabLayout()
+    }
+
+    private fun FragmentWishlistBinding.loadWishlist() {
+
+        wishModel.wishes.observe(viewLifecycleOwner, {
+
+            it?.let { block ->
+
+                val crosses = block.filter { wish -> wish.wishType == "cross" }
+
+                wishlistEmpty = crosses.isEmpty()
+
+                (recyclerView.adapter as WishlistAdapter)
+                    .submitList(crosses.map { res ->
+                        CrossCountFragment.WishlistData(res.dadName, res.momName,
+                            res.wishProgress.toString() + "/" + res.wishMin + "/" + res.wishMax.toString(), mEvents.filter {
+                                    event -> event.femaleObsUnitDbId == res.momId && event.maleObsUnitDbId == res.dadId
+                            })
+                    })
+
+            }
+        })
+    }
+
+    private fun FragmentWishlistBinding.loadCommutativeWishlist() {
+
+        wishModel.commutativeWishes.observe(viewLifecycleOwner, {
+
+            it?.let { block ->
+
+                val crosses = block.filter { wish -> wish.wishType == "cross" }
+
+                wishlistEmpty = crosses.isEmpty()
+
+                (recyclerView.adapter as WishlistAdapter)
+                    .submitList(crosses.map { res ->
+                        CrossCountFragment.WishlistData(res.dadName, res.momName,
+                            res.wishProgress.toString() + "/" + res.wishMin + "/" + res.wishMax.toString(), mEvents.filter {
+                                    event -> event.femaleObsUnitDbId == res.momId && event.maleObsUnitDbId == res.dadId
+                            })
+                    })
+
+            }
+        })
     }
 
     //a quick wrapper function for tab selection

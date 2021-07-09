@@ -259,19 +259,34 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
     private fun startObservers() {
 
-        wishModel.wishes.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
-            it?.let {
-                mWishlist = it.filter { wish -> wish.wishType == "cross" }
-            }
-        })
+        val isCommutative = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
+            .getBoolean("org.phenoapps.intercross.COMMUTATIVE_CROSSING", false)
 
-        viewModel.events.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+        if (isCommutative) {
+
+            wishModel.commutativeWishes.observe(viewLifecycleOwner, {
+                it?.let {
+                    mWishlist = it.filter { wish -> wish.wishType == "cross" }
+                }
+            })
+
+        } else {
+
+            wishModel.wishes.observe(viewLifecycleOwner, {
+                it?.let {
+                    mWishlist = it.filter { wish -> wish.wishType == "cross" }
+                }
+            })
+
+        }
+
+        viewModel.events.observe(viewLifecycleOwner, {
             it?.let {
                 mEvents = ArrayList(it)
             }
         })
 
-        settingsModel.settings.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+        settingsModel.settings.observe(viewLifecycleOwner, {
             it?.let {
                 mSettings = it
             }

@@ -21,7 +21,11 @@ class WishlistViewModel internal constructor(private val repo: WishlistRepositor
 
     val wishes: LiveData<List<WishlistView>> = repo.getAllCounts()
 
+    val commutativeWishes = repo.getAllCommutativeWishCounts()
+
     val crossblock = repo.getCrossblock()
+
+    val commutativeCrossblock = repo.getCommutativeCrossblock()
 
     val males = repo.getMaleHeaders()
 

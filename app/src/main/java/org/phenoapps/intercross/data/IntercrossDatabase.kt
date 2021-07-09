@@ -11,12 +11,7 @@ import org.phenoapps.intercross.data.dao.PollenGroupDao
 import org.phenoapps.intercross.data.dao.SettingsDao
 import org.phenoapps.intercross.data.dao.WishlistDao
 import org.phenoapps.intercross.data.migrations.MigrationV2MetaData
-import org.phenoapps.intercross.data.models.Event
-import org.phenoapps.intercross.data.models.Parent
-import org.phenoapps.intercross.data.models.PollenGroup
-import org.phenoapps.intercross.data.models.Settings
-import org.phenoapps.intercross.data.models.Wishlist
-import org.phenoapps.intercross.data.models.WishlistView
+import org.phenoapps.intercross.data.models.*
 
 //added database migration from version 1 -> version 2 6/28/2021 see MigrationV2MetaData for documentation.
 @Database(entities = [Event::class, Parent::class,

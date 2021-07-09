@@ -65,7 +65,7 @@ class AsyncLoadCrossblock(val context: Context,
                             else -> ContextCompat.getColor(context, R.color.progressBlank)
                         }
 
-                    data.add(CrossBlockFragment.CellData(res.wishProgress, res.wishMin, res.wishMax, View.OnClickListener {
+                    data.add(CrossBlockFragment.CellData(res.wishProgress, res.wishMin, res.wishMax, {
 
                         val children = events.filter { event ->
                             event.femaleObsUnitDbId == res.momId && event.maleObsUnitDbId == res.dadId
