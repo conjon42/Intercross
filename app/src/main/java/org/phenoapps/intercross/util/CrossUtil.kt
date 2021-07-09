@@ -93,11 +93,10 @@ class CrossUtil(val context: Context) {
 
         FirebaseCrashlytics.getInstance().log("Cross created: $name $date")
 
-        val wasCreated = context.getString(R.string.was_created)
-
-        if (Looper.myLooper() == null) Looper.prepare()
-
-        SnackbarQueue().push(SnackbarQueue.SnackJob(root, "$name $wasCreated"))
+        //issue 40 was to disable toast messages when crosses are created
+        //val wasCreated = context.getString(R.string.was_created)
+        //if (Looper.myLooper() == null) Looper.prepare()
+        //SnackbarQueue().push(SnackbarQueue.SnackJob(root, "$name $wasCreated"))
 
         checkWishlist(female, male, wishlistProgress)
 
