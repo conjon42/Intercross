@@ -354,7 +354,7 @@ class MainActivity : AppCompatActivity() {
 
                     0 -> exportCrossesFile.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
 
-                    1 -> exportDatabase.launch("intercross.db")
+                    1 -> exportDatabase.launch("intercross.zip")
 
                 }
 
