@@ -107,7 +107,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             this?.let {
                 setOnPreferenceClickListener {
                     activity?.let { act ->
-                        (act as? MainActivity)?.importDatabase?.launch("*/*")
+                        (act as? MainActivity)?.importDatabase?.launch("application/zip")
                     }
 
                     true
@@ -119,7 +119,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             this?.let {
                 setOnPreferenceClickListener {
                     activity?.let { act ->
-                        (act as? MainActivity)?.exportDatabase?.launch("intercross.db")
+                        (act as? MainActivity)?.exportDatabase?.launch("intercross.zip")
                     }
 
                     true
