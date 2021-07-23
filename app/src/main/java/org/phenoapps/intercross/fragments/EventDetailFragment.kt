@@ -107,51 +107,6 @@ class EventDetailFragment:
         e.printStackTrace()
     }
 
-    //adds the new default value and property to the metadata string
-    private fun Event.createNewMetadata(value: Int, property: String) = try {
-
-        val element = JsonParser.parseString(this.metadata)
-
-        if (element.isJsonObject) {
-
-            val json = element.asJsonObject
-
-            json.remove(property)
-
-            json.add(property, JsonArray(2).apply {
-                add(JsonPrimitive(value))
-                add(JsonPrimitive(value))
-            })
-
-            this.metadata = json.toString()
-
-        } else throw JsonSyntaxException("Malformed metadata format found: ${element.asString}")
-
-    } catch (e: JsonSyntaxException) {
-
-        e.printStackTrace()
-    }
-
-    //deletes the given property from the metdata string
-    private fun Event.deleteMetadata(property: String) = try {
-
-        val element = JsonParser.parseString(this.metadata)
-
-        if (element.isJsonObject) {
-
-            val json = element.asJsonObject
-
-            json.remove(property)
-
-            this.metadata = json.toString()
-
-        } else throw JsonSyntaxException("Malformed metadata format found: ${element.asString}")
-
-    } catch (e: JsonSyntaxException) {
-
-        e.printStackTrace()
-    }
-
     override fun FragmentEventDetailBinding.afterCreateView() {
 
         arguments?.getLong("eid")?.let { rowid ->
@@ -173,15 +128,6 @@ class EventDetailFragment:
 
             eventDetailMetadataRecyclerView.adapter = MetadataAdapter(this@EventDetailFragment)
 
-            fragEventDetailAddMetadataButton.setOnClickListener {
-
-                context?.let { ctx ->
-
-                    MetadataCreatorDialog(ctx, this@EventDetailFragment).show()
-
-                }
-            }
-
             refreshObservers()
 
             refreshMetadata()
@@ -202,16 +148,6 @@ class EventDetailFragment:
                     .sortedBy { it.property })
 
             mBinding.eventDetailMetadataRecyclerView.adapter?.notifyDataSetChanged()
-        }
-    }
-
-    //when new properties are added, the fragment is refreshed to reload the metadata list
-    private fun refreshFragment() {
-
-        mEvent.id?.let { eid ->
-
-            findNavController().navigate(EventDetailFragmentDirections.actionToEventRefresh(eid))
-
         }
     }
 
@@ -334,15 +270,7 @@ class EventDetailFragment:
         return super.onOptionsItemSelected(item)
     }
 
-    //updates a single row value for the current event
-    override fun onMetadataUpdated(property: String, value: Int) {
 
-        eventsList.update(mEvent.apply {
-
-            updateMetadata(value, property)
-
-        })
-    }
 
     //extension function for live data to only observe once when the data is not null
     private fun <T> LiveData<T>.observeOnce(observer: Observer<T>) {
@@ -356,50 +284,17 @@ class EventDetailFragment:
         })
     }
 
-    //asks the user to delete the property,
-    //metadata entryset size is monotonic across all rows
-    override fun onMetadataLongClicked(property: String) {
+    //updates a single row value for the current event
+    override fun onMetadataUpdated(property: String, value: Int) {
 
-        context?.let { ctx ->
+        eventsList.update(mEvent.apply {
 
-            Dialogs.onOk(AlertDialog.Builder(ctx),
-                title = getString(R.string.dialog_confirm_remove_metadata),
-                cancel = getString(android.R.string.cancel),
-                ok = getString(android.R.string.ok),
-                message = getString(R.string.dialog_confirm_remove_for_all)) {
+            updateMetadata(value, property)
 
-                eventsList.events.observeOnce {
-
-                    it.forEach {
-
-                        eventsList.update(
-                            it.apply {
-                                deleteMetadata(property)
-                            }
-                        )
-                    }
-                }
-
-                refreshFragment()
-            }
-        }
+        })
     }
 
-    //adds the new property to all crosses in the database
-    override fun onMetadataCreated(property: String, value: String) {
+    override fun onMetadataLongClicked(property: String) {}
 
-        eventsList.events.observeOnce {
-
-            it.forEach {
-
-                eventsList.update(
-                    it.apply {
-                        createNewMetadata(value.toInt(), property)
-                    }
-                )
-            }
-        }
-
-        refreshFragment()
-    }
+    override fun onMetadataCreated(property: String, value: String) {}
 }

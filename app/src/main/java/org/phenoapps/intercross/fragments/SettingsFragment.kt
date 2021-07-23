@@ -8,26 +8,42 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
-import androidx.preference.EditTextPreference
-import androidx.preference.ListPreference
-import androidx.preference.Preference
-import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.*
+import com.google.gson.JsonArray
+import com.google.gson.JsonParser
+import com.google.gson.JsonPrimitive
+import com.google.gson.JsonSyntaxException
 import org.phenoapps.intercross.GeneralKeys
 import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.SettingsRepository
+import org.phenoapps.intercross.data.models.Event
+import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
+import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
+import org.phenoapps.intercross.dialogs.MetadataCreatorDialog
+import org.phenoapps.intercross.interfaces.MetadataManager
+import org.phenoapps.intercross.util.Dialogs
 
 
-class SettingsFragment : PreferenceFragmentCompat() {
+class SettingsFragment : PreferenceFragmentCompat(), MetadataManager {
 
     private val settingsModel: SettingsViewModel by viewModels {
         SettingsViewModelFactory(SettingsRepository
                 .getInstance(IntercrossDatabase.getInstance(requireContext()).settingsDao()))
+    }
+
+    private val eventsList: EventListViewModel by viewModels {
+        EventsListViewModelFactory(EventsRepository
+            .getInstance(IntercrossDatabase.getInstance(requireContext()).eventsDao()))
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -55,6 +71,19 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     }
                 }
             }
+        }
+
+        //ensure metadata creation preference is invisible by default
+        context?.let { ctx ->
+
+            val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
+
+            val metadataPref = findPreference<Preference>("org.phenoapps.intercross.META_DATA")
+
+            val isCollect = prefs.getBoolean("org.phenoapps.intercross.COLLECT_INFO", false)
+
+            metadataPref?.isVisible = isCollect
+
         }
 
         with(findPreference<Preference>("org.phenoapps.intercross.ABOUT")){
@@ -127,6 +156,38 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
         }
 
+        //when collect info is changed, update visibility of metadata preference
+        with (findPreference<SwitchPreference>("org.phenoapps.intercross.COLLECT_INFO")) {
+            this?.let {
+
+                setOnPreferenceChangeListener { preference, newValue ->
+
+                    findPreference<Preference>("org.phenoapps.intercross.META_DATA")?.let { metadataPref ->
+                        metadataPref.isVisible = newValue as? Boolean ?: false
+                    }
+
+                    true
+                }
+            }
+        }
+
+        //setup click listener to handle metadata creation when pressed
+        with (findPreference<Preference>("org.phenoapps.intercross.META_DATA")) {
+            this?.let {
+
+                setOnPreferenceClickListener {
+
+                    context?.let { ctx ->
+
+                        MetadataCreatorDialog(ctx, this@SettingsFragment).show()
+
+                    }
+
+                    true
+                }
+            }
+        }
+
         val printSetup = findPreference<Preference>("org.phenoapps.intercross.PRINTER_SETUP")
         printSetup?.setOnPreferenceClickListener {
             val intent = activity?.packageManager
@@ -169,6 +230,111 @@ class SettingsFragment : PreferenceFragmentCompat() {
 //                pref.setSummary(pref.entry)
 //            }
 //        }
+    }
+
+    override fun onMetadataUpdated(property: String, value: Int) {
+        //unimplemented
+    }
+
+    //asks the user to delete the property,
+    //metadata entryset size is monotonic across all rows
+    override fun onMetadataLongClicked(property: String) {
+
+        context?.let { ctx ->
+
+            Dialogs.onOk(
+                AlertDialog.Builder(ctx),
+                title = getString(R.string.dialog_confirm_remove_metadata),
+                cancel = getString(android.R.string.cancel),
+                ok = getString(android.R.string.ok),
+                message = getString(R.string.dialog_confirm_remove_for_all)) {
+
+                eventsList.events.observeOnce {
+
+                    it.forEach {
+
+                        eventsList.update(
+                            it.apply {
+                                deleteMetadata(property)
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    //adds the new property to all crosses in the database
+    override fun onMetadataCreated(property: String, value: String) {
+
+        eventsList.events.observeOnce {
+
+            it.forEach {
+
+                eventsList.update(
+                    it.apply {
+                        createNewMetadata(value.toInt(), property)
+                    }
+                )
+            }
+        }
+    }
+
+    //adds the new default value and property to the metadata string
+    private fun Event.createNewMetadata(value: Int, property: String) = try {
+
+        val element = JsonParser.parseString(this.metadata)
+
+        if (element.isJsonObject) {
+
+            val json = element.asJsonObject
+
+            json.remove(property)
+
+            json.add(property, JsonArray(2).apply {
+                add(JsonPrimitive(value))
+                add(JsonPrimitive(value))
+            })
+
+            this.metadata = json.toString()
+
+        } else throw JsonSyntaxException("Malformed metadata format found: ${element.asString}")
+
+    } catch (e: JsonSyntaxException) {
+
+        e.printStackTrace()
+    }
+
+    //deletes the given property from the metdata string
+    private fun Event.deleteMetadata(property: String) = try {
+
+        val element = JsonParser.parseString(this.metadata)
+
+        if (element.isJsonObject) {
+
+            val json = element.asJsonObject
+
+            json.remove(property)
+
+            this.metadata = json.toString()
+
+        } else throw JsonSyntaxException("Malformed metadata format found: ${element.asString}")
+
+    } catch (e: JsonSyntaxException) {
+
+        e.printStackTrace()
+    }
+
+    //extension function for live data to only observe once when the data is not null
+    private fun <T> LiveData<T>.observeOnce(observer: Observer<T>) {
+        observe(viewLifecycleOwner, object : Observer<T> {
+            override fun onChanged(t: T?) {
+                t?.let { data ->
+                    observer.onChanged(data)
+                    removeObserver(this)
+                }
+            }
+        })
     }
 
     companion object {
