@@ -43,6 +43,10 @@
             android:icon="@drawable/ic_note_add_black_24dp"
             android:key="org.phenoapps.intercross.META_DATA"
             android:title="Create Metadata"/>
+        <Preference
+            android:icon="@drawable/ic_update_black_24dp"
+            android:key="org.phenoapps.intercross.META_DATA_DEFAULTS"
+            android:title="Metadata Defaults"/>
         <SwitchPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_setting_sound"

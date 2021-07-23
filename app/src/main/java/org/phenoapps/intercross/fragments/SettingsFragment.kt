@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
@@ -30,6 +31,7 @@ import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
 import org.phenoapps.intercross.dialogs.MetadataCreatorDialog
+import org.phenoapps.intercross.dialogs.MetadataDefaultEditorDialog
 import org.phenoapps.intercross.interfaces.MetadataManager
 import org.phenoapps.intercross.util.Dialogs
 
@@ -73,15 +75,17 @@ class SettingsFragment : PreferenceFragmentCompat(), MetadataManager {
             }
         }
 
-        //ensure metadata creation preference is invisible by default
+        //ensure metadata creation / setting defaults preference is invisible by default
         context?.let { ctx ->
 
             val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
 
             val metadataPref = findPreference<Preference>("org.phenoapps.intercross.META_DATA")
+            val defaultsPref = findPreference<Preference>("org.phenoapps.intercross.META_DATA_DEFAULTS")
 
             val isCollect = prefs.getBoolean("org.phenoapps.intercross.COLLECT_INFO", false)
 
+            defaultsPref?.isVisible = isCollect
             metadataPref?.isVisible = isCollect
 
         }
@@ -166,6 +170,9 @@ class SettingsFragment : PreferenceFragmentCompat(), MetadataManager {
                         metadataPref.isVisible = newValue as? Boolean ?: false
                     }
 
+                    findPreference<Preference>("org.phenoapps.intercross.META_DATA_DEFAULTS")?.let { metadataPref ->
+                        metadataPref.isVisible = newValue as? Boolean ?: false
+                    }
                     true
                 }
             }
@@ -181,6 +188,50 @@ class SettingsFragment : PreferenceFragmentCompat(), MetadataManager {
 
                         MetadataCreatorDialog(ctx, this@SettingsFragment).show()
 
+                    }
+
+                    true
+                }
+            }
+        }
+
+        //setup click listener to handle metadata creation when pressed
+        with (findPreference<Preference>("org.phenoapps.intercross.META_DATA_DEFAULTS")) {
+            this?.let {
+
+                setOnPreferenceClickListener {
+
+                    context?.let { ctx ->
+
+                        eventsList.events.observeOnce {
+
+                            it?.first()?.let { x ->
+
+                                val defaults = x.getMetadataDefaults()
+
+                                val properties = defaults.map { it.first }.toTypedArray()
+
+                                val viewed = defaults.map { "${it.first} -> ${it.second}" }
+                                    .toTypedArray()
+
+                                if (properties.isNotEmpty()) {
+
+                                    AlertDialog.Builder(ctx).setSingleChoiceItems(viewed, 0) { dialog, item ->
+
+                                        val default = defaults.toMap()[properties[item]] ?: 1
+
+                                        MetadataDefaultEditorDialog(ctx,
+                                            properties[item],
+                                            default,
+                                            this@SettingsFragment).show()
+
+                                        dialog.dismiss()
+
+                                    }.show()
+
+                                } else Toast.makeText(ctx, R.string.fragment_settings_no_metadata_exists, Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     }
 
                     true
@@ -264,6 +315,21 @@ class SettingsFragment : PreferenceFragmentCompat(), MetadataManager {
         }
     }
 
+    override fun onMetadataDefaultUpdated(property: String, value: Int) {
+
+        eventsList.events.observeOnce {
+
+            it.forEach {
+
+                eventsList.update(
+                    it.apply {
+                        updateMetadataDefault(value, property)
+                    }
+                )
+            }
+        }
+    }
+
     //adds the new property to all crosses in the database
     override fun onMetadataCreated(property: String, value: String) {
 
@@ -303,6 +369,47 @@ class SettingsFragment : PreferenceFragmentCompat(), MetadataManager {
     } catch (e: JsonSyntaxException) {
 
         e.printStackTrace()
+    }
+
+    //updates a property with a new default value
+    private fun Event.updateMetadataDefault(value: Int, property: String) = try {
+
+        val element = JsonParser.parseString(this.metadata)
+
+        if (element.isJsonObject) {
+
+            val json = element.asJsonObject
+
+            json[property].asJsonArray[1] = JsonPrimitive(value)
+
+            this.metadata = json.toString()
+
+        } else throw JsonSyntaxException("Malformed metadata format found: ${element.asString}")
+
+    } catch (e: JsonSyntaxException) {
+
+        e.printStackTrace()
+    }
+
+    //returns array of metadata properties with default values
+    private fun Event.getMetadataDefaults(): List<Pair<String, Int>> = try {
+
+        val element = JsonParser.parseString(this.metadata)
+
+        if (element.isJsonObject) {
+
+            val json = element.asJsonObject
+
+            //return a set of property names to their default values
+            json.entrySet().map { it.key to it.value.asJsonArray[1].asInt }
+
+        } else throw JsonSyntaxException("Malformed metadata format found: ${element.asString}")
+
+    } catch (e: JsonSyntaxException) {
+
+        e.printStackTrace()
+
+        listOf()
     }
 
     //deletes the given property from the metdata string

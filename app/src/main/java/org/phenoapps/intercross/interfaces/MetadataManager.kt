@@ -11,5 +11,7 @@ interface MetadataManager {
 
     fun onMetadataUpdated(property: String, value: Int)
 
+    fun onMetadataDefaultUpdated(property: String, value: Int) = Unit
+
     fun onMetadataLongClicked(property: String)
 }

@@ -323,6 +323,7 @@
     <string name="dialog_metadata_property_hint">Property Name</string>
     <string name="dialog_metadata_default_hint">Default Value</string>
     <string name="dialog_metadata_title">New Property Creator</string>
+    <string name="dialog_metadata_updater_title">Default Value Updater</string>
     <string name="dialog_metadata_value_must_be_integer">Please enter an integer for the property value.</string>
     <string name="dialog_metadata_property_must_not_be_empty">Please enter a property name.</string>
     <string name="summary">Summary</string>
@@ -331,5 +332,7 @@
     <string name="cross_count">Cross Count</string>
     <string name="crosses_empty">Crosses need to be created first.</string>
     <string name="delete_all_cross_title">Delete all crosses?</string>
+    <string name="dialog_metadata_property_must_not_have_comma">Metadata properties must not contain commas.</string>
+    <string name="fragment_settings_no_metadata_exists">No metadata exists to update.</string>
 
 </resources>
