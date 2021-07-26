@@ -1,32 +1,29 @@
 package org.phenoapps.intercross.fragments
 
 import android.graphics.Color
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
-import android.widget.ArrayAdapter
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.mikephil.charting.animation.Easing
-import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.components.Legend
-import com.github.mikephil.charting.data.PieData
-import com.github.mikephil.charting.data.PieDataSet
-import com.github.mikephil.charting.data.PieEntry
+import com.github.mikephil.charting.components.Legend.LegendForm
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.components.XAxis.XAxisPosition
+import com.github.mikephil.charting.components.YAxis
+import com.github.mikephil.charting.components.YAxis.YAxisLabelPosition
+import com.github.mikephil.charting.data.*
+import com.github.mikephil.charting.formatter.IAxisValueFormatter
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.PercentFormatter
+import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
 import com.google.android.material.tabs.TabLayout
-import com.google.gson.JsonArray
 import com.google.gson.JsonParser
-import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSyntaxException
 import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
@@ -44,11 +41,10 @@ import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
-import org.phenoapps.intercross.databinding.FragmentCrossCountBinding
 import org.phenoapps.intercross.databinding.FragmentDataSummaryBinding
-import org.phenoapps.intercross.databinding.FragmentEventsBinding
 import org.phenoapps.intercross.util.Dialogs
 import java.util.*
+
 
 /**
  * @author: Chaney
@@ -60,6 +56,8 @@ import java.util.*
  *  a. unknowns are no longer displayed issue37b
  * 2. Type: accumulated cross types e.g Biparental, Open, Self
  * 3. Meta: accumulated meta data fields (currently only fruits, seeds and flowers)
+ *
+ * Meta data is now displayed using a bar chart.
  *
  * If counted data is 0 then it is not displayed. This may result in a blank tab, improvements might include a default message when there's no data.
  * TODO: the graph library allows clicking different sections of the piechart, maybe this should change the displayed data somehow
@@ -99,6 +97,7 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
 
         //initialize pie chart parameters, this is mostly taken from the github examples
         setupPieChart()
+        setupBarChart()
 
         //listen to events and parents once and then displays the data
         //if somehow events are injected after afterCreateView, the graph won't update
@@ -116,11 +115,11 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
         //calls the set data on the respective data selected from the tab view
         dataSummaryTabLayout.addOnTabSelectedListener(tabSelected { tab ->
 
-            setData(when (tab?.text) {
-                type -> setTypeData()
-                meta -> setMetaData()
-                else -> setSexData()
-            })
+            when (tab?.text) {
+                type -> setData(setTypeData())
+                meta -> setData(setMetaData())
+                else -> setData(setSexData())
+            }
         })
 
         summaryTabLayout.getTabAt(3)?.select()
@@ -297,12 +296,30 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
 //        l.yOffset = 0f
 
         dataSummaryPieChart.legend.isEnabled = false
-        // entry label styling
 
         // entry label styling
         dataSummaryPieChart.setEntryLabelColor(Color.BLACK)
         //chart.setEntryLabelTypeface(tfRegular)
         dataSummaryPieChart.setEntryLabelTextSize(12f)
+    }
+
+    private fun FragmentDataSummaryBinding.setupBarChart() {
+
+        dataSummaryBarChart.setDrawBarShadow(false)
+
+        dataSummaryBarChart.setDrawValueAboveBar(true)
+
+        dataSummaryBarChart.description.isEnabled = false
+
+        dataSummaryBarChart.setPinchZoom(false)
+
+        dataSummaryBarChart.legend.isEnabled = false
+
+        dataSummaryBarChart.setDrawGridBackground(false)
+
+        dataSummaryBarChart.xAxis.textSize = 10f
+
+        dataSummaryBarChart.xAxis.textColor = Color.BLACK
     }
 
     private fun setSexData(): PieDataSet = PieDataSet(ArrayList<PieEntry>().apply {
@@ -375,16 +392,17 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
         listOf()
     }
 
-    private fun setMetaData(): PieDataSet = PieDataSet(ArrayList<PieEntry>().apply {
+    private fun setMetaData(): BarDataSet = BarDataSet(ArrayList<BarEntry>().apply {
 
         if (::mEvents.isInitialized) {
 
             mEvents.flatMap { it.toEntrySet() } // [(seeds, 1), (flowers, 1), (seeds, 2), ....]
                 .groupBy { it.first }   //[(seeds, [1, 2]), (flowers, [1]), ...]
                 .map { it.key to it.value.sumBy { values -> values.second } } //[(seeds, 3), (flowers, 1), ...]
-                .map { PieEntry(
-                    it.second.toFloat(),
-                    it.first
+                .mapIndexed { index, pair -> BarEntry(
+                    index.toFloat(),
+                    pair.second.toFloat(),
+                    pair.first
                 ) }.forEach(::add)
         }
     },"Meta Data Statistics")
@@ -393,6 +411,10 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
     private fun FragmentDataSummaryBinding.setData(dataset: PieDataSet) {
 
         activity?.currentFocus?.clearFocus()
+
+        dataSummaryPieChart.visibility = View.VISIBLE
+
+        dataSummaryBarChart.visibility = View.INVISIBLE
 
         dataSummaryPieChart.animateY(1400, Easing.EaseInOutQuad)
 
@@ -424,6 +446,36 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
 
         (dataSummaryRecyclerView.adapter as? SummaryAdapter)?.submitList(
             dataset.values?.map { ListEntry(it.label, it.value) }
+        )
+    }
+
+    private fun FragmentDataSummaryBinding.setData(dataset: BarDataSet) {
+
+        activity?.currentFocus?.clearFocus()
+
+        dataSummaryPieChart.visibility = View.INVISIBLE
+
+        dataSummaryBarChart.visibility = View.VISIBLE
+
+        val data = BarData(dataset)
+
+        data.setValueTextColor(Color.BLACK)
+
+        val labels = arrayListOf<String>()
+        for (i in 0 until dataset.entryCount) {
+            labels.add(dataset.getEntryForIndex(i).data as? String ?: "?")
+        }
+
+        dataSummaryBarChart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
+
+        dataSummaryBarChart.data = data
+
+        // undo all highlights
+        dataSummaryBarChart.highlightValues(null)
+        dataSummaryBarChart.invalidate()
+
+        (dataSummaryRecyclerView.adapter as? SummaryAdapter)?.submitList(
+            dataset.values?.map { ListEntry(it?.data as? String ?: "?", it.y) }
         )
     }
 }

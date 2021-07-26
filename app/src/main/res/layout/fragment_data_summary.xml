@@ -9,10 +9,11 @@
             android:id="@+id/data_summary_scroll_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:layout_marginBottom="8dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
+            app:layout_constraintBottom_toTopOf="@id/bottom_nav_bar">
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -96,6 +97,16 @@
                     android:layout_gravity="center"
                     android:background="@drawable/cell"
                     android:layout_below="@id/data_summary_recycler_view"/>
+
+                <com.github.mikephil.charting.charts.BarChart
+                    android:layout_width="match_parent"
+                    android:layout_height="512dp"
+                    android:layout_margin="8dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/cell"
+                    android:layout_below="@id/data_summary_recycler_view"
+                    android:id="@+id/data_summary_bar_chart"
+                    android:visibility="invisible"/>
 
             </RelativeLayout>
         </ScrollView>
