@@ -66,7 +66,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
         setHasOptionsMenu(false)
 
-        (activity as MainActivity).supportActionBar?.hide()
+        //(activity as MainActivity).supportActionBar?.hide()
 
         bottomNavBar.selectedItemId = R.id.action_nav_cross_count
 
@@ -199,7 +199,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
     override fun onResume() {
         super.onResume()
 
-        (activity as MainActivity).supportActionBar?.hide()
+        //(activity as MainActivity).supportActionBar?.hide()
 
         mBinding.summaryTabLayout.getTabAt(2)?.select()
 

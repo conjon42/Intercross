@@ -95,7 +95,7 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
 
         setHasOptionsMenu(false)
 
-        (activity as MainActivity).supportActionBar?.hide()
+        //(activity as MainActivity).supportActionBar?.hide()
 
         //initialize pie chart parameters, this is mostly taken from the github examples
         setupPieChart()
@@ -131,7 +131,7 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
     override fun onResume() {
         super.onResume()
 
-        (activity as MainActivity).supportActionBar?.hide()
+        //(activity as MainActivity).supportActionBar?.hide()
 
         mBinding.summaryTabLayout.getTabAt(3)?.select()
 

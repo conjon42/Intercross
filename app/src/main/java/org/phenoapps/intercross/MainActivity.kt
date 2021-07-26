@@ -402,6 +402,9 @@ class MainActivity : AppCompatActivity() {
 
                 dialog.dismiss()
             }
+            .setOnDismissListener {
+                onDismiss()
+            }
             .show()
 
         onDismiss()

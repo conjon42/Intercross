@@ -8,12 +8,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import androidx.appcompat.widget.Toolbar
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import com.google.android.material.bottomnavigation.BottomNavigationMenu
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import org.phenoapps.intercross.GeneralKeys
 import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
@@ -21,6 +25,8 @@ import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.SettingsRepository
 import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
+import org.phenoapps.intercross.databinding.FragmentEventsBinding
+import org.phenoapps.intercross.databinding.FragmentPreferencesBinding
 
 
 class SettingsFragment : PreferenceFragmentCompat() {
@@ -30,7 +36,18 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 .getInstance(IntercrossDatabase.getInstance(requireContext()).settingsDao()))
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    private var mBottomNavBar: BottomNavigationView? = null
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        setPreferencesFromResource(R.xml.preferences, "org.phenoapps.intercross.ROOT_PREFERENCES")
+
+        mBottomNavBar = view.findViewById(R.id.preferences_bottom_nav_bar)
+
+        mBottomNavBar?.selectedItemId = R.id.action_nav_settings
+
+        setupBottomNavBar()
 
         settingsModel.settings.observeForever { settings ->
 
@@ -57,7 +74,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
         }
 
-        with(findPreference<Preference>("org.phenoapps.intercross.ABOUT")){
+        with(findPreference<Preference>("org.phenoapps.intercross.ABOUT")) {
 
             this?.let {
 
@@ -70,21 +87,20 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 }
             }
         }
-        with(findPreference<Preference>("org.phenoapps.intercross.CREATE_PATTERN")){
+        with(findPreference<Preference>("org.phenoapps.intercross.CREATE_PATTERN")) {
 
             this?.let {
 
                 setOnPreferenceClickListener {
 
                     findNavController().navigate(SettingsFragmentDirections
-                            .actionToPatternFragment())
+                        .actionToPatternFragment())
 
                     true
                 }
             }
         }
-
-        with(findPreference<Preference>("org.phenoapps.intercross.ZPL_IMPORT")){
+        with(findPreference<Preference>("org.phenoapps.intercross.ZPL_IMPORT")) {
             this?.let {
                 setOnPreferenceClickListener {
                     findNavController().navigate(SettingsFragmentDirections.actionToImportZplFragment())
@@ -92,17 +108,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 }
             }
         }
-
         with(findPreference<EditTextPreference>(GeneralKeys.BRAPI_BASE_URL)) {
             this?.let {
                 setOnPreferenceChangeListener { _, newValue ->
                     context.getSharedPreferences("Settings", MODE_PRIVATE)
-                            .edit().putString(GeneralKeys.BRAPI_BASE_URL, newValue.toString()).apply()
+                        .edit().putString(GeneralKeys.BRAPI_BASE_URL, newValue.toString()).apply()
                     true
                 }
             }
         }
-
         with (findPreference<Preference>("org.phenoapps.intercross.DATABASE_IMPORT")) {
             this?.let {
                 setOnPreferenceClickListener {
@@ -114,7 +128,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 }
             }
         }
-
         with (findPreference<Preference>("org.phenoapps.intercross.DATABASE_EXPORT")) {
             this?.let {
                 setOnPreferenceClickListener {
@@ -130,12 +143,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val printSetup = findPreference<Preference>("org.phenoapps.intercross.PRINTER_SETUP")
         printSetup?.setOnPreferenceClickListener {
             val intent = activity?.packageManager
-                    ?.getLaunchIntentForPackage("com.zebra.printersetup")
+                ?.getLaunchIntentForPackage("com.zebra.printersetup")
             when (intent) {
                 null -> {
                     val i = Intent(Intent.ACTION_VIEW)
                     i.data = Uri.parse(
-                            "https://play.google.com/store/apps/details?id=com.zebra.printersetup")
+                        "https://play.google.com/store/apps/details?id=com.zebra.printersetup")
                     startActivity(i)
                 }
                 else -> {
@@ -145,15 +158,19 @@ class SettingsFragment : PreferenceFragmentCompat() {
             true
         }
 
-        setHasOptionsMenu(false)
+//        setHasOptionsMenu(false)
 
         (activity as MainActivity).supportActionBar?.hide()
+    }
 
-        return super.onCreateView(inflater, container, savedInstanceState)
+    override fun onResume() {
+        super.onResume()
+
+        mBottomNavBar?.selectedItemId = R.id.action_nav_settings
+
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        setPreferencesFromResource(R.xml.preferences, rootKey)
 
         val askPerson = (arguments ?: Bundle())
                 .getString("org.phenoapps.intercross.ASK_PERSON", "false")
@@ -161,14 +178,39 @@ class SettingsFragment : PreferenceFragmentCompat() {
         if (askPerson == "true") {
             preferenceManager.showDialog(findPreference<EditTextPreference>("org.phenoapps.intercross.PERSON"))
         }
+    }
 
-//        preferenceManager.sharedPreferences.registerOnSharedPreferenceChangeListener { _, key ->
-//            val pref = findPreference<Preference>(key)
-//
-//            if (pref is ListPreference) {
-//                pref.setSummary(pref.entry)
-//            }
-//        }
+    private fun setupBottomNavBar() {
+
+        mBottomNavBar?.setOnNavigationItemSelectedListener { item ->
+
+            when (item.itemId) {
+
+                R.id.action_nav_home -> {
+
+
+                    findNavController().navigate(R.id.global_action_to_events)
+                }
+                R.id.action_nav_parents -> {
+
+                    findNavController().navigate(R.id.global_action_to_parents)
+                }
+                R.id.action_nav_export -> {
+
+                    (activity as MainActivity).showImportOrExportDialog {
+
+                        mBottomNavBar?.selectedItemId = R.id.action_nav_settings
+
+                    }
+                }
+                R.id.action_nav_cross_count -> {
+
+                    findNavController().navigate(R.id.global_action_to_cross_count)
+                }
+            }
+
+            true
+        }
     }
 
     companion object {
