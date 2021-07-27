@@ -39,6 +39,7 @@ import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFact
 import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
+import org.phenoapps.intercross.fragments.preferences.ToolbarPreferenceFragment
 import org.phenoapps.intercross.util.*
 import java.util.*
 import kotlin.math.roundToInt
@@ -81,7 +82,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
     private fun getFirstOrder(context: Context): String {
 
         val maleFirst = PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(SettingsFragment.ORDER, false)
+                .getBoolean(ToolbarPreferenceFragment.ORDER, false)
 
         return if (maleFirst) context.getString(R.string.MaleID) else context.getString(R.string.FemaleID)
     }
@@ -89,7 +90,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
     private fun getSecondOrder(context: Context): String {
 
         val maleFirst = PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(SettingsFragment.ORDER, false)
+                .getBoolean(ToolbarPreferenceFragment.ORDER, false)
 
         return if (maleFirst) context.getString(R.string.FemaleID) else context.getString(R.string.MaleID)
 
@@ -266,8 +267,8 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                             val second = mBinding.secondText.text.toString()
                             //val third = editTextCross.text.toString()
 
-                            val order = pref.getBoolean(SettingsFragment.ORDER, false)
-                            val blank = pref.getBoolean(SettingsFragment.BLANK, false)
+                            val order = pref.getBoolean(ToolbarPreferenceFragment.ORDER, false)
+                            val blank = pref.getBoolean(ToolbarPreferenceFragment.BLANK, false)
 
                             //first check first text, if male first and allow blank males then skip to second text
                             if (first.isBlank() && !(order && blank)) {
@@ -299,8 +300,8 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
 
-        val order = pref.getBoolean(SettingsFragment.ORDER, false)
-        val blank = pref.getBoolean(SettingsFragment.BLANK, false)
+        val order = pref.getBoolean(ToolbarPreferenceFragment.ORDER, false)
+        val blank = pref.getBoolean(ToolbarPreferenceFragment.BLANK, false)
 
         mBinding.secondText.setText(value)
 
@@ -622,9 +623,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
     private fun FragmentEventsBinding.isInputValid(): Boolean {
 
         val allowBlank = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getBoolean(SettingsFragment.BLANK, false)
+                .getBoolean(ToolbarPreferenceFragment.BLANK, false)
         val maleFirst = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getBoolean(SettingsFragment.ORDER, false)
+                .getBoolean(ToolbarPreferenceFragment.ORDER, false)
         val male: String
         val female: String
         val cross: String = editTextCross.text.toString()
@@ -661,9 +662,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         val value = mBinding.editTextCross.text.toString()
 
         val allowBlank = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getBoolean(SettingsFragment.BLANK, false)
+                .getBoolean(ToolbarPreferenceFragment.BLANK, false)
         val maleFirst = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getBoolean(SettingsFragment.ORDER, false)
+                .getBoolean(ToolbarPreferenceFragment.ORDER, false)
 
         lateinit var male: String
         lateinit var female: String

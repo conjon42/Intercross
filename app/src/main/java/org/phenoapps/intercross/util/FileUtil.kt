@@ -23,6 +23,7 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.models.*
 import org.phenoapps.intercross.fragments.SettingsFragment
+import org.phenoapps.intercross.fragments.preferences.ToolbarPreferenceFragment
 import java.io.*
 import java.util.*
 import java.util.zip.ZipEntry
@@ -432,7 +433,7 @@ class FileUtil(private val ctx: Context) {
     fun ringNotification(success: Boolean) {
 
         if (PreferenceManager.getDefaultSharedPreferences(ctx)
-                        .getBoolean(SettingsFragment.AUDIO_ENABLED, false)) {
+                        .getBoolean(ToolbarPreferenceFragment.AUDIO_ENABLED, false)) {
             try {
                 when (success) {
                     true -> {

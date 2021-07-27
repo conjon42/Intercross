@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    android:key="org.phenoapps.intercross.ROOT_PREFERENCES_DATABASE"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" >
+    <PreferenceCategory android:title="Database" app:iconSpaceReserved="false">
+        <Preference
+            android:icon="@drawable/ic_nv_import"
+            android:key="org.phenoapps.intercross.DATABASE_IMPORT"
+            android:title="Import Database" />
+        <Preference
+            android:icon="@drawable/ic_nv_export"
+            android:key="org.phenoapps.intercross.DATABASE_EXPORT"
+            android:title="Export Database">
+        </Preference>
+    </PreferenceCategory>
+</PreferenceScreen>

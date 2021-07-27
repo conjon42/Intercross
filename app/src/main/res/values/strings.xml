@@ -334,5 +334,12 @@
     <string name="delete_all_cross_title">Delete all crosses?</string>
     <string name="dialog_metadata_property_must_not_have_comma">Metadata properties must not contain commas.</string>
     <string name="fragment_settings_no_metadata_exists">No metadata exists to update.</string>
+    <string name="preferences_profile_fragment_label">Profile</string>
+    <string name="preferences_naming_fragment_label">Naming</string>
+    <string name="preferences_workflow_fragment_label">Workflow</string>
+    <string name="preferences_printing_fragment_label">Printing</string>
+    <string name="preferences_database_fragment_label">Database</string>
+    <string name="preferences_brapi_fragment_label">Brapi</string>
+    <string name="preferences_about_fragment_label">About</string>
 
 </resources>

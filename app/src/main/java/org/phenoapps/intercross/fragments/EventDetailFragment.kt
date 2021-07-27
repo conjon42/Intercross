@@ -32,6 +32,7 @@ import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFacto
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentEventDetailBinding
 import org.phenoapps.intercross.dialogs.MetadataCreatorDialog
+import org.phenoapps.intercross.fragments.preferences.ToolbarPreferenceFragment
 import org.phenoapps.intercross.interfaces.MetadataManager
 import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.Dialogs
@@ -62,7 +63,7 @@ class EventDetailFragment:
 
         //determine if meta data collection is enabled
         val collect: Boolean = PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(SettingsFragment.COLLECT_INFO, false)
+                .getBoolean(ToolbarPreferenceFragment.COLLECT_INFO, false)
 
         return if (collect) View.VISIBLE else View.GONE
 

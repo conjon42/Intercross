@@ -1,107 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- TODO add string resources -->
-<PreferenceScreen
-    android:key="org.phenoapps.intercross.ROOT_PREFERENCES"
+<PreferenceScreen android:key="org.phenoapps.intercross.ROOT_PREFERENCES"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto" >
-    <PreferenceCategory android:title="Profile" app:iconSpaceReserved="false">
-        <EditTextPreference
-            android:title="Person"
-            android:icon="@drawable/ic_setting_person"
-            android:key="org.phenoapps.intercross.PERSON" />
-
-        <EditTextPreference
-            android:icon="@drawable/ic_setting_experiment"
-            android:key="org.phenoapps.intercross.EXPERIMENT"
-            android:title="Experiment" />
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="Naming" app:iconSpaceReserved="false">
-        <SwitchPreference
-            android:defaultValue="false"
-            android:icon="@drawable/ic_setting_male_blank"
-            android:key="org.phenoapps.intercross.BLANK_MALE_ID"
-            android:title="Allow blank male ID" />
-        <SwitchPreference
-            android:defaultValue="false"
-            android:icon="@drawable/ic_setting_cross_order"
-            android:key="org.phenoapps.intercross.CROSS_ORDER"
-            android:summary=""
-            android:title="Scan male first" />
-        <Preference
-            android:icon="@drawable/ic_setting_pattern_create"
-            android:key="org.phenoapps.intercross.CREATE_PATTERN"
-            android:title="Create cross ID pattern"
-            android:summary="UUID"/>
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="Workflow" app:iconSpaceReserved="false">
-        <SwitchPreference
-            android:defaultValue="false"
-            android:icon="@drawable/ic_setting_additional_info"
-            android:key="org.phenoapps.intercross.COLLECT_INFO"
-            android:title="Collect additional information"/>
-        <Preference
-            android:icon="@drawable/ic_note_add_black_24dp"
-            android:key="org.phenoapps.intercross.META_DATA"
-            android:title="Create Metadata"/>
-        <Preference
-            android:icon="@drawable/ic_update_black_24dp"
-            android:key="org.phenoapps.intercross.META_DATA_DEFAULTS"
-            android:title="Metadata Defaults"/>
-        <SwitchPreference
-            android:defaultValue="false"
-            android:icon="@drawable/ic_setting_sound"
-            android:key="org.phenoapps.intercross.AUDIO_ENABLED"
-            android:title="Audio notifications"/>
-        <SwitchPreference
-            android:defaultValue="false"
-            android:icon="@drawable/ic_book_open"
-            android:key="org.phenoapps.intercross.OPEN_CROSS_IMMEDIATELY"
-            android:title="Open Cross After Creating"/>
-        <SwitchPreference
-            android:defaultValue="false"
-            android:icon="@drawable/ic_receipt_long_black_24dp"
-            android:key="org.phenoapps.intercross.COMMUTATIVE_CROSSING"
-            android:title="Commutative Crossing"/>
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="Printing" app:iconSpaceReserved="false">
-        <Preference
-            android:icon="@drawable/ic_setting_print_connect"
-            android:key="org.phenoapps.intercross.PRINTER_SETUP"
-            android:title="Zebra Print Connect" />
-        <Preference
-            android:icon="@drawable/ic_setting_import_zpl"
-            android:key="org.phenoapps.intercross.ZPL_IMPORT"
-            android:title="ZPL Import">
-        </Preference>
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="Database" app:iconSpaceReserved="false">
-        <Preference
-            android:icon="@drawable/ic_nv_import"
-            android:key="org.phenoapps.intercross.DATABASE_IMPORT"
-            android:title="Import Database" />
-        <Preference
-            android:icon="@drawable/ic_nv_export"
-            android:key="org.phenoapps.intercross.DATABASE_EXPORT"
-            android:title="Export Database">
-        </Preference>
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="BrAPI V2" app:iconSpaceReserved="false">
-        <EditTextPreference
-            android:title="@string/pref_brapi_server_title"
-            android:defaultValue="@string/brapi_base_url_default"
-            android:icon="@drawable/ic_pref_brapi_server"
-            android:key="org.phenoapps.intercross.BRAPI_BASE_URL"/>
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="About" app:iconSpaceReserved="false">
-        <Preference
-            android:icon="@drawable/ic_nv_about"
-            android:key="org.phenoapps.intercross.ABOUT"
-            android:title="About" />
-    </PreferenceCategory>
+    <PreferenceScreen android:key="org.phenoapps.intercross.PROFILE_SCREEN"
+        android:title="Profile"
+        android:icon="@drawable/ic_account_circle_black_24dp"
+        app:iconSpaceReserved="false"/>
+    <PreferenceScreen android:key="org.phenoapps.intercross.NAMING_SCREEN"
+        android:title="Naming"
+        android:icon="@drawable/ic_badge_black_24dp"
+        app:iconSpaceReserved="false"/>
+    <PreferenceScreen android:key="org.phenoapps.intercross.WORKFLOW_SCREEN"
+        android:title="Workflow"
+        android:icon="@drawable/ic_account_tree_black_24dp"
+        app:iconSpaceReserved="false"/>
+    <PreferenceScreen android:key="org.phenoapps.intercross.PRINTING_SCREEN"
+        android:title="Printing"
+        android:icon="@drawable/ic_setting_print_connect"
+        app:iconSpaceReserved="false"/>
+    <PreferenceScreen android:key="org.phenoapps.intercross.DATABASE_SCREEN"
+        android:title="Database"
+        android:icon="@drawable/ic_storage_black_24dp"
+        app:iconSpaceReserved="false"/>
+    <PreferenceScreen android:key="org.phenoapps.intercross.BRAPI_SCREEN"
+        android:title="BrAPI"
+        android:icon="@drawable/ic_brapi"
+        app:iconSpaceReserved="false"/>
+    <PreferenceScreen android:key="org.phenoapps.intercross.ABOUT_SCREEN"
+        android:title="About"
+        android:icon="@drawable/ic_about_info"
+        app:iconSpaceReserved="false"/>
 </PreferenceScreen>

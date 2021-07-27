@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    android:key="org.phenoapps.intercross.ROOT_PREFERENCES_BRAPI"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" >
+    <PreferenceCategory android:title="BrAPI V2" app:iconSpaceReserved="false">
+        <EditTextPreference
+            android:title="@string/pref_brapi_server_title"
+            android:defaultValue="@string/brapi_base_url_default"
+            android:icon="@drawable/ic_pref_brapi_server"
+            android:key="org.phenoapps.intercross.BRAPI_BASE_URL"/>
+    </PreferenceCategory>
+</PreferenceScreen>

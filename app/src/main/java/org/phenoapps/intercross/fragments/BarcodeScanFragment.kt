@@ -36,6 +36,7 @@ import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFact
 import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentBarcodeScanBinding
+import org.phenoapps.intercross.fragments.preferences.ToolbarPreferenceFragment
 import org.phenoapps.intercross.util.CrossUtil
 import org.phenoapps.intercross.util.FileUtil
 import java.util.*
@@ -136,7 +137,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                             zxingBarcodeScanner.setStatusText(getString(R.string.zxing_scan_mode_continuous))
 
                             val maleFirst = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                                    .getBoolean(SettingsFragment.ORDER, false)
+                                    .getBoolean(ToolbarPreferenceFragment.ORDER, false)
 
                             when (maleFirst) {
 

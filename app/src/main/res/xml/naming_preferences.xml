@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    android:key="org.phenoapps.intercross.ROOT_PREFERENCES_NAMING"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" >
+    <PreferenceCategory android:title="Naming" app:iconSpaceReserved="false">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_setting_male_blank"
+            android:key="org.phenoapps.intercross.BLANK_MALE_ID"
+            android:title="Allow blank male ID" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_setting_cross_order"
+            android:key="org.phenoapps.intercross.CROSS_ORDER"
+            android:summary=""
+            android:title="Scan male first" />
+        <Preference
+            android:icon="@drawable/ic_setting_pattern_create"
+            android:key="org.phenoapps.intercross.CREATE_PATTERN"
+            android:title="Create cross ID pattern"
+            android:summary="UUID"/>
+    </PreferenceCategory>
+</PreferenceScreen>
