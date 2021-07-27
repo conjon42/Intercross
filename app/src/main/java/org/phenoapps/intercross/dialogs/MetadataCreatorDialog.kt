@@ -37,13 +37,17 @@ class MetadataCreatorDialog(private val ctx: Context, private val listener: Meta
 
             if (property.text.isNotBlank()) {
 
-                if (value.text.isNotBlank()) {
+                if (!property.text.contains(",")) {
 
-                    listener.onMetadataCreated(property.text.toString(), value.text.toString())
+                    if (value.text.isNotBlank()) {
 
-                    dismiss()
+                        listener.onMetadataCreated(property.text.toString(), value.text.toString())
 
-                } else Toast.makeText(ctx, R.string.dialog_metadata_value_must_be_integer, Toast.LENGTH_SHORT).show()
+                        dismiss()
+
+                    } else Toast.makeText(ctx, R.string.dialog_metadata_value_must_be_integer, Toast.LENGTH_SHORT).show()
+
+                }else Toast.makeText(ctx, R.string.dialog_metadata_property_must_not_have_comma, Toast.LENGTH_SHORT).show()
 
             } else Toast.makeText(ctx, R.string.dialog_metadata_property_must_not_be_empty, Toast.LENGTH_SHORT).show()
         }

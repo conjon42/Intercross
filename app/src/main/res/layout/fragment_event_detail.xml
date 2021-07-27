@@ -149,15 +149,6 @@
                     android:layout_height="wrap_content"
                     android:text="@string/metaData"/>
 
-                <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/metaDataLabel"
-                    android:backgroundTint="@color/colorAccent"
-                    android:layout_margin="16dp"
-                    android:text="@string/frag_event_detail_add_new_metadata"
-                    android:id="@+id/frag_event_detail_add_metadata_button"/>
-
                 <androidx.recyclerview.widget.RecyclerView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -167,7 +158,7 @@
                     xmlns:tools="http://schemas.android.com/tools"
                     tools:itemCount="8"
                     tools:listitem="@layout/list_item_metadata"
-                    android:layout_below="@id/frag_event_detail_add_metadata_button"/>
+                    android:layout_below="@id/metaDataLabel"/>
 
             </RelativeLayout>
         </RelativeLayout>
