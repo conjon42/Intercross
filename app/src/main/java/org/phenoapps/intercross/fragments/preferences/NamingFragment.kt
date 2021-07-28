@@ -10,9 +10,13 @@ import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.SettingsRepository
 import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
+import org.phenoapps.intercross.util.KeyUtil
 
-class NamingFragment : ToolbarPreferenceFragment(R.xml.naming_preferences,
-    "org.phenoapps.intercross.ROOT_PREFERENCES_NAMING") {
+class NamingFragment : ToolbarPreferenceFragment(R.xml.naming_preferences, R.string.root_naming) {
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
 
     private val settingsModel: SettingsViewModel by viewModels {
         SettingsViewModelFactory(SettingsRepository
@@ -26,7 +30,7 @@ class NamingFragment : ToolbarPreferenceFragment(R.xml.naming_preferences,
 
             settings?.let {
 
-                findPreference<Preference>("org.phenoapps.intercross.CREATE_PATTERN").apply {
+                findPreference<Preference>(mKeyUtil.nameCreatePatternKey).apply {
 
                     this?.let {
 
@@ -47,7 +51,7 @@ class NamingFragment : ToolbarPreferenceFragment(R.xml.naming_preferences,
             }
         }
 
-        with(findPreference<Preference>("org.phenoapps.intercross.CREATE_PATTERN")) {
+        with(findPreference<Preference>(mKeyUtil.nameCreatePatternKey)) {
 
             this?.let {
 

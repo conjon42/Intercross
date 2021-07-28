@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
-    android:key="org.phenoapps.intercross.ROOT_PREFERENCES_ABOUT"
+    android:key="@string/root_about"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto" >
     <PreferenceCategory android:title="About" app:iconSpaceReserved="false">
         <Preference
             android:icon="@drawable/ic_nv_about"
-            android:key="org.phenoapps.intercross.ABOUT"
+            android:key="@string/key_pref_about"
             android:title="About" />
     </PreferenceCategory>
 </PreferenceScreen>

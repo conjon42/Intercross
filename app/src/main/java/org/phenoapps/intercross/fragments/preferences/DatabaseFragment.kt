@@ -6,16 +6,18 @@ import androidx.preference.Preference
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.util.KeyUtil
 
-class DatabaseFragment : ToolbarPreferenceFragment(R.xml.database_preferences,
-    "org.phenoapps.intercross.ROOT_PREFERENCES_DATABASE") {
+class DatabaseFragment : ToolbarPreferenceFragment(R.xml.database_preferences, R.string.root_database) {
 
-    private var mBottomNavBar: BottomNavigationView? = null
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with (findPreference<Preference>("org.phenoapps.intercross.DATABASE_IMPORT")) {
+        with (findPreference<Preference>(mKeyUtil.dbImportKey)) {
             this?.let {
                 setOnPreferenceClickListener {
                     activity?.let { act ->
@@ -26,7 +28,7 @@ class DatabaseFragment : ToolbarPreferenceFragment(R.xml.database_preferences,
                 }
             }
         }
-        with (findPreference<Preference>("org.phenoapps.intercross.DATABASE_EXPORT")) {
+        with (findPreference<Preference>(mKeyUtil.dbExportKey)) {
             this?.let {
                 setOnPreferenceClickListener {
                     activity?.let { act ->

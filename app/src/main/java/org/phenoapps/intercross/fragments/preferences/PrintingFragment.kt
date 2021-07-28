@@ -7,14 +7,18 @@ import android.view.View
 import androidx.navigation.fragment.findNavController
 import androidx.preference.Preference
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.util.KeyUtil
 
-class PrintingFragment : ToolbarPreferenceFragment(R.xml.printing_preferences,
-    "org.phenoapps.intercross.ROOT_PREFERENCES_PRINTING") {
+class PrintingFragment : ToolbarPreferenceFragment(R.xml.printing_preferences, R.string.root_printing) {
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(findPreference<Preference>("org.phenoapps.intercross.ZPL_IMPORT")) {
+        with(findPreference<Preference>(mKeyUtil.printZplImportKey)) {
             this?.let {
                 setOnPreferenceClickListener {
                     findNavController().navigate(PrintingFragmentDirections.actionToImportZplFragment())
@@ -23,7 +27,7 @@ class PrintingFragment : ToolbarPreferenceFragment(R.xml.printing_preferences,
             }
         }
 
-        val printSetup = findPreference<Preference>("org.phenoapps.intercross.PRINTER_SETUP")
+        val printSetup = findPreference<Preference>(mKeyUtil.printSetupKey)
         printSetup?.setOnPreferenceClickListener {
             val intent = activity?.packageManager
                 ?.getLaunchIntentForPackage("com.zebra.printersetup")

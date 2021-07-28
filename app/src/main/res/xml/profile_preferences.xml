@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
-    android:key="org.phenoapps.intercross.ROOT_PREFERENCES_PROFILE"
+    android:key="@string/root_profile"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto" >
     <PreferenceCategory android:title="Profile" app:iconSpaceReserved="false">
         <EditTextPreference
             android:title="Person"
             android:icon="@drawable/ic_setting_person"
-            android:key="org.phenoapps.intercross.PERSON" />
-
+            android:key="@string/key_pref_profile_person" />
         <EditTextPreference
             android:icon="@drawable/ic_setting_experiment"
-            android:key="org.phenoapps.intercross.EXPERIMENT"
+            android:key="@string/key_pref_profile_experiment"
             android:title="Experiment" />
     </PreferenceCategory>
 </PreferenceScreen>

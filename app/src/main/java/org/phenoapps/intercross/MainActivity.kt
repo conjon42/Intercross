@@ -443,13 +443,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun closeKeyboard() {
-
-        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-
-        imm.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
-    }
-
     override fun onBackPressed() {
 
         mNavController.currentDestination?.let { it ->

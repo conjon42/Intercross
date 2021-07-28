@@ -28,6 +28,7 @@ import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.CrossBlockManagerBinding
 import org.phenoapps.intercross.util.AsyncLoadCrossblock
 import org.phenoapps.intercross.util.Dialogs
+import org.phenoapps.intercross.util.KeyUtil
 
 
 class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.layout.cross_block_manager),
@@ -61,6 +62,14 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
     private var mEvents: List<Event> = ArrayList()
 
+    private val mPref by lazy {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
+
     @RequiresApi(Build.VERSION_CODES.M)
     override fun CrossBlockManagerBinding.afterCreateView() {
 
@@ -72,11 +81,9 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
         setupBottomNavBar()
 
-        val pref = PreferenceManager.getDefaultSharedPreferences(context)
+        mPref.edit().putString("last_visited_summary", "crossblock").apply()
 
-        pref.edit().putString("last_visited_summary", "crossblock").apply()
-
-        val isCommutative = pref.getBoolean("org.phenoapps.intercross.COMMUTATIVE_CROSSING", false)
+        val isCommutative = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
 
         mGesture = GestureDetectorCompat(requireContext(), this@CrossBlockFragment)
 

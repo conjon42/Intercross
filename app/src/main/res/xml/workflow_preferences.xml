@@ -1,36 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
-    android:key="org.phenoapps.intercross.ROOT_PREFERENCES_WORKFLOW"
+    android:key="@string/root_workflow"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto" >
     <PreferenceCategory android:title="Workflow" app:iconSpaceReserved="false">
         <SwitchPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_setting_additional_info"
-            android:key="org.phenoapps.intercross.COLLECT_INFO"
+            android:key="@string/key_pref_work_collect"
             android:title="Collect additional information"/>
         <Preference
             android:icon="@drawable/ic_note_add_black_24dp"
-            android:key="org.phenoapps.intercross.META_DATA"
+            android:key="@string/key_pref_work_meta"
             android:title="Create Metadata"/>
         <Preference
             android:icon="@drawable/ic_update_black_24dp"
-            android:key="org.phenoapps.intercross.META_DATA_DEFAULTS"
+            android:key="@string/key_pref_work_meta_defaults"
             android:title="Metadata Defaults"/>
         <SwitchPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_setting_sound"
-            android:key="org.phenoapps.intercross.AUDIO_ENABLED"
+            android:key="@string/key_pref_work_audio"
             android:title="Audio notifications"/>
         <SwitchPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_book_open"
-            android:key="org.phenoapps.intercross.OPEN_CROSS_IMMEDIATELY"
+            android:key="@string/key_pref_work_open_cross"
             android:title="Open Cross After Creating"/>
         <SwitchPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_receipt_long_black_24dp"
-            android:key="org.phenoapps.intercross.COMMUTATIVE_CROSSING"
+            android:key="@string/key_pref_work_commutative"
             android:title="Commutative Crossing"/>
     </PreferenceCategory>
 </PreferenceScreen>

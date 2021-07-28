@@ -24,6 +24,7 @@ import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.CrossBlockManagerBinding
 import org.phenoapps.intercross.databinding.FragmentWishlistBinding
 import org.phenoapps.intercross.util.Dialogs
+import org.phenoapps.intercross.util.KeyUtil
 
 /**
  * Summary Fragment is a recycler list of currenty crosses.
@@ -39,6 +40,14 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
         WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
     }
 
+    private val mPref by lazy {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
+
     private var wishlistEmpty = true
 
     private var mEvents: List<Event> = ArrayList()
@@ -49,15 +58,13 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
         setupBottomNavBar()
 
-        PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .edit().putString("last_visited_summary", "wishlist").apply()
+        mPref.edit().putString("last_visited_summary", "wishlist").apply()
 
         recyclerView.adapter = WishlistAdapter(requireContext())
 
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        val isCommutative = PreferenceManager.getDefaultSharedPreferences(context)
-            .getBoolean("org.phenoapps.intercross.COMMUTATIVE_CROSSING", false)
+        val isCommutative = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
 
         eventsModel.events.observe(viewLifecycleOwner, {
 

@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
-    android:key="org.phenoapps.intercross.ROOT_PREFERENCES_PRINTING"
+    android:key="@string/root_printing"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory android:title="Printing" app:iconSpaceReserved="false">
         <Preference
             android:icon="@drawable/ic_setting_print_connect"
-            android:key="org.phenoapps.intercross.PRINTER_SETUP"
+            android:key="@string/key_pref_print_setup"
             android:title="Zebra Print Connect" />
         <Preference
             android:icon="@drawable/ic_setting_import_zpl"
-            android:key="org.phenoapps.intercross.ZPL_IMPORT"
+            android:key="@string/key_pref_print_zpl_import"
             android:title="ZPL Import">
         </Preference>
     </PreferenceCategory>

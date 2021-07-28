@@ -1,7 +1,6 @@
 package org.phenoapps.intercross.util
 
 import android.content.Context
-import android.os.Looper
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.navigation.NavController
@@ -9,7 +8,6 @@ import androidx.navigation.NavDirections
 import androidx.preference.PreferenceManager
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.JsonParser
-import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSyntaxException
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.models.Event
@@ -22,6 +20,14 @@ import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
 import java.util.*
 
 class CrossUtil(val context: Context) {
+
+    private val mPref by lazy {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
 
     fun submitCrossEvent(root: View,
                          female: String,
@@ -62,14 +68,11 @@ class CrossUtil(val context: Context) {
 
         }
 
-        val isCommutative = PreferenceManager.getDefaultSharedPreferences(context)
-            .getBoolean("org.phenoapps.intercross.COMMUTATIVE_CROSSING", false)
+        val isCommutative = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
 
-        val experiment = PreferenceManager.getDefaultSharedPreferences(context)
-                .getString("org.phenoapps.intercross.EXPERIMENT", "")
+        val experiment = mPref.getString(mKeyUtil.profExpKey, "")
 
-        val person = PreferenceManager.getDefaultSharedPreferences(context)
-                .getString("org.phenoapps.intercross.PERSON", "")
+        val person = mPref.getString(mKeyUtil.profPersonKey, "")
 
         val date = DateUtil().getTime()
 
@@ -195,9 +198,7 @@ class CrossUtil(val context: Context) {
      */
     fun checkPrefToOpenCrossEvent(controller: NavController, direction: NavDirections) {
 
-        val pref = PreferenceManager.getDefaultSharedPreferences(context)
-
-        val openCross = pref?.getBoolean("org.phenoapps.intercross.OPEN_CROSS_IMMEDIATELY", false) ?: false
+        val openCross = mPref.getBoolean(mKeyUtil.workOpenCrossKey, false) ?: false
 
         if (openCross) {
             controller.navigate(
