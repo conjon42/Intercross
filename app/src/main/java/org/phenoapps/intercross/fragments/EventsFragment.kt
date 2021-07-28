@@ -776,9 +776,8 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             }
 
             setPositiveButton(setPerson) { _, _ ->
-                findNavController().navigate(R.id.settings_fragment, Bundle().apply {
-                    putString("org.phenoapps.intercross.ASK_PERSON", "true")
-                })
+                findNavController().navigate(EventsFragmentDirections
+                    .actionFromEventsToPreferences(true))
             }
         }
 

@@ -14,6 +14,15 @@ import org.phenoapps.intercross.fragments.preferences.ToolbarPreferenceFragment
 class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences,
     "org.phenoapps.intercross.ROOT_PREFERENCES") {
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let { args ->
+            if (args.getBoolean("org.phenoapps.intercross.ASK_PERSON"))
+                findNavController().navigate(SettingsFragmentDirections
+                    .actionFromSettingsToProfileFragment())
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 

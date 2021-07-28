@@ -3,7 +3,6 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: "androidx.navigation.safeargs.kotlin"
-apply plugin: 'com.mikepenz.aboutlibraries.plugin'
 
 apply plugin: 'com.google.gms.google-services' // Google Services Gradle plugin
 
@@ -74,6 +73,35 @@ android {
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
+}
+
+static def getLocalProp(key) {
+    def props = new Properties()
+    props.load(new FileInputStream(new File('local.properties')))
+    return props[key]
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'http://dl.bintray.com/kotlin/kotlin-eap' }
+    maven { url "https://jitpack.io" }
+    google()
+
+    maven {
+        url = "https://maven.pkg.github.com/phenoapps/phenolib"
+        credentials {
+            username = getLocalProp("GITHUB_USERNAME")
+            password = getLocalProp("GITHUB_TOKEN")
+        }
+    }
+
+    maven {
+        url = "https://maven.pkg.github.com/Breeding-Insight/brapi"
+        credentials {
+            username = getLocalProp("GITHUB_USERNAME")
+            password = getLocalProp("GITHUB_TOKEN")
+        }
     }
 }
 

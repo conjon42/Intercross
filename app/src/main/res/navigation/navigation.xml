@@ -53,6 +53,13 @@
             android:id="@+id/action_to_brapi_export"
             app:destination="@+id/brapi_export_fragment"
             app:popUpTo="@id/events_fragment"/>
+        <action android:id="@+id/action_from_events_to_preferences"
+            app:destination="@+id/preferences"
+            app:popUpTo="@id/events_fragment">
+            <argument android:name="org.phenoapps.intercross.ASK_PERSON"
+                android:defaultValue="true"
+                app:argType="boolean"/>
+        </action>
     </fragment>
 
     <fragment
