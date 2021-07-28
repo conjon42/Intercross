@@ -11,8 +11,7 @@ import org.phenoapps.intercross.data.SettingsRepository
 import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
 
-class NamingFragment : ToolbarPreferenceFragment(R.xml.naming_preferences,
-    "org.phenoapps.intercross.ROOT_PREFERENCES_NAMING") {
+class NamingFragment : ToolbarPreferenceFragment(R.xml.naming_preferences, R.string.root_naming) {
 
     private val settingsModel: SettingsViewModel by viewModels {
         SettingsViewModelFactory(SettingsRepository

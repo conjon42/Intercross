@@ -7,23 +7,29 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.preference.EditTextPreference
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.util.KeyUtil
 
 /**
  * Generic class for other preference fragments to extend.
  * The base class takes the xml file and root key to populate the preference list.
  * This class mainly handles bottom nav bar navigation directions.
  */
-open class ToolbarPreferenceFragment(private val xml: Int, private val key: String) : PreferenceFragmentCompat() {
+open class ToolbarPreferenceFragment(private val xml: Int, private val key: Int) : PreferenceFragmentCompat() {
 
     private var mBottomNavBar: BottomNavigationView? = null
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setPreferencesFromResource(xml, key)
+        setPreferencesFromResource(xml, getString(key))
 
         mBottomNavBar = view.findViewById(R.id.preferences_bottom_nav_bar)
 
@@ -46,10 +52,10 @@ open class ToolbarPreferenceFragment(private val xml: Int, private val key: Stri
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
 
         val askPerson = (arguments ?: Bundle())
-                .getString("org.phenoapps.intercross.ASK_PERSON", "false")
+            .getString(mKeyUtil.argProfAskPerson, "false")
 
         if (askPerson == "true") {
-            preferenceManager.showDialog(findPreference<EditTextPreference>("org.phenoapps.intercross.PERSON"))
+            preferenceManager.showDialog(findPreference<EditTextPreference>(mKeyUtil.profPersonKey))
         }
     }
 
@@ -95,12 +101,5 @@ open class ToolbarPreferenceFragment(private val xml: Int, private val key: Stri
                 }
             }
         })
-    }
-
-    companion object {
-        const val AUDIO_ENABLED = "org.phenoapps.intercross.AUDIO_ENABLED"
-        const val BLANK = "org.phenoapps.intercross.BLANK_MALE_ID"
-        const val ORDER = "org.phenoapps.intercross.CROSS_ORDER"
-        const val COLLECT_INFO = "org.phenoapps.intercross.COLLECT_INFO"
     }
 }

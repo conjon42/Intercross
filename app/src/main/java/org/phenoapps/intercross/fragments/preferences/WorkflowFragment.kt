@@ -20,13 +20,22 @@ import org.phenoapps.intercross.dialogs.MetadataCreatorDialog
 import org.phenoapps.intercross.dialogs.MetadataDefaultEditorDialog
 import org.phenoapps.intercross.interfaces.MetadataManager
 import org.phenoapps.intercross.util.Dialogs
+import org.phenoapps.intercross.util.KeyUtil
 
-class WorkflowFragment : ToolbarPreferenceFragment(R.xml.workflow_preferences,
-    "org.phenoapps.intercross.ROOT_PREFERENCES_WORKFLOW"), MetadataManager {
+class WorkflowFragment : ToolbarPreferenceFragment(
+    R.xml.workflow_preferences, R.string.root_workflow), MetadataManager {
 
     private val eventsList: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository
             .getInstance(IntercrossDatabase.getInstance(requireContext()).eventsDao()))
+    }
+
+    private val mPref by lazy {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -35,12 +44,10 @@ class WorkflowFragment : ToolbarPreferenceFragment(R.xml.workflow_preferences,
         //ensure metadata creation / setting defaults preference is invisible by default
         context?.let { ctx ->
 
-            val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
+            val metadataPref = findPreference<Preference>(mKeyUtil.workMetaKey)
+            val defaultsPref = findPreference<Preference>(mKeyUtil.workMetaDefaultsKey)
 
-            val metadataPref = findPreference<Preference>("org.phenoapps.intercross.META_DATA")
-            val defaultsPref = findPreference<Preference>("org.phenoapps.intercross.META_DATA_DEFAULTS")
-
-            val isCollect = prefs.getBoolean("org.phenoapps.intercross.COLLECT_INFO", false)
+            val isCollect = mPref.getBoolean(mKeyUtil.workCollectKey, false)
 
             defaultsPref?.isVisible = isCollect
             metadataPref?.isVisible = isCollect
@@ -48,16 +55,16 @@ class WorkflowFragment : ToolbarPreferenceFragment(R.xml.workflow_preferences,
         }
 
         //when collect info is changed, update visibility of metadata preference
-        with (findPreference<SwitchPreference>("org.phenoapps.intercross.COLLECT_INFO")) {
+        with (findPreference<SwitchPreference>(mKeyUtil.workCollectKey)) {
             this?.let {
 
                 setOnPreferenceChangeListener { preference, newValue ->
 
-                    findPreference<Preference>("org.phenoapps.intercross.META_DATA")?.let { metadataPref ->
+                    findPreference<Preference>(mKeyUtil.workMetaKey)?.let { metadataPref ->
                         metadataPref.isVisible = newValue as? Boolean ?: false
                     }
 
-                    findPreference<Preference>("org.phenoapps.intercross.META_DATA_DEFAULTS")?.let { metadataPref ->
+                    findPreference<Preference>(mKeyUtil.workMetaDefaultsKey)?.let { metadataPref ->
                         metadataPref.isVisible = newValue as? Boolean ?: false
                     }
                     true
@@ -66,7 +73,7 @@ class WorkflowFragment : ToolbarPreferenceFragment(R.xml.workflow_preferences,
         }
 
         //setup click listener to handle metadata creation when pressed
-        with (findPreference<Preference>("org.phenoapps.intercross.META_DATA")) {
+        with (findPreference<Preference>(mKeyUtil.workMetaKey)) {
             this?.let {
 
                 setOnPreferenceClickListener {
@@ -83,7 +90,7 @@ class WorkflowFragment : ToolbarPreferenceFragment(R.xml.workflow_preferences,
         }
 
         //setup click listener to handle metadata creation when pressed
-        with (findPreference<Preference>("org.phenoapps.intercross.META_DATA_DEFAULTS")) {
+        with (findPreference<Preference>(mKeyUtil.workMetaDefaultsKey)) {
             this?.let {
 
                 setOnPreferenceClickListener {

@@ -7,8 +7,7 @@ import androidx.preference.EditTextPreference
 import org.phenoapps.intercross.GeneralKeys
 import org.phenoapps.intercross.R
 
-class BrapiFragment : ToolbarPreferenceFragment(R.xml.brapi_preferences,
-    "org.phenoapps.intercross.ROOT_PREFERENCES_BRAPI") {
+class BrapiFragment : ToolbarPreferenceFragment(R.xml.brapi_preferences, R.string.root_brapi) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

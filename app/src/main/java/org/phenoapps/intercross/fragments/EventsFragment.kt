@@ -79,18 +79,24 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private val scope = CoroutineScope(Dispatchers.IO)
 
+    private val mPref by lazy {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
+
     private fun getFirstOrder(context: Context): String {
 
-        val maleFirst = PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(ToolbarPreferenceFragment.ORDER, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
 
         return if (maleFirst) context.getString(R.string.MaleID) else context.getString(R.string.FemaleID)
     }
 
     private fun getSecondOrder(context: Context): String {
 
-        val maleFirst = PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(ToolbarPreferenceFragment.ORDER, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
 
         return if (maleFirst) context.getString(R.string.FemaleID) else context.getString(R.string.MaleID)
 
@@ -151,11 +157,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun startObservers() {
 
-        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
-
         val error = getString(R.string.ErrorCodeExists)
 
-        val isCommutative = pref.getBoolean("org.phenoapps.intercross.COMMUTATIVE_CROSSING", false)
+        val isCommutative = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
 
         parentsList.parents.observe(viewLifecycleOwner, {
 
@@ -267,15 +271,16 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                             val second = mBinding.secondText.text.toString()
                             //val third = editTextCross.text.toString()
 
-                            val order = pref.getBoolean(ToolbarPreferenceFragment.ORDER, false)
-                            val blank = pref.getBoolean(ToolbarPreferenceFragment.BLANK, false)
+                            val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+
+                            val blank = mPref.getBoolean(mKeyUtil.nameBlankMaleKey, false)
 
                             //first check first text, if male first and allow blank males then skip to second text
-                            if (first.isBlank() && !(order && blank)) {
+                            if (first.isBlank() && !(maleFirst && blank)) {
 
                                 afterFirstText(it)
 
-                            } else if (second.isBlank() && !(!order && blank)) {
+                            } else if (second.isBlank() && !(!maleFirst && blank)) {
 
                                 afterSecondText(it)
 
@@ -298,15 +303,14 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun afterSecondText(value: String) {
 
-        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
 
-        val order = pref.getBoolean(ToolbarPreferenceFragment.ORDER, false)
-        val blank = pref.getBoolean(ToolbarPreferenceFragment.BLANK, false)
+        val blank = mPref.getBoolean(mKeyUtil.nameBlankMaleKey, false)
 
         mBinding.secondText.setText(value)
 
         //check if female first, then check if string is empty to show error message
-        if (!order) {
+        if (!maleFirst) {
 
             if (value.isEmpty() && !blank) {
 
@@ -465,8 +469,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             if (hasFocus) mFocused = v
 
-            if (hasFocus && (PreferenceManager.getDefaultSharedPreferences(requireContext())
-                            .getString("org.phenoapps.intercross.PERSON", "") ?: "").isBlank()) {
+            if (hasFocus && (mPref.getString(mKeyUtil.profPersonKey, "") ?: "").isBlank()) {
                 askUserForPerson()
             }
 
@@ -572,8 +575,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         button.setOnClickListener {
 
-            if ((PreferenceManager.getDefaultSharedPreferences(requireContext())
-                            .getString("org.phenoapps.intercross.PERSON", "") ?: "").isBlank()) {
+            if (mPref.getString(mKeyUtil.profPersonKey, "").isNullOrBlank()) {
                 askUserForPerson()
             } else {
 
@@ -584,8 +586,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         button.setOnLongClickListener {
 
-            if ((PreferenceManager.getDefaultSharedPreferences(requireContext())
-                    .getString("org.phenoapps.intercross.PERSON", "") ?: "").isBlank()) {
+            if (mPref.getString(mKeyUtil.profPersonKey, "").isNullOrBlank()) {
                 askUserForPerson()
             } else {
 
@@ -613,8 +614,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             secondText.setText("")
 
-            val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                    .getString("org.phenoapps.intercross.PERSON", "") ?: ""
+            val person = mPref.getString(mKeyUtil.profPersonKey, "") ?: ""
 
             if (person.isNotBlank()) firstText.requestFocus()
         }
@@ -622,10 +622,10 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun FragmentEventsBinding.isInputValid(): Boolean {
 
-        val allowBlank = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getBoolean(ToolbarPreferenceFragment.BLANK, false)
-        val maleFirst = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getBoolean(ToolbarPreferenceFragment.ORDER, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+
+        val blank = mPref.getBoolean(mKeyUtil.nameBlankMaleKey, false)
+
         val male: String
         val female: String
         val cross: String = editTextCross.text.toString()
@@ -639,7 +639,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         //calculate how full the save button should be
         var numFilled = 0
-        if (allowBlank) numFilled++
+        if (blank) numFilled++
         else if (male.isNotBlank()) numFilled++
         if (female.isNotBlank()) numFilled++
         if (cross.isNotBlank()) numFilled++
@@ -653,7 +653,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                     else -> R.drawable.button_save_full
                 })
 
-        return ((male.isNotBlank() || allowBlank) && female.isNotBlank()
+        return ((male.isNotBlank() || blank) && female.isNotBlank()
                 && (cross.isNotBlank() || (mSettings.isUUID || mSettings.isPattern)))
     }
 
@@ -661,10 +661,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         val value = mBinding.editTextCross.text.toString()
 
-        val allowBlank = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getBoolean(ToolbarPreferenceFragment.BLANK, false)
-        val maleFirst = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getBoolean(ToolbarPreferenceFragment.ORDER, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+
+        val blank = mPref.getBoolean(mKeyUtil.nameBlankMaleKey, false)
 
         lateinit var male: String
         lateinit var female: String
@@ -677,7 +676,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             female = (mBinding.secondText.text ?: "").toString()
         }
 
-        if (value.isNotBlank() && (male.isNotBlank() || allowBlank) && female.isNotBlank()) {
+        if (value.isNotBlank() && (male.isNotBlank() || blank) && female.isNotBlank()) {
 
             if (male.isBlank()) male = "blank"
 

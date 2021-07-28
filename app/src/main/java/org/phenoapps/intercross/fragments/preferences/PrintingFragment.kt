@@ -8,8 +8,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.preference.Preference
 import org.phenoapps.intercross.R
 
-class PrintingFragment : ToolbarPreferenceFragment(R.xml.printing_preferences,
-    "org.phenoapps.intercross.ROOT_PREFERENCES_PRINTING") {
+class PrintingFragment : ToolbarPreferenceFragment(R.xml.printing_preferences, R.string.root_printing) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

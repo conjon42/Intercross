@@ -17,6 +17,7 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonParser
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSyntaxException
+import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.MetadataAdapter
 import org.phenoapps.intercross.data.EventsRepository
@@ -37,6 +38,7 @@ import org.phenoapps.intercross.interfaces.MetadataManager
 import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.FileUtil
+import org.phenoapps.intercross.util.KeyUtil
 
 
 class EventDetailFragment:
@@ -47,6 +49,14 @@ class EventDetailFragment:
 
     private val eventsList: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
+    }
+
+    private val mPref by lazy {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
     }
 
     private lateinit var eventDetailViewModel: EventDetailViewModel
@@ -62,8 +72,7 @@ class EventDetailFragment:
     private fun getMetaDataVisibility(context: Context): Int {
 
         //determine if meta data collection is enabled
-        val collect: Boolean = PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(ToolbarPreferenceFragment.COLLECT_INFO, false)
+        val collect: Boolean = mPref.getBoolean(mKeyUtil.workCollectKey, false)
 
         return if (collect) View.VISIBLE else View.GONE
 
@@ -270,8 +279,6 @@ class EventDetailFragment:
 
         return super.onOptionsItemSelected(item)
     }
-
-
 
     //extension function for live data to only observe once when the data is not null
     private fun <T> LiveData<T>.observeOnce(observer: Observer<T>) {

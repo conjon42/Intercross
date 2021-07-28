@@ -6,18 +6,22 @@ import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceScreen
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.fragments.preferences.ToolbarPreferenceFragment
+import org.phenoapps.intercross.util.KeyUtil
 
 /**
  * Root preferences fragment that populates the setting categories.
  * Each category can be clicked to navigate to their corresponding fragment.
  */
-class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences,
-    "org.phenoapps.intercross.ROOT_PREFERENCES") {
+class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.root_preferences) {
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let { args ->
-            if (args.getBoolean("org.phenoapps.intercross.ASK_PERSON"))
+            if (args.getBoolean(mKeyUtil.argProfAskPerson))
                 findNavController().navigate(SettingsFragmentDirections
                     .actionFromSettingsToProfileFragment())
         }
@@ -26,7 +30,7 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences,
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(findPreference<PreferenceScreen>("org.phenoapps.intercross.PROFILE_SCREEN")) {
+        with(findPreference<PreferenceScreen>(getString(R.string.root_profile))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     findNavController().navigate(SettingsFragmentDirections
@@ -37,7 +41,7 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences,
             }
         }
 
-        with(findPreference<PreferenceScreen>("org.phenoapps.intercross.NAMING_SCREEN")) {
+        with(findPreference<PreferenceScreen>(getString(R.string.root_naming))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     findNavController().navigate(SettingsFragmentDirections
@@ -48,7 +52,7 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences,
             }
         }
 
-        with(findPreference<PreferenceScreen>("org.phenoapps.intercross.WORKFLOW_SCREEN")) {
+        with(findPreference<PreferenceScreen>(getString(R.string.root_workflow))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     findNavController().navigate(SettingsFragmentDirections
@@ -59,7 +63,7 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences,
             }
         }
 
-        with(findPreference<PreferenceScreen>("org.phenoapps.intercross.PRINTING_SCREEN")) {
+        with(findPreference<PreferenceScreen>(getString(R.string.root_printing))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     findNavController().navigate(SettingsFragmentDirections
@@ -70,7 +74,7 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences,
             }
         }
 
-        with(findPreference<PreferenceScreen>("org.phenoapps.intercross.DATABASE_SCREEN")) {
+        with(findPreference<PreferenceScreen>(getString(R.string.root_database))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     findNavController().navigate(SettingsFragmentDirections
@@ -81,7 +85,7 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences,
             }
         }
 
-        with(findPreference<PreferenceScreen>("org.phenoapps.intercross.BRAPI_SCREEN")) {
+        with(findPreference<PreferenceScreen>(getString(R.string.root_brapi))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     findNavController().navigate(SettingsFragmentDirections
@@ -92,7 +96,7 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences,
             }
         }
 
-        with(findPreference<PreferenceScreen>("org.phenoapps.intercross.ABOUT_SCREEN")) {
+        with(findPreference<PreferenceScreen>(getString(R.string.root_about))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     findNavController().navigate(SettingsFragmentDirections.actionToAbout())

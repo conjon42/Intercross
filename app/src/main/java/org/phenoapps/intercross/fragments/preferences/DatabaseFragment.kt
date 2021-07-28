@@ -7,8 +7,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
 
-class DatabaseFragment : ToolbarPreferenceFragment(R.xml.database_preferences,
-    "org.phenoapps.intercross.ROOT_PREFERENCES_DATABASE") {
+class DatabaseFragment : ToolbarPreferenceFragment(R.xml.database_preferences, R.string.root_database) {
 
     private var mBottomNavBar: BottomNavigationView? = null
 
