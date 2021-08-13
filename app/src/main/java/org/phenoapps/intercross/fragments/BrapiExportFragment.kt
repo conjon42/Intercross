@@ -10,6 +10,7 @@ import android.view.View
 import android.widget.*
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.google.gson.JsonObject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -457,7 +458,7 @@ class BrapiExportFragment: IntercrossBaseFragment<FragmentBrapiImportBinding>(R.
                             //this.plannedCrossName = "Test"
                             //load wish metadata into additional info map
                             //TODO when v2 and 37b are merged, add additional info into brapi export/import
-                            this.additionalInfo = mapOf()
+                            this.additionalInfo = JsonObject() //mapOf()
                             this.crossAttributes = listOf()
                             //this.crossName =
                             this.crossType = cross.type.toBrAPICrossType()

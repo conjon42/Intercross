@@ -283,7 +283,6 @@
             app:popUpTo="@id/events_fragment"/>
     </fragment>
 
-
     <!-- Global Actions used by Navigation Drawer -->
     <action android:id="@+id/global_action_to_settings_fragment"
         app:destination="@id/preferences"
@@ -312,4 +311,8 @@
         app:destination="@+id/brapi_wishlist_import_fragment"
         app:launchSingleTop="true"
         app:popUpTo="@id/cross_count_fragment"/>
+
+    <action android:id="@+id/global_action_to_brapi_auth"
+        app:destination="@+id/brapi_auth_fragment"
+        app:launchSingleTop="true"/>
 </navigation>

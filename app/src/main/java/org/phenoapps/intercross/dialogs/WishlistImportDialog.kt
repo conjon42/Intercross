@@ -1,7 +1,6 @@
 package org.phenoapps.intercross.dialogs
 
 import android.app.Dialog
-import android.database.sqlite.SQLiteAbortException
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -10,9 +9,7 @@ import androidx.constraintlayout.widget.Group
 import androidx.fragment.app.FragmentActivity
 import kotlinx.coroutines.*
 import org.brapi.v2.model.germ.BrAPIPlannedCross
-import org.phenoapps.intercross.MainActivity
 import org.phenoapps.intercross.R
-import java.util.*
 
 class WishlistImportDialog(private val activity: FragmentActivity,
                            private val projectName: String,

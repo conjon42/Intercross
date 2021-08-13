@@ -7,8 +7,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import org.phenoapps.intercross.GeneralKeys;
 import org.phenoapps.intercross.R;
+import org.phenoapps.intercross.util.KeyUtil;
 
 public class BrapiPaginationManager {
 
@@ -21,8 +21,11 @@ public class BrapiPaginationManager {
     private TextView pageIndicator;
     private Context context;
 
+    private KeyUtil mKeyUtil;
+
     public BrapiPaginationManager(Context context){
         this.context = context;
+        this.mKeyUtil = new KeyUtil(context);
         // Make our prev and next buttons invisible
         nextBtn = ((Activity)context).findViewById(R.id.next);
         prevBtn = ((Activity)context).findViewById(R.id.prev);
@@ -51,10 +54,9 @@ public class BrapiPaginationManager {
     }
 
     public Integer getDefaultPageSize(){
-        String pageSizeStr = context.getSharedPreferences("Settings", 0)
-                .getString(GeneralKeys.BRAPI_PAGE_SIZE, "1000");
+        String pageSizeStr = "1000";
 
-        Integer pageSize = 1000;
+        int pageSize = 1000;
 
         try {
             if (pageSizeStr != null) {

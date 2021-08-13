@@ -10,6 +10,11 @@ import kotlin.properties.ReadOnlyProperty
  */
 class KeyUtil(private val ctx: Context?) {
 
+    //explicitly state phenolib utils
+    val brapiKeys by lazy {
+        org.phenoapps.utils.KeyUtil(ctx)
+    }
+
     private fun key(id: Int): ReadOnlyProperty<Any?, String> =
         ReadOnlyProperty { _, _ -> ctx?.getString(id)!! }
 
@@ -20,7 +25,6 @@ class KeyUtil(private val ctx: Context?) {
     val workflowRoot by key(R.string.root_workflow)
     val printingRoot by key(R.string.root_printing)
     val databaseRoot by key(R.string.root_database)
-    val brapiRoot by key(R.string.root_brapi)
     val aboutRoot by key(R.string.root_about)
     //endregion
 
@@ -54,10 +58,6 @@ class KeyUtil(private val ctx: Context?) {
     //region database preference keys
     val dbImportKey by key(R.string.key_pref_db_import)
     val dbExportKey by key(R.string.key_pref_db_export)
-    //endregion
-
-    //region brapi preference keys
-    val brapiUrlKey by key(R.string.key_pref_brapi_url)
     //endregion
 
     //region about preference keys

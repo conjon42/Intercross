@@ -3,8 +3,7 @@ package org.phenoapps.intercross.fragments.preferences
 import android.os.Bundle
 import android.view.View
 import androidx.preference.Preference
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import org.phenoapps.intercross.MainActivity
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.util.KeyUtil
 
