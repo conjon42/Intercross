@@ -18,6 +18,7 @@ import org.brapi.v2.model.BrAPIExternalReference
 import org.brapi.v2.model.BrApiGeoJSON
 import org.brapi.v2.model.germ.*
 import org.brapi.v2.model.pheno.*
+import org.json.JSONObject
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.brapi.model.BrapiTrial
 import org.phenoapps.intercross.brapi.service.BrAPIService
