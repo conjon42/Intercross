@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.*
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_barcode_scan.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -153,11 +154,11 @@ class BrapiWishlistImportFragment: IntercrossBaseFragment<FragmentBrapiImportBin
                                         female = plan.parent1
                                     }
 
-                                    val infoMap = plan.additionalInfo.withDefault { null }
+                                    val infoMap = Gson().fromJson(plan.additionalInfo, HashMap::class.java)
                                     //insert wishlist row, check if brapi has wish metadata
-                                    val wishMin by infoMap //delegate metadata from brapi additional info map
-                                    val wishMax by infoMap
-                                    val wishType by infoMap
+                                    val wishMin = infoMap["wishMin"] as? String
+                                    val wishMax = infoMap["wishMax"] as? String
+                                    val wishType = infoMap["wishType"] as? String
 
                                     //TODO: need external references for both parent1 and parent2, otherwise brapi overwrites observationUnitDbId
                                     wishViewModel.insert(
