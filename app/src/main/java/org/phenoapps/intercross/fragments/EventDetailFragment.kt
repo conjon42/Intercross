@@ -20,22 +20,18 @@ import com.google.gson.JsonSyntaxException
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.MetadataAdapter
 import org.phenoapps.intercross.data.EventsRepository
-import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Metadata
-import org.phenoapps.intercross.data.models.WishlistView
 import org.phenoapps.intercross.data.viewmodels.EventDetailViewModel
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
-import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventDetailViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentEventDetailBinding
-import org.phenoapps.intercross.dialogs.MetadataCreatorDialog
 import org.phenoapps.intercross.interfaces.MetadataManager
 import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.FileUtil
+import org.phenoapps.intercross.util.KeyUtil
 
 
 class EventDetailFragment:
@@ -46,6 +42,14 @@ class EventDetailFragment:
 
     private val eventsList: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
+    }
+
+    private val mPref by lazy {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
     }
 
     private lateinit var eventDetailViewModel: EventDetailViewModel
@@ -61,8 +65,7 @@ class EventDetailFragment:
     private fun getMetaDataVisibility(context: Context): Int {
 
         //determine if meta data collection is enabled
-        val collect: Boolean = PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(SettingsFragment.COLLECT_INFO, false)
+        val collect: Boolean = mPref.getBoolean(mKeyUtil.workCollectKey, false)
 
         return if (collect) View.VISIBLE else View.GONE
 
@@ -269,8 +272,6 @@ class EventDetailFragment:
 
         return super.onOptionsItemSelected(item)
     }
-
-
 
     //extension function for live data to only observe once when the data is not null
     private fun <T> LiveData<T>.observeOnce(observer: Observer<T>) {

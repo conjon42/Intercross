@@ -1,7 +1,6 @@
 package org.phenoapps.intercross.fragments
 
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -12,13 +11,12 @@ import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
-import org.phenoapps.intercross.MainActivity
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.ParentsAdapter
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.PollenGroupRepository
-import org.phenoapps.intercross.data.dao.EventsDao
 import org.phenoapps.intercross.data.models.BaseParent
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
@@ -29,7 +27,6 @@ import org.phenoapps.intercross.data.viewmodels.PollenGroupListViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModelFactory
-import org.phenoapps.intercross.databinding.FragmentEventsBinding
 import org.phenoapps.intercross.databinding.FragmentParentsBinding
 import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.SnackbarQueue

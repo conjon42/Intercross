@@ -1,8 +1,7 @@
-package org.phenoapps.intercross
+package org.phenoapps.intercross.activities
 
 import android.os.Bundle
 import android.os.Handler
-import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -10,12 +9,13 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.NavController
-import androidx.navigation.NavDirections
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.phenoapps.intercross.BuildConfig
+import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.data.models.*
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
@@ -27,7 +27,6 @@ import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFact
 import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.ActivityMainBinding
-import org.phenoapps.intercross.fragments.CrossCountFragment
 import org.phenoapps.intercross.fragments.CrossCountFragmentDirections
 import org.phenoapps.intercross.fragments.EventsFragmentDirections
 import org.phenoapps.intercross.fragments.PatternFragment
@@ -282,7 +281,8 @@ class MainActivity : AppCompatActivity() {
         setupDirs()
 
         mBinding = DataBindingUtil.setContentView(this@MainActivity,
-                R.layout.activity_main)
+            R.layout.activity_main
+        )
 
         supportActionBar.apply {
             title = ""
@@ -441,13 +441,6 @@ class MainActivity : AppCompatActivity() {
                         getString(R.string.summary_and_wishlist_empty))
             }
         }
-    }
-
-    private fun closeKeyboard() {
-
-        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-
-        imm.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
     }
 
     override fun onBackPressed() {

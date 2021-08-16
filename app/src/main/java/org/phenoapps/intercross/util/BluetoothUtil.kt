@@ -129,14 +129,16 @@ class BluetoothUtil {
 
     fun print(ctx: Context, events: Array<Event>) {
 
+        val pref = androidx.preference.PreferenceManager.getDefaultSharedPreferences(ctx)
+        val keyUtil = KeyUtil(ctx)
+
         choose(ctx) {
 
-            val importedZpl = PreferenceManager.getDefaultSharedPreferences(ctx).getString("ZPL_CODE", "") ?: ""
+            val importedZpl = pref.getString(keyUtil.argPrintZplCode, "") ?: ""
 
             if (importedZpl.isNotBlank()) {
 
                 PrintThread(ctx, importedZpl, mBtName).printEvents(events)
-
 
             } else {
 
@@ -148,15 +150,16 @@ class BluetoothUtil {
 
     fun print(ctx: Context, parents: Array<Parent>) {
 
+        val pref = androidx.preference.PreferenceManager.getDefaultSharedPreferences(ctx)
+        val keyUtil = KeyUtil(ctx)
+
         choose(ctx) {
 
-            val importedZpl = PreferenceManager.getDefaultSharedPreferences(ctx).getString("ZPL_CODE", "")
-                    ?: ""
+            val importedZpl = pref.getString(keyUtil.argPrintZplCode, "") ?: ""
 
             if (importedZpl.isNotBlank()) {
 
                 PrintThread(ctx, importedZpl, mBtName).printParents(parents)
-
 
             } else {
 

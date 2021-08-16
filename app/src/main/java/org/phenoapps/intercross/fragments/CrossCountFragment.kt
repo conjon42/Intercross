@@ -11,7 +11,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
-import org.phenoapps.intercross.MainActivity
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.CrossCountAdapter
 import org.phenoapps.intercross.data.EventsRepository
@@ -23,6 +23,7 @@ import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFacto
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentCrossCountBinding
 import org.phenoapps.intercross.util.Dialogs
+import org.phenoapps.intercross.util.KeyUtil
 
 /**
  * Summary Fragment is a recycler list of currenty crosses.
@@ -40,6 +41,14 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
     private var mWishlistEmpty = true
 
+    private val mPref by lazy {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
+
     /**
      * Polymorphism setup to allow adapter to work with two different types of objects.
      * Wishlists and Summary data are the same but they have to be rendered differently.
@@ -55,8 +64,7 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
     override fun FragmentCrossCountBinding.afterCreateView() {
 
-        PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .edit().putString("last_visited_summary", "summary").apply()
+        mPref.edit().putString("last_visited_summary", "summary").apply()
 
         recyclerView.adapter = CrossCountAdapter(this@CrossCountFragment, eventsModel, requireContext())
 
@@ -75,8 +83,7 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
     private fun startObservers() {
 
-        val isCommutativeCrossing = PreferenceManager.getDefaultSharedPreferences(context)
-            .getBoolean("org.phenoapps.intercross.COMMUTATIVE_CROSSING", false)
+        val isCommutativeCrossing = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
 
         /**
          * issue 25 added a commutative cross count where order does not matter.

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/preferences"
+    app:startDestination="@id/settings_fragment">
+
+    <fragment
+        android:id="@+id/settings_fragment"
+        android:name="org.phenoapps.intercross.fragments.SettingsFragment"
+        android:label="@string/settings_label">
+
+        <action android:id="@+id/action_from_settings_to_profile_fragment"
+            app:destination="@+id/profile_preference_fragment"
+            app:launchSingleTop="true"/>
+
+        <action android:id="@+id/action_from_settings_to_naming_fragment"
+            app:destination="@+id/naming_preference_fragment"
+            app:launchSingleTop="true"/>
+
+        <action android:id="@+id/action_from_settings_to_workflow_fragment"
+            app:destination="@+id/workflow_preference_fragment"
+            app:launchSingleTop="true"/>
+
+        <action android:id="@+id/action_from_settings_to_printing_fragment"
+            app:destination="@+id/printing_preference_fragment"
+            app:launchSingleTop="true"/>
+
+        <action android:id="@+id/action_from_settings_to_database_fragment"
+            app:destination="@+id/database_preference_fragment"
+            app:launchSingleTop="true"/>
+
+        <action android:id="@+id/action_from_settings_to_brapi_fragment"
+            app:destination="@+id/brapi_preference_fragment"
+            app:launchSingleTop="true"/>
+
+        <action android:id="@+id/action_from_settings_to_about_fragment"
+            app:destination="@+id/about_preference_fragment"
+            app:launchSingleTop="true"/>
+
+        <action android:id="@+id/action_to_about"
+            app:destination="@id/about_fragment"
+            app:launchSingleTop="true" />
+    </fragment>
+
+    <fragment android:id="@+id/profile_preference_fragment"
+        android:name="org.phenoapps.intercross.fragments.preferences.ProfileFragment"
+        android:label="@string/preferences_profile_fragment_label"/>
+
+    <fragment android:id="@+id/workflow_preference_fragment"
+        android:name="org.phenoapps.intercross.fragments.preferences.WorkflowFragment"
+        android:label="@string/preferences_workflow_fragment_label"/>
+
+    <fragment android:id="@+id/printing_preference_fragment"
+        android:name="org.phenoapps.intercross.fragments.preferences.PrintingFragment"
+        android:label="@string/preferences_printing_fragment_label">
+        <action
+            android:id="@+id/action_to_import_zpl_fragment"
+            app:destination="@id/import_zpl_fragment"
+            app:launchSingleTop="true" />
+    </fragment>
+
+    <fragment android:id="@+id/database_preference_fragment"
+        android:name="org.phenoapps.intercross.fragments.preferences.DatabaseFragment"
+        android:label="@string/preferences_database_fragment_label"/>
+
+    <fragment android:id="@+id/brapi_preference_fragment"
+        android:name="org.phenoapps.intercross.fragments.preferences.BrapiFragment"
+        android:label="@string/preferences_brapi_fragment_label"/>
+
+    <fragment android:id="@+id/naming_preference_fragment"
+        android:name="org.phenoapps.intercross.fragments.preferences.NamingFragment"
+        android:label="@string/preferences_naming_fragment_label">
+        <action
+            android:id="@+id/action_to_pattern_fragment"
+            app:destination="@id/pattern_fragment"
+            app:launchSingleTop="true" />
+    </fragment>
+
+</navigation>

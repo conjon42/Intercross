@@ -190,6 +190,8 @@
     <string name="brapi_import">BrAPI Import</string>
 
     <!-- Brapi strings -->
+    <string name="preferences_brapi_oidc_flow_oauth_implicit">OAuth2 Implicit Grant</string>
+    <string name="preferences_brapi_oidc_flow_old_custom">Original Field Book Custom</string>
     <string name="preferences_brapi" translatable="false">BrAPI</string>
     <string name="brapi_base_url">BrAPI Base URL</string>
     <string name="brapi_base_url_desc">The base URL for the connected BrAPI server</string>
@@ -265,6 +267,28 @@
     <string name="brapi_info_title">Breeding API</string>
     <string name="brapi_auth_btn">Log In to Site</string>
 
+    <string name="preferences_brapi_core_title">Configuration</string>
+    <string name="preferences_brapi_advanced_title">Advanced Auth Settings</string>
+    <string name="preferences_brapi_servers_title">Community Servers</string>
+    <string name="preferences_brapi_server_barcode">Scan a server barcode</string>
+    <string name="preferences_brapi_server_barcode_prompt">Scan a server URL</string>
+    <string name="preferences_brapi_server_cassavabase">CassavaBase</string>
+    <string name="preferences_brapi_server_t3_wheat">T3 Wheat Sandbox</string>
+    <string name="preferences_brapi_server_t3_oat">T3 Oat Sandbox</string>
+    <string name="preferences_brapi_server_t3_barley">T3 Barley Sandbox</string>
+    <string name="preferences_brapi_server_test">Default Test Server</string>
+    <string name="preferences_brapi_server_add">Submit a server</string>
+    <string name="preferences_brapi_version">BrAPI Version</string>
+    <string name="preferences_brapi_version_v1">V1</string>
+    <string name="preferences_brapi_version_v2">V2</string>
+    <string name="prefrences_brapi_page_size">Page Size</string>
+    <string name="preferences_brapi_oidc_flow">OIDC Flow</string>
+
+    <string name="brapi_oidc_url">OIDC Discovery URL</string>
+    <string name="brapi_oidc_url_desc">The location of the OIDC Discovery JSON document</string>
+    <string name="brapi_oidc_url_default">https://test-server.brapi.org/.well-known/openid-configuration</string>
+    <string name="main_barcode_text">Scan a barcode</string>
+
     <!-- Import dialog -->
     <string name="import_source_local">Local storage</string>
     <string name="import_source_cloud">Cloud storage</string>
@@ -334,5 +358,21 @@
     <string name="delete_all_cross_title">Delete all crosses?</string>
     <string name="dialog_metadata_property_must_not_have_comma">Metadata properties must not contain commas.</string>
     <string name="fragment_settings_no_metadata_exists">No metadata exists to update.</string>
+    <string name="preferences_profile_fragment_label">Profile</string>
+    <string name="preferences_naming_fragment_label">Naming</string>
+    <string name="preferences_workflow_fragment_label">Workflow</string>
+    <string name="preferences_printing_fragment_label">Printing</string>
+    <string name="preferences_database_fragment_label">Database</string>
+    <string name="preferences_brapi_fragment_label">Brapi</string>
+    <string name="preferences_about_fragment_label">About</string>
+    <string name="brapi_auth_account_created">Account created.</string>
+    <string name="brapi_auth_account_created_failed">Account creation failed.</string>
+    <string name="dialog_account_creator_username_hint">New user name</string>
+    <string name="dialog_account_creator_password_hint">Optional password</string>
+    <string name="dialog_brapi_account_creator_title">Account Creator</string>
+    <string name="dialog_account_creator_username_failed">User name must not be blank.</string>
+    <string name="dialog_account_creator_summary">To save your account locally, please enter user credentials.</string>
+    <string name="brapi_pref_add_account_title">Add Android Account</string>
+    <string name="brapi_auth_fragment_label">BrAPI Authentication</string>
 
 </resources>

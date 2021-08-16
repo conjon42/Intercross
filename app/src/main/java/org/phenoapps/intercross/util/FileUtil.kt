@@ -9,20 +9,19 @@ import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import android.preference.PreferenceManager
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.WorkerThread
 import androidx.appcompat.app.AlertDialog
 import androidx.core.net.toUri
+import androidx.preference.PreferenceManager
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.models.*
-import org.phenoapps.intercross.fragments.SettingsFragment
 import java.io.*
 import java.util.*
 import java.util.zip.ZipEntry
@@ -95,6 +94,10 @@ class FileUtil(private val ctx: Context) {
 
     private val eventModelHeaderString by lazy {
         crossHeaders.joinToString(",")
+    }
+
+    private val mPref by lazy {
+        PreferenceManager.getDefaultSharedPreferences(ctx)
     }
 
     /***
@@ -431,8 +434,7 @@ class FileUtil(private val ctx: Context) {
 
     fun ringNotification(success: Boolean) {
 
-        if (PreferenceManager.getDefaultSharedPreferences(ctx)
-                        .getBoolean(SettingsFragment.AUDIO_ENABLED, false)) {
+        if (mPref.getBoolean(KeyUtil(ctx).workAudioKey, false)) {
             try {
                 when (success) {
                     true -> {

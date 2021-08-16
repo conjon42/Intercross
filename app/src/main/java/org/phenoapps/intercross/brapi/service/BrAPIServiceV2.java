@@ -13,8 +13,6 @@ import org.brapi.client.v2.model.queryParams.core.TrialQueryParams;
 import org.brapi.client.v2.model.queryParams.germplasm.CrossingProjectQueryParams;
 import org.brapi.client.v2.model.queryParams.germplasm.GermplasmQueryParams;
 import org.brapi.client.v2.model.queryParams.germplasm.PlannedCrossQueryParams;
-import org.brapi.client.v2.model.queryParams.phenotype.ObservationUnitQueryParams;
-import org.brapi.client.v2.model.queryParams.phenotype.VariableQueryParams;
 import org.brapi.client.v2.modules.core.ProgramsApi;
 import org.brapi.client.v2.modules.core.StudiesApi;
 import org.brapi.client.v2.modules.core.TrialsApi;
@@ -30,11 +28,9 @@ import org.brapi.v2.model.TimeAdapter;
 import org.brapi.v2.model.core.BrAPIProgram;
 import org.brapi.v2.model.core.BrAPIStudy;
 import org.brapi.v2.model.core.BrAPITrial;
-import org.brapi.v2.model.core.request.BrAPIStudySearchRequest;
 import org.brapi.v2.model.core.request.BrAPITrialSearchRequest;
 import org.brapi.v2.model.core.response.BrAPIProgramListResponse;
 import org.brapi.v2.model.core.response.BrAPIStudyListResponse;
-import org.brapi.v2.model.core.response.BrAPIStudySingleResponse;
 import org.brapi.v2.model.core.response.BrAPITrialListResponse;
 import org.brapi.v2.model.germ.BrAPICross;
 import org.brapi.v2.model.germ.BrAPICrossingProject;
@@ -47,22 +43,18 @@ import org.brapi.v2.model.germ.response.BrAPIPlannedCrossesListResponse;
 import org.brapi.v2.model.pheno.BrAPIImage;
 import org.brapi.v2.model.pheno.BrAPIObservation;
 import org.brapi.v2.model.pheno.BrAPIObservationUnit;
-import org.brapi.v2.model.pheno.BrAPIObservationUnitLevelRelationship;
-import org.brapi.v2.model.pheno.BrAPIObservationUnitPosition;
 import org.brapi.v2.model.pheno.BrAPIPositionCoordinateTypeEnum;
-import org.brapi.v2.model.pheno.BrAPIScaleValidValuesCategories;
 import org.brapi.v2.model.pheno.request.BrAPIObservationUnitSearchRequest;
 import org.brapi.v2.model.pheno.response.BrAPIImageListResponse;
 import org.brapi.v2.model.pheno.response.BrAPIImageSingleResponse;
 import org.brapi.v2.model.pheno.response.BrAPIObservationListResponse;
 import org.brapi.v2.model.pheno.response.BrAPIObservationUnitListResponse;
-import org.brapi.v2.model.pheno.response.BrAPIObservationVariableListResponse;
-import org.phenoapps.intercross.GeneralKeys;
 import org.phenoapps.intercross.brapi.model.BrapiProgram;
 import org.phenoapps.intercross.brapi.model.BrapiStudyDetails;
 import org.phenoapps.intercross.brapi.model.BrapiTrial;
 import org.phenoapps.intercross.brapi.model.FieldBookImage;
 import org.phenoapps.intercross.brapi.model.Observation;
+import org.phenoapps.intercross.util.KeyUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,13 +78,16 @@ public class BrAPIServiceV2 implements BrAPIService{
     private final ObservationUnitsApi observationUnitsApi;
     private final ObservationVariablesApi traitsApi;
 
+    private KeyUtil mKeyUtil;
+
     public BrAPIServiceV2(Context context) {
         this.context = context;
+        this.mKeyUtil = new KeyUtil(context);
         // Make timeout longer. Set it to 60 seconds for now
         BrAPIClient apiClient = new BrAPIClient(BrAPIService.getBrapiUrl(context), 60000);
         try {
              apiClient.authenticate(t -> context.getSharedPreferences("Settings", 0)
-                        .getString(GeneralKeys.BRAPI_TOKEN, null));
+                        .getString(mKeyUtil.getBrapiKeys().getBrapiTokenKey(), null));
         } catch (ApiException e) {
             e.printStackTrace();
         }
@@ -113,6 +108,125 @@ public class BrAPIServiceV2 implements BrAPIService{
             ((Activity) paginationManager.getContext())
                     .runOnUiThread(() -> paginationManager.updatePageInfo(metadata.getPagination().getTotalPages()));
         }
+    }
+
+    public void postImageMetaData(FieldBookImage image,
+                                  final Function<FieldBookImage, Void> function,
+                                  final Function<Integer, Void> failFunction) {
+        try {
+            BrapiV2ApiCallBack<BrAPIImageListResponse> callback = new BrapiV2ApiCallBack<BrAPIImageListResponse>() {
+                @Override
+                public void onSuccess(BrAPIImageListResponse imageResponse, int i, Map<String, List<String>> map) {
+                    final BrAPIImage response = imageResponse.getResult().getData().get(0);
+                    function.apply(mapToImage(response));
+                }
+
+                @Override
+                public void onFailure(ApiException error, int statusCode, Map<String, List<String>> responseHeaders) {
+                    failFunction.apply(error.getCode());
+                }
+            };
+
+            BrAPIImage request = mapImage(image);
+            imagesApi.imagesPostAsync(Arrays.asList(request), callback);
+
+        } catch (ApiException e) {
+            failFunction.apply(e.getCode());
+            e.printStackTrace();
+        }
+
+    }
+
+    private BrAPIImage mapImage(FieldBookImage image) {
+        BrAPIImage request = new BrAPIImage();
+        //request.setAdditionalInfo(image.getAdditionalInfo());
+        request.setCopyright(image.getCopyright());
+        request.setDescription(image.getDescription());
+        request.setDescriptiveOntologyTerms(image.getDescriptiveOntologyTerms());
+        request.setImageFileName(image.getFileName());
+        request.setImageFileSize((int) image.getFileSize());
+        request.setImageHeight(image.getHeight());
+        request.setImageName(image.getImageName());
+        request.setImageWidth(image.getWidth());
+        request.setMimeType(image.getMimeType());
+        request.setObservationUnitDbId(image.getUnitDbId());
+        // TODO fix these
+        //request.setImageLocation(image.getLocation());
+        request.setImageTimeStamp(TimeAdapter.convertFrom(image.getTimestamp()));
+        return request;
+    }
+
+    private FieldBookImage mapToImage(BrAPIImage image) {
+        FieldBookImage request = new FieldBookImage();
+        //request.setAdditionalInfo(image.getAdditionalInfo());
+        request.setDescription(image.getDescription());
+        request.setDescriptiveOntologyTerms(image.getDescriptiveOntologyTerms());
+        request.setFileName(image.getImageFileName());
+        request.setFileSize((int) image.getImageFileSize());
+        request.setHeight(image.getImageHeight());
+        request.setImageName(image.getImageName());
+        request.setWidth(image.getImageWidth());
+        request.setMimeType(image.getMimeType());
+        request.setUnitDbId(image.getObservationUnitDbId());
+        // TODO fix these
+        //request.setLocation(image.getImageLocation());
+        request.setTimestamp(TimeAdapter.convertFrom(image.getImageTimeStamp()));
+        return request;
+    }
+
+    public void putImageContent(FieldBookImage image,
+                                final Function<FieldBookImage, Void> function,
+                                final Function<Integer, Void> failFunction) {
+        try {
+
+            BrapiV2ApiCallBack<BrAPIImageSingleResponse> callback = new BrapiV2ApiCallBack<BrAPIImageSingleResponse>() {
+                @Override
+                public void onSuccess(BrAPIImageSingleResponse imageResponse, int i, Map<String, List<String>> map) {
+                    final BrAPIImage response = imageResponse.getResult();
+                    function.apply(mapToImage(response));
+                }
+
+                @Override
+                public void onFailure(ApiException error, int i, Map<String, List<String>> map) {
+                    failFunction.apply(error.getCode());
+                }
+            };
+
+            imagesApi.imagesImageDbIdImagecontentPutAsync(image.getDbId(), image.getImageData(), callback);
+
+        } catch (ApiException e) {
+            failFunction.apply(e.getCode());
+            e.printStackTrace();
+        }
+
+    }
+
+    public void putImage(FieldBookImage image,
+                         final Function<FieldBookImage, Void> function,
+                         final Function<Integer, Void> failFunction) {
+        try {
+
+            BrapiV2ApiCallBack<BrAPIImageSingleResponse> callback = new BrapiV2ApiCallBack<BrAPIImageSingleResponse>() {
+                @Override
+                public void onSuccess(BrAPIImageSingleResponse imageResponse, int i, Map<String, List<String>> map) {
+                    final BrAPIImage response = imageResponse.getResult();
+                    function.apply(mapToImage(response));
+                }
+
+                @Override
+                public void onFailure(ApiException error, int i, Map<String, List<String>> map) {
+                    failFunction.apply(error.getCode());
+                }
+            };
+
+            BrAPIImage request = mapImage(image);
+            imagesApi.imagesImageDbIdPutAsync(image.getDbId(), request, callback);
+
+        } catch (ApiException e) {
+            failFunction.apply(e.getCode());
+            e.printStackTrace();
+        }
+
     }
 
     public void getPrograms(final BrapiPaginationManager paginationManager,

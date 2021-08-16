@@ -91,4 +91,19 @@
         <item name="android:windowIsFloating">true</item>
     </style>
 
+    <!-- styles for brapi auth -->
+    <style name="AppToolbar" parent="@style/Widget.AppCompat.Toolbar">
+        <item name="titleTextColor">#343434</item>
+        <item name="drawerArrowStyle">@style/MyDrawerArrowToggle</item>
+        <item name="theme">@style/MyToolbarTheme</item>
+    </style>
+
+    <style name="MyDrawerArrowToggle" parent="@style/Widget.AppCompat.DrawerArrowToggle">
+        <item name="color">#343434</item>
+    </style>
+
+    <style name="MyToolbarTheme">
+        <item name="colorControlNormal">#343434</item>
+    </style>
+
 </resources>

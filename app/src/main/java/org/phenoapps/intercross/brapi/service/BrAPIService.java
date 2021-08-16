@@ -11,9 +11,9 @@ import android.util.Patterns;
 import android.widget.Toast;
 
 import androidx.arch.core.util.Function;
+import androidx.preference.PreferenceManager;
 
 import org.phenoapps.intercross.Constants;
-import org.phenoapps.intercross.GeneralKeys;
 import org.phenoapps.intercross.R;
 import org.phenoapps.intercross.brapi.ApiError;
 import org.phenoapps.intercross.brapi.BrapiAuthDialog;
@@ -23,6 +23,7 @@ import org.phenoapps.intercross.brapi.model.BrapiStudyDetails;
 import org.phenoapps.intercross.brapi.model.BrapiTrial;
 import org.phenoapps.intercross.brapi.model.FieldBookImage;
 import org.phenoapps.intercross.brapi.model.Observation;
+import org.phenoapps.intercross.util.KeyUtil;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -36,8 +37,9 @@ public interface BrAPIService {
     public static String notUniqueIdMessage = "not_unique_id";
 
     public static BrapiControllerResponse authorizeBrAPI(SharedPreferences sharedPreferences, Context context, String target) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(GeneralKeys.BRAPI_TOKEN, null);
+        KeyUtil keyUtil = new KeyUtil(context);
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
+        editor.putString(keyUtil.getBrapiKeys().getBrapiTokenKey(), null);
         editor.apply();
 
         if (target == null) {
@@ -46,7 +48,7 @@ public interface BrAPIService {
 
         try {
             //TODO parameterize this name or use Application label
-            String url = sharedPreferences.getString(GeneralKeys.BRAPI_BASE_URL, "") + "/brapi/authorize?display_name=Intercross&return_url=intercross://%s";
+            String url = PreferenceManager.getDefaultSharedPreferences(context).getString(keyUtil.getBrapiKeys().getBrapiUrlKey(), "") + "/brapi/authorize?display_name=Intercross&return_url=intercross://%s";
             url = String.format(url, target);
             try {
                 // Go to url with the default browser
@@ -74,6 +76,8 @@ public interface BrAPIService {
     // Returns true on successful parsing. False otherwise.
     public static BrapiControllerResponse checkBrapiAuth(Activity activity) {
 
+        KeyUtil keyUtil = new KeyUtil(activity);
+
         Uri data = activity.getIntent().getData();
 
         if (data != null && data.isHierarchical()) {
@@ -89,9 +93,9 @@ public interface BrAPIService {
                 return new BrapiControllerResponse(false, "No data received from host.");
             }
 
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
             if (status == 200) {
-                SharedPreferences preferences = activity.getSharedPreferences("Settings", 0);
-                SharedPreferences.Editor editor = preferences.edit();
+                SharedPreferences.Editor editor = prefs.edit();
                 String token = data.getQueryParameter("token");
 
                 // Check that we received a token.
@@ -99,14 +103,13 @@ public interface BrAPIService {
                     return new BrapiControllerResponse(false, "No access token received in response from host.");
                 }
 
-                editor.putString(GeneralKeys.BRAPI_TOKEN, token);
+                editor.putString(keyUtil.getBrapiKeys().getBrapiTokenKey(), token);
                 editor.apply();
 
                 return new BrapiControllerResponse(true, activity.getString(R.string.brapi_auth_success));
             } else {
-                SharedPreferences preferences = activity.getSharedPreferences("Settings", 0);
-                SharedPreferences.Editor editor = preferences.edit();
-                editor.putString(GeneralKeys.BRAPI_TOKEN, null);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putString(keyUtil.getBrapiKeys().getBrapiTokenKey(), null);
                 editor.apply();
 
                 return new BrapiControllerResponse(false, activity.getString(R.string.brapi_auth_deny));
@@ -121,8 +124,9 @@ public interface BrAPIService {
     // Helper functions for brapi configurations
     public static Boolean isLoggedIn(Context context) {
 
-        String auth_token = context.getSharedPreferences("Settings", 0)
-                .getString(GeneralKeys.BRAPI_TOKEN, "");
+        KeyUtil keyUtil = new KeyUtil(context);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String auth_token = prefs.getString(keyUtil.getBrapiKeys().getBrapiTokenKey(), "");
 
         if (auth_token == null || auth_token == "") {
             return false;
@@ -163,14 +167,10 @@ public interface BrAPIService {
     }
 
     public static String getBrapiUrl(Context context) {
-        SharedPreferences preferences = context.getSharedPreferences("Settings", 0);
-        String baseURL = preferences.getString(GeneralKeys.BRAPI_BASE_URL, "https://test-server.brapi.org");
-        String version = preferences.getString(GeneralKeys.BRAPI_VERSION, "V2");
-        String path;
-        if(version.equals("V2"))
-            path = Constants.BRAPI_PATH_V2;
-        else
-            path = Constants.BRAPI_PATH_V1;
+        KeyUtil keyUtil = new KeyUtil(context);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String baseURL = prefs.getString(keyUtil.getBrapiKeys().getBrapiUrlKey(), "https://test-server.brapi.org");
+        String path = Constants.BRAPI_PATH_V2;
         return baseURL + path;
     }
 
