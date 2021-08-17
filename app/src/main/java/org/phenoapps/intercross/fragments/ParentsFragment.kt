@@ -354,9 +354,14 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
             when(item.itemId) {
 
+                R.id.action_parents_toolbar_initiate_wf -> {
+
+                    findNavController().navigate(ParentsFragmentDirections
+                        .actionFromParentsToWishFactory())
+                }
                 R.id.action_import -> {
 
-                    (activity as MainActivity).launchImport()
+                    (activity as? MainActivity)?.launchImport()
 
                 }
                 R.id.action_select_all -> {
@@ -397,6 +402,7 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
                         mMaleAdapter.notifyDataSetChanged()
                     }
                 }
+                else -> true
             }
         }
 

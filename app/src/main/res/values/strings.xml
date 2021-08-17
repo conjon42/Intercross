@@ -374,5 +374,17 @@
     <string name="dialog_account_creator_summary">To save your account locally, please enter user credentials.</string>
     <string name="brapi_pref_add_account_title">Add Android Account</string>
     <string name="brapi_auth_fragment_label">BrAPI Authentication</string>
+    <string name="frag_wf_choose_female_summary">Please start by choosing a female parent.</string>
+    <string name="frag_wf_summary">Summary</string>
+    <string name="wf_must_choose_at_least_one_parent">You must choose at least one parent.</string>
+    <string name="wf_no_male_chosen_assuming_self_cross">No male chosen, assuming self cross.</string>
+    <string name="literal_cross">cross</string>
+    <string name="frag_wf_male_choice_summary">Please choose a male to pair with %s</string>
+    <string name="frag_wf_choose_type_summary">Please choose a wish type for %s and %s pair.</string>
+    <string name="frag_wf_values_summary">Please choose a minimum and maximum number of %s for %s and %s pair.</string>
+    <string name="frag_wf_values_min_must_not_be_null">Minimum must be greater than zero.</string>
+    <string name="frag_wf_values_max_must_not_be_null">Maximum value must be greater than the minimum.</string>
+    <string name="frag_wf_summary_summary">Is it OK to create a wish for a minimum of %d and maximum of %d %s of %s and %s pair?</string>
+    <string name="toolbar_parents_add_wish">Add a wishlist item</string>
 
 </resources>

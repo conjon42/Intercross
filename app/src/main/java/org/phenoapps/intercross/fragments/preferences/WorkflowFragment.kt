@@ -21,6 +21,7 @@ import org.phenoapps.intercross.dialogs.MetadataDefaultEditorDialog
 import org.phenoapps.intercross.interfaces.MetadataManager
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.KeyUtil
+import org.phenoapps.intercross.util.observeOnce
 
 class WorkflowFragment : ToolbarPreferenceFragment(
     R.xml.workflow_preferences, R.string.root_workflow), MetadataManager {
@@ -97,7 +98,7 @@ class WorkflowFragment : ToolbarPreferenceFragment(
 
                     context?.let { ctx ->
 
-                        eventsList.events.observeOnce {
+                        eventsList.events.observeOnce(viewLifecycleOwner) {
 
                             it?.first()?.let { x ->
 
@@ -149,7 +150,7 @@ class WorkflowFragment : ToolbarPreferenceFragment(
                 ok = getString(android.R.string.ok),
                 message = getString(R.string.dialog_confirm_remove_for_all)) {
 
-                eventsList.events.observeOnce {
+                eventsList.events.observeOnce(viewLifecycleOwner) {
 
                     it.forEach {
 
@@ -166,7 +167,7 @@ class WorkflowFragment : ToolbarPreferenceFragment(
 
     override fun onMetadataDefaultUpdated(property: String, value: Int) {
 
-        eventsList.events.observeOnce {
+        eventsList.events.observeOnce(viewLifecycleOwner) {
 
             it.forEach {
 
@@ -182,7 +183,7 @@ class WorkflowFragment : ToolbarPreferenceFragment(
     //adds the new property to all crosses in the database
     override fun onMetadataCreated(property: String, value: String) {
 
-        eventsList.events.observeOnce {
+        eventsList.events.observeOnce(viewLifecycleOwner) {
 
             it.forEach {
 

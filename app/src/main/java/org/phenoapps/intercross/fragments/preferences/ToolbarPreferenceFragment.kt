@@ -89,16 +89,4 @@ open class ToolbarPreferenceFragment(private val xml: Int, private val key: Int)
             true
         }
     }
-
-    //extension function for live data to only observe once when the data is not null
-    protected fun <T> LiveData<T>.observeOnce(observer: Observer<T>) {
-        observe(viewLifecycleOwner, object : Observer<T> {
-            override fun onChanged(t: T?) {
-                t?.let { data ->
-                    observer.onChanged(data)
-                    removeObserver(this)
-                }
-            }
-        })
-    }
 }

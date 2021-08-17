@@ -7,6 +7,7 @@
     app:startDestination="@+id/events_fragment">
 
     <include app:graph="@navigation/preferences"/>
+    <include app:graph="@navigation/wish_factory"/>
 
     <!-- Events Fragment is the main entry fragment that shows the entire crossing table -->
     <fragment android:id="@+id/events_fragment"
@@ -184,6 +185,10 @@
                 app:argType="integer"
                 android:defaultValue="0"/>
         </action>
+
+        <action android:id="@+id/action_from_parents_to_wish_factory"
+            app:destination="@id/wish_factory"
+            app:popUpTo="@id/parents_fragment"/>
     </fragment>
 
     <fragment
