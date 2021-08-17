@@ -40,9 +40,6 @@ data class Event(
 
         var sex: Int = -1, //by default sex is unknown
 
-        @Embedded
-        val metaData: EventMetaData = EventMetaData(0, 0, 0),
-
         @ColumnInfo(name = "eid")
         @PrimaryKey(autoGenerate = true)
         var id: Long? = null): BaseTable() {
@@ -81,17 +78,19 @@ data class Event(
         }
     }
 
+    //TODO add metadata
     override fun toString(): String {
 
-        return "$eventDbId,$femaleObsUnitDbId,$maleObsUnitDbId,$timestamp,$person,$experiment,$type,${metaData.fruits},${metaData.flowers},${metaData.seeds}"
+        return "$eventDbId,$femaleObsUnitDbId,$maleObsUnitDbId,$timestamp,$person,$experiment,$type,"//${metaData.fruits},${metaData.flowers},${metaData.seeds}"
 
     }
 
+    //TODO add metadata
     fun toPollenGroupString(malesRepr: String, groupName: String?): String {
 
         var group = groupName ?: maleObsUnitDbId
 
-        return "$eventDbId,$femaleObsUnitDbId,$maleObsUnitDbId::$group::$malesRepr,$timestamp,$person,$experiment,${CrossType.POLY},${metaData.fruits},${metaData.flowers},${metaData.seeds}"
+        return "$eventDbId,$femaleObsUnitDbId,$maleObsUnitDbId::$group::$malesRepr,$timestamp,$person,$experiment,${CrossType.POLY},"//${metaData.fruits},${metaData.flowers},${metaData.seeds}"
 
     }
 }

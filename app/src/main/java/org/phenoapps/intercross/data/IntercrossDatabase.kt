@@ -10,16 +10,13 @@ import org.phenoapps.intercross.data.dao.ParentsDao
 import org.phenoapps.intercross.data.dao.PollenGroupDao
 import org.phenoapps.intercross.data.dao.SettingsDao
 import org.phenoapps.intercross.data.dao.WishlistDao
-import org.phenoapps.intercross.data.models.Event
-import org.phenoapps.intercross.data.models.Parent
-import org.phenoapps.intercross.data.models.PollenGroup
-import org.phenoapps.intercross.data.models.Settings
-import org.phenoapps.intercross.data.models.Wishlist
-import org.phenoapps.intercross.data.models.WishlistView
+import org.phenoapps.intercross.data.migrations.MigrationV2MetaData
+import org.phenoapps.intercross.data.models.*
 
 @Database(entities = [Event::class, Parent::class,
-    Wishlist::class, Settings::class, PollenGroup::class],
-        views = [WishlistView::class], version = 1)
+    Wishlist::class, Settings::class, PollenGroup::class,
+    Metadata::class, MetadataValues::class],
+        views = [WishlistView::class], version = 2)
 @TypeConverters(Converters::class)
 abstract class IntercrossDatabase : RoomDatabase() {
 
@@ -48,6 +45,7 @@ abstract class IntercrossDatabase : RoomDatabase() {
 
             return Room.databaseBuilder(ctx, IntercrossDatabase::class.java, DATABASE_NAME)
                 .setJournalMode(JournalMode.TRUNCATE)
+                .addMigrations(MigrationV2MetaData())
                 .build()
         }
     }

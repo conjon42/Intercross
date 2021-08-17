@@ -300,11 +300,12 @@ class FileUtil(private val ctx: Context) {
                                                                             "POLY" -> CrossType.POLY
                                                                             "SELF" -> CrossType.SELF
                                                                             else -> CrossType.UNKNOWN
-                                                                        },
-                                                                        metaData = EventMetaData(
-                                                                                fruits = row[fruitKey].toInt(),
-                                                                                flowers = row[flowerKey].toInt(),
-                                                                                seeds = row[seedsKey].toInt()) ))
+                                                                        }))
+//                                                                        metaData = EventMetaData(
+//                                                                                fruits = row[fruitKey].toInt(),
+//                                                                                flowers = row[flowerKey].toInt(),
+//                                                                                seeds = row[seedsKey].toInt()) )
+
 
                                                     }
                                                 }

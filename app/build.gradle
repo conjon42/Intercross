@@ -16,7 +16,7 @@ android {
 
         playStoreConfig {
             Properties keystoreProps = new Properties()
-            keystoreProps.load(new FileInputStream(file('keystore.config')))
+//            keystoreProps.load(new FileInputStream(file('keystore.config')))
 
             keyAlias keystoreProps['keyAlias']
             keyPassword keystoreProps['keyPassword']

@@ -80,17 +80,17 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
 
                     val fruitWishes = relaventWishes.filter { wish -> wish.wishType == "fruit" }
 
-                    eventsList.update(mEvent.apply {
-
-                        metaData.fruits = fruitText.text.toString().toInt()
-
-                    })
-
-                    if (fruitWishes.any { wish -> mEvent.metaData.fruits >= wish.wishMin && wish.wishMin > 0 }) {
-
-                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.minimum_wish_for_fruits_met))
-
-                    }
+//                    eventsList.update(mEvent.apply {
+//
+//                        metaData.fruits = fruitText.text.toString().toInt()
+//
+//                    })
+//
+//                    if (fruitWishes.any { wish -> mEvent.metaData.fruits >= wish.wishMin && wish.wishMin > 0 }) {
+//
+//                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.minimum_wish_for_fruits_met))
+//
+//                    }
 
                 }
 
@@ -125,15 +125,15 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
 
                     val flowerWishes = relaventWishes.filter { wish -> wish.wishType == "flower" }
 
-                    eventsList.update(mEvent.apply {
-
-                        metaData.flowers = flowerText.text.toString().toInt()
-
-                    })
-
-                    if (flowerWishes.any { wish -> mEvent.metaData.flowers >= wish.wishMin && wish.wishMin > 0}) {
-                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.minimum_wish_for_flowers_met))
-                    }
+//                    eventsList.update(mEvent.apply {
+//
+//                        metaData.flowers = flowerText.text.toString().toInt()
+//
+//                    })
+//
+//                    if (flowerWishes.any { wish -> mEvent.metaData.flowers >= wish.wishMin && wish.wishMin > 0}) {
+//                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.minimum_wish_for_flowers_met))
+//                    }
                 }
 
             } catch (e: NumberFormatException) {
@@ -167,15 +167,15 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
 
                     val seedWishes = relaventWishes.filter { wish -> wish.wishType == "seed" }
 
-                    eventsList.update(mEvent.apply {
-
-                        metaData.seeds = seedText.text.toString().toInt()
-
-                    })
-
-                    if (seedWishes.any { wish -> mEvent.metaData.seeds >= wish.wishMin && wish.wishMin > 0 }) {
-                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.minimum_wish_for_seeds_met))
-                    }
+//                    eventsList.update(mEvent.apply {
+//
+//                        metaData.seeds = seedText.text.toString().toInt()
+//
+//                    })
+//
+//                    if (seedWishes.any { wish -> mEvent.metaData.seeds >= wish.wishMin && wish.wishMin > 0 }) {
+//                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.minimum_wish_for_seeds_met))
+//                    }
                 }
 
             } catch (e: NumberFormatException) {

@@ -369,19 +369,19 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
 
     private fun setMetaData(): PieDataSet = PieDataSet(ArrayList<PieEntry>().apply {
 
-        if (::mEvents.isInitialized) {
-            val fruits = mEvents.map { it.metaData.fruits }.sum().toFloat()
-            val seeds = mEvents.map { it.metaData.seeds }.sum().toFloat()
-            val flowers = mEvents.map { it.metaData.flowers }.sum().toFloat()
-            if (fruits > 0f) add(PieEntry(fruits, getString(R.string.crosses_export_fruits_header)))
-            if (seeds > 0f) add(PieEntry(seeds, getString(R.string.crosses_export_seeds_header)))
-            if (flowers > 0f) add(
-                PieEntry(
-                    flowers,
-                    getString(R.string.crosses_export_flowers_header)
-                )
-            )
-        }
+//        if (::mEvents.isInitialized) {
+//            val fruits = mEvents.map { it.metaData.fruits }.sum().toFloat()
+//            val seeds = mEvents.map { it.metaData.seeds }.sum().toFloat()
+//            val flowers = mEvents.map { it.metaData.flowers }.sum().toFloat()
+//            if (fruits > 0f) add(PieEntry(fruits, getString(R.string.crosses_export_fruits_header)))
+//            if (seeds > 0f) add(PieEntry(seeds, getString(R.string.crosses_export_seeds_header)))
+//            if (flowers > 0f) add(
+//                PieEntry(
+//                    flowers,
+//                    getString(R.string.crosses_export_flowers_header)
+//                )
+//            )
+//        }
     },"Meta Data Statistics")
 
     //sets the accumulated data into the piechart and recycler view, along with some misc. parameter setting
