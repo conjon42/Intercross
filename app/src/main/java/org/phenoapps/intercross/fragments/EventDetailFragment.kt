@@ -2,9 +2,6 @@ package org.phenoapps.intercross.fragments
 
 import android.content.Context
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
-import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -12,40 +9,65 @@ import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import kotlinx.android.synthetic.main.fragment_event_detail.*
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.adapters.MetadataAdapter
+import org.phenoapps.intercross.adapters.models.MetadataModel
 import org.phenoapps.intercross.data.EventsRepository
-import org.phenoapps.intercross.data.WishlistRepository
+import org.phenoapps.intercross.data.MetaValuesRepository
+import org.phenoapps.intercross.data.MetadataRepository
+import org.phenoapps.intercross.data.dao.EventsDao
 import org.phenoapps.intercross.data.models.Event
-import org.phenoapps.intercross.data.models.WishlistView
 import org.phenoapps.intercross.data.viewmodels.EventDetailViewModel
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
-import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventDetailViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentEventDetailBinding
+import org.phenoapps.intercross.interfaces.MetadataManager
 import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.FileUtil
+import org.phenoapps.intercross.util.KeyUtil
+import org.phenoapps.intercross.data.models.MetadataValues
+import org.phenoapps.intercross.data.models.Metadata
+import org.phenoapps.intercross.data.viewmodels.MetaValuesViewModel
+import org.phenoapps.intercross.data.viewmodels.MetadataViewModel
+import org.phenoapps.intercross.data.viewmodels.factory.MetaValuesViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.MetadataViewModelFactory
 
-
-class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.layout.fragment_event_detail) {
+class EventDetailFragment:
+    IntercrossBaseFragment<FragmentEventDetailBinding>(R.layout.fragment_event_detail),
+    MetadataManager {
 
     private lateinit var mEvent: Event
-
-    private var mWishlist: List<WishlistView> = ArrayList()
+    private lateinit var mMetaValuesList: List<EventsDao.CrossMetadata>
+    private lateinit var mMetadataList: List<Metadata>
 
     private val eventsList: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
     }
 
-    private val wishList: WishlistViewModel by viewModels {
-        WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
+    private val metaValuesViewModel: MetaValuesViewModel by viewModels {
+        MetaValuesViewModelFactory(MetaValuesRepository.getInstance(db.metaValuesDao()))
     }
+
+    private val metadataViewModel: MetadataViewModel by viewModels {
+        MetadataViewModelFactory(MetadataRepository.getInstance(db.metadataDao()))
+    }
+
+    private val mPref by lazy {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
+
+    private lateinit var eventDetailViewModel: EventDetailViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,139 +80,9 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
     private fun getMetaDataVisibility(context: Context): Int {
 
         //determine if meta data collection is enabled
-        val collect: Boolean = PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(SettingsFragment.COLLECT_INFO, false)
+        val collect: Boolean = mPref.getBoolean(mKeyUtil.workCollectKey, false)
 
         return if (collect) View.VISIBLE else View.GONE
-
-    }
-
-    private val fruitUpdateWatcher = object : TextWatcher {
-
-        override fun afterTextChanged(s: Editable?) {
-
-            try {
-
-                if (s.toString().isNotBlank()) {
-
-                    /**
-                     * get wish items relavent to the current event
-                     */
-                    val relaventWishes = mWishlist.filter { wish -> wish.momId == mEvent.femaleObsUnitDbId && wish.dadId == mEvent.maleObsUnitDbId }
-
-                    val fruitWishes = relaventWishes.filter { wish -> wish.wishType == "fruit" }
-
-//                    eventsList.update(mEvent.apply {
-//
-//                        metaData.fruits = fruitText.text.toString().toInt()
-//
-//                    })
-//
-//                    if (fruitWishes.any { wish -> mEvent.metaData.fruits >= wish.wishMin && wish.wishMin > 0 }) {
-//
-//                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.minimum_wish_for_fruits_met))
-//
-//                    }
-
-                }
-
-            } catch (e: NumberFormatException) {
-                e.printStackTrace()
-                Log.d("InputError", e.toString())
-            }
-        }
-
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            //TODO("Not yet implemented")
-        }
-
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            //TODO("Not yet implemented")
-        }
-
-    }
-
-    private val flowerUpdateWatcher = object : TextWatcher {
-
-        override fun afterTextChanged(s: Editable?) {
-
-            try {
-
-                if (s.toString().isNotBlank()) {
-
-                    /**
-                     * get wish items relavent to the current event
-                     */
-                    val relaventWishes = mWishlist.filter { wish -> wish.momId == mEvent.femaleObsUnitDbId && wish.dadId == mEvent.maleObsUnitDbId }
-
-                    val flowerWishes = relaventWishes.filter { wish -> wish.wishType == "flower" }
-
-//                    eventsList.update(mEvent.apply {
-//
-//                        metaData.flowers = flowerText.text.toString().toInt()
-//
-//                    })
-//
-//                    if (flowerWishes.any { wish -> mEvent.metaData.flowers >= wish.wishMin && wish.wishMin > 0}) {
-//                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.minimum_wish_for_flowers_met))
-//                    }
-                }
-
-            } catch (e: NumberFormatException) {
-                e.printStackTrace()
-                Log.d("InputError", e.toString())
-            }
-        }
-
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            //TODO("Not yet implemented")
-        }
-
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            //TODO("Not yet implemented")
-        }
-
-    }
-
-    private val seedUpdateWatcher = object : TextWatcher {
-
-        override fun afterTextChanged(s: Editable?) {
-
-            try {
-
-                if (s.toString().isNotBlank()) {
-
-                    /**
-                     * get wish items relavent to the current event
-                     */
-                    val relaventWishes = mWishlist.filter { wish -> wish.momId == mEvent.femaleObsUnitDbId && wish.dadId == mEvent.maleObsUnitDbId }
-
-                    val seedWishes = relaventWishes.filter { wish -> wish.wishType == "seed" }
-
-//                    eventsList.update(mEvent.apply {
-//
-//                        metaData.seeds = seedText.text.toString().toInt()
-//
-//                    })
-//
-//                    if (seedWishes.any { wish -> mEvent.metaData.seeds >= wish.wishMin && wish.wishMin > 0 }) {
-//                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.minimum_wish_for_seeds_met))
-//                    }
-                }
-
-            } catch (e: NumberFormatException) {
-                e.printStackTrace()
-                Log.d("InputError", e.toString())
-            }
-        }
-
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            //TODO("Not yet implemented")
-        }
-
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            //TODO("Not yet implemented")
-        }
 
     }
 
@@ -209,18 +101,53 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
                 EventDetailViewModelFactory(EventsRepository.getInstance(db.eventsDao()), rowid)
             }
 
+            eventDetailViewModel = viewModel
+
             metaDataVisibility = getMetaDataVisibility(requireContext())
 
-            wishList.wishes.observe(viewLifecycleOwner, Observer {
+            eventDetailMetadataRecyclerView.adapter = MetadataAdapter(this@EventDetailFragment)
 
-                it?.let { crossblock ->
+            refreshObservers()
+        }
+    }
 
-                    mWishlist = crossblock
+    //loads the metadata into the ui
+    //this doesn't listen forever to avoid circular recursive updates
+    private fun refreshMetadata() {
 
+        val eid = mEvent.id?.toInt() ?: -1
+        metadataViewModel.metadata.observeOnce { metadata ->
+
+            eventDetailViewModel.metadata.observeOnce { values ->
+
+                //merge the metadata properties with either the default values or saved values
+                val actualMeta = arrayListOf<EventsDao.CrossMetadata>()
+                for (data in metadata) {
+                    if (values.any { it.eid == eid && data.property == it.property }) {
+                        values.find { data.property == it.property }?.let {
+                            actualMeta.add(EventsDao.CrossMetadata(
+                                eid, data.property, it.value
+                            ))
+                        }
+                    } else actualMeta.add(
+                        EventsDao.CrossMetadata(eid, data.property, data.defaultValue))
                 }
-            })
 
-            viewModel.event.observeForever {
+                (mBinding.eventDetailMetadataRecyclerView.adapter as MetadataAdapter)
+                    .submitList(actualMeta
+                        .map { MetadataModel(it.property, it.value.toString()) }
+                        .sortedBy { it.property })
+
+                mBinding.eventDetailMetadataRecyclerView.adapter?.notifyDataSetChanged()
+            }
+        }
+    }
+
+    private fun FragmentEventDetailBinding.refreshObservers() {
+
+        if (::eventDetailViewModel.isInitialized) {
+
+            eventDetailViewModel.event.observe(viewLifecycleOwner) {
 
                 it?.let {
 
@@ -228,29 +155,19 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
 
                     event = it
 
+                    refreshMetadata()
+
                     eventDetailLayout.event = it
 
                     eventDetailLayout.timestamp = if ("_" in it.timestamp) {
 
-                         it.timestamp.split("_")[0]
+                        it.timestamp.split("_")[0]
 
                     } else it.timestamp
-
-                    //important to execute bindings before adding text watchers
-                    //best fruits/seeds/flowers are updated
-                    executePendingBindings()
-
-                    fruitText.removeTextChangedListener(fruitUpdateWatcher)
-                    flowerText.removeTextChangedListener(flowerUpdateWatcher)
-                    seedText.removeTextChangedListener(seedUpdateWatcher)
-
-                    fruitText.addTextChangedListener(fruitUpdateWatcher)
-                    flowerText.addTextChangedListener(flowerUpdateWatcher)
-                    seedText.addTextChangedListener(seedUpdateWatcher)
                 }
             }
 
-            viewModel.parents.observe(viewLifecycleOwner, Observer { data ->
+            eventDetailViewModel.parents.observe(viewLifecycleOwner) { data ->
 
                 data?.let { parents ->
 
@@ -266,7 +183,7 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
 
                     dadCode = parents.dadCode
 
-                    eventsList.events.observe(viewLifecycleOwner, Observer {
+                    eventsList.events.observe(viewLifecycleOwner) {
 
                         it?.let { events ->
 
@@ -281,8 +198,8 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
 
                                     } else {
                                         findNavController()
-                                                .navigate(EventDetailFragmentDirections
-                                                        .actionToParentEvent(mom.id ?: -1L))
+                                            .navigate(EventDetailFragmentDirections
+                                                .actionToParentEvent(mom.id ?: -1L))
                                     }
                                 }
 
@@ -295,18 +212,30 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
                                     if (dad?.id == null) {
 
                                         Dialogs.notify(AlertDialog.Builder(requireContext()),
-                                                getString(R.string.parent_event_does_not_exist))
+                                            getString(R.string.parent_event_does_not_exist))
 
                                     } else {
                                         findNavController().navigate(EventDetailFragmentDirections
-                                                .actionToParentEvent(dad.id ?: -1L))
+                                            .actionToParentEvent(dad.id ?: -1L))
                                     }
                                 }
                             }
                         }
-                    })
+                    }
                 }
-            })
+            }
+        }
+
+        eventsList.metadata.observeOnce {
+            it?.let {
+                mMetaValuesList = it
+            }
+        }
+
+        metadataViewModel.metadata.observeOnce {
+            it?.let {
+                mMetadataList = it
+            }
         }
     }
 
@@ -345,5 +274,45 @@ class EventDetailFragment: IntercrossBaseFragment<FragmentEventDetailBinding>(R.
         }
 
         return super.onOptionsItemSelected(item)
+    }
+
+    //extension function for live data to only observe once when the data is not null
+    private fun <T> LiveData<T>.observeOnce(observer: Observer<T>) {
+        observe(viewLifecycleOwner, object : Observer<T> {
+            override fun onChanged(t: T?) {
+                t?.let { data ->
+                    observer.onChanged(data)
+                    removeObserver(this)
+                }
+            }
+        })
+    }
+
+    //updates a single row value for the current event
+    //or inserts a new metadata value row if this value has not been saved previously
+    override fun onMetadataUpdated(property: String, value: Int) {
+
+        val eid = mEvent.id?.toInt() ?: -1
+        if (mMetadataList.isNotEmpty()) {
+
+            mMetadataList.find { it.property == property }?.id?.let { metaId ->
+
+                if (mMetaValuesList.isNotEmpty() && mMetaValuesList
+                        .any { it.eid == eid && it.property == property }) { //update the old value
+
+                    metaValuesViewModel.update(MetadataValues(
+                        eid, metaId.toInt(), value))
+
+                } else { //insert a new row
+
+                    metaValuesViewModel.insert(
+                        MetadataValues(
+                        eid,
+                        metaId.toInt(),
+                        value
+                    ))
+                }
+            }
+        }
     }
 }

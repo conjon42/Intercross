@@ -11,7 +11,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
-import org.phenoapps.intercross.MainActivity
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.WishlistAdapter
 import org.phenoapps.intercross.data.EventsRepository
@@ -21,9 +21,9 @@ import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
-import org.phenoapps.intercross.databinding.CrossBlockManagerBinding
 import org.phenoapps.intercross.databinding.FragmentWishlistBinding
 import org.phenoapps.intercross.util.Dialogs
+import org.phenoapps.intercross.util.KeyUtil
 
 /**
  * Summary Fragment is a recycler list of currenty crosses.
@@ -39,6 +39,14 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
         WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
     }
 
+    private val mPref by lazy {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
+
     private var wishlistEmpty = true
 
     private var mEvents: List<Event> = ArrayList()
@@ -49,12 +57,13 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
         setupBottomNavBar()
 
-        PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .edit().putString("last_visited_summary", "wishlist").apply()
+        mPref.edit().putString("last_visited_summary", "wishlist").apply()
 
         recyclerView.adapter = WishlistAdapter(requireContext())
 
         recyclerView.layoutManager = LinearLayoutManager(context)
+
+        val isCommutative = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
 
         eventsModel.events.observe(viewLifecycleOwner, {
 
@@ -62,42 +71,71 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
                 mEvents = it
 
-                wishModel.wishes.observe(viewLifecycleOwner, {
-
-                    it?.let { block ->
-
-                        val crosses = block.filter { wish -> wish.wishType == "cross" }
-
-                        wishlistEmpty = crosses.isEmpty()
-
-                        (recyclerView.adapter as WishlistAdapter)
-                                .submitList(crosses.map { res ->
-                                    CrossCountFragment.WishlistData(res.dadName, res.momName,
-                                            res.wishProgress.toString() + "/" + res.wishMin + "/" + res.wishMax.toString(), mEvents.filter {
-                                        event -> event.femaleObsUnitDbId == res.momId && event.maleObsUnitDbId == res.dadId
-                                    })
-                                })
-
-                        deleteButton.setOnClickListener {
-
-                            Dialogs.onOk(AlertDialog.Builder(requireContext()),
-                                    getString(R.string.delete_all_wishlist_title),
-                                    getString(R.string.cancel),
-                                    getString(R.string.zxing_button_ok)) {
-
-                                wishModel.deleteAll()
-
-                                findNavController().navigate(WishlistFragmentDirections.globalActionToCrossCount())
-                            }
-                        }
-                    }
-                })
+                if (isCommutative) loadCommutativeWishlist()
+                else loadWishlist()
             }
         })
+
+        deleteButton.setOnClickListener {
+
+            Dialogs.onOk(AlertDialog.Builder(requireContext()),
+                getString(R.string.delete_all_wishlist_title),
+                getString(R.string.cancel),
+                getString(R.string.zxing_button_ok)) {
+
+                wishModel.deleteAll()
+
+                findNavController().navigate(WishlistFragmentDirections.globalActionToCrossCount())
+            }
+        }
 
         summaryTabLayout.getTabAt(1)?.select()
 
         setupTabLayout()
+    }
+
+    private fun FragmentWishlistBinding.loadWishlist() {
+
+        wishModel.wishes.observe(viewLifecycleOwner, {
+
+            it?.let { block ->
+
+                val crosses = block.filter { wish -> wish.wishType == "cross" }
+
+                wishlistEmpty = crosses.isEmpty()
+
+                (recyclerView.adapter as WishlistAdapter)
+                    .submitList(crosses.map { res ->
+                        CrossCountFragment.WishlistData(res.dadName, res.momName,
+                            res.wishProgress.toString() + "/" + res.wishMin + "/" + res.wishMax.toString(), mEvents.filter {
+                                    event -> event.femaleObsUnitDbId == res.momId && event.maleObsUnitDbId == res.dadId
+                            })
+                    })
+
+            }
+        })
+    }
+
+    private fun FragmentWishlistBinding.loadCommutativeWishlist() {
+
+        wishModel.commutativeWishes.observe(viewLifecycleOwner, {
+
+            it?.let { block ->
+
+                val crosses = block.filter { wish -> wish.wishType == "cross" }
+
+                wishlistEmpty = crosses.isEmpty()
+
+                (recyclerView.adapter as WishlistAdapter)
+                    .submitList(crosses.map { res ->
+                        CrossCountFragment.WishlistData(res.dadName, res.momName,
+                            res.wishProgress.toString() + "/" + res.wishMin + "/" + res.wishMax.toString(), mEvents.filter {
+                                    event -> event.femaleObsUnitDbId == res.momId && event.maleObsUnitDbId == res.dadId
+                            })
+                    })
+
+            }
+        })
     }
 
     //a quick wrapper function for tab selection
@@ -128,19 +166,10 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
                     }
                 }
 
-                getString(R.string.cross_count) -> {
+                getString(R.string.cross_count) ->
+                    Navigation.findNavController(mBinding.root)
+                        .navigate(WishlistFragmentDirections.actionToCrossCount())
 
-                    if (mEvents.isNotEmpty()) {
-
-                        Navigation.findNavController(mBinding.root)
-                            .navigate(WishlistFragmentDirections.actionToCrossCount())
-                    } else {
-
-                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.crosses_empty))
-                        summaryTabLayout.getTabAt(1)?.select()
-
-                    }
-                }
                 getString(R.string.crossblock) -> {
 
                     if (!wishlistEmpty) {

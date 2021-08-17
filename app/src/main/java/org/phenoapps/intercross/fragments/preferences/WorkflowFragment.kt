@@ -1,0 +1,209 @@
+package org.phenoapps.intercross.fragments.preferences
+
+import android.os.Bundle
+import android.view.View
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.viewModels
+import androidx.preference.*
+import org.phenoapps.intercross.R
+import org.phenoapps.intercross.data.IntercrossDatabase
+import org.phenoapps.intercross.data.MetaValuesRepository
+import org.phenoapps.intercross.data.MetadataRepository
+import org.phenoapps.intercross.data.models.Metadata
+import org.phenoapps.intercross.data.models.MetadataValues
+import org.phenoapps.intercross.data.viewmodels.MetaValuesViewModel
+import org.phenoapps.intercross.data.viewmodels.MetadataViewModel
+import org.phenoapps.intercross.data.viewmodels.factory.MetaValuesViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.MetadataViewModelFactory
+import org.phenoapps.intercross.dialogs.MetadataCreatorDialog
+import org.phenoapps.intercross.dialogs.MetadataDefaultEditorDialog
+import org.phenoapps.intercross.interfaces.MetadataManager
+import org.phenoapps.intercross.util.Dialogs
+import org.phenoapps.intercross.util.KeyUtil
+
+class WorkflowFragment : ToolbarPreferenceFragment(
+    R.xml.workflow_preferences, R.string.root_workflow), MetadataManager {
+
+    private val metaValuesViewModel: MetaValuesViewModel by viewModels {
+        MetaValuesViewModelFactory(MetaValuesRepository
+            .getInstance(IntercrossDatabase.getInstance(requireContext()).metaValuesDao()))
+    }
+
+    private val metadataViewModel: MetadataViewModel by viewModels {
+        MetadataViewModelFactory(MetadataRepository
+            .getInstance(IntercrossDatabase.getInstance(requireContext()).metadataDao()))
+    }
+
+    private val mPref by lazy {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
+
+    private lateinit var mMetaValuesList: List<MetadataValues>
+    private lateinit var mMetadataList: List<Metadata>
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        metaValuesViewModel.metaValues.observe(viewLifecycleOwner) {
+            it?.let {
+                mMetaValuesList = it
+            }
+        }
+
+        metadataViewModel.metadata.observe(viewLifecycleOwner) {
+            it?.let {
+                mMetadataList = it
+            }
+        }
+
+        //ensure metadata creation / setting defaults preference is invisible by default
+        context?.let { ctx ->
+
+            val metadataPref = findPreference<Preference>(mKeyUtil.workMetaKey)
+            val defaultsPref = findPreference<Preference>(mKeyUtil.workMetaDefaultsKey)
+
+            val isCollect = mPref.getBoolean(mKeyUtil.workCollectKey, false)
+
+            defaultsPref?.isVisible = isCollect
+            metadataPref?.isVisible = isCollect
+
+        }
+
+        //when collect info is changed, update visibility of metadata preference
+        with (findPreference<SwitchPreference>(mKeyUtil.workCollectKey)) {
+            this?.let {
+
+                setOnPreferenceChangeListener { preference, newValue ->
+
+                    findPreference<Preference>(mKeyUtil.workMetaKey)?.let { metadataPref ->
+                        metadataPref.isVisible = newValue as? Boolean ?: false
+                    }
+
+                    findPreference<Preference>(mKeyUtil.workMetaDefaultsKey)?.let { metadataPref ->
+                        metadataPref.isVisible = newValue as? Boolean ?: false
+                    }
+                    true
+                }
+            }
+        }
+
+        //setup click listener to handle metadata creation when pressed
+        with (findPreference<Preference>(mKeyUtil.workMetaKey)) {
+            this?.let {
+
+                setOnPreferenceClickListener {
+
+                    context?.let { ctx ->
+
+                        MetadataCreatorDialog(ctx, this@WorkflowFragment).show()
+
+                    }
+
+                    true
+                }
+            }
+        }
+
+        //setup click listener to handle metadata creation when pressed
+        with (findPreference<Preference>(mKeyUtil.workMetaDefaultsKey)) {
+            this?.let {
+
+                setOnPreferenceClickListener {
+
+                    context?.let { ctx ->
+
+                        val defaults = mMetadataList.map { it.defaultValue }
+
+                        val properties = mMetadataList.map { it.property }
+
+                        val viewed = properties.zip(defaults).map { "${it.first} -> ${it.second}" }
+                            .toTypedArray()
+
+                        if (properties.isNotEmpty()) {
+
+                            AlertDialog.Builder(ctx).setSingleChoiceItems(viewed, 0) { dialog, item ->
+
+                                val default = mMetadataList.find { it.property == properties[item] }?.defaultValue ?: 1
+
+                                MetadataDefaultEditorDialog(ctx,
+                                    mMetadataList[item].id ?: -1L,
+                                    properties[item],
+                                    default,
+                                    this@WorkflowFragment).show()
+
+                                dialog.dismiss()
+
+                            }.show()
+
+                        } else Toast.makeText(ctx, R.string.fragment_settings_no_metadata_exists, Toast.LENGTH_SHORT).show()
+                    }
+
+                    true
+                }
+            }
+        }
+    }
+
+    override fun onMetadataUpdated(property: String, value: Int) {}
+
+    //asks the user to delete the property,
+    override fun onMetadataLongClicked(rowid: Long, property: String) {
+
+        context?.let { ctx ->
+
+            Dialogs.onOk(
+                AlertDialog.Builder(ctx),
+                title = getString(R.string.dialog_confirm_remove_metadata),
+                cancel = getString(android.R.string.cancel),
+                ok = getString(android.R.string.ok),
+                message = getString(R.string.dialog_confirm_remove_for_all)) {
+
+                deleteMetadata(property, rowid)
+
+            }
+        }
+    }
+
+    override fun onMetadataDefaultUpdated(rowId: Long, property: String, value: Int) {
+
+        updateMetadataDefault(rowId, value, property)
+
+    }
+
+    //adds the new property to all crosses in the database
+    override fun onMetadataCreated(property: String, value: String) {
+
+        createNewMetadata(value.toInt(), property)
+
+    }
+
+    //adds the new default value and property to the metadata string
+    private fun createNewMetadata(value: Int, property: String) {
+
+       //insert a new row
+        metadataViewModel.insert(
+            Metadata(property, value)
+        )
+    }
+
+    //updates a property with a new default value
+    private fun updateMetadataDefault(rowId: Long, value: Int, property: String) {
+
+        metadataViewModel.update(
+            Metadata(property, value, rowId)
+        )
+    }
+
+    //deletes the given property from the metdata string
+    private fun deleteMetadata(property: String, rowid: Long) {
+
+        metadataViewModel.delete(
+            Metadata(property, id = rowid)
+        )
+    }
+}

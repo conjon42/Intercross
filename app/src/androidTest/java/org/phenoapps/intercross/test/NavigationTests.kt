@@ -15,7 +15,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito.mock
-import org.phenoapps.intercross.MainActivity
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
 import java.util.*
 

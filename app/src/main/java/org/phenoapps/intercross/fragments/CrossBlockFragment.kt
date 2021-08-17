@@ -2,25 +2,19 @@ package org.phenoapps.intercross.fragments
 
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.preference.PreferenceManager
 import android.view.GestureDetector
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.GestureDetectorCompat
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
-import org.phenoapps.intercross.MainActivity
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.HeaderAdapter
 import org.phenoapps.intercross.data.EventsRepository
@@ -32,9 +26,9 @@ import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.CrossBlockManagerBinding
-import org.phenoapps.intercross.databinding.FragmentDataSummaryBinding
 import org.phenoapps.intercross.util.AsyncLoadCrossblock
 import org.phenoapps.intercross.util.Dialogs
+import org.phenoapps.intercross.util.KeyUtil
 
 
 class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.layout.cross_block_manager),
@@ -68,19 +62,28 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
     private var mEvents: List<Event> = ArrayList()
 
+    private val mPref by lazy {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
+
     @RequiresApi(Build.VERSION_CODES.M)
     override fun CrossBlockManagerBinding.afterCreateView() {
 
         setHasOptionsMenu(false)
 
-        (activity as MainActivity).supportActionBar?.hide()
+        //(activity as MainActivity).supportActionBar?.hide()
 
         bottomNavBar.selectedItemId = R.id.action_nav_cross_count
 
         setupBottomNavBar()
 
-        PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .edit().putString("last_visited_summary", "crossblock").apply()
+        mPref.edit().putString("last_visited_summary", "crossblock").apply()
+
+        val isCommutative = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
 
         mGesture = GestureDetectorCompat(requireContext(), this@CrossBlockFragment)
 
@@ -166,19 +169,32 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
         /**
          * list for events model, disable options menu for summary if the list is empty
          */
-        eventsModel.events.observe(viewLifecycleOwner, Observer {
+        eventsModel.events.observe(viewLifecycleOwner, {
 
             it?.let {
 
                 mEvents = it
 
-                wishModel.crossblock.observe(viewLifecycleOwner, Observer { block ->
+                if (isCommutative) {
 
-                    mWishlist = block
+                    wishModel.commutativeCrossblock.observe(viewLifecycleOwner, { block ->
 
-                    AsyncLoadCrossblock(requireContext(), mBinding.root, block, mEvents, table, rows, columns).execute()
+                        mWishlist = block
 
-                })
+                        AsyncLoadCrossblock(requireContext(), mBinding.root, block, mEvents, table, rows, columns).execute()
+
+                    })
+
+                } else {
+
+                    wishModel.crossblock.observe(viewLifecycleOwner, { block ->
+
+                        mWishlist = block
+
+                        AsyncLoadCrossblock(requireContext(), mBinding.root, block, mEvents, table, rows, columns).execute()
+
+                    })
+                }
             }
         })
 
@@ -190,7 +206,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
     override fun onResume() {
         super.onResume()
 
-        (activity as MainActivity).supportActionBar?.hide()
+        //(activity as MainActivity).supportActionBar?.hide()
 
         mBinding.summaryTabLayout.getTabAt(2)?.select()
 
@@ -230,32 +246,12 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
                     }
                 }
 
-                getString(R.string.cross_count) -> {
-
-                    if (mEvents.isNotEmpty()) {
-
-                        Navigation.findNavController(mBinding.root)
-                            .navigate(CrossBlockFragmentDirections.actionToCrossCount())
-                    } else {
-
-                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.crosses_empty))
-                        summaryTabLayout.getTabAt(2)?.select()
-
-                    }
-                }
-                getString(R.string.wishlist) -> {
-
-                    if (::mWishlist.isInitialized && mWishlist.isNotEmpty()) {
-
-                        Navigation.findNavController(mBinding.root)
-                            .navigate(CrossBlockFragmentDirections.actionToWishlist())
-                    } else {
-
-                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
-                        summaryTabLayout.getTabAt(2)?.select()
-
-                    }
-                }
+                getString(R.string.cross_count) ->
+                    Navigation.findNavController(mBinding.root)
+                        .navigate(CrossBlockFragmentDirections.actionToCrossCount())
+                getString(R.string.wishlist) ->
+                    Navigation.findNavController(mBinding.root)
+                        .navigate(CrossBlockFragmentDirections.actionToWishlist())
             }
         })
     }

@@ -3,11 +3,11 @@ package org.phenoapps.intercross.fragments
 import android.Manifest
 import android.graphics.Color
 import android.os.Handler
-import android.preference.PreferenceManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import com.google.zxing.ResultPoint
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
@@ -16,7 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.phenoapps.intercross.MainActivity
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.ParentsRepository
@@ -38,6 +38,7 @@ import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentBarcodeScanBinding
 import org.phenoapps.intercross.util.CrossUtil
 import org.phenoapps.intercross.util.FileUtil
+import org.phenoapps.intercross.util.KeyUtil
 import java.util.*
 
 class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.layout.fragment_barcode_scan) {
@@ -84,6 +85,14 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
     private var mParents = ArrayList<Parent>()
 
     private var lastText: String? = null
+
+    private val mPrefs by lazy {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
 
     private val checkCamPermissions by lazy {
 
@@ -135,8 +144,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                         CONTINUOUS -> {
                             zxingBarcodeScanner.setStatusText(getString(R.string.zxing_scan_mode_continuous))
 
-                            val maleFirst = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                                    .getBoolean(SettingsFragment.ORDER, false)
+                            val maleFirst = mPrefs.getBoolean(mKeyUtil.nameCrossOrderKey, false)
 
                             when (maleFirst) {
 
@@ -259,19 +267,33 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
     private fun startObservers() {
 
-        wishModel.wishes.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
-            it?.let {
-                mWishlist = it.filter { wish -> wish.wishType == "cross" }
-            }
-        })
+        val isCommutative = mPrefs.getBoolean(mKeyUtil.workCommutativeKey, false)
 
-        viewModel.events.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+        if (isCommutative) {
+
+            wishModel.commutativeWishes.observe(viewLifecycleOwner, {
+                it?.let {
+                    mWishlist = it.filter { wish -> wish.wishType == "cross" }
+                }
+            })
+
+        } else {
+
+            wishModel.wishes.observe(viewLifecycleOwner, {
+                it?.let {
+                    mWishlist = it.filter { wish -> wish.wishType == "cross" }
+                }
+            })
+
+        }
+
+        viewModel.events.observe(viewLifecycleOwner, {
             it?.let {
                 mEvents = ArrayList(it)
             }
         })
 
-        settingsModel.settings.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+        settingsModel.settings.observe(viewLifecycleOwner, {
             it?.let {
                 mSettings = it
             }

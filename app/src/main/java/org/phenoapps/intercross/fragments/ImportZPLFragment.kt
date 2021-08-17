@@ -1,13 +1,22 @@
 package org.phenoapps.intercross.fragments
 
-import android.preference.PreferenceManager
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.preference.PreferenceManager
 import kotlinx.android.synthetic.main.fragment_pattern.*
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.databinding.FragmentImportZplBinding
 import org.phenoapps.intercross.util.FileUtil
+import org.phenoapps.intercross.util.KeyUtil
 
 class ImportZPLFragment : IntercrossBaseFragment<FragmentImportZplBinding>(R.layout.fragment_import_zpl) {
+
+    private val mPref by lazy {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
 
     private val importZplFile by lazy {
 
@@ -19,9 +28,7 @@ class ImportZPLFragment : IntercrossBaseFragment<FragmentImportZplBinding>(R.lay
 
                 codeTextView.text = text
 
-                val edit = PreferenceManager.getDefaultSharedPreferences(requireContext()).edit()
-
-                edit.putString("ZPL_CODE", text.toString()).apply()
+                mPref.edit().putString("ZPL_CODE", text.toString()).apply()
 
             }
         }
@@ -37,8 +44,7 @@ class ImportZPLFragment : IntercrossBaseFragment<FragmentImportZplBinding>(R.lay
         }
 
         //set preview text to imported zpl code
-        val code = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getString("ZPL_CODE", "") ?: ""
+        val code = mPref.getString(mKeyUtil.argPrintZplCode, "") ?: ""
 
         if (code.isNotBlank()) codeTextView.text = code
     }

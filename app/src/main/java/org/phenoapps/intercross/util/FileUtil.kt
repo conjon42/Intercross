@@ -1,6 +1,7 @@
 package org.phenoapps.intercross.util
 
 //import org.apache.poi.ss.usermodel.WorkbookFactory
+
 import android.content.ContentUris
 import android.content.Context
 import android.media.MediaPlayer
@@ -8,21 +9,26 @@ import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import android.preference.PreferenceManager
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.util.Log
-import android.widget.Toast
 import androidx.annotation.WorkerThread
 import androidx.appcompat.app.AlertDialog
+import androidx.core.net.toUri
+import androidx.preference.PreferenceManager
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
+import com.google.gson.JsonPrimitive
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.models.*
-import org.phenoapps.intercross.data.models.embedded.EventMetaData
-import org.phenoapps.intercross.fragments.SettingsFragment
 import java.io.*
 import java.util.*
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+import java.util.zip.ZipOutputStream
 import kotlin.collections.ArrayList
+
 
 class FileUtil(private val ctx: Context) {
 
@@ -82,18 +88,16 @@ class FileUtil(private val ctx: Context) {
 
     private val crossTypeHeader: String by lazy { ctx.getString(R.string.crosses_export_type_header) }
 
-    private val crossFruitsHeader: String by lazy { ctx.getString(R.string.crosses_export_fruits_header) }
-
-    private val crossFlowersHeader: String by lazy { ctx.getString(R.string.crosses_export_flowers_header) }
-
-    private val crossSeedsHeader: String by lazy { ctx.getString(R.string.crosses_export_seeds_header) }
-
     private val crossHeaders = setOf(crossIdHeader, crossMomHeader, crossDadHeader,
             crossTimestampHeader, crossPersonHeader, crossExperimentHeader,
-            crossTypeHeader, crossFruitsHeader, crossFlowersHeader, crossSeedsHeader)
+            crossTypeHeader)
 
     private val eventModelHeaderString by lazy {
         crossHeaders.joinToString(",")
+    }
+
+    private val mPref by lazy {
+        PreferenceManager.getDefaultSharedPreferences(ctx)
     }
 
     /***
@@ -266,6 +270,8 @@ class FileUtil(private val ctx: Context) {
 
                 val row = it.split(",").map { it.trim() }
 
+                val metadataFields = row.size - crossHeaders.size
+
                 headerToIndex[crossIdHeader]?.let { crossIdKey ->
 
                     headerToIndex[crossMomHeader]?.let { momKey ->
@@ -280,36 +286,31 @@ class FileUtil(private val ctx: Context) {
 
                                         headerToIndex[crossTypeHeader]?.let { typeKey ->
 
-                                            headerToIndex[crossFruitsHeader]?.let { fruitKey ->
-
-                                                headerToIndex[crossFlowersHeader]?.let { flowerKey ->
-
-                                                    headerToIndex[crossSeedsHeader]?.let { seedsKey ->
-
-                                                        crosses.add(
-                                                                Event(
-                                                                        row[crossIdKey],
-                                                                        row[momKey],
-                                                                        row[dadKey],
-                                                                        timestamp = row[time],
-                                                                        person = row[personKey],
-                                                                        experiment = row[expKey],
-                                                                        type = when (row[typeKey]) {
-                                                                            "BIPARENTAL" -> CrossType.BIPARENTAL
-                                                                            "OPEN" -> CrossType.OPEN
-                                                                            "POLY" -> CrossType.POLY
-                                                                            "SELF" -> CrossType.SELF
-                                                                            else -> CrossType.UNKNOWN
-                                                                        }))
-//                                                                        metaData = EventMetaData(
-//                                                                                fruits = row[fruitKey].toInt(),
-//                                                                                flowers = row[flowerKey].toInt(),
-//                                                                                seeds = row[seedsKey].toInt()) )
-
-
-                                                    }
-                                                }
-                                            }
+                                            crosses.add(
+                                                    Event(
+                                                            row[crossIdKey],
+                                                            row[momKey],
+                                                            row[dadKey],
+                                                            timestamp = row[time],
+                                                            person = row[personKey],
+                                                            experiment = row[expKey],
+                                                            type = when (row[typeKey]) {
+                                                                "BIPARENTAL" -> CrossType.BIPARENTAL
+                                                                "OPEN" -> CrossType.OPEN
+                                                                "POLY" -> CrossType.POLY
+                                                                "SELF" -> CrossType.SELF
+                                                                else -> CrossType.UNKNOWN
+                                                            },
+                                                            //only metadata values (not default values) are persisted across import/exports
+//                                                            metadata = JsonObject().apply {
+//                                                                for (i in crossHeaders.size until crossHeaders.size+metadataFields) {
+//                                                                    this.add(headers[i], JsonArray(2).apply {
+//                                                                        add(JsonPrimitive(row[i]))
+//                                                                        add(JsonPrimitive(0))
+//                                                                    })
+//                                                                }
+//                                                            }.toString()
+                                                    ))
                                         }
                                     }
                                 }
@@ -317,7 +318,6 @@ class FileUtil(private val ctx: Context) {
                         }
                     }
                 }
-
             }
         }
     }
@@ -348,59 +348,61 @@ class FileUtil(private val ctx: Context) {
 
             lines.forEach { rawRow ->
 
-                val row = rawRow.split(',').map { it.trim() }
+                if (rawRow.isNotBlank()) {
 
-                var readableMaleName: String? = null
+                    val row = rawRow.split(',').map { it.trim() }
 
-                var readableFemaleName: String? = null
+                    var readableMaleName: String? = null
 
-                var wishlistMax: Int? = null
+                    var readableFemaleName: String? = null
 
-                /*
-                Try to parse all optional columns.
-                 */
-                if (wishlistMaleNameHeader in headerIndices) {
+                    var wishlistMax: Int? = null
 
-                    headerIndices[wishlistMaleNameHeader]?.let { key ->
+                    /*
+                    Try to parse all optional columns.
+                     */
+                    if (wishlistMaleNameHeader in headerIndices) {
 
-                        readableMaleName = row[key]
+                        headerIndices[wishlistMaleNameHeader]?.let { key ->
+
+                            readableMaleName = row[key]
+                        }
                     }
-                }
 
-                if (wishlistFemaleNameHeader in headerIndices) {
+                    if (wishlistFemaleNameHeader in headerIndices) {
 
-                    headerIndices[wishlistFemaleNameHeader]?.let { key ->
+                        headerIndices[wishlistFemaleNameHeader]?.let { key ->
 
-                        readableFemaleName = row[key]
+                            readableFemaleName = row[key]
+                        }
                     }
-                }
 
-                if (wishlistMaxHeader in headerIndices) {
+                    if (wishlistMaxHeader in headerIndices) {
 
-                    headerIndices[wishlistMaxHeader]?.let { key ->
+                        headerIndices[wishlistMaxHeader]?.let { key ->
 
-                        wishlistMax = row[key].toInt()
+                            wishlistMax = row[key].toInt()
+                        }
                     }
-                }
 
-                /**
-                 * finally ensure that required columns exist, and add wishlists to ref array
-                 */
+                    /**
+                     * finally ensure that required columns exist, and add wishlists to ref array
+                     */
 
-                if (wishlistMaleIdHeader in headerIndices
+                    if (wishlistMaleIdHeader in headerIndices
                         && wishlistFemaleIdHeader in headerIndices
                         && wishlistTypeHeader in headerIndices
                         && wishlistMinHeader in headerIndices) {
 
-                    headerIndices[wishlistMaleIdHeader]?.let { maleId ->
+                        headerIndices[wishlistMaleIdHeader]?.let { maleId ->
 
-                        headerIndices[wishlistFemaleIdHeader]?.let { femaleId ->
+                            headerIndices[wishlistFemaleIdHeader]?.let { femaleId ->
 
-                            headerIndices[wishlistTypeHeader]?.let { type ->
+                                headerIndices[wishlistTypeHeader]?.let { type ->
 
-                                headerIndices[wishlistMinHeader]?.let { min ->
+                                    headerIndices[wishlistMinHeader]?.let { min ->
 
-                                    wishlist.add(Wishlist(
+                                        wishlist.add(Wishlist(
                                             femaleDbId = row[femaleId],
                                             maleDbId = row[maleId],
                                             femaleName = readableFemaleName ?: row[femaleId],
@@ -408,18 +410,19 @@ class FileUtil(private val ctx: Context) {
                                             wishType = row[type],
                                             wishMin = row[min].toInt(),
                                             wishMax = wishlistMax
-                                    ))
+                                        ))
 
-                                    /**
-                                     * Add all parents parsed from the wishlist
-                                     */
-                                    parents.add(Parent(row[femaleId], 0).apply {
-                                        name = readableFemaleName ?: row[femaleId]
-                                    })
+                                        /**
+                                         * Add all parents parsed from the wishlist
+                                         */
+                                        parents.add(Parent(row[femaleId], 0).apply {
+                                            name = readableFemaleName ?: row[femaleId]
+                                        })
 
-                                    parents.add(Parent(row[maleId], 1).apply {
-                                        name = readableMaleName ?: row[maleId]
-                                    })
+                                        parents.add(Parent(row[maleId], 1).apply {
+                                            name = readableMaleName ?: row[maleId]
+                                        })
+                                    }
                                 }
                             }
                         }
@@ -431,8 +434,7 @@ class FileUtil(private val ctx: Context) {
 
     fun ringNotification(success: Boolean) {
 
-        if (PreferenceManager.getDefaultSharedPreferences(ctx)
-                        .getBoolean(SettingsFragment.AUDIO_ENABLED, false)) {
+        if (mPref.getBoolean(KeyUtil(ctx).workAudioKey, false)) {
             try {
                 when (success) {
                     true -> {
@@ -464,41 +466,46 @@ class FileUtil(private val ctx: Context) {
 
             ctx.contentResolver.openOutputStream(uri).apply {
 
-                this?.let {
+                if (crosses.isNotEmpty()) {
 
-                    write(eventModelHeaderString.toByteArray())
+                    this?.let {
 
-                    write(newLine)
+                        val first = crosses.first()
 
-                    crosses.forEachIndexed { index, cross ->
+                        //add metadata properties as headers to the export file
+                        //write((eventModelHeaderString + first.getMetadataHeaders()).toByteArray())
 
-                        if (groups.any { g -> g.codeId == cross.maleObsUnitDbId }) {
+                        write(newLine)
 
-                            var groupName = groups.find { g -> g.codeId == cross.maleObsUnitDbId }?.name
+                        crosses.forEachIndexed { index, cross ->
 
-                            val males = groups.filter { g -> g.codeId == cross.maleObsUnitDbId }
+                            if (groups.any { g -> g.codeId == cross.maleObsUnitDbId }) {
+
+                                var groupName = groups.find { g -> g.codeId == cross.maleObsUnitDbId }?.name
+
+                                val males = groups.filter { g -> g.codeId == cross.maleObsUnitDbId }
                                     .map { g ->
                                         parents.find { c -> c.id == g.maleId }.let {
                                             it?.codeId
                                         }
                                     }.joinToString(";", "{", "}")
 
-                            write(cross.toPollenGroupString(males, groupName).toByteArray())
+                                write(cross.toPollenGroupString(males, groupName).toByteArray())
 
-                            write(newLine)
+                                write(newLine)
 
-                        } else {
+                            } else {
 
-                            write(cross.toString().toByteArray())
+                                write(cross.toString().toByteArray())
 
-                            write(newLine)
+                                write(newLine)
 
+                            }
                         }
+
+                        close()
                     }
-
-                    close()
                 }
-
             }
 
         } catch (exception: FileNotFoundException) {
@@ -628,37 +635,201 @@ class FileUtil(private val ctx: Context) {
      */
     fun importDatabase(uri: Uri) {
 
-        val stream = ctx.getDatabasePath(IntercrossDatabase.DATABASE_NAME).outputStream()
+        //open cache directory to temporarily unzip db and prefs file to
+        ctx.externalCacheDir?.path?.let { parent ->
 
-        val inputStream = ctx.contentResolver.openInputStream(uri)
+            try {
 
-        stream.use { output ->
+                val stream = ctx.getDatabasePath(IntercrossDatabase.DATABASE_NAME).outputStream()
 
-            inputStream.use { input ->
+                val inputStream = ctx.contentResolver.openInputStream(uri)
 
-                input?.let { ins ->
+                val dir = File(parent, "temp")
 
-                    input.copyTo(output)
+                if (dir.mkdir() || dir.exists()) {
+
+                    unzip(inputStream, stream)
+
+                }
+
+                dir.delete()
+
+            } catch (e: IOException) {
+
+                e.printStackTrace()
+
+            }
+        }
+    }
+
+    /**
+     * Opens the default database location /data/data/org.../databases/intercross.db as an input stream
+     * The stream is then copied to the parameter uri which is chosen by the user.
+     *
+     * Also backup /data/data/org.phenoapps.intercross/shared_prefs/org.phenoapps.intercross_preferences.xml
+     * and compress the .db and .xml files to a zip
+     */
+    fun exportDatabase(uri: Uri) {
+
+        //create parent directory for storing intercross.db and shared_prefs.xml
+        //this directory is temporary and will be used to create a zip file
+        ctx.externalCacheDir?.path?.let { parent ->
+
+            try {
+
+                val stream = ctx.getDatabasePath(IntercrossDatabase.DATABASE_NAME).inputStream()
+
+                val zipOutput = ctx.contentResolver.openOutputStream(uri)
+
+                val dir = File(parent, "backup")
+
+                if (dir.mkdir() || dir.exists()) {
+
+                    val dbFile = File(dir.path, "intercross.db")
+                    val databaseOutput = ctx.contentResolver.openOutputStream(dbFile.toUri())
+
+                    val prefFile = File(dir.path, "preferences_backup")
+                    val prefOutput = ctx.contentResolver.openOutputStream(prefFile.toUri())
+
+                    stream.write(databaseOutput)
+
+                    val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(ctx)
+
+                    val objectOutputStream = ObjectOutputStream(prefOutput)
+
+                    objectOutputStream.writeObject(prefs.all)
+
+                    zip(arrayOf(dbFile.path, prefFile.path), zipOutput)
+
+                    dir.delete()
+
+                } else throw IOException()
+
+            } catch (e: IOException) {
+
+                e.printStackTrace()
+
+            }
+        }
+    }
+
+    //reference https://stackoverflow.com/questions/7485114/how-to-zip-and-unzip-the-files
+    @Throws(IOException::class)
+    private fun zip(files: Array<String>, zipFile: OutputStream?) {
+
+        ZipOutputStream(BufferedOutputStream(zipFile)).use { output ->
+
+            var origin: BufferedInputStream? = null
+
+            val bufferSize = 8192 //default buffersize for BufferedWriter
+            val data = ByteArray(bufferSize)
+
+            for (i in files.indices) {
+
+                val fi = FileInputStream(files[i])
+
+                origin = BufferedInputStream(fi, bufferSize)
+
+                try {
+
+                    val entry = ZipEntry(files[i].substring(files[i].lastIndexOf("/") + 1))
+
+                    output.putNextEntry(entry)
+
+                    var count: Int
+
+                    while (origin.read(data, 0, bufferSize).also { count = it } != -1) {
+
+                        output.write(data, 0, count)
+
+                    }
+                } finally {
+
+                    origin.close()
 
                 }
             }
         }
     }
 
+    //the expected zip file format contains two files
+    //1. intercross.db this can be directly copied to the data dir
+    //2. preferences_backup needs to:
+    //  a. read and converted to a map <string to any (which is only boolean or string)>
+    //  b. preferences should be cleared of the old values
+    //  c. iterate over the converted map and populate the preferences
+    @Throws(IOException::class)
+    fun unzip(zipFile: InputStream?, databaseStream: OutputStream) {
 
-    /**
-     * Opens the default database location /data/data/org.../databases/intercross.db as an input stream
-     * The stream is then copied to the parameter uri which is chosen by the user.
-     */
-    fun exportDatabase(uri: Uri) {
+        try {
 
-        val stream = ctx.getDatabasePath(IntercrossDatabase.DATABASE_NAME).inputStream()
+            ZipInputStream(zipFile).use { zin ->
 
-        val out = ctx.contentResolver.openOutputStream(uri)
+                var ze: ZipEntry? = null
 
-        stream.use { input ->
+                while (zin.nextEntry.also { ze = it } != null) {
 
-            out.use { output ->
+                    when (ze?.name) {
+
+                        null -> throw IOException()
+
+                        "intercross.db" -> {
+
+                            databaseStream.use { output ->
+
+                                zin.copyTo(output)
+
+                            }
+                        }
+
+                        "preferences_backup" -> {
+
+                            val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(ctx)
+
+                            ObjectInputStream(zin).use { objectStream ->
+
+                                val prefMap = objectStream.readObject() as Map<*, *>
+
+                                with (prefs.edit()) {
+
+                                    clear()
+
+                                    //keys are always string, do a quick map to type cast
+                                    //put values into preferences based on their types
+                                    prefMap.entries.map { it.key as String to it.value }
+                                        .forEach {
+
+                                            val key = it.first
+
+                                            //right now Intercross only has string and boolean preferences
+                                            when (val x = it.second) {
+
+                                                is Boolean -> putBoolean(key, x)
+
+                                                is String -> putString(key, x)
+                                            }
+                                        }
+
+                                    apply()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        } catch (e: Exception) {
+
+            Log.e("FileUtil", "Unzip exception", e)
+
+        }
+    }
+
+    private fun InputStream.write(outStream: OutputStream?) {
+
+        use { input ->
+
+            outStream.use { output ->
 
                 output?.let { outstream ->
 

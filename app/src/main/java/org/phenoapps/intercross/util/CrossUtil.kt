@@ -1,13 +1,14 @@
 package org.phenoapps.intercross.util
 
 import android.content.Context
-import android.os.Looper
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.navigation.NavController
 import androidx.navigation.NavDirections
 import androidx.preference.PreferenceManager
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.gson.JsonParser
+import com.google.gson.JsonSyntaxException
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
@@ -19,6 +20,14 @@ import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
 import java.util.*
 
 class CrossUtil(val context: Context) {
+
+    private val mPref by lazy {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
 
     fun submitCrossEvent(root: View,
                          female: String,
@@ -59,11 +68,11 @@ class CrossUtil(val context: Context) {
 
         }
 
-        val experiment = PreferenceManager.getDefaultSharedPreferences(context)
-                .getString("org.phenoapps.intercross.EXPERIMENT", "")
+        val isCommutative = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
 
-        val person = PreferenceManager.getDefaultSharedPreferences(context)
-                .getString("org.phenoapps.intercross.PERSON", "")
+        val experiment = mPref.getString(mKeyUtil.profExpKey, "")
+
+        val person = mPref.getString(mKeyUtil.profPersonKey, "")
 
         val date = DateUtil().getTime()
 
@@ -71,8 +80,9 @@ class CrossUtil(val context: Context) {
                 female,
                 male,
                 "",
-                date, person ?: "?", experiment ?: "?")
-
+                date,
+         person ?: "?",
+      experiment ?: "?")
 
         /** Insert mom/dad cross ids only if they don't exist in the DB already **/
         if (!parents.any { p -> p.codeId == e.femaleObsUnitDbId }) {
@@ -93,15 +103,37 @@ class CrossUtil(val context: Context) {
 
         FirebaseCrashlytics.getInstance().log("Cross created: $name $date")
 
-        val wasCreated = context.getString(R.string.was_created)
+        //issue 40 was to disable toast messages when crosses are created
+        //val wasCreated = context.getString(R.string.was_created)
+        //if (Looper.myLooper() == null) Looper.prepare()
+        //SnackbarQueue().push(SnackbarQueue.SnackJob(root, "$name $wasCreated"))
 
-        if (Looper.myLooper() == null) Looper.prepare()
-
-        SnackbarQueue().push(SnackbarQueue.SnackJob(root, "$name $wasCreated"))
-
-        checkWishlist(female, male, wishlistProgress)
+        if (isCommutative) checkCommutativeWishlist(female, male, wishlistProgress)
+        else checkWishlist(female, male, wishlistProgress)
 
         return eid
+    }
+
+    private fun checkCommutativeWishlist(f: String, m: String, wishlist: List<WishlistView>) {
+
+        wishlist.filter { (it.momId == f && it.dadId == m)
+                || (it.momId == m && it.dadId == f) }.forEach { item ->
+
+            if (item.wishProgress + 1 >= item.wishMin && item.wishMin != 0) {
+
+                FileUtil(context).ringNotification(true)
+
+                if (item.wishProgress >= item.wishMax && item.wishMax != 0) {
+
+                    Dialogs.notify(AlertDialog.Builder(context), context.getString(R.string.wish_max_complete))
+
+                } else {
+
+                    Dialogs.notify(AlertDialog.Builder(context), context.getString(R.string.wish_min_complete))
+
+                }
+            }
+        }
     }
 
     private fun checkWishlist(f: String, m: String, wishlist: List<WishlistView>) {
@@ -130,9 +162,7 @@ class CrossUtil(val context: Context) {
      */
     fun checkPrefToOpenCrossEvent(controller: NavController, direction: NavDirections) {
 
-        val pref = PreferenceManager.getDefaultSharedPreferences(context)
-
-        val openCross = pref?.getBoolean("org.phenoapps.intercross.OPEN_CROSS_IMMEDIATELY", false) ?: false
+        val openCross = mPref.getBoolean(mKeyUtil.workOpenCrossKey, false) ?: false
 
         if (openCross) {
             controller.navigate(

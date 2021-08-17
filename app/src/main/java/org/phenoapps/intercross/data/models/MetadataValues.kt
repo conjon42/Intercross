@@ -22,7 +22,7 @@ data class MetadataValues(
         var metaId: Int,
 
         @ColumnInfo(name = "value")
-        var value: Int = 0,
+        var value: Int? = null,
 
         @ColumnInfo(name = "mvId")
         @PrimaryKey(autoGenerate = true)

@@ -6,6 +6,8 @@
     android:id="@+id/main_graph"
     app:startDestination="@+id/events_fragment">
 
+    <include app:graph="@navigation/preferences"/>
+
     <!-- Events Fragment is the main entry fragment that shows the entire crossing table -->
     <fragment android:id="@+id/events_fragment"
         android:name="org.phenoapps.intercross.fragments.EventsFragment"
@@ -43,6 +45,74 @@
         <action android:id="@+id/action_to_about"
             app:destination="@+id/about_fragment"
             app:popUpTo="@id/events_fragment"/>
+        <action
+            android:id="@+id/action_to_parents_import"
+            app:destination="@+id/brapi_parents_import_fragment"
+            app:popUpTo="@id/events_fragment"/>
+        <action
+            android:id="@+id/action_to_brapi_export"
+            app:destination="@+id/brapi_export_fragment"
+            app:popUpTo="@id/events_fragment"/>
+        <action android:id="@+id/action_from_events_to_preferences"
+            app:destination="@+id/preferences"
+            app:popUpTo="@id/events_fragment">
+            <argument android:name="org.phenoapps.intercross.ASK_PERSON"
+                android:defaultValue="true"
+                app:argType="boolean"/>
+        </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/brapi_trials_fragment"
+        android:name="org.phenoapps.intercross.fragments.BrapiTrialsFragment"
+        android:label="@string/brapi_trials_import">
+        <argument android:name="project"
+            android:defaultValue=""/>
+        <argument android:name="programDbIds"
+            android:defaultValue=""/>
+        <action android:id="@+id/action_to_germplasm_fragment"
+            app:enterAnim="@anim/slide_in"
+            app:destination="@+id/brapi_germplasm_fragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/brapi_germplasm_fragment"
+        android:name="org.phenoapps.intercross.fragments.BrapiGermplasmFragment"
+        android:label="@string/brapi_germplasm_import"/>
+
+    <fragment
+        android:id="@+id/brapi_wishlist_import_fragment"
+        android:name="org.phenoapps.intercross.fragments.BrapiWishlistImportFragment"
+        android:label="@string/brapi_wishlist_import"/>
+
+    <!-- programs filter fragment -->
+    <fragment
+        android:id="@+id/brapi_parents_import_fragment"
+        android:name="org.phenoapps.intercross.fragments.BrapiProgramsFragment"
+        android:label="@string/brapi_parents_import">
+        <action android:id="@+id/action_to_trials_fragment"
+            app:enterAnim="@anim/slide_in"
+            app:destination="@+id/brapi_trials_fragment">
+            <argument
+                android:name="programDbIds"
+                app:argType="string"
+                android:defaultValue=""/>
+        </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/cross_project_creator_fragment"
+        android:name="org.phenoapps.intercross.fragments.CrossProjectCreatorFragment"
+        android:label="@string/fragment_cross_project_creator_label"/>
+
+    <fragment
+        android:id="@+id/brapi_export_fragment"
+        android:name="org.phenoapps.intercross.fragments.BrapiExportFragment"
+        android:label="@string/brapi_export">
+        <action
+            android:id="@+id/action_to_project_creator"
+            app:destination="@id/cross_project_creator_fragment"
+            app:popUpTo="@id/brapi_export_fragment"/>
     </fragment>
 
     <fragment
@@ -84,6 +154,10 @@
         <argument
             android:name="eid"
             app:argType="long"/>
+        <action android:id="@+id/action_to_event_refresh"
+            app:destination="@id/event_fragment"
+            app:popUpTo="@id/events_fragment"
+            app:launchSingleTop="true"/>
         <action android:id="@+id/action_to_parent_event"
             app:destination="@id/event_fragment"
             app:popUpTo="@id/events_fragment">
@@ -110,24 +184,6 @@
                 app:argType="integer"
                 android:defaultValue="0"/>
         </action>
-    </fragment>
-
-    <fragment
-        android:id="@+id/settings_fragment"
-        android:name="org.phenoapps.intercross.fragments.SettingsFragment"
-        android:label="@string/settings_label">
-        <action
-            android:id="@+id/action_to_pattern_fragment"
-            app:destination="@id/pattern_fragment"
-            app:launchSingleTop="true" />
-        <action
-            android:id="@+id/action_to_import_zpl_fragment"
-            app:destination="@id/import_zpl_fragment"
-            app:launchSingleTop="true" />
-        <action
-            android:id="@+id/action_to_about"
-            app:destination="@id/about_fragment"
-            app:launchSingleTop="true" />
     </fragment>
 
     <fragment
@@ -227,12 +283,11 @@
             app:popUpTo="@id/events_fragment"/>
     </fragment>
 
-
     <!-- Global Actions used by Navigation Drawer -->
     <action android:id="@+id/global_action_to_settings_fragment"
-        app:destination="@id/settings_fragment"
+        app:destination="@id/preferences"
         app:launchSingleTop="true"
-        app:popUpTo="@id/settings_fragment"/>
+        app:popUpTo="@id/preferences"/>
 
     <action android:id="@+id/global_action_to_event_detail"
         app:destination="@id/event_fragment"/>
@@ -244,11 +299,20 @@
 
     <action android:id="@+id/global_action_to_parents"
         app:destination="@id/parents_fragment"
-        app:popUpTo="@string/parents"
-        app:launchSingleTop="true"/>
+        app:launchSingleTop="true"
+        app:popUpTo="@id/parents_fragment"/>
 
     <action android:id="@+id/global_action_to_cross_count"
         app:destination="@id/cross_count_fragment"
         app:popUpTo="@id/cross_count_fragment"
+        app:launchSingleTop="true"/>
+
+    <action android:id="@+id/global_action_to_wishlist_import"
+        app:destination="@+id/brapi_wishlist_import_fragment"
+        app:launchSingleTop="true"
+        app:popUpTo="@id/cross_count_fragment"/>
+
+    <action android:id="@+id/global_action_to_brapi_auth"
+        app:destination="@+id/brapi_auth_fragment"
         app:launchSingleTop="true"/>
 </navigation>

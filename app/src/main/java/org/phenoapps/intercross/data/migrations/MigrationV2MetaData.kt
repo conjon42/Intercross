@@ -64,7 +64,7 @@ class MigrationV2MetaData : Migration(1, 2) {
 
         execSQL("CREATE UNIQUE INDEX index_metadata_property ON metadata (property)")
 
-        execSQL("CREATE TABLE metaValues(eid INTEGER NOT NULL, metaId INTEGER NOT NULL, value INT NOT NULL, mvId INTEGER PRIMARY KEY AUTOINCREMENT)")
+        execSQL("CREATE TABLE metaValues(eid INTEGER NOT NULL, metaId INTEGER NOT NULL, value INT, mvId INTEGER PRIMARY KEY AUTOINCREMENT)")
 
         execSQL("CREATE UNIQUE INDEX index_metaValues_codeId_mId ON metaValues (eid, metaId)")
 
