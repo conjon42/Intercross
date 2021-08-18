@@ -81,7 +81,7 @@ data class Event(
     //TODO add metadata
     override fun toString(): String {
 
-        return "$eventDbId,$femaleObsUnitDbId,$maleObsUnitDbId,$timestamp,$person,$experiment,$type,"//${metaData.fruits},${metaData.flowers},${metaData.seeds}"
+        return "$eventDbId,$femaleObsUnitDbId,$maleObsUnitDbId,$timestamp,$person,$experiment,$type"
 
     }
 
@@ -90,7 +90,7 @@ data class Event(
 
         var group = groupName ?: maleObsUnitDbId
 
-        return "$eventDbId,$femaleObsUnitDbId,$maleObsUnitDbId::$group::$malesRepr,$timestamp,$person,$experiment,${CrossType.POLY},"//${metaData.fruits},${metaData.flowers},${metaData.seeds}"
+        return "$eventDbId,$femaleObsUnitDbId,$maleObsUnitDbId::$group::$malesRepr,$timestamp,$person,$experiment,${CrossType.POLY}"
 
     }
 }

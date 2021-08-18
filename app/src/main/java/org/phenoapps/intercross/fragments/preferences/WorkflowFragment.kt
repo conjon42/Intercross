@@ -6,14 +6,19 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.preference.*
+import kotlinx.coroutines.*
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.MetaValuesRepository
 import org.phenoapps.intercross.data.MetadataRepository
+import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Metadata
 import org.phenoapps.intercross.data.models.MetadataValues
+import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.MetaValuesViewModel
 import org.phenoapps.intercross.data.viewmodels.MetadataViewModel
+import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.MetaValuesViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.MetadataViewModelFactory
 import org.phenoapps.intercross.dialogs.MetadataCreatorDialog
@@ -21,9 +26,10 @@ import org.phenoapps.intercross.dialogs.MetadataDefaultEditorDialog
 import org.phenoapps.intercross.interfaces.MetadataManager
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.KeyUtil
+import org.phenoapps.intercross.util.observeOnce
 
 class WorkflowFragment : ToolbarPreferenceFragment(
-    R.xml.workflow_preferences, R.string.root_workflow), MetadataManager {
+    R.xml.workflow_preferences, R.string.root_workflow), MetadataManager, CoroutineScope by MainScope() {
 
     private val metaValuesViewModel: MetaValuesViewModel by viewModels {
         MetaValuesViewModelFactory(MetaValuesRepository
@@ -35,6 +41,11 @@ class WorkflowFragment : ToolbarPreferenceFragment(
             .getInstance(IntercrossDatabase.getInstance(requireContext()).metadataDao()))
     }
 
+    private val eventsModel: EventListViewModel by viewModels {
+        EventsListViewModelFactory(EventsRepository
+            .getInstance(IntercrossDatabase.getInstance(requireContext()).eventsDao()))
+    }
+
     private val mPref by lazy {
         PreferenceManager.getDefaultSharedPreferences(context)
     }
@@ -43,11 +54,16 @@ class WorkflowFragment : ToolbarPreferenceFragment(
         KeyUtil(context)
     }
 
+    private var mEvents: List<Event> = ArrayList()
     private lateinit var mMetaValuesList: List<MetadataValues>
     private lateinit var mMetadataList: List<Metadata>
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        eventsModel.events.observe(viewLifecycleOwner) {
+            mEvents = it
+        }
 
         metaValuesViewModel.metaValues.observe(viewLifecycleOwner) {
             it?.let {
@@ -185,25 +201,47 @@ class WorkflowFragment : ToolbarPreferenceFragment(
     //adds the new default value and property to the metadata string
     private fun createNewMetadata(value: Int, property: String) {
 
-       //insert a new row
-        metadataViewModel.insert(
-            Metadata(property, value)
-        )
+        launch {
+            withContext(Dispatchers.IO) {
+                //insert a new row
+                val mid = metadataViewModel.insert(
+                    Metadata(property, value)
+                )
+
+                mEvents.forEach {
+                    metaValuesViewModel.insert(
+                        MetadataValues(it.id?.toInt() ?: -1, mid.toInt(), value)
+                    )
+                }
+            }
+        }
     }
 
     //updates a property with a new default value
     private fun updateMetadataDefault(rowId: Long, value: Int, property: String) {
 
-        metadataViewModel.update(
-            Metadata(property, value, rowId)
-        )
+        launch {
+            withContext(Dispatchers.IO) {
+                metadataViewModel.update(
+                    Metadata(property, value, rowId)
+                )
+            }
+        }
     }
 
     //deletes the given property from the metdata string
     private fun deleteMetadata(property: String, rowid: Long) {
 
-        metadataViewModel.delete(
-            Metadata(property, id = rowid)
-        )
+        launch {
+            withContext(Dispatchers.IO) {
+                metadataViewModel.delete(
+                    Metadata(property, id = rowid)
+                )
+
+                mMetaValuesList.filter { it.metaId == rowid.toInt() }.forEach {
+                    metaValuesViewModel.delete(it)
+                }
+            }
+        }
     }
 }

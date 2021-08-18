@@ -1,5 +1,6 @@
 package org.phenoapps.intercross.fragments
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
@@ -106,40 +107,43 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
         maleRecycler.adapter = mMaleAdapter
         maleRecycler.layoutManager = LinearLayoutManager(ctx)
 
-        eventsModel.events.observe(viewLifecycleOwner, Observer { parents ->
+        eventsModel.events.observe(viewLifecycleOwner) { parents ->
 
             parents?.let {
 
                 mCrosses = it
 
             }
-        })
+        }
 
         //TODO Trevor: What happens when wishlist import includes different code ids with same name, similarly for cross events
 
-        viewModel.parents.observe(viewLifecycleOwner, Observer { parents ->
+        viewModel.parents.observe(viewLifecycleOwner, { parents ->
 
             val addedMales = ArrayList<BaseParent>()
 
-            groupList.groups.observe(viewLifecycleOwner, Observer { groups ->
+            groupList.groups.observe(viewLifecycleOwner, { groups ->
 
                 addedMales.clear()
 
                 addedMales.addAll(groups.distinctBy { it.codeId })
 
                 mMaleAdapter.submitList(addedMales+(parents
-                        .filter { p -> p.sex == 1 }
-                        .sortedBy { p -> p.name}))
+                    .filter { p -> p.sex == 1 }
+                    .distinctBy { p -> p.codeId }
+                    .sortedBy { p -> p.name}))
 
             })
 
             mMaleAdapter.submitList(addedMales+(parents
-                    .filter { p -> p.sex == 1 }
-                    .sortedBy { p -> p.name }))
+                .filter { p -> p.sex == 1 }
+                .distinctBy { p -> p.codeId }
+                .sortedBy { p -> p.name }))
 
             mFemaleAdapter.submitList(parents
-                    .filter { p -> p.sex == 0 }
-                    .sortedBy { p -> p.name })
+                .filter { p -> p.sex == 0 }
+                .distinctBy { p -> p.codeId }
+                .sortedBy { p -> p.name })
 
         })
 
@@ -345,6 +349,10 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
         inflater.inflate(R.menu.parents_toolbar, menu)
 
+        //Bug in Gradle system (?) for some reason this icon is transformed to black fill
+        //in drawable-anydpi-v21
+        menu.findItem(R.id.action_select_all).icon?.setTint(Color.WHITE)
+
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -356,7 +364,7 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
                 R.id.action_import -> {
 
-                    (activity as MainActivity).launchImport()
+                    (activity as? MainActivity)?.launchImport()
 
                 }
                 R.id.action_select_all -> {
@@ -397,6 +405,7 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
                         mMaleAdapter.notifyDataSetChanged()
                     }
                 }
+                else -> true
             }
         }
 

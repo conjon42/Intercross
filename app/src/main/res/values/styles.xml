@@ -86,6 +86,11 @@
         <item name="android:textSize">24sp</item>
     </style>
 
+    <style name="WishFactory"/>
+    <style name="WishFactory.Summary">
+        <item name="android:textSize">18sp</item>
+    </style>
+
     <style name="Dialog">
         <item name="android:windowNoTitle">false</item>
         <item name="android:windowIsFloating">true</item>

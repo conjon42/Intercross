@@ -1,13 +1,17 @@
 package org.phenoapps.intercross.activities
 
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.viewModels
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
@@ -16,16 +20,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.adapters.models.MetadataModel
 import org.phenoapps.intercross.data.*
+import org.phenoapps.intercross.data.dao.EventsDao
 import org.phenoapps.intercross.data.models.*
-import org.phenoapps.intercross.data.viewmodels.EventListViewModel
-import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
-import org.phenoapps.intercross.data.viewmodels.PollenGroupListViewModel
-import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
-import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.*
+import org.phenoapps.intercross.data.viewmodels.factory.*
 import org.phenoapps.intercross.databinding.ActivityMainBinding
 import org.phenoapps.intercross.fragments.CrossCountFragmentDirections
 import org.phenoapps.intercross.fragments.EventsFragmentDirections
@@ -59,149 +59,34 @@ class MainActivity : AppCompatActivity() {
         PollenGroupListViewModelFactory(PollenGroupRepository.getInstance(mDatabase.pollenGroupDao()))
     }
 
-    private val exportCrossesFile by lazy {
-
-        registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
-
-            uri?.let { nonNullUri ->
-
-                FileUtil(this).exportCrossesToFile(nonNullUri, mEvents, mParents, mGroups)
-
-            }
-        }
+    private val metaValuesViewModel: MetaValuesViewModel by viewModels {
+        MetaValuesViewModelFactory(MetaValuesRepository.getInstance(mDatabase.metaValuesDao()))
     }
+
+    private val metadataViewModel: MetadataViewModel by viewModels {
+        MetadataViewModelFactory(MetadataRepository.getInstance(mDatabase.metadataDao()))
+    }
+
+    private var exportCrossesFile: ActivityResultLauncher<String>? = null
 
     /**
      * User selects a new uri document with CreateDocument(), default name is intercross.db
      * which can be changed where this is launched.
      */
-    val exportDatabase by lazy {
-
-        registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
-
-            uri?.let { x ->
-
-                FileUtil(this).exportDatabase(x)
-
-            }
-        }
-    }
+    var exportDatabase: ActivityResultLauncher<String>? = null
 
     /**
      * Used in main activity to import a user-chosen database.
      * User selects a uri from a GetContent() call which is passed to FileUtil to copy streams.
      * Finally, the app is recreated to use the new database.
      */
-    val importDatabase by lazy {
-
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-
-            uri?.let { x ->
-
-                FileUtil(this).importDatabase(x)
-
-                finish()
-
-                startActivity(intent)
-            }
-        }
-    }
+    var importDatabase: ActivityResultLauncher<String>? = null
 
     /**
      * Ask the user to either drop table before import or append to the current table.
      *
      */
-    private val importedFileContent by lazy {
-
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-
-            //TODO documentation says uri can't be null, but it can...might want to check this for a bug
-            uri?.let {
-
-                val tables = FileUtil(this).parseInputFile(it)
-
-                CoroutineScope(Dispatchers.IO).launch {
-
-                    if (tables.size == 3) {
-
-                        if (tables[0].isNotEmpty()) {
-
-                            val crosses = tables[0].filterIsInstance(Event::class.java)
-
-                            val polycrosses = crosses.filter { it.type == CrossType.POLY }
-
-                            val nonPolys = crosses - polycrosses
-
-                            polycrosses.forEach { poly ->
-
-                                val maleGroup = poly.maleObsUnitDbId
-
-                                if (maleGroup.isNotBlank()
-                                        && "::" in maleGroup
-                                        && "{" in maleGroup
-                                        && "}" in maleGroup) {
-
-                                    val tokens = maleGroup.split("::")
-
-                                    val groupId = tokens[0]
-
-                                    val groupName = tokens[1]
-
-                                    var males = tokens[2]
-
-                                    males = males.replace("{", "").replace("}", "")
-
-                                    males.split(";").forEach {
-
-                                        val pid = parentsList.insertForId(Parent(it, 1))
-
-                                        groupList.insert(PollenGroup(groupId, groupName, pid))
-                                    }
-
-                                    eventsModel.insert(poly.apply {
-
-                                        maleObsUnitDbId = groupId
-
-                                    })
-                                }
-
-                            }
-
-                            nonPolys.forEach { cross ->
-
-                                parentsList.insert(Parent(cross.maleObsUnitDbId, 1), Parent(cross.femaleObsUnitDbId, 0))
-
-                            }
-
-                            eventsModel.insert(*nonPolys.toTypedArray())
-
-                        }
-
-                        if (tables[1].isNotEmpty()) {
-
-                            tables[1].filterIsInstance(Parent::class.java).forEach { parent ->
-
-                                //issue 39 introduced sex = 2, which means to import the line as both male and female parents.
-                                if (parent.sex == 2) {
-                                    with (parent) {
-                                        parentsList.insert(Parent(codeId, 0, name))
-                                        parentsList.insert(Parent(codeId, 1, name))
-                                    }
-                                } else parentsList.insert(parent)
-                            }
-                        }
-
-                        if (tables[2].isNotEmpty()) {
-
-                            wishModel.insert(*tables[2].filterIsInstance(Wishlist::class.java).toTypedArray())
-
-                        }
-                    }
-                }
-            }
-
-        }
-    }
+    private var importedFileContent: ActivityResultLauncher<String>? = null
 
     private var mEvents: List<Event> = ArrayList()
 
@@ -210,6 +95,10 @@ class MainActivity : AppCompatActivity() {
     private var mWishlist: List<Wishlist> = ArrayList()
 
     private var mParents: List<Parent> = ArrayList()
+
+    private var mMetadata: List<Metadata> = ArrayList()
+
+    private var mMetaValues: List<MetadataValues> = ArrayList()
 
     private lateinit var mDatabase: IntercrossDatabase
 
@@ -278,6 +167,8 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
 
+        setupLaunchers()
+
         setupDirs()
 
         mBinding = DataBindingUtil.setContentView(this@MainActivity,
@@ -303,6 +194,166 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private fun setupLaunchers() {
+
+        exportCrossesFile = registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
+
+            uri?.let { nonNullUri ->
+
+                FileUtil(this).exportCrossesToFile(nonNullUri, mEvents, mParents, mGroups, mMetadata, mMetaValues)
+
+            }
+        }
+
+        exportDatabase = registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
+
+            uri?.let { x ->
+
+                FileUtil(this).exportDatabase(x)
+
+            }
+        }
+
+        importDatabase = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+
+            uri?.let { x ->
+
+                FileUtil(this).importDatabase(x)
+
+                finish()
+
+                startActivity(intent)
+            }
+        }
+
+        setupImportFileLauncher()
+    }
+
+    private fun setupImportFileLauncher() {
+        importedFileContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+
+            //TODO documentation says uri can't be null, but it can...might want to check this for a bug
+            uri?.let {
+
+                val tables = FileUtil(this).parseInputFile(it)
+
+                CoroutineScope(Dispatchers.IO).launch {
+
+                    //keep track of eids inserted to match metadata values
+                    val eids = ArrayList<Long>()
+                    if (tables.size == 5) {
+
+                        if (tables[0].isNotEmpty()) {
+
+                            val crosses = tables[0].filterIsInstance(Event::class.java)
+
+                            val polycrosses = crosses.filter { it.type == CrossType.POLY }
+
+                            val nonPolys = crosses - polycrosses
+
+                            polycrosses.forEach { poly ->
+
+                                val maleGroup = poly.maleObsUnitDbId
+
+                                if (maleGroup.isNotBlank()
+                                    && "::" in maleGroup
+                                    && "{" in maleGroup
+                                    && "}" in maleGroup) {
+
+                                    val tokens = maleGroup.split("::")
+
+                                    val groupId = tokens[0]
+
+                                    val groupName = tokens[1]
+
+                                    var males = tokens[2]
+
+                                    males = males.replace("{", "").replace("}", "")
+
+                                    males.split(";").forEach {
+
+                                        val pid = parentsList.insertForId(Parent(it, 1))
+
+                                        groupList.insert(PollenGroup(groupId, groupName, pid))
+                                    }
+
+                                    eids.add(eventsModel.insert(poly.apply {
+
+                                        maleObsUnitDbId = groupId
+
+                                    }))
+                                }
+
+                            }
+
+                            nonPolys.forEach { cross ->
+
+                                parentsList.insert(Parent(cross.maleObsUnitDbId, 1), Parent(cross.femaleObsUnitDbId, 0))
+
+                            }
+
+                            nonPolys.toTypedArray().forEach { e ->
+                                eids.add(eventsModel.insert(e))
+                            }
+
+                        }
+
+                        if (tables[1].isNotEmpty()) {
+
+                            tables[1].filterIsInstance(Parent::class.java).forEach { parent ->
+
+                                //issue 39 introduced sex = 2, which means to import the line as both male and female parents.
+                                if (parent.sex == 2) {
+                                    with (parent) {
+                                        parentsList.insert(Parent(codeId, 0, name))
+                                        parentsList.insert(Parent(codeId, 1, name))
+                                    }
+                                } else parentsList.insert(parent)
+                            }
+                        }
+
+                        if (tables[2].isNotEmpty()) {
+
+                            wishModel.insert(*tables[2].filterIsInstance(Wishlist::class.java).toTypedArray())
+
+                        }
+
+                        if (tables[3].isNotEmpty() //import metadata and values
+                            && tables[4].isNotEmpty()) {
+
+                            //get unique metadata to insert
+                            val metadata = tables[3].filterIsInstance(Metadata::class.java)
+                                .distinctBy { m -> m.property}
+                            metadata.forEachIndexed { index, m ->
+                                metadataViewModel.insert(m)
+                            }
+
+                            val values = tables[4].filterIsInstance(MetadataValues::class.java)
+
+                            var next = 0
+                            var nextEid = 0
+                            values.forEachIndexed { index, value ->
+
+                                val eid = eids[nextEid].toInt() //get the relevant event id
+                                val property = metadata[next++].property
+                                if (next == metadata.size) {
+                                    nextEid++
+                                    next = 0
+                                }
+
+                                val mid = metadataViewModel.getId(property)
+
+                                //get the inserted
+                                metaValuesViewModel.insert(
+                                    MetadataValues(eid, mid, value.value))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private fun startObservers() {
 
         eventsModel.events.observe(this, {
@@ -326,7 +377,7 @@ class MainActivity : AppCompatActivity() {
 
             it?.let {
 
-                mWishlist = it
+                mWishlist = it.filter { it.wishType == "cross" }
 
             }
         })
@@ -340,6 +391,15 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+        metadataViewModel.metadata.observe(this) {
+
+            mMetadata = it
+        }
+
+        metaValuesViewModel.metaValues.observe(this) {
+
+            mMetaValues = it
+        }
     }
 
     private fun showExportDialog() {
@@ -352,9 +412,9 @@ class MainActivity : AppCompatActivity() {
 
                 when (which) {
 
-                    0 -> exportCrossesFile.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
+                    0 -> exportCrossesFile?.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
 
-                    1 -> exportDatabase.launch("intercross.zip")
+                    1 -> exportDatabase?.launch("intercross.zip")
 
                 }
 
@@ -374,7 +434,7 @@ class MainActivity : AppCompatActivity() {
             .setSingleChoiceItems(arrayOf("Local", "BrAPI"), 0) { dialog, which ->
                 when (which) {
                     //import file from local directory
-                    0 -> importedFileContent.launch("*/*")
+                    0 -> importedFileContent?.launch("*/*")
 
                     //start brapi import fragment
                     1 -> mNavController.navigate(CrossCountFragmentDirections.globalActionToWishlistImport())
@@ -393,10 +453,10 @@ class MainActivity : AppCompatActivity() {
                 when (which) {
                     0 -> {
                         val defaultFileNamePrefix = getString(R.string.default_crosses_export_file_name)
-                        exportCrossesFile.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
+                        exportCrossesFile?.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
                     }
                     else -> {
-                        mNavController.navigate(EventsFragmentDirections.actionToBrapiExport())
+                        mNavController.navigate(R.id.global_action_to_brapi_export)
                     }
                 }
 

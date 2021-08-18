@@ -16,12 +16,12 @@ import androidx.annotation.WorkerThread
 import androidx.appcompat.app.AlertDialog
 import androidx.core.net.toUri
 import androidx.preference.PreferenceManager
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
-import com.google.gson.JsonPrimitive
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.adapters.models.MetadataModel
 import org.phenoapps.intercross.data.IntercrossDatabase
+import org.phenoapps.intercross.data.dao.EventsDao
 import org.phenoapps.intercross.data.models.*
+import org.phenoapps.intercross.data.models.Metadata
 import java.io.*
 import java.util.*
 import java.util.zip.ZipEntry
@@ -114,6 +114,10 @@ class FileUtil(private val ctx: Context) {
      */
     fun parseInputFile(uri: Uri): Array<List<BaseTable>> {
 
+        val metadata = ArrayList<Metadata>()
+
+        val metaValues = ArrayList<MetadataValues>()
+
         val wishlist = ArrayList<Wishlist>()
 
         val parents = ArrayList<Parent>()
@@ -149,7 +153,7 @@ class FileUtil(private val ctx: Context) {
 
                         if (diffHeaders.isEmpty()) {
 
-                            loadCrosses(headers, lines-lines[0], crosses)
+                            loadCrosses(headers, lines-lines[0], crosses, metadata, metaValues)
 
                         }
                     }
@@ -179,7 +183,7 @@ class FileUtil(private val ctx: Context) {
 
         }
 
-        return arrayOf(crosses, parents, wishlist)
+        return arrayOf(crosses, parents, wishlist, metadata, metaValues)
     }
 
 
@@ -257,7 +261,9 @@ class FileUtil(private val ctx: Context) {
 
     private fun loadCrosses(headers: List<String>,
                             lines: List<String>,
-                            crosses: ArrayList<Event>) {
+                            crosses: ArrayList<Event>,
+                            metadata: ArrayList<Metadata>,
+                            metaValues: ArrayList<MetadataValues>) {
 
         //the headers must include at least the code id header
         if (!headers.find { it == crossIdHeader }.isNullOrBlank()) {
@@ -287,30 +293,28 @@ class FileUtil(private val ctx: Context) {
                                         headerToIndex[crossTypeHeader]?.let { typeKey ->
 
                                             crosses.add(
-                                                    Event(
-                                                            row[crossIdKey],
-                                                            row[momKey],
-                                                            row[dadKey],
-                                                            timestamp = row[time],
-                                                            person = row[personKey],
-                                                            experiment = row[expKey],
-                                                            type = when (row[typeKey]) {
-                                                                "BIPARENTAL" -> CrossType.BIPARENTAL
-                                                                "OPEN" -> CrossType.OPEN
-                                                                "POLY" -> CrossType.POLY
-                                                                "SELF" -> CrossType.SELF
-                                                                else -> CrossType.UNKNOWN
-                                                            },
-                                                            //only metadata values (not default values) are persisted across import/exports
-//                                                            metadata = JsonObject().apply {
-//                                                                for (i in crossHeaders.size until crossHeaders.size+metadataFields) {
-//                                                                    this.add(headers[i], JsonArray(2).apply {
-//                                                                        add(JsonPrimitive(row[i]))
-//                                                                        add(JsonPrimitive(0))
-//                                                                    })
-//                                                                }
-//                                                            }.toString()
-                                                    ))
+                                                Event(
+                                                    row[crossIdKey],
+                                                    row[momKey],
+                                                    row[dadKey],
+                                                    timestamp = row[time],
+                                                    person = row[personKey],
+                                                    experiment = row[expKey],
+                                                    type = when (row[typeKey]) {
+                                                        "BIPARENTAL" -> CrossType.BIPARENTAL
+                                                        "OPEN" -> CrossType.OPEN
+                                                        "POLY" -> CrossType.POLY
+                                                        "SELF" -> CrossType.SELF
+                                                        else -> CrossType.UNKNOWN
+                                                    }
+                                                )
+                                            )
+                                            //only metadata values (not default values) are persisted across import/exports
+                                            //must add fake eid and metaId until we insert the actual data into Room
+                                            for (i in crossHeaders.size until crossHeaders.size+metadataFields) {
+                                                metadata.add(Metadata(headers[i]))
+                                                metaValues.add(MetadataValues(-1, -1, row[i].toIntOrNull() ?: 0))
+                                            }
                                         }
                                     }
                                 }
@@ -331,6 +335,7 @@ class FileUtil(private val ctx: Context) {
     }
 
     //TODO Low-priority: switch to yield/iterator
+    //TODO maybe add wish types to metadata fields automatically?
     private fun loadWishlist(headers: List<String>,
                              lines: List<String>,
                              wishlist: ArrayList<Wishlist>,
@@ -458,7 +463,8 @@ class FileUtil(private val ctx: Context) {
         }
     }
 
-    fun exportCrossesToFile(uri: Uri, crosses: List<Event>, parents: List<Parent>, groups: List<PollenGroup>) {
+    fun exportCrossesToFile(uri: Uri, crosses: List<Event>, parents: List<Parent>, groups: List<PollenGroup>,
+                            metadata: List<Metadata>, metaValues: List<MetadataValues>) {
 
         val newLine: ByteArray = System.getProperty("line.separator")?.toByteArray() ?: "\n".toByteArray()
 
@@ -470,15 +476,32 @@ class FileUtil(private val ctx: Context) {
 
                     this?.let {
 
-                        val first = crosses.first()
+                        val properties = if (metadata.isNotEmpty()) metadata.joinToString(",", ",") { it.property }
+                                         else ""
+                        val propMap = metadata.map { it.id to it.property }
 
                         //add metadata properties as headers to the export file
-                        //write((eventModelHeaderString + first.getMetadataHeaders()).toByteArray())
+                        write((eventModelHeaderString + properties).toByteArray())
 
                         write(newLine)
 
                         crosses.forEachIndexed { index, cross ->
 
+                            //print either the actual saved values for each property or its default value
+                            val values = ArrayList<String>()
+                            for (keyVal in propMap) {
+                                val actuals = metaValues.filter { it.eid == cross.id?.toInt()
+                                        && keyVal.first?.toInt() == it.metaId }
+                                if (actuals.isNotEmpty()) {
+                                    values.add(actuals.first().value.toString())
+                                } else values.add(metadata
+                                    .find { it.property == keyVal.second }?.defaultValue?.toString() ?: "0")
+                            }
+
+                            val valueString = if (values.isNotEmpty()) values.joinToString(",", ",") { it }
+                                              else ""
+
+                            //val values = metaValues.filter { it.eid == cross.id?.toInt() }
                             if (groups.any { g -> g.codeId == cross.maleObsUnitDbId }) {
 
                                 var groupName = groups.find { g -> g.codeId == cross.maleObsUnitDbId }?.name
@@ -490,13 +513,13 @@ class FileUtil(private val ctx: Context) {
                                         }
                                     }.joinToString(";", "{", "}")
 
-                                write(cross.toPollenGroupString(males, groupName).toByteArray())
+                                write((cross.toPollenGroupString(males, groupName) + valueString).toByteArray())
 
                                 write(newLine)
 
                             } else {
 
-                                write(cross.toString().toByteArray())
+                                write((cross.toString() + valueString).toByteArray())
 
                                 write(newLine)
 
@@ -867,11 +890,28 @@ class FileUtil(private val ctx: Context) {
 
     fun readText(context: Context, uri: Uri?): CharSequence {
 
-        uri?.let {
+        try {
 
-            val lines = File(getFilePath(context, uri)).readLines()
+            uri?.let {
 
-            return lines.joinToString("\n")
+                getFilePath(context, uri)?.let { path ->
+
+                    val lines = File(path).readLines()
+
+                    return lines.joinToString("\n")
+
+                }
+
+            }
+
+        } catch (e: IOException) {
+
+            e.printStackTrace()
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
         }
 
         return String()

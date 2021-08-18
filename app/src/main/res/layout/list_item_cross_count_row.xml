@@ -24,11 +24,12 @@
         android:onClick="@{onClick}">
 
         <TextView
+            android:layout_marginEnd="16dp"
+            android:layout_marginStart="16dp"
             android:id="@+id/maleId"
             style="@style/CellText.ParentCellText"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_marginStart="8dp"
             android:text="@{maleParent}"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
@@ -39,6 +40,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView style="@style/CellText.ParentCellText"
+            android:layout_marginEnd="16dp"
             android:id="@+id/femaleId"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -52,6 +54,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView style="@style/NumericCellText.ParentCellText"
+            android:layout_marginEnd="16dp"
             android:id="@+id/numCrosses"
             android:layout_width="0dp"
             android:layout_height="match_parent"

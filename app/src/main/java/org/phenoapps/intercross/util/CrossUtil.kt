@@ -1,22 +1,15 @@
 package org.phenoapps.intercross.util
 
 import android.content.Context
-import android.view.View
 import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
 import androidx.navigation.NavDirections
 import androidx.preference.PreferenceManager
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.google.gson.JsonParser
-import com.google.gson.JsonSyntaxException
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.data.models.Event
-import org.phenoapps.intercross.data.models.Parent
-import org.phenoapps.intercross.data.models.Settings
-import org.phenoapps.intercross.data.models.WishlistView
-import org.phenoapps.intercross.data.viewmodels.EventListViewModel
-import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
-import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
+import org.phenoapps.intercross.data.models.*
+import org.phenoapps.intercross.data.viewmodels.*
 import java.util.*
 
 class CrossUtil(val context: Context) {
@@ -29,7 +22,7 @@ class CrossUtil(val context: Context) {
         KeyUtil(context)
     }
 
-    fun submitCrossEvent(root: View,
+    fun submitCrossEvent(activity: FragmentActivity?,
                          female: String,
                          male: String,
                          crossName: String,
@@ -38,7 +31,9 @@ class CrossUtil(val context: Context) {
                          eventsModel: EventListViewModel,
                          parents: List<Parent>,
                          parentModel: ParentsListViewModel,
-                         wishlistProgress: List<WishlistView>): Long {
+                         wishlistProgress: List<WishlistView>,
+                         metadataList: List<Metadata>,
+                         metaValueModel: MetaValuesViewModel): Long {
 
         var name = crossName
 
@@ -108,8 +103,17 @@ class CrossUtil(val context: Context) {
         //if (Looper.myLooper() == null) Looper.prepare()
         //SnackbarQueue().push(SnackbarQueue.SnackJob(root, "$name $wasCreated"))
 
-        if (isCommutative) checkCommutativeWishlist(female, male, wishlistProgress)
-        else checkWishlist(female, male, wishlistProgress)
+        //insert default metadata values
+        metadataList.forEach {
+            metaValueModel.insert(
+                MetadataValues(eid.toInt(), it.id?.toInt() ?: -1, it.defaultValue)
+            )
+        }
+
+        activity?.runOnUiThread {
+            if (isCommutative) checkCommutativeWishlist(female, male, wishlistProgress)
+            else checkWishlist(female, male, wishlistProgress)
+        }
 
         return eid
     }
@@ -123,7 +127,7 @@ class CrossUtil(val context: Context) {
 
                 FileUtil(context).ringNotification(true)
 
-                if (item.wishProgress >= item.wishMax && item.wishMax != 0) {
+                if (item.wishProgress + 1 >= item.wishMax && item.wishMax != 0) {
 
                     Dialogs.notify(AlertDialog.Builder(context), context.getString(R.string.wish_max_complete))
 
@@ -144,7 +148,7 @@ class CrossUtil(val context: Context) {
 
                 FileUtil(context).ringNotification(true)
 
-                if (item.wishProgress >= item.wishMax && item.wishMax != 0) {
+                if (item.wishProgress + 1 >= item.wishMax && item.wishMax != 0) {
 
                     Dialogs.notify(AlertDialog.Builder(context), context.getString(R.string.wish_max_complete))
 
@@ -162,7 +166,7 @@ class CrossUtil(val context: Context) {
      */
     fun checkPrefToOpenCrossEvent(controller: NavController, direction: NavDirections) {
 
-        val openCross = mPref.getBoolean(mKeyUtil.workOpenCrossKey, false) ?: false
+        val openCross = mPref.getBoolean(mKeyUtil.workOpenCrossKey, false)
 
         if (openCross) {
             controller.navigate(

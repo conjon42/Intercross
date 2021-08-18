@@ -16,7 +16,7 @@
         <Preference
             android:icon="@drawable/ic_update_black_24dp"
             android:key="@string/key_pref_work_meta_defaults"
-            android:title="Metadata Defaults"/>
+            android:title="Metadata Manager"/>
         <SwitchPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_setting_sound"

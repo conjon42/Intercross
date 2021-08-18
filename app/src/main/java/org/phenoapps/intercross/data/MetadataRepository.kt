@@ -8,6 +8,10 @@ class MetadataRepository
 
     fun selectAll() = dao.selectAll()
 
+    fun getId(property: String) = dao.getId(property)
+
+    fun insert(data: Metadata): Long = dao.insert(data)
+
     companion object {
         @Volatile private var instance: MetadataRepository? = null
 

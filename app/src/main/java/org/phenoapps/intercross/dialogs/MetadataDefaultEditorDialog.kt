@@ -23,7 +23,7 @@ class MetadataDefaultEditorDialog(private val ctx: Context,
 
         setCanceledOnTouchOutside(true)
 
-        setTitle(R.string.dialog_metadata_updater_title)
+        setTitle(R.string.dialog_metadata_manager_title)
 
         setupUi()
 
