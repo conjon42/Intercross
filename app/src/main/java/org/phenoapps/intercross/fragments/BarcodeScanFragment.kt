@@ -20,7 +20,7 @@ import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.data.models.Event
-import org.phenoapps.intercross.data.models.Metadata
+import org.phenoapps.intercross.data.models.Meta
 import org.phenoapps.intercross.data.models.Parent
 import org.phenoapps.intercross.data.models.Settings
 import org.phenoapps.intercross.data.models.WishlistView
@@ -83,7 +83,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
     private var mParents = ArrayList<Parent>()
 
-    private var mMetadata = ArrayList<Metadata>()
+    private var mMetadata = ArrayList<Meta>()
 
     private var lastText: String? = null
 
@@ -369,6 +369,8 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
         super.onResume()
 
         mBarcodeScanner.resume()
+
+        (activity as MainActivity).supportActionBar?.show()
     }
 
     override fun onPause() {

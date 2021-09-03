@@ -27,7 +27,7 @@ import org.phenoapps.intercross.adapters.EventsAdapter
 import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
-import org.phenoapps.intercross.data.models.Metadata
+import org.phenoapps.intercross.data.models.Meta
 import org.phenoapps.intercross.data.models.Settings
 import org.phenoapps.intercross.data.models.WishlistView
 import org.phenoapps.intercross.data.viewmodels.*
@@ -70,7 +70,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private var mEvents: List<Event> = ArrayList()
 
-    private var mMetadata: List<Metadata> = ArrayList()
+    private var mMetadata: List<Meta> = ArrayList()
 
     private var mEventsEmpty = true
 
@@ -124,7 +124,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                 withContext(Dispatchers.IO) {
                     for (property in arrayOf("fruits", "flowers", "seeds")) {
                         metadataViewModel.insert(
-                            Metadata(property, 0)
+                            Meta(property, 0)
                         )
                     }
                 }
@@ -379,7 +379,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                 }
                 R.id.action_nav_export -> {
 
-                    (activity as MainActivity).showImportOrExportDialog {
+                    (activity as MainActivity).showExportDialog {
 
                         bottomNavBar.selectedItemId = R.id.action_nav_home
 

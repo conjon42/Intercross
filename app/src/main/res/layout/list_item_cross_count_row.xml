@@ -19,6 +19,7 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/list_item_cross_count_countainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="@{onClick}">
@@ -26,36 +27,36 @@
         <TextView
             android:layout_marginEnd="16dp"
             android:layout_marginStart="16dp"
-            android:id="@+id/maleId"
-            style="@style/CellText.ParentCellText"
+            android:id="@+id/list_item_cross_count_male_id"
+            style="@style/CellText"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:text="@{maleParent}"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/femaleId"
+            app:layout_constraintEnd_toStartOf="@id/list_item_cross_count_female_id"
             app:layout_constraintHorizontal_weight="2"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView style="@style/CellText.ParentCellText"
+        <TextView style="@style/CellText"
             android:layout_marginEnd="16dp"
-            android:id="@+id/femaleId"
+            android:id="@+id/list_item_cross_count_female_id"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:text="@{femaleParent}"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/numCrosses"
+            app:layout_constraintEnd_toStartOf="@id/list_item_cross_count_count"
             app:layout_constraintHorizontal_weight="2"
-            app:layout_constraintStart_toEndOf="@id/maleId"
+            app:layout_constraintStart_toEndOf="@id/list_item_cross_count_male_id"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView style="@style/NumericCellText.ParentCellText"
             android:layout_marginEnd="16dp"
-            android:id="@+id/numCrosses"
+            android:id="@+id/list_item_cross_count_count"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:text="@{count}"
@@ -64,7 +65,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_weight="1"
-            app:layout_constraintStart_toEndOf="@id/femaleId"
+            app:layout_constraintStart_toEndOf="@id/list_item_cross_count_female_id"
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

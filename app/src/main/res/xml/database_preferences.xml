@@ -3,7 +3,7 @@
     android:key="@string/root_database"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto" >
-    <PreferenceCategory android:title="Database" app:iconSpaceReserved="false">
+    <PreferenceCategory app:iconSpaceReserved="false">
         <Preference
             android:icon="@drawable/ic_nv_import"
             android:key="@string/key_pref_db_import"

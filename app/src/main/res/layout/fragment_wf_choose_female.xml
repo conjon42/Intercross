@@ -39,6 +39,22 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
+
+        <ImageButton
+            android:id="@+id/wf_choose_female_barcode_scan_btn"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_margin="16dp"
+            android:background="@drawable/capture_button_background"
+            android:contentDescription="@string/button_to_scan_next_text"
+            android:cropToPadding="false"
+            android:elevation="5dp"
+            android:scaleType="fitCenter"
+            android:tint="#ffffff"
+            app:layout_constraintBottom_toTopOf="@id/wf_female_next_bt"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:srcCompat="@drawable/ic_barcode_scan" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>

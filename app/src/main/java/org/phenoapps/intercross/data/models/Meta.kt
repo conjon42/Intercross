@@ -13,13 +13,13 @@ import androidx.room.PrimaryKey
 @Keep
 @Entity(tableName = "metadata",
         indices = [Index(value = ["property"], unique = true)])
-data class Metadata(
+data class Meta(
 
         @ColumnInfo(name = "property")
         var property: String,
 
         @ColumnInfo(name = "defaultValue")
-        var defaultValue: Int = 0,
+        var defaultValue: Int? = null,
 
         @ColumnInfo(name = "mid")
         @PrimaryKey(autoGenerate = true)

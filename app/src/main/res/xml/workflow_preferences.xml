@@ -3,7 +3,7 @@
     android:key="@string/root_workflow"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto" >
-    <PreferenceCategory android:title="Workflow" app:iconSpaceReserved="false">
+    <PreferenceCategory app:iconSpaceReserved="false">
         <SwitchPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_setting_additional_info"

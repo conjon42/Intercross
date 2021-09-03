@@ -8,6 +8,10 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.fragments.preferences.ToolbarPreferenceFragment
 import org.phenoapps.intercross.util.KeyUtil
 
+import androidx.appcompat.app.AppCompatActivity
+
+import com.bytehamster.lib.preferencesearch.SearchPreference
+
 /**
  * Root preferences fragment that populates the setting categories.
  * Each category can be clicked to navigate to their corresponding fragment.
@@ -29,6 +33,18 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.r
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val searchPreference = findPreference(mKeyUtil.searchPrefKey) as SearchPreference?
+
+        //add all xml files to the search preference index
+        with(searchPreference?.searchConfiguration) {
+            this?.setActivity(activity as AppCompatActivity)
+            arrayOf(R.xml.about_preferences, R.xml.database_preferences, R.xml.naming_preferences,
+                R.xml.preferences, R.xml.printing_preferences, R.xml.profile_preferences,
+                R.xml.workflow_preferences).forEach {
+                    this?.index(it)
+            }
+        }
 
         with(findPreference<PreferenceScreen>(getString(R.string.root_profile))) {
             this?.let { it ->

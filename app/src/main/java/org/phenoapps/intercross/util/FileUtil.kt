@@ -21,7 +21,7 @@ import org.phenoapps.intercross.adapters.models.MetadataModel
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.dao.EventsDao
 import org.phenoapps.intercross.data.models.*
-import org.phenoapps.intercross.data.models.Metadata
+import org.phenoapps.intercross.data.models.Meta
 import java.io.*
 import java.util.*
 import java.util.zip.ZipEntry
@@ -114,7 +114,7 @@ class FileUtil(private val ctx: Context) {
      */
     fun parseInputFile(uri: Uri): Array<List<BaseTable>> {
 
-        val metadata = ArrayList<Metadata>()
+        val metadata = ArrayList<Meta>()
 
         val metaValues = ArrayList<MetadataValues>()
 
@@ -262,7 +262,7 @@ class FileUtil(private val ctx: Context) {
     private fun loadCrosses(headers: List<String>,
                             lines: List<String>,
                             crosses: ArrayList<Event>,
-                            metadata: ArrayList<Metadata>,
+                            metadata: ArrayList<Meta>,
                             metaValues: ArrayList<MetadataValues>) {
 
         //the headers must include at least the code id header
@@ -312,7 +312,7 @@ class FileUtil(private val ctx: Context) {
                                             //only metadata values (not default values) are persisted across import/exports
                                             //must add fake eid and metaId until we insert the actual data into Room
                                             for (i in crossHeaders.size until crossHeaders.size+metadataFields) {
-                                                metadata.add(Metadata(headers[i]))
+                                                metadata.add(Meta(headers[i]))
                                                 metaValues.add(MetadataValues(-1, -1, row[i].toIntOrNull() ?: 0))
                                             }
                                         }
@@ -464,7 +464,7 @@ class FileUtil(private val ctx: Context) {
     }
 
     fun exportCrossesToFile(uri: Uri, crosses: List<Event>, parents: List<Parent>, groups: List<PollenGroup>,
-                            metadata: List<Metadata>, metaValues: List<MetadataValues>) {
+                            metadata: List<Meta>, metaValues: List<MetadataValues>) {
 
         val newLine: ByteArray = System.getProperty("line.separator")?.toByteArray() ?: "\n".toByteArray()
 

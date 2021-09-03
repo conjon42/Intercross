@@ -32,7 +32,7 @@ class CrossUtil(val context: Context) {
                          parents: List<Parent>,
                          parentModel: ParentsListViewModel,
                          wishlistProgress: List<WishlistView>,
-                         metadataList: List<Metadata>,
+                         metaList: List<Meta>,
                          metaValueModel: MetaValuesViewModel): Long {
 
         var name = crossName
@@ -104,7 +104,7 @@ class CrossUtil(val context: Context) {
         //SnackbarQueue().push(SnackbarQueue.SnackJob(root, "$name $wasCreated"))
 
         //insert default metadata values
-        metadataList.forEach {
+        metaList.forEach {
             metaValueModel.insert(
                 MetadataValues(eid.toInt(), it.id?.toInt() ?: -1, it.defaultValue)
             )

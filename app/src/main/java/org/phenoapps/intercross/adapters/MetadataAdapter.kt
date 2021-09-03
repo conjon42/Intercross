@@ -1,7 +1,10 @@
 package org.phenoapps.intercross.adapters
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.widget.addTextChangedListener
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -11,8 +14,11 @@ import org.phenoapps.intercross.adapters.models.MetadataModel
 import org.phenoapps.intercross.databinding.ListItemMetadataBinding
 import org.phenoapps.intercross.interfaces.MetadataManager
 
-class MetadataAdapter(val listener: MetadataManager) :
+
+class MetadataAdapter(val imm: InputMethodManager?, val listener: MetadataManager) :
     ListAdapter<MetadataModel, RecyclerView.ViewHolder>(MetadataModel.Companion.DiffCallback()) {
+
+    private var mFirstLoad = true
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
 
@@ -40,6 +46,12 @@ class MetadataAdapter(val listener: MetadataManager) :
             with(binding) {
 
                 listItemMetadataEditText.setText(meta.value)
+
+                if (mFirstLoad) {
+                    listItemMetadataEditText.requestFocus()
+                    imm?.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
+                    mFirstLoad = false
+                }
 
                 listItemMetadataEditText.hint = meta.property
 

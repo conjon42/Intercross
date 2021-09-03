@@ -11,7 +11,6 @@ import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.PercentFormatter
-import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
 import com.google.android.material.tabs.TabLayout
 import org.phenoapps.intercross.R
@@ -86,8 +85,6 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
 
         setHasOptionsMenu(false)
 
-        //(activity as MainActivity).supportActionBar?.hide()
-
         //initialize pie chart parameters, this is mostly taken from the github examples
         setupPieChart()
         setupBarChart()
@@ -123,7 +120,7 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
     override fun onResume() {
         super.onResume()
 
-        //(activity as MainActivity).supportActionBar?.hide()
+        (activity as MainActivity).supportActionBar?.show()
 
         mBinding.summaryTabLayout.getTabAt(3)?.select()
 
@@ -139,8 +136,8 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
 
         summaryTabLayout.addOnTabSelectedListener(tabSelected { tab ->
 
-            when (tab?.text) {
-                getString(R.string.crossblock) -> {
+            when (tab?.position) {
+                2 -> {
 
                     if (::mWishlist.isInitialized && mWishlist.isNotEmpty()) {
 
@@ -154,10 +151,10 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
                     }
                 }
 
-                getString(R.string.cross_count) ->
+                0 ->
                     Navigation.findNavController(mBinding.root)
                         .navigate(SummaryFragmentDirections.actionToCrossCount())
-                getString(R.string.wishlist) ->
+                1 ->
                     Navigation.findNavController(mBinding.root)
                         .navigate(SummaryFragmentDirections.actionToWishlist())
             }
@@ -188,7 +185,7 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
                 }
                 R.id.action_nav_export -> {
 
-                    (activity as MainActivity).showImportOrExportDialog {
+                    (activity as MainActivity).showExportDialog {
 
                         findNavController().navigate(R.id.summary_fragment)
                     }
@@ -293,7 +290,7 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
 
         dataSummaryBarChart.setDrawBarShadow(false)
 
-        dataSummaryBarChart.setDrawValueAboveBar(true)
+        //dataSummaryBarChart.setDrawValueAboveBar(true)
 
         dataSummaryBarChart.description.isEnabled = false
 
@@ -359,7 +356,7 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
      * For example Event eid=1 metadata={fruits=[1,2], seeds=[9,7]} would return
      * [fruits to 1, seeds to 9]
      */
-    private fun toEntrySet(): List<Pair<String, Int>> {
+    private fun toEntrySet(): List<Pair<String, Int?>> {
 
         return if (::mMetadata.isInitialized) {
             mMetadata.map {
@@ -374,7 +371,7 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
 
             toEntrySet() // [(seeds, 1), (flowers, 1), (seeds, 2), ....]
                 .groupBy { it.first }   //[(seeds, [1, 2]), (flowers, [1]), ...]
-                .map { it.key to it.value.sumBy { values -> values.second } } //[(seeds, 3), (flowers, 1), ...]
+                .map { it.key to it.value.sumBy { values -> values.second ?: 0 } } //[(seeds, 3), (flowers, 1), ...]
                 .mapIndexed { index, pair -> BarEntry(
                     index.toFloat(),
                     pair.second.toFloat(),
@@ -435,7 +432,7 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
 
         val data = BarData(dataset)
 
-        data.setValueTextColor(Color.BLACK)
+        data.setValueTextColor(Color.TRANSPARENT)
 
         val labels = arrayListOf<String>()
         for (i in 0 until dataset.entryCount) {
@@ -444,7 +441,7 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
                 label.subSequence(0, MAX_LABEL_LENGTH).toString() else label)
         }
 
-        dataSummaryBarChart.setDrawValueAboveBar(true)
+        //dataSummaryBarChart.setDrawValueAboveBar(true)
 
         dataSummaryBarChart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
 

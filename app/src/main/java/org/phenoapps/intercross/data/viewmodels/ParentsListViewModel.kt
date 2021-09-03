@@ -13,6 +13,14 @@ class ParentsListViewModel(private val repo: ParentsRepository): BaseViewModel<P
 
     val females = repo.selectAll(0)
 
+    fun deselectAll() {
+
+        viewModelScope.launch {
+
+            repo.deselectAll()
+        }
+    }
+
     fun updateName(vararg parents: Parent) {
 
         viewModelScope.launch {

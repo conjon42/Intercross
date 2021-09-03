@@ -3,6 +3,13 @@
     <!ENTITY package "org.phenoapps.intercross.">
     ]>
 <resources>
+
+    <!-- Non-preference keys -->
+    <string name="key_brapi_has_been_imported">&package;BRAPI_HAS_BEEN_IMPORTED</string>
+
+    <!-- Preferences search key -->
+    <string name="key_pref_search">&package;PREF_SEARCH</string>
+
     <!-- Preference Root Screen Keys -->
     <string name="root_preferences">&package;ROOT_PREFERENCES</string>
     <string name="root_profile">&package;PROFILE_SCREEN</string>

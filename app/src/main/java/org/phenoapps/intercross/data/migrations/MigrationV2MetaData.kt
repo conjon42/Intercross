@@ -60,7 +60,7 @@ class MigrationV2MetaData : Migration(1, 2) {
     //second transaction for inserting old static columns into encoded json column
     private fun SupportSQLiteDatabase.migrateStaticToTables() {
 
-        execSQL("CREATE TABLE metadata(property TEXT NOT NULL, defaultValue INT NOT NULL, mid INTEGER PRIMARY KEY AUTOINCREMENT)")
+        execSQL("CREATE TABLE metadata(property TEXT NOT NULL, defaultValue INT, mid INTEGER PRIMARY KEY AUTOINCREMENT)")
 
         execSQL("CREATE UNIQUE INDEX index_metadata_property ON metadata (property)")
 

@@ -1,20 +1,20 @@
 package org.phenoapps.intercross.fragments
 
-import android.os.Build
+import android.graphics.Color
 import android.os.Bundle
 import android.view.*
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
-import androidx.core.view.GestureDetectorCompat
 import androidx.fragment.app.viewModels
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
+import com.evrencoskun.tableview.listener.ITableViewListener
 import com.google.android.material.tabs.TabLayout
+import kotlinx.android.synthetic.main.fragment_barcode_scan.*
 import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.adapters.HeaderAdapter
+import org.phenoapps.intercross.adapters.CrossBlockTableViewAdapter
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.models.Event
@@ -24,13 +24,12 @@ import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.CrossBlockManagerBinding
-import org.phenoapps.intercross.util.AsyncLoadCrossblock
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.KeyUtil
 
 
 class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.layout.cross_block_manager),
-    GestureDetector.OnGestureListener {
+    ITableViewListener {
 
     private val eventsModel: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
@@ -40,21 +39,10 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
         WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
     }
 
-    /***
-     * Polymorphism class structure to serve different cell types to the Cross Block Table.
-     */
-    open class BlockData
-    data class HeaderData(val name: String, val code: String) : BlockData()
-    data class CellData(val current: Int, val min: Int, val max: Int, val onClick: View.OnClickListener, val color: Int): BlockData()
-    class EmptyCell: BlockData()
-
-    private lateinit var mGesture: GestureDetectorCompat
-
-    private lateinit var mParentAdapter: HeaderAdapter
-
-    private lateinit var mRowAdapter: HeaderAdapter
-
-    private lateinit var mColumnAdapter: HeaderAdapter
+    //cell data contains a text field for headers
+    //fid/mid for clicking on the cell so we can query the wishlistview row
+    //and progressColor that colors the cell depending on progress (defined in legend)
+    data class CellData(val text: String = "", val fid: String = "", val mid: String = "", val progressColor: Int = Color.GRAY)
 
     private lateinit var mWishlist: List<WishlistView>
 
@@ -68,12 +56,9 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
         KeyUtil(context)
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     override fun CrossBlockManagerBinding.afterCreateView() {
 
         setHasOptionsMenu(true)
-
-        //(activity as MainActivity).supportActionBar?.hide()
 
         bottomNavBar.selectedItemId = R.id.action_nav_cross_count
 
@@ -82,87 +67,6 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
         mPref.edit().putString("last_visited_summary", "crossblock").apply()
 
         val isCommutative = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
-
-        mGesture = GestureDetectorCompat(requireContext(), this@CrossBlockFragment)
-
-        mParentAdapter = HeaderAdapter(requireContext())
-        mRowAdapter = HeaderAdapter(requireContext())
-        mColumnAdapter = HeaderAdapter(requireContext())
-
-        table.adapter = mParentAdapter
-
-        val scrollListeners = ArrayList<RecyclerView.OnScrollListener>()
-
-        val scrollViewListener = View.OnScrollChangeListener { p0, p1, p2, p3, p4 ->
-
-            rows.removeOnScrollListener(scrollListeners[2])
-
-            rows.scrollBy(p1, p2-p4)
-
-            rows.addOnScrollListener(scrollListeners[2])
-
-        }
-
-        scrollListeners.add(object : RecyclerView.OnScrollListener() {
-
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-
-                super.onScrolled(recyclerView, dx, dy)
-
-                columns.removeOnScrollListener(scrollListeners[1])
-
-                columns.scrollBy(dx, dy)
-
-                columns.addOnScrollListener(scrollListeners[1])
-
-                rows.removeOnScrollListener(scrollListeners[2])
-
-                rows.scrollBy(dx, dy)
-
-                rows.addOnScrollListener(scrollListeners[2])
-
-            }
-        })
-
-        scrollListeners.add(object : RecyclerView.OnScrollListener() {
-
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-
-                super.onScrolled(recyclerView, dx, dy)
-
-                table.removeOnScrollListener(scrollListeners[0])
-
-                table.scrollBy(dx, dy)
-
-                table.addOnScrollListener(scrollListeners[0])
-            }
-        })
-
-        scrollListeners.add(object : RecyclerView.OnScrollListener() {
-
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-
-                super.onScrolled(recyclerView, dx, dy)
-
-                scrollView.setOnScrollChangeListener { view: View, i: Int, i1: Int, i2: Int, i3: Int -> }
-
-                scrollView.scrollBy(dx, dy)
-
-                scrollView.setOnScrollChangeListener(scrollViewListener)
-            }
-        })
-
-        table.addOnScrollListener(scrollListeners[0])
-
-        columns.addOnScrollListener(scrollListeners[1])
-
-        rows.addOnScrollListener(scrollListeners[2])
-
-        scrollView.setOnScrollChangeListener(scrollViewListener)
-
-        columns.adapter = mColumnAdapter
-
-        rows.adapter = mRowAdapter
 
         /**
          * list for events model, disable options menu for summary if the list is empty
@@ -179,7 +83,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
                         mWishlist = block
 
-                        AsyncLoadCrossblock(requireContext(), mBinding.root, block, mEvents, table, rows, columns).execute()
+                        setupTable(mWishlist)
 
                     })
 
@@ -189,7 +93,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
                         mWishlist = block
 
-                        AsyncLoadCrossblock(requireContext(), mBinding.root, block, mEvents, table, rows, columns).execute()
+                        setupTable(mWishlist)
 
                     })
                 }
@@ -199,6 +103,50 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
         summaryTabLayout.getTabAt(2)?.select()
 
         setupTabLayout()
+    }
+
+    /**
+     * Displays cross block table.
+     */
+    private fun setupTable(entries: List<WishlistView>) {
+
+        val maleColumnHeaders = entries.map { CellData(it.dadName, it.momId, it.dadId) }
+            .distinctBy { it.mid }
+        val femaleRowHeaders = entries.map { CellData(it.momName, it.momId, it.dadId) }
+            .distinctBy { it.fid }
+
+        val data = arrayListOf<List<CellData>>()
+        for (female in femaleRowHeaders) {
+            val row = arrayListOf<CellData>()
+            for (male in maleColumnHeaders) {
+                val wish = entries.find { it.momId == female.fid && it.dadId == male.mid }
+                if (wish == null) {
+                    row.add(CellData())
+                } else {
+                    val color = if (wish.wishProgress == 0) Color.GRAY
+                                else if (wish.wishProgress < wish.wishMin) Color.RED
+                                else if (wish.wishProgress >= wish.wishMin && wish.wishProgress < wish.wishMax) Color.YELLOW
+                                else Color.GREEN
+                    row.add(CellData(fid = wish.momId, mid = wish.dadId, progressColor = color))
+                }
+            }
+            data.add(row)
+        }
+
+        with(mBinding.fragmentCrossblockTableView) {
+            isIgnoreSelectionColors = true
+            tableViewListener = this@CrossBlockFragment
+            isShowHorizontalSeparators = true
+            isShowVerticalSeparators = true
+
+            setAdapter(CrossBlockTableViewAdapter())
+
+            (adapter as? CrossBlockTableViewAdapter)?.setAllItems(
+                maleColumnHeaders,
+                femaleRowHeaders,
+                data
+            )
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -221,6 +169,8 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
     override fun onResume() {
         super.onResume()
+
+        (activity as MainActivity).supportActionBar?.show()
 
         mBinding.summaryTabLayout.getTabAt(2)?.select()
 
@@ -245,8 +195,8 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
         summaryTabLayout.addOnTabSelectedListener(tabSelected { tab ->
 
-            when (tab?.text) {
-                getString(R.string.summary) -> {
+            when (tab?.position) {
+                3 -> {
 
                     if (mEvents.isNotEmpty()) {
 
@@ -260,10 +210,10 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
                     }
                 }
 
-                getString(R.string.cross_count) ->
+                0 ->
                     Navigation.findNavController(mBinding.root)
                         .navigate(CrossBlockFragmentDirections.actionToCrossCount())
-                getString(R.string.wishlist) ->
+                1 ->
                     Navigation.findNavController(mBinding.root)
                         .navigate(CrossBlockFragmentDirections.actionToWishlist())
             }
@@ -291,7 +241,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
                 }
                 R.id.action_nav_export -> {
 
-                    (activity as MainActivity).showImportOrExportDialog {
+                    (activity as MainActivity).showExportDialog {
 
                         findNavController().navigate(R.id.crossblock_fragment)
                     }
@@ -315,27 +265,55 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
         setHasOptionsMenu(true)
     }
 
-    override fun onShowPress(p0: MotionEvent?) {
-        TODO("Not yet implemented")
+    private fun showChildren(mid: String, fid: String) {
+
+        context?.let { ctx ->
+
+            val children = mEvents.filter { event ->
+                event.femaleObsUnitDbId == fid && event.maleObsUnitDbId == mid
+            }
+
+            if (children.size == 1) {
+                children.first().id?.let { id ->
+                    findNavController()
+                        .navigate(CrossBlockFragmentDirections
+                            .actionToEventDetail(id))
+                }
+            } else {
+
+                Dialogs.list(AlertDialog.Builder(ctx),
+                    getString(R.string.click_item_for_child_details),
+                    getString(R.string.no_child_exists),
+                    children) { id ->
+
+                    findNavController()
+                        .navigate(CrossBlockFragmentDirections
+                            .actionToEventDetail(id))
+                }
+            }
+        }
+    }
+    override fun onCellClicked(cellView: RecyclerView.ViewHolder, column: Int, row: Int) {
+        mBinding.fragmentCrossblockTableView.adapter?.getCellItem(column, row)?.let { r ->
+
+            val cell = (r as? CellData)
+            val mid = cell?.mid
+            val fid = cell?.fid
+
+            mid?.let { maleId ->
+                fid?.let { femaleId ->
+                    showChildren(maleId, femaleId)
+                }
+            }
+        }
     }
 
-    override fun onSingleTapUp(p0: MotionEvent?): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun onDown(p0: MotionEvent?): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun onFling(p0: MotionEvent?, p1: MotionEvent?, p2: Float, p3: Float): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun onScroll(p0: MotionEvent?, p1: MotionEvent?, p2: Float, p3: Float): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun onLongPress(p0: MotionEvent?) {
-        TODO("Not yet implemented")
-    }
+    override fun onColumnHeaderClicked(columnHeaderView: RecyclerView.ViewHolder, column: Int) {}
+    override fun onCellDoubleClicked(cellView: RecyclerView.ViewHolder, column: Int, row: Int) {}
+    override fun onCellLongPressed(cellView: RecyclerView.ViewHolder, column: Int, row: Int) {}
+    override fun onColumnHeaderDoubleClicked(columnHeaderView: RecyclerView.ViewHolder, column: Int) {}
+    override fun onColumnHeaderLongPressed(columnHeaderView: RecyclerView.ViewHolder, column: Int) {}
+    override fun onRowHeaderClicked(rowHeaderView: RecyclerView.ViewHolder, row: Int) {}
+    override fun onRowHeaderDoubleClicked(rowHeaderView: RecyclerView.ViewHolder, row: Int) {}
+    override fun onRowHeaderLongPressed(rowHeaderView: RecyclerView.ViewHolder, row: Int) {}
 }
