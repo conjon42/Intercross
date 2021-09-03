@@ -1,17 +1,21 @@
 package org.phenoapps.intercross.fragments
 
-import android.graphics.Color
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.ActionMenuView
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.ParentsAdapter
@@ -30,9 +34,10 @@ import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFact
 import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentParentsBinding
 import org.phenoapps.intercross.util.BluetoothUtil
-import org.phenoapps.intercross.util.SnackbarQueue
+import org.phenoapps.intercross.util.Dialogs
 
-class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.fragment_parents) {
+class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.fragment_parents),
+    CoroutineScope by MainScope() {
 
     private val viewModel: ParentsListViewModel by viewModels {
         ParentsListViewModelFactory(ParentsRepository.getInstance(db.parentsDao()))
@@ -107,6 +112,51 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
         maleRecycler.adapter = mMaleAdapter
         maleRecycler.layoutManager = LinearLayoutManager(ctx)
 
+        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {
+            }
+
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+
+                tab?.let {
+
+                    when(it.text) {
+
+                        "Female" -> {
+                            femaleRecycler.visibility=View.VISIBLE
+                            maleRecycler.visibility=View.GONE
+                            fragParentsSelectAllCb.isChecked = !mNextFemaleSelection
+                        }
+                        "Male" -> {
+                            maleRecycler.visibility=View.VISIBLE
+                            femaleRecycler.visibility=View.GONE
+                            fragParentsSelectAllCb.isChecked = !mNextMaleSelection
+                        }
+                    }
+
+                    viewModel.parents.observe(viewLifecycleOwner, { parents ->
+
+                        groupList.groups.observe(viewLifecycleOwner, { groups ->
+
+                            mBinding.updateSelectionText(
+                                parents.filter { it.selected },
+                                groups.filter { it.selected })
+
+                        })
+                    })
+                }
+            }
+        })
+
+        /*
+        On startup, read arguments and determine the tab
+         */
+        tabLayout.getTabAt(tabFocus)?.select()
+
         eventsModel.events.observe(viewLifecycleOwner) { parents ->
 
             parents?.let {
@@ -115,8 +165,6 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
             }
         }
-
-        //TODO Trevor: What happens when wishlist import includes different code ids with same name, similarly for cross events
 
         viewModel.parents.observe(viewLifecycleOwner, { parents ->
 
@@ -145,44 +193,14 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
                 .distinctBy { p -> p.codeId }
                 .sortedBy { p -> p.name })
 
+            mBinding.updateSelectionText(parents.filter { it.selected })
+
         })
-
-        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-
-            override fun onTabReselected(tab: TabLayout.Tab?) {
-            }
-
-            override fun onTabUnselected(tab: TabLayout.Tab?) {
-            }
-
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-
-                tab?.let {
-
-                    when(it.text) {
-
-                        "Female" -> {
-                            femaleRecycler.visibility=View.VISIBLE
-                            maleRecycler.visibility=View.GONE
-                        }
-                        "Male" -> {
-                            maleRecycler.visibility=View.VISIBLE
-                            femaleRecycler.visibility=View.GONE
-                        }
-                    }
-                }
-            }
-        })
-
-        /*
-        On startup, read arguments and determine the tab
-         */
-        tabLayout.getTabAt(tabFocus)?.select()
 
         /*
         Go to Pollen Manager fragment for male group data-entry
          */
-        newButton.setOnClickListener {
+        fragParentsNewParentBtn.setOnClickListener {
 
             when (tabLayout.getTabAt(0)?.isSelected) {
 
@@ -195,126 +213,11 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
         }
 
-        /**
-         * Delete should erase just the current tab
-         * Group deletion: ll entries that have the selected group ids must be purged from DB.
-         */
-        deleteButton.setOnClickListener {
+        fragParentsSelectAllCb.setOnClickListener {
 
-            //variable that tracks whether user tried to delete parents of a cross, this will display a message.
-            var triedToDelete = false
+            mBinding.selectAll()
 
-            if (tabLayout.getTabAt(0)?.isSelected == true) {
-
-                val out: List<Parent> = mFemaleAdapter.currentList.filterIsInstance(Parent::class.java)
-                        .filter { p -> p.selected }
-
-
-                //don't delete parents that have been crossed.
-                if (mCrosses.isNotEmpty()) {
-
-                    //find all parents with crosses (that are selected)
-                    val parentOfCrossed = out.filter { p -> mCrosses.any { crossed -> p.codeId == crossed.femaleObsUnitDbId } }
-
-                    //if the result is empty, just delete the original array, otherwise remove the parents and delete from original
-                    if (parentOfCrossed.isEmpty()) {
-
-                        viewModel.delete(*out.toTypedArray())
-
-                    } else {
-
-                        triedToDelete = true
-
-                        viewModel.delete(*(out-parentOfCrossed).toTypedArray())
-                    }
-
-                } else {
-
-                    viewModel.delete(*out.toTypedArray())
-
-                }
-
-            } else {
-
-                val outParents = mMaleAdapter.currentList.filterIsInstance(Parent::class.java)
-                        .filter { p -> p.selected }
-
-                val outGroups = mMaleAdapter.currentList.filterIsInstance(PollenGroup::class.java)
-                        .filter { g -> g.selected }
-
-                if (mCrosses.isNotEmpty()) {
-
-                    val parentOfCrossed = outParents.filter { p -> mCrosses.any { crossed -> p.codeId == crossed.maleObsUnitDbId } }
-                    val parentOfGroup = outGroups.filter { p -> mCrosses.any { crossed -> p.codeId == crossed.maleObsUnitDbId } }
-
-                    if (parentOfCrossed.isEmpty()) {
-
-                        viewModel.delete(*outParents.toTypedArray())
-
-                    } else {
-
-                        triedToDelete = true
-
-                        viewModel.delete(*(outParents-parentOfCrossed).toTypedArray())
-                    }
-
-                    if (parentOfGroup.isEmpty()) {
-
-                        groupList.deleteByCode(outGroups.map { g -> g.codeId })
-
-                    } else {
-
-                        triedToDelete = true
-
-                        groupList.deleteByCode(((outGroups-parentOfGroup).map { g -> g.codeId }))
-                    }
-
-                } else {
-
-                    viewModel.delete(*outParents.toTypedArray())
-
-                    groupList.deleteByCode(outGroups.map { g -> g.codeId })
-
-                }
-            }
-
-            if (triedToDelete) {
-
-                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.parents_of_crosses_not_deleted)))
-
-            }
         }
-
-        printButton.setOnClickListener {
-
-//            val experiment = PreferenceManager.getDefaultSharedPreferences(requireContext())
-//                    .getString("org.phenoapps.intercross.EXPERIMENT", "")
-//
-//            val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
-//                    .getString("org.phenoapps.intercross.PERSON", "")
-
-            if (tabLayout.getTabAt(0)?.isSelected == true) {
-
-                val outParents = mFemaleAdapter.currentList.filterIsInstance(Parent::class.java)
-
-                BluetoothUtil().print(requireContext(), outParents.filter { p -> p.selected }.toTypedArray())
-
-            } else {
-
-                val outParents = mMaleAdapter.currentList
-                        .filterIsInstance(Parent::class.java)
-                        .filter { p -> p.selected }
-
-                val outAll = outParents + mMaleAdapter.currentList
-                        .filterIsInstance(PollenGroup::class.java)
-                        .filter { p -> p.selected }
-                        .map { group -> Parent(group.codeId, 1, group.name)}
-
-                BluetoothUtil().print(requireContext(), outAll.toTypedArray())
-
-            }
-        }
-
 
 //        val gdc = GestureDetectorCompat(context, gestureListener)
 //
@@ -330,6 +233,180 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
         setupBottomNavBar()
 
+        setupToolbar()
+
+    }
+
+    private fun FragmentParentsBinding.setupToolbar() {
+
+        val menu = fragParentsTb.findViewById<ActionMenuView>(R.id.frag_parents_action_menu_view)
+
+        menu?.setOnMenuItemClickListener {
+            onOptionsItemSelected(it)
+        }
+
+        activity?.menuInflater?.let {
+            onCreateOptionsMenu(menu.menu, it)
+        }
+    }
+
+    private fun FragmentParentsBinding.updateSelectionText(parents: List<Parent>, groups: List<PollenGroup>? = null) {
+
+        val selectedSex = if (tabLayout.getTabAt(0)?.isSelected != false) 0 else 1
+
+        var count = parents.filter { it.sex == selectedSex }.count()
+        if (selectedSex == 1) count += groups?.count() ?: 0
+
+        val tv = fragParentsTb.findViewById<TextView>(R.id.frag_parents_toolbar_count_tv)
+
+        when (count) {
+            0 -> {
+                tv.visibility = View.GONE
+                updateMenuButtons(expanded = false)
+            }
+            else -> {
+                tv.text = count.toString()
+                tv.visibility = View.VISIBLE
+                updateMenuButtons(expanded = true)
+            }
+        }
+    }
+
+    private fun updateMenuButtons(expanded: Boolean = false) {
+        arrayOf(R.id.action_parents_delete, R.id.action_parents_print).forEach {
+            mBinding.fragParentsTb.findViewById<ActionMenuView>(R.id.frag_parents_action_menu_view)
+                ?.menu?.findItem(it)?.isVisible = expanded
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.parents_toolbar, menu)
+    }
+
+    /**
+     * Toggles the selected field for all parents in the current rv.
+     */
+    private fun FragmentParentsBinding.selectAll() {
+
+        if (tabLayout.getTabAt(0)?.isSelected == true) {
+
+            parentList.update(
+                *(mFemaleAdapter.currentList
+                    .filterIsInstance(Parent::class.java)
+                    .map { mom -> mom.apply { mom.selected = mNextFemaleSelection } }
+                    .sortedBy { mom -> mom.name }
+                    .toTypedArray())
+            )
+
+            mNextFemaleSelection = !mNextFemaleSelection
+
+            mFemaleAdapter.notifyItemRangeChanged(0, mFemaleAdapter.itemCount)
+
+
+        } else {
+
+            parentList.update(
+                *(mMaleAdapter.currentList
+                    .filterIsInstance(Parent::class.java)
+                    .map { dad -> dad.apply { dad.selected = mNextMaleSelection } }
+                    .toTypedArray())
+            )
+
+            groupList.update(
+                *(mMaleAdapter.currentList
+                    .filterIsInstance(PollenGroup::class.java)
+                    .map { g -> g.apply { selected = mNextMaleSelection } }
+                    .toTypedArray())
+            )
+
+            mNextMaleSelection = !mNextMaleSelection
+
+            mMaleAdapter.notifyItemRangeChanged(0, mMaleAdapter.itemCount)
+        }
+    }
+
+    /**
+     * Show a dialog to confirm deletion to the user.
+     * If the user selects OK then this function either deletes males or females from the database.
+     * If a parent is used in a cross then it will not be deleted and a message is shown.
+     * Similarly poly groups will not be deleted if used as a parent.
+     * The count could also add the number of males when a poly is selected but as of now it just deletes/prints the group id.
+     */
+    private fun FragmentParentsBinding.deleteParents() {
+
+        context?.let { ctx ->
+
+            Dialogs.onOk(AlertDialog.Builder(ctx),
+                getString(R.string.frag_parent_delete_selected_title),
+                getString(android.R.string.cancel),
+                getString(android.R.string.ok),
+                getString(R.string.frag_parent_confirm_delete_message)) {
+
+                if (tabLayout.getTabAt(0)?.isSelected == true) {
+
+                    val out: List<Parent> = mFemaleAdapter.currentList.filterIsInstance(Parent::class.java)
+                        .filter { p -> p.selected }
+
+                    //find all parents with crosses (that are selected)
+                    val parentOfCrossed = out.filter { p -> mCrosses.any { crossed -> p.codeId == crossed.femaleObsUnitDbId } }
+
+                    viewModel.delete(*(out-parentOfCrossed).toTypedArray())
+
+                    if (!parentOfCrossed.isEmpty()) {
+
+                        Toast.makeText(context, R.string.frag_parents_parents_not_deleted_reason,
+                            Toast.LENGTH_SHORT).show()
+                    }
+
+                } else {
+
+                    val outParents = mMaleAdapter.currentList.filterIsInstance(Parent::class.java)
+                        .filter { p -> p.selected }
+
+                    val outGroups = mMaleAdapter.currentList.filterIsInstance(PollenGroup::class.java)
+                        .filter { g -> g.selected }
+
+                    val parentOfCrossed = outParents.filter { p -> mCrosses.any { crossed -> p.codeId == crossed.maleObsUnitDbId } }
+                    val parentOfGroup = outGroups.filter { p -> mCrosses.any { crossed -> p.codeId == crossed.maleObsUnitDbId } }
+
+                    viewModel.delete(*(outParents-parentOfCrossed).toTypedArray())
+
+                    groupList.deleteByCode(((outGroups-parentOfGroup).map { g -> g.codeId }))
+
+                    if (parentOfCrossed.isNotEmpty() || parentOfGroup.isNotEmpty()) {
+
+                        Toast.makeText(
+                            context, R.string.frag_parents_parents_not_deleted_reason,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun FragmentParentsBinding.printParents() {
+
+        if (tabLayout.getTabAt(0)?.isSelected == true) {
+
+            val outParents = mFemaleAdapter.currentList.filterIsInstance(Parent::class.java)
+
+            BluetoothUtil().print(requireContext(), outParents.filter { p -> p.selected }.toTypedArray())
+
+        } else {
+
+            val outParents = mMaleAdapter.currentList
+                .filterIsInstance(Parent::class.java)
+                .filter { p -> p.selected }
+
+            val outAll = outParents + mMaleAdapter.currentList
+                .filterIsInstance(PollenGroup::class.java)
+                .filter { p -> p.selected }
+                .map { group -> Parent(group.codeId, 1, group.name)}
+
+            BluetoothUtil().print(requireContext(), outAll.toTypedArray())
+
+        }
     }
 
     override fun onResume() {
@@ -339,74 +416,32 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
-
         setHasOptionsMenu(true)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-
-        inflater.inflate(R.menu.parents_toolbar, menu)
-
-        //Bug in Gradle system (?) for some reason this icon is transformed to black fill
-        //in drawable-anydpi-v21
-        menu.findItem(R.id.action_select_all).icon?.setTint(Color.WHITE)
-
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        with (mBinding) {
+        when(item.itemId) {
 
-            when(item.itemId) {
+            R.id.action_import -> {
 
-                R.id.action_import -> {
+                (activity as? MainActivity)?.launchImport()
 
-                    (activity as? MainActivity)?.launchImport()
-
-                }
-                R.id.action_select_all -> {
-
-                    if (tabLayout.getTabAt(0)?.isSelected == true) {
-
-                        parentList.update(
-                                *(mFemaleAdapter.currentList
-                                        .filterIsInstance(Parent::class.java)
-                                        .map { mom -> mom.apply { mom.selected = mNextFemaleSelection } }
-                                        .sortedBy { mom -> mom.name }
-                                        .toTypedArray())
-                        )
-
-                        mNextFemaleSelection = !mNextFemaleSelection
-
-                        mFemaleAdapter.notifyDataSetChanged()
-
-
-                    } else {
-
-                        parentList.update(
-                                *(mMaleAdapter.currentList
-                                        .filterIsInstance(Parent::class.java)
-                                        .map { dad -> dad.apply { dad.selected = mNextMaleSelection } }
-                                        .toTypedArray())
-                        )
-
-                        groupList.update(
-                                *(mMaleAdapter.currentList
-                                        .filterIsInstance(PollenGroup::class.java)
-                                        .map { group -> group.apply { group.selected = mNextMaleSelection } }
-                                        .toTypedArray())
-                        )
-
-                        mNextMaleSelection = !mNextMaleSelection
-
-                        mMaleAdapter.notifyDataSetChanged()
-                    }
-                }
-                else -> true
             }
+
+            R.id.action_parents_delete -> {
+                mBinding.deleteParents()
+            }
+
+            R.id.action_parents_print -> {
+                mBinding.printParents()
+            }
+
+            android.R.id.home -> {
+                findNavController().popBackStack()
+            }
+            else -> true
         }
 
         return super.onOptionsItemSelected(item)
@@ -424,7 +459,7 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
                 }
                 R.id.action_nav_export -> {
 
-                    (activity as MainActivity).showImportOrExportDialog {
+                    (activity as MainActivity).showExportDialog {
 
                         bottomNavBar.selectedItemId = R.id.action_nav_parents
                     }

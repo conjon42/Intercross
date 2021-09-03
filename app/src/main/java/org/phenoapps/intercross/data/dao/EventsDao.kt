@@ -7,11 +7,13 @@ import org.phenoapps.intercross.data.models.Event
 @Dao
 interface EventsDao : BaseDao<Event> {
 
-    data class CrossMetadata(val eid: Int, val property: String, val value: Int)
+    data class CrossMetadata(val eid: Int, val property: String, val value: Int?)
 
-    data class CrossMetadataWithDefaults(val eid: Int, val property: String, val value: Int, val defaultValue: Int)
+    data class CrossMetadataWithDefaults(val eid: Int, val property: String, val value: Int?, val defaultValue: Int)
 
-    data class ParentCount(val mom: String, val momReadable: String, val dad: String, val dadReadable: String, val count: Int)
+    data class ParentCount(val mom: String, val momReadable: String,
+                           val dad: String, val dadReadable: String,
+                           val person: String, val date: String, val count: Int)
 
     data class ParentData(val momCode: String, val momReadableName: String,
                           val dadCode: String, val dadReadableName: String)
@@ -23,12 +25,13 @@ interface EventsDao : BaseDao<Event> {
     fun selectAll(): LiveData<List<Event>>
 
     @Query("""
-        SELECT DISTINCT x.mom, female.name as "momReadable", x.dad, male.name as "dadReadable",
+        SELECT DISTINCT x.mom, female.name as "momReadable", x.dad, male.name as "dadReadable", MAX(x.person) as "person", MAX(x.date) as "date",
             (SELECT COUNT(*)
             FROM events as y
             WHERE y.mom = x.mom and y.dad = x.dad) as count
         FROM events as x, parents as male, parents as female
         WHERE x.dad = male.codeId and x.mom = female.codeId
+        GROUP BY x.mom, "momReadable", x.dad, "dadReadable"
     """)
     fun getParentCount(): LiveData<List<ParentCount>>
 

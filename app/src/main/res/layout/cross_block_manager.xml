@@ -19,71 +19,39 @@
                 android:layout="@null"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/cross_count" />
+                android:icon="@drawable/ic_tag_black_24dp"/>
 
             <com.google.android.material.tabs.TabItem
                 android:layout="@null"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/wishlist" />
+                android:icon="@drawable/ic_checklist_black_24dp"/>
 
             <com.google.android.material.tabs.TabItem
                 android:layout="@null"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/crossblock" />
+                android:icon="@drawable/ic_crossblock" />
 
             <com.google.android.material.tabs.TabItem
                 android:layout="@null"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/summary" />
+                android:icon="@drawable/ic_summarize_black_24dp"/>
         </com.google.android.material.tabs.TabLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/columns"
+        <com.evrencoskun.tableview.TableView
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintEnd_toEndOf="@id/scrollView"
-            app:layout_constraintStart_toStartOf="@+id/scrollView"
-            app:layout_constraintTop_toBottomOf="@id/summary_tab_layout"
-            app:layout_constraintBottom_toTopOf="@id/scrollView"/>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rows"
-            android:layout_width="wrap_content"
             android:layout_height="0dp"
-            android:layout_marginStart="8dp"
+            android:id="@+id/fragment_crossblock_table_view"
             android:orientation="vertical"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintBottom_toBottomOf="@+id/scrollView"
-            app:layout_constraintEnd_toStartOf="@id/scrollView"
+            app:allow_click_inside_cell="true"
+            app:allow_click_inside_column_header="true"
+            app:allow_click_inside_row_header="true"
+            app:layout_constraintTop_toBottomOf="@id/summary_tab_layout"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/scrollView"
-            app:layout_constraintVertical_bias="0.0" />
-
-        <org.phenoapps.intercross.views.NoFlingScrollView
-            android:id="@+id/scrollView"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginEnd="8dp"
-            app:layout_constraintBottom_toTopOf="@+id/legend_blank"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/rows"
-            app:layout_constraintTop_toBottomOf="@+id/columns">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/table"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-        </org.phenoapps.intercross.views.NoFlingScrollView>
+            app:layout_constraintBottom_toTopOf="@id/legend_blank"/>
 
         <TextView
             android:id="@+id/legend_blank"

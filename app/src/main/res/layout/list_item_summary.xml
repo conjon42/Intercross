@@ -17,7 +17,7 @@
 
         <TextView
             android:id="@+id/summary_item_label_text"
-            style="@style/CellText.ParentCellText"
+            style="@style/CellText"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:text="@{labelText}"
@@ -27,7 +27,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView style="@style/NumericCellText.ParentCellText"
+        <TextView style="@style/CellText"
             android:id="@+id/summary_item_value_text"
             android:layout_width="0dp"
             android:layout_height="match_parent"

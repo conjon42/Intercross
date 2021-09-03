@@ -1,16 +1,16 @@
 package org.phenoapps.intercross.data
 
 import org.phenoapps.intercross.data.dao.MetadataDao
-import org.phenoapps.intercross.data.models.Metadata
+import org.phenoapps.intercross.data.models.Meta
 
 class MetadataRepository
-    private constructor(private val dao: MetadataDao): BaseRepository<Metadata>(dao) {
+    private constructor(private val dao: MetadataDao): BaseRepository<Meta>(dao) {
 
     fun selectAll() = dao.selectAll()
 
     fun getId(property: String) = dao.getId(property)
 
-    fun insert(data: Metadata): Long = dao.insert(data)
+    fun insert(data: Meta): Long = dao.insert(data)
 
     companion object {
         @Volatile private var instance: MetadataRepository? = null

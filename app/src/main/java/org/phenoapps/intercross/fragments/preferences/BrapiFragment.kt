@@ -46,7 +46,7 @@ class BrapiFragment : org.phenoapps.fragments.preferences.BrapiFragment(),
                 }
                 R.id.action_nav_export -> {
 
-                    (activity as MainActivity).showImportOrExportDialog {
+                    (activity as MainActivity).showExportDialog {
 
                         mBottomNavBar?.selectedItemId = R.id.action_nav_settings
 
@@ -64,6 +64,8 @@ class BrapiFragment : org.phenoapps.fragments.preferences.BrapiFragment(),
 
     override fun onResume() {
         super.onResume()
+
+        (activity as MainActivity).supportActionBar?.show()
 
         mBottomNavBar?.selectedItemId = R.id.action_nav_settings
 

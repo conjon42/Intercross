@@ -459,7 +459,7 @@ class BrapiExportFragment: IntercrossBaseFragment<FragmentBrapiImportBinding>(R.
                             //this.plannedCrossName = "Test"
                             //load wish metadata into additional info map
                             //TODO when v2 and 37b are merged, add additional info into brapi export/import
-                            this.additionalInfo = JsonObject() //mapOf()
+                            //this.additionalInfo = JsonObject() //mapOf()
                             this.crossAttributes = listOf()
                             //this.crossName =
                             this.crossType = cross.type.toBrAPICrossType()

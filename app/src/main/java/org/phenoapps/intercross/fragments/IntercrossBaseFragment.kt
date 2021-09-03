@@ -31,7 +31,7 @@ abstract class IntercrossBaseFragment<T : ViewDataBinding>(
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        val contextThemeWrapper = ContextThemeWrapper(activity, org.phenoapps.intercross.R.style.AppTheme)
+        val contextThemeWrapper = ContextThemeWrapper(activity, R.style.AppTheme)
 
         val localInflater = inflater.cloneInContext(contextThemeWrapper)
 
@@ -49,9 +49,9 @@ abstract class IntercrossBaseFragment<T : ViewDataBinding>(
         super.onResume()
 
         if (findNavController().currentDestination?.id
-            !in setOf(R.id.crossblock_fragment, R.id.summary_fragment,
-                R.id.events_fragment, R.id.barcode_scan_fragment))
+            !in setOf(R.id.parents_fragment, R.id.events_fragment, R.id.barcode_scan_fragment))
             (activity as MainActivity).supportActionBar?.show()
+        else (activity as MainActivity).supportActionBar?.hide()
     }
 
     override fun onDestroyView() {

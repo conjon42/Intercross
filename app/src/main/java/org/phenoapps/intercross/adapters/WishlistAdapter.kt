@@ -98,15 +98,7 @@ class WishlistAdapter(val context: Context) :
                 //uses inner view holder to create list of crosses used for that wish item
                 onClick = View.OnClickListener {
 
-                    Dialogs.list(
-                        AlertDialog.Builder(context),
-                            context.getString(R.string.click_item_for_child_details),
-                            context.getString(R.string.no_child_exists),
-                            data.events) { id ->
 
-                        Navigation.findNavController(root)
-                                .navigate(SummaryFragmentDirections.globalActionToEventDetail(id))
-                    }
 
                 }
             }

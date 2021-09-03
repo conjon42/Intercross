@@ -20,6 +20,12 @@ class PollenGroupRepository private constructor(
         pollenGroupDao.updateSelectByCode(codeId, selected)
     }
 
+    suspend fun updateSelectByCodes(ids: Array<String>, selected: Boolean) {
+
+        pollenGroupDao.updateSelectByCodes(ids.joinToString(",") { "\"$it\"" }, selected)
+
+    }
+
     suspend fun deleteByCode(codeId: List<String>) {
 
         for (code: String in codeId) {

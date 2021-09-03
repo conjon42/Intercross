@@ -3,7 +3,7 @@
     android:key="@string/root_about"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto" >
-    <PreferenceCategory android:title="About" app:iconSpaceReserved="false">
+    <PreferenceCategory app:iconSpaceReserved="false">
         <Preference
             android:icon="@drawable/ic_nv_about"
             android:key="@string/key_pref_about"

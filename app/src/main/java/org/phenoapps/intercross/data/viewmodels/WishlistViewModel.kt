@@ -19,17 +19,13 @@ class WishlistViewModel internal constructor(private val repo: WishlistRepositor
 
     val wishlist: LiveData<List<Wishlist>> = repo.getAll()
 
-    val wishes: LiveData<List<WishlistView>> = repo.getAllCounts()
+    val wishes: LiveData<List<WishlistView>> = repo.getWishes()
 
     val commutativeWishes = repo.getAllCommutativeWishCounts()
 
     val crossblock = repo.getCrossblock()
 
     val commutativeCrossblock = repo.getCommutativeCrossblock()
-
-    val males = repo.getMaleHeaders()
-
-    val females = repo.getFemaleHeaders()
 
     fun deleteAll() {
 
