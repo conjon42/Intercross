@@ -9,7 +9,7 @@ interface MetadataManager {
 
     fun onMetadataCreated(property: String, value: String) = Unit
 
-    fun onMetadataUpdated(property: String, value: Int) = Unit
+    fun onMetadataUpdated(property: String, value: Int?) = Unit
 
     fun onMetadataDefaultUpdated(rowid: Long, property: String, value: Int) = Unit
 

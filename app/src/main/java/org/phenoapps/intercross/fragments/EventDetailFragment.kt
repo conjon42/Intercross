@@ -281,7 +281,7 @@ class EventDetailFragment:
 
     //updates a single row value for the current event
     //or inserts a new metadata value row if this value has not been saved previously
-    override fun onMetadataUpdated(property: String, value: Int) {
+    override fun onMetadataUpdated(property: String, value: Int?) {
 
         val eid = mEvent.id?.toInt() ?: -1
 
@@ -304,7 +304,11 @@ class EventDetailFragment:
             }
         }
 
-        checkWishlist(property, value)
+        value?.let { v ->
+
+            checkWishlist(property, v)
+
+        }
     }
 
     private fun checkWishlist(property: String, value: Int) {

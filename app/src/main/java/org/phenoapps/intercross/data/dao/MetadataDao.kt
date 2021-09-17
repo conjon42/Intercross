@@ -17,5 +17,5 @@ interface MetadataDao: BaseDao<Meta> {
     fun getMetaProperties(): LiveData<List<String>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(data: Meta): Long
+    suspend fun insert(data: Meta): Long
 }

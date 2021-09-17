@@ -59,13 +59,13 @@ class MetadataAdapter(val imm: InputMethodManager?, val listener: MetadataManage
 
                 listItemMetadataEditText.addTextChangedListener {
 
-                    val intValue = listItemMetadataEditText.text.toString().toIntOrNull() ?: 0
+                    val intValue = listItemMetadataEditText.text.toString().toIntOrNull()
 
                     listener.onMetadataUpdated(meta.property, intValue)
 
                 }
 
-                value = meta.value
+                value = if (meta.value == "null") "" else meta.value
 
                 property = meta.property
 

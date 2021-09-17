@@ -9,6 +9,6 @@ class MetadataViewModel(private val repo: MetadataRepository): BaseViewModel<Met
 
     fun getId(property: String): Int = repo.getId(property)
 
-    fun insert(item: Meta): Long = repo.insert(item)
+    suspend fun insert(item: Meta): Long = repo.insert(item)
 
 }

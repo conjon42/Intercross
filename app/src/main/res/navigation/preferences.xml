@@ -4,6 +4,8 @@
     android:id="@+id/preferences"
     app:startDestination="@id/settings_fragment">
 
+    <include app:graph="@navigation/metadata"/>
+
     <fragment
         android:id="@+id/settings_fragment"
         android:name="org.phenoapps.intercross.fragments.SettingsFragment"
@@ -48,7 +50,10 @@
 
     <fragment android:id="@+id/workflow_preference_fragment"
         android:name="org.phenoapps.intercross.fragments.preferences.WorkflowFragment"
-        android:label="@string/preferences_workflow_fragment_label"/>
+        android:label="@string/preferences_workflow_fragment_label">
+        <action android:id="@+id/action_from_workflow_to_metadata_list"
+            app:destination="@+id/metadata_navigation"/>
+    </fragment>
 
     <fragment android:id="@+id/printing_preference_fragment"
         android:name="org.phenoapps.intercross.fragments.preferences.PrintingFragment"

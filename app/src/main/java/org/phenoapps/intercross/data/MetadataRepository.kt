@@ -10,7 +10,7 @@ class MetadataRepository
 
     fun getId(property: String) = dao.getId(property)
 
-    fun insert(data: Meta): Long = dao.insert(data)
+    suspend fun insert(data: Meta): Long = dao.insert(data)
 
     companion object {
         @Volatile private var instance: MetadataRepository? = null

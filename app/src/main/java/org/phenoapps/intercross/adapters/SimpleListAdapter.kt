@@ -50,6 +50,13 @@ class SimpleListAdapter(private val listener: OnSimpleItemClicked)
                     if (mSelectedPosition == position) Color.GREEN
                     else Color.TRANSPARENT)
 
+                holder.itemView.setOnLongClickListener {
+
+                    listener.onItemLongClicked(item)
+
+                    true
+                }
+
                 holder.itemView.setOnClickListener {
 
                     val old = mSelectedPosition

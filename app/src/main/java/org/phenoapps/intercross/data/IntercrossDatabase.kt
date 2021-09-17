@@ -26,7 +26,7 @@ abstract class IntercrossDatabase : RoomDatabase() {
 
     companion object {
 
-        const val DATABASE_NAME = "intercross.db"
+        const val DATABASE_NAME = "INTERCROSS"
 
         //singleton pattern
         @Volatile private var instance: IntercrossDatabase? = null
