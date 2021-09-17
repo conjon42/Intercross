@@ -6,6 +6,67 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/summary_tab_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <com.google.android.material.tabs.TabItem
+                android:layout="@null"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:icon="@drawable/ic_tag_black_24dp"/>
+
+            <com.google.android.material.tabs.TabItem
+                android:layout="@null"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:icon="@drawable/ic_checklist_black_24dp"/>
+
+            <com.google.android.material.tabs.TabItem
+                android:layout="@null"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:icon="@drawable/ic_crossblock" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout="@null"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:icon="@drawable/ic_summarize_black_24dp"/>
+        </com.google.android.material.tabs.TabLayout>
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/data_summary_tab_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/summary_tab_layout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <com.google.android.material.tabs.TabItem
+                android:layout="@null"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/sex" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout="@null"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/type" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout="@null"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/meta" />
+
+        </com.google.android.material.tabs.TabLayout>
+
         <ScrollView
             android:id="@+id/data_summary_scroll_view"
             android:layout_width="match_parent"
@@ -14,77 +75,17 @@
             android:fillViewport="true"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/data_summary_tab_layout"
             app:layout_constraintBottom_toTopOf="@id/bottom_nav_bar">
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <com.google.android.material.tabs.TabLayout
-                    android:id="@+id/summary_tab_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent">
-
-                    <com.google.android.material.tabs.TabItem
-                        android:layout="@null"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:icon="@drawable/ic_tag_black_24dp"/>
-
-                    <com.google.android.material.tabs.TabItem
-                        android:layout="@null"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:icon="@drawable/ic_checklist_black_24dp"/>
-
-                    <com.google.android.material.tabs.TabItem
-                        android:layout="@null"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:icon="@drawable/ic_crossblock" />
-
-                    <com.google.android.material.tabs.TabItem
-                        android:layout="@null"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:icon="@drawable/ic_summarize_black_24dp"/>
-                </com.google.android.material.tabs.TabLayout>
-
-                <com.google.android.material.tabs.TabLayout
-                    android:id="@+id/data_summary_tab_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/summary_tab_layout">
-
-                    <com.google.android.material.tabs.TabItem
-                        android:layout="@null"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/sex" />
-
-                    <com.google.android.material.tabs.TabItem
-                        android:layout="@null"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/type" />
-
-                    <com.google.android.material.tabs.TabItem
-                        android:layout="@null"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/meta" />
-
-                </com.google.android.material.tabs.TabLayout>
-
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/data_summary_recycler_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/data_summary_tab_layout"
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginEnd="8dp"
@@ -95,7 +96,7 @@
                 <com.github.mikephil.charting.charts.PieChart
                     android:id="@+id/data_summary_pie_chart"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="256dp"
                     android:layout_margin="8dp"
                     android:layout_gravity="center"
                     android:background="@drawable/cell"
@@ -104,7 +105,7 @@
                 <com.github.mikephil.charting.charts.BarChart
                     android:id="@+id/data_summary_bar_chart"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="256dp"
                     android:layout_below="@id/data_summary_recycler_view"
                     android:layout_gravity="center"
                     android:layout_marginStart="8dp"
@@ -112,7 +113,7 @@
                     android:layout_marginEnd="8dp"
                     android:layout_marginBottom="8dp"
                     android:background="@drawable/cell"
-                    android:visibility="invisible" />
+                    android:visibility="gone" />
 
             </RelativeLayout>
         </ScrollView>
