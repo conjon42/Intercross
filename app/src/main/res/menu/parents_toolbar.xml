@@ -5,11 +5,13 @@
         android:id="@+id/action_parents_print"
         android:icon="@drawable/ic_cross_print"
         android:title="@string/menu_parents_print_title"
+        android:visible="false"
         app:showAsAction="ifRoom"/>
     <item
         android:id="@+id/action_parents_delete"
         android:icon="@android:drawable/ic_menu_delete"
         android:title="@string/menu_parents_delete_title"
+        android:visible="false"
         app:showAsAction="ifRoom"/>
     <item
         android:id="@+id/action_import"
