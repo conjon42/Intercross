@@ -111,9 +111,9 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
     private fun setupTable(entries: List<WishlistView>) {
 
         val maleColumnHeaders = entries.map { CellData(it.dadName, it.momId, it.dadId) }
-            .distinctBy { it.mid }
+            .distinctBy { it.mid }.sortedBy { it.mid }
         val femaleRowHeaders = entries.map { CellData(it.momName, it.momId, it.dadId) }
-            .distinctBy { it.fid }
+            .distinctBy { it.fid }.sortedBy { it.fid }
 
         val data = arrayListOf<List<CellData>>()
         for (female in femaleRowHeaders) {
@@ -273,23 +273,19 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
                 event.femaleObsUnitDbId == fid && event.maleObsUnitDbId == mid
             }
 
-            if (children.size == 1) {
-                children.first().id?.let { id ->
-                    findNavController()
-                        .navigate(CrossBlockFragmentDirections
-                            .actionToEventDetail(id))
-                }
-            } else {
-
-                Dialogs.list(AlertDialog.Builder(ctx),
-                    getString(R.string.click_item_for_child_details),
-                    getString(R.string.no_child_exists),
-                    children) { id ->
+            Dialogs.list(AlertDialog.Builder(ctx),
+                getString(R.string.click_item_for_child_details),
+                getString(R.string.no_child_exists),
+                mid, fid, children, { id ->
 
                     findNavController()
                         .navigate(CrossBlockFragmentDirections
                             .actionToEventDetail(id))
-                }
+                }) { male, female ->
+
+                findNavController()
+                    .navigate(CrossBlockFragmentDirections
+                        .actionFromCrossblockToEventsList(male, female))
             }
         }
     }
