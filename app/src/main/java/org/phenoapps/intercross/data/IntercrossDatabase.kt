@@ -12,7 +12,7 @@ import org.phenoapps.intercross.data.models.*
 @Database(entities = [Event::class, Parent::class,
     Wishlist::class, Settings::class, PollenGroup::class,
     Meta::class, MetadataValues::class],
-        views = [WishlistView::class], version = 2)
+        views = [WishlistView::class], version = 2, exportSchema = true)
 @TypeConverters(Converters::class)
 abstract class IntercrossDatabase : RoomDatabase() {
 

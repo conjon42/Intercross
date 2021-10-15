@@ -46,9 +46,8 @@ class SimpleListAdapter(private val listener: OnSimpleItemClicked)
 
             with(holder) {
 
-                itemView.setBackgroundColor(
-                    if (mSelectedPosition == position) Color.GREEN
-                    else Color.TRANSPARENT)
+                if (mSelectedPosition == position) itemView.setBackgroundColor(Color.parseColor("#6000ee00"))
+                else itemView.setBackgroundResource(R.drawable.text_cell)
 
                 holder.itemView.setOnLongClickListener {
 

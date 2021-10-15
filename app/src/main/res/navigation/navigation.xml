@@ -141,6 +141,8 @@
             app:destination="@id/event_fragment" />
         <action android:id="@+id/action_to_events_from_scan"
             app:destination="@id/events_fragment"/>
+        <action android:id="@+id/action_from_scan_to_event_detail"
+            app:destination="@+id/event_fragment"/>
     </fragment>
 
     <fragment
@@ -227,6 +229,14 @@
         android:label="@string/wishlist_label"
         tools:layout="@layout/fragment_cross_count">
 
+        <action android:id="@+id/action_from_wishlist_to_events_list"
+            app:destination="@+id/events_fragment"
+            app:popUpTo="@id/wishlist_fragment">
+            <argument app:argType="string"
+                android:name="male"/>
+            <argument app:argType="string"
+                android:name="female"/>
+        </action>
         <action android:id="@+id/action_to_cross_count"
             app:destination="@id/cross_count_fragment"
             app:popUpTo="@id/events_fragment"/>
@@ -242,10 +252,31 @@
     </fragment>
 
     <fragment
+        android:id="@+id/search_fragment"
+        android:name="org.phenoapps.intercross.fragments.SearchFragment"
+        android:label="@string/search_fragment_label"
+        tools:layout="@layout/fragment_search">
+        <action android:id="@+id/action_from_search_to_event_detail"
+            app:destination="@id/event_fragment"
+            app:popUpTo="@id/search_fragment"/>
+    </fragment>
+
+    <fragment
         android:id="@+id/cross_count_fragment"
         android:name="org.phenoapps.intercross.fragments.CrossCountFragment"
         android:label="@string/summary_label"
         tools:layout="@layout/fragment_cross_count">
+        <action android:id="@+id/action_from_cross_count_to_search"
+            app:destination="@+id/search_fragment"
+            app:popUpTo="@id/cross_count_fragment"/>
+        <action android:id="@+id/action_from_crosscount_to_events_list"
+            app:destination="@+id/events_fragment"
+            app:popUpTo="@id/cross_count_fragment">
+            <argument app:argType="string"
+                android:name="male"/>
+            <argument app:argType="string"
+                android:name="female"/>
+        </action>
         <action android:id="@+id/action_to_wishlist"
             app:destination="@id/wishlist_fragment"
             app:popUpTo="@id/events_fragment"/>

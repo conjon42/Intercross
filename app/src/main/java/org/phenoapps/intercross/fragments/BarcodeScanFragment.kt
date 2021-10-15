@@ -4,6 +4,7 @@ import android.Manifest
 import android.graphics.Color
 import android.os.Handler
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -28,6 +29,7 @@ import org.phenoapps.intercross.data.viewmodels.*
 import org.phenoapps.intercross.data.viewmodels.factory.*
 import org.phenoapps.intercross.databinding.FragmentBarcodeScanBinding
 import org.phenoapps.intercross.util.CrossUtil
+import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.util.KeyUtil
 import java.util.*
@@ -138,9 +140,39 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
                             val scannedEvent = mEvents.find { event -> event.eventDbId == result.text.toString().toLowerCase(Locale.ROOT) }
 
-                            findNavController().navigate(BarcodeScanFragmentDirections
-                                    .actionToEventFragmentFromScan(scannedEvent?.id ?: -1L))
+                            if (scannedEvent == null) {
 
+                                mParents.find { parent -> parent.codeId == result.text.toString().toLowerCase(Locale.ROOT) }?.let { parent ->
+
+                                    context?.let { ctx ->
+
+                                        val children = mEvents.filter { event ->
+                                            event.femaleObsUnitDbId == parent.codeId || event.maleObsUnitDbId == parent.codeId
+                                        }
+
+                                        mBarcodeScanner.pause()
+
+                                        Dialogs.list(
+                                            AlertDialog.Builder(ctx),
+                                            getString(R.string.click_item_for_child_details),
+                                            getString(R.string.no_child_exists),
+                                            children, { id ->
+
+                                                findNavController()
+                                                    .navigate(BarcodeScanFragmentDirections
+                                                        .actionFromScanToEventDetail(id))
+                                            }) {
+
+                                            mBarcodeScanner.resume()
+                                        }
+                                    }
+                                }
+
+                            } else {
+
+                                findNavController().navigate(BarcodeScanFragmentDirections
+                                    .actionToEventFragmentFromScan(scannedEvent.id ?: -1L))
+                            }
                         }
                         CONTINUOUS -> {
                             zxingBarcodeScanner.setStatusText(getString(R.string.zxing_scan_mode_continuous))
@@ -229,7 +261,15 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
             cameraSettings.isBarcodeSceneModeEnabled = true
 
-            decodeSingle(mCallback)
+            arguments?.let {
+
+                when (it.getInt("mode")) {
+
+                    SEARCH -> decodeContinuous(mCallback)
+
+                    else -> decodeSingle(mCallback)
+                }
+            }
         }
     }
 
@@ -297,6 +337,10 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                 mEvents = ArrayList(it)
             }
         })
+
+        parentsModel.parents.observe(viewLifecycleOwner) {
+            mParents = ArrayList(it)
+        }
 
         settingsModel.settings.observe(viewLifecycleOwner, {
             it?.let {
