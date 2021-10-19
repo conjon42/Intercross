@@ -2,6 +2,10 @@
 <PreferenceScreen android:key="@string/root_preferences"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto" >
+
+    <com.bytehamster.lib.preferencesearch.SearchPreference
+        android:key="@string/key_pref_search" />
+
     <PreferenceScreen android:key="@string/root_profile"
         android:title="Profile"
         android:icon="@drawable/ic_account_circle_black_24dp"

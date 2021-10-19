@@ -7,6 +7,7 @@ import android.view.View
 import androidx.navigation.fragment.findNavController
 import androidx.preference.Preference
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.util.KeyUtil
 
 class PrintingFragment : ToolbarPreferenceFragment(R.xml.printing_preferences, R.string.root_printing) {
@@ -44,5 +45,11 @@ class PrintingFragment : ToolbarPreferenceFragment(R.xml.printing_preferences, R
             }
             true
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        (activity as MainActivity).supportActionBar?.show()
     }
 }

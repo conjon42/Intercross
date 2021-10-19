@@ -389,5 +389,29 @@
     <string name="minimum_wish_met">Minimum wish for %s met.</string>
     <string name="maximum_wish_met">Maximum wish met for %s.</string>
     <string name="frag_wf_a_female_must_be_chosen">A female must be chosen.</string>
+    <string name="menu_cross_count_delete_all_title">Delete All</string>
+    <string name="dialog_cross_count_delete_all_message">This will irreversably delete all crosses.</string>
+    <string name="dialog_cross_count_delete_all_message_2">Are you sure?</string>
+    <string name="menu_cross_count_expand_more">Expand Columns</string>
+    <string name="menu_cross_count_expand_less_title">Expand Less</string>
+    <string name="menu_cross_count_expand_more_title">Expand More</string>
+    <string name="date">Date</string>
+    <string name="progress">Progress</string>
+    <string name="minimum">Minimum</string>
+    <string name="maximum">Maximum</string>
+    <string name="wishlist_complete_content_description">Wishlist complete</string>
+    <string name="frag_parents_parents_not_deleted_reason">Some parents could not be deleted because they are parents to a cross.</string>
+    <string name="frag_parents_new_parent_btn">Button to add a new parent.</string>
+    <string name="frag_parents_selected_text">%s parents are selected</string>
+    <string name="menu_parents_delete_title">Delete selected parents.</string>
+    <string name="menu_parents_print_title">Print selected parents.</string>
+    <string name="frag_parent_confirm_delete_message">This will delete the selected parents.</string>
+    <string name="frag_parent_delete_selected_title">Delete Parents</string>
+    <string name="dialog_export_title">Export Crosses</string>
+    <string name="default_value">Default Value</string>
+    <string name="nav_frag_metadata_label">Metadata List Fragment</string>
+    <string name="nav_frag_metadata_form_label">Metadata Form Label</string>
+    <string name="frag_metadata_list_delete_dialog_title">Delete this metadata?</string>
+    <string name="frag_metadata_confirm_delete_message">This will delete all metadata values for this property.</string>
 
 </resources>

@@ -6,6 +6,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.preference.Preference
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.SettingsRepository
 import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
@@ -64,5 +65,11 @@ class NamingFragment : ToolbarPreferenceFragment(R.xml.naming_preferences, R.str
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        (activity as MainActivity).supportActionBar?.show()
     }
 }

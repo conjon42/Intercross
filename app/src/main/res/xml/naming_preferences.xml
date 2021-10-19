@@ -3,7 +3,7 @@
     android:key="@string/root_naming"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto" >
-    <PreferenceCategory android:title="Naming" app:iconSpaceReserved="false">
+    <PreferenceCategory app:iconSpaceReserved="false">
         <SwitchPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_setting_male_blank"

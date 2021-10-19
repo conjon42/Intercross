@@ -2,8 +2,6 @@ package org.phenoapps.intercross.fragments.preferences
 
 import android.os.Bundle
 import android.view.View
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.preference.EditTextPreference
 import androidx.preference.PreferenceFragmentCompat
@@ -43,6 +41,8 @@ open class ToolbarPreferenceFragment(private val xml: Int, private val key: Int)
     override fun onResume() {
         super.onResume()
 
+        (activity as MainActivity).supportActionBar?.hide()
+
         mBottomNavBar?.selectedItemId = R.id.action_nav_settings
 
     }
@@ -73,7 +73,7 @@ open class ToolbarPreferenceFragment(private val xml: Int, private val key: Int)
                 }
                 R.id.action_nav_export -> {
 
-                    (activity as MainActivity).showImportOrExportDialog {
+                    (activity as MainActivity).showExportDialog {
 
                         mBottomNavBar?.selectedItemId = R.id.action_nav_settings
 

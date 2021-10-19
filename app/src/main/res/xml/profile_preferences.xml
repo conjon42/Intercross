@@ -3,7 +3,7 @@
     android:key="@string/root_profile"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto" >
-    <PreferenceCategory android:title="Profile" app:iconSpaceReserved="false">
+    <PreferenceCategory app:iconSpaceReserved="false">
         <EditTextPreference
             android:title="Person"
             android:icon="@drawable/ic_setting_person"

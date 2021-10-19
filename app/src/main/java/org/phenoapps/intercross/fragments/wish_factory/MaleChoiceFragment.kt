@@ -7,6 +7,7 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.SimpleListAdapter
 import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.PollenGroupRepository
+import org.phenoapps.intercross.data.models.Parent
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
 import org.phenoapps.intercross.data.viewmodels.PollenGroupListViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
@@ -64,7 +65,36 @@ class MaleChoiceFragment : IntercrossBaseFragment<FragmentWfChooseMaleBinding>(R
                 (mBinding.wfMaleRv.adapter as SimpleListAdapter).submitList(
                     (listOf(EMPTY_PARENT) + dadPairs + groupPairs).distinctBy { it.first }
                 )
+
+                arguments?.let { args ->
+                    with(args) {
+                        if ("barcode" in keySet()) {
+                            val femaleName = getString("name") ?: "?"
+                            val femaleId = getString("id") ?: "-1"
+                            getString("barcode")?.let { code ->
+                                val dad = dads.find { it.codeId == code }
+                                val group = groups.find { it.codeId == code }
+                                val maleName = dad?.name
+                                    ?: if (group != null) {
+                                        group.name
+                                    } else {
+                                        parentList.insert(Parent(code, 1))
+                                        code
+                                    }
+                                findNavController().navigate(MaleChoiceFragmentDirections
+                                    .actionFromMalesToTypesFragment(femaleId, femaleName,
+                                        code, maleName))
+                            }
+                        }
+                    }
+                }
             }
+        }
+
+        mBinding.wfChooseMaleBarcodeScanBtn.setOnClickListener {
+
+            findNavController().navigate(MaleChoiceFragmentDirections
+                .actionFromMalesToBarcodeScanFragment(femaleId ?: "-1", femaleName ?: "?"))
 
         }
     }

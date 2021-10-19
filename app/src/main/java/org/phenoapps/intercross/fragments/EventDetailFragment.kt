@@ -7,6 +7,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
@@ -26,7 +27,7 @@ import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.databinding.FragmentEventDetailBinding
 import org.phenoapps.intercross.interfaces.MetadataManager
 import org.phenoapps.intercross.data.models.MetadataValues
-import org.phenoapps.intercross.data.models.Metadata
+import org.phenoapps.intercross.data.models.Meta
 import org.phenoapps.intercross.data.models.WishlistView
 import org.phenoapps.intercross.data.viewmodels.*
 import org.phenoapps.intercross.data.viewmodels.factory.*
@@ -38,7 +39,7 @@ class EventDetailFragment:
 
     private lateinit var mEvent: Event
     private lateinit var mMetaValuesList: List<MetadataValues>
-    private lateinit var mMetadataList: List<Metadata>
+    private lateinit var mMetaList: List<Meta>
     private lateinit var mWishlist: List<WishlistView>
 
     private val eventsList: EventListViewModel by viewModels {
@@ -103,7 +104,9 @@ class EventDetailFragment:
 
             metaDataVisibility = getMetaDataVisibility(requireContext())
 
-            eventDetailMetadataRecyclerView.adapter = MetadataAdapter(this@EventDetailFragment)
+            eventDetailMetadataRecyclerView.adapter = MetadataAdapter(this@EventDetailFragment.context
+                ?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager,
+                this@EventDetailFragment)
 
             refreshObservers()
         }
@@ -234,7 +237,7 @@ class EventDetailFragment:
 
         metadataViewModel.metadata.observeOnce(viewLifecycleOwner) {
             it?.let {
-                mMetadataList = it
+                mMetaList = it
             }
         }
     }
@@ -278,11 +281,11 @@ class EventDetailFragment:
 
     //updates a single row value for the current event
     //or inserts a new metadata value row if this value has not been saved previously
-    override fun onMetadataUpdated(property: String, value: Int) {
+    override fun onMetadataUpdated(property: String, value: Int?) {
 
         val eid = mEvent.id?.toInt() ?: -1
 
-        mMetadataList.find { it.property == property }?.id?.toInt()?.let { metaId ->
+        mMetaList.find { it.property == property }?.id?.toInt()?.let { metaId ->
 
             val values = mMetaValuesList.filter { it.eid == eid && it.metaId == metaId }
             if (mMetaValuesList.isNotEmpty() && values.isNotEmpty()) { //update the old value
@@ -301,7 +304,11 @@ class EventDetailFragment:
             }
         }
 
-        checkWishlist(property, value)
+        value?.let { v ->
+
+            checkWishlist(property, v)
+
+        }
     }
 
     private fun checkWishlist(property: String, value: Int) {

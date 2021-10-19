@@ -1,28 +1,26 @@
 package org.phenoapps.intercross.activities
 
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.view.MenuItem
 import android.widget.Toast
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.viewModels
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
+import com.bytehamster.lib.preferencesearch.SearchPreferenceResult
+import com.bytehamster.lib.preferencesearch.SearchPreferenceResultListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.adapters.models.MetadataModel
 import org.phenoapps.intercross.data.*
-import org.phenoapps.intercross.data.dao.EventsDao
 import org.phenoapps.intercross.data.models.*
 import org.phenoapps.intercross.data.viewmodels.*
 import org.phenoapps.intercross.data.viewmodels.factory.*
@@ -35,7 +33,7 @@ import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
 //    private val mFirebaseAnalytics by lazy {
 //        FirebaseAnalytics.getInstance(this)
@@ -67,6 +65,18 @@ class MainActivity : AppCompatActivity() {
         MetadataViewModelFactory(MetadataRepository.getInstance(mDatabase.metadataDao()))
     }
 
+    private val mPref by lazy {
+        PreferenceManager.getDefaultSharedPreferences(this)
+    }
+
+    private val mAuthPref by lazy {
+        getSharedPreferences("auth", MODE_PRIVATE)
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(this)
+    }
+
     private var exportCrossesFile: ActivityResultLauncher<String>? = null
 
     /**
@@ -96,7 +106,7 @@ class MainActivity : AppCompatActivity() {
 
     private var mParents: List<Parent> = ArrayList()
 
-    private var mMetadata: List<Metadata> = ArrayList()
+    private var mMetadata: List<Meta> = ArrayList()
 
     private var mMetaValues: List<MetadataValues> = ArrayList()
 
@@ -179,8 +189,8 @@ class MainActivity : AppCompatActivity() {
             title = ""
             this?.let {
                 it.themedContext
-                setDisplayHomeAsUpEnabled(false)
-                setHomeButtonEnabled(false)
+                setDisplayHomeAsUpEnabled(true)
+                setHomeButtonEnabled(true)
             }
         }
 
@@ -322,7 +332,7 @@ class MainActivity : AppCompatActivity() {
                             && tables[4].isNotEmpty()) {
 
                             //get unique metadata to insert
-                            val metadata = tables[3].filterIsInstance(Metadata::class.java)
+                            val metadata = tables[3].filterIsInstance(Meta::class.java)
                                 .distinctBy { m -> m.property}
                             metadata.forEachIndexed { index, m ->
                                 metadataViewModel.insert(m)
@@ -429,46 +439,59 @@ class MainActivity : AppCompatActivity() {
 
     fun launchImport() {
 
-        //show a dialog asking user to import from local file or brapi
-        AlertDialog.Builder(this)
-            .setSingleChoiceItems(arrayOf("Local", "BrAPI"), 0) { dialog, which ->
-                when (which) {
-                    //import file from local directory
-                    0 -> importedFileContent?.launch("*/*")
+        if (mAuthPref.getString(mKeyUtil.brapiKeys.brapiTokenKey, null) != null) {
+            //show a dialog asking user to import from local file or brapi
+            AlertDialog.Builder(this)
+                .setSingleChoiceItems(arrayOf("Local", "BrAPI"), 0) { dialog, which ->
+                    when (which) {
+                        //import file from local directory
+                        0 -> importedFileContent?.launch("*/*")
 
-                    //start brapi import fragment
-                    1 -> mNavController.navigate(CrossCountFragmentDirections.globalActionToWishlistImport())
+                        //start brapi import fragment
+                        1 -> mNavController.navigate(CrossCountFragmentDirections.globalActionToWishlistImport())
 
+                    }
+
+                    dialog.dismiss()
                 }
-
-                dialog.dismiss()
-            }
-            .show()
+                .show()
+        } else {
+            importedFileContent?.launch("*/*")
+        }
     }
 
-    fun showImportOrExportDialog(onDismiss: () -> Unit) {
+    fun showExportDialog(onDismiss: () -> Unit) {
 
-        AlertDialog.Builder(this)
-            .setSingleChoiceItems(arrayOf("Local", "BrAPI"), 0) { dialog, which ->
-                when (which) {
-                    0 -> {
-                        val defaultFileNamePrefix = getString(R.string.default_crosses_export_file_name)
-                        exportCrossesFile?.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
+        val tokenCheck = mAuthPref.getString(mKeyUtil.brapiKeys.brapiTokenKey, null)
+        val importCheck = mPref.getString(mKeyUtil.brapiHasBeenImported, null)
+        val defaultFileNamePrefix = getString(R.string.default_crosses_export_file_name)
+
+        if (tokenCheck != null || importCheck != null) {
+
+            AlertDialog.Builder(this)
+                .setTitle(R.string.dialog_export_title)
+                .setSingleChoiceItems(arrayOf("Local", "BrAPI"), 0) { dialog, which ->
+                    when (which) {
+                        0 -> {
+                            exportCrossesFile?.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
+                        }
+                        else -> {
+                            mNavController.navigate(R.id.global_action_to_brapi_export)
+                        }
                     }
-                    else -> {
-                        mNavController.navigate(R.id.global_action_to_brapi_export)
-                    }
+
+                    dialog.dismiss()
                 }
+                .setOnDismissListener {
+                    onDismiss()
+                }
+                .show()
 
-                dialog.dismiss()
-            }
-            .setOnDismissListener {
-                onDismiss()
-            }
-            .show()
+            onDismiss()
 
-        onDismiss()
-
+        } else {
+            exportCrossesFile?.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
+        }
     }
 
     fun navigateToLastSummaryFragment() {
@@ -535,5 +558,32 @@ class MainActivity : AppCompatActivity() {
                 else -> super.onBackPressed()
             }
         }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                onBackPressed()
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+
+    override fun onSearchResultClicked(result: SearchPreferenceResult) {
+
+        result.closeSearchPage(this)
+
+        mNavController.navigate(
+            when (result.key) {
+                in mKeyUtil.profileKeySet -> R.id.profile_preference_fragment
+                in mKeyUtil.nameKeySet -> R.id.naming_preference_fragment
+                in mKeyUtil.workKeySet -> R.id.workflow_preference_fragment
+                in mKeyUtil.printKeySet -> R.id.printing_preference_fragment
+                in mKeyUtil.dbKeySet -> R.id.database_preference_fragment
+                in mKeyUtil.aboutKeySet -> R.id.about_preference_fragment
+                else -> R.id.brapi_preference_fragment
+            }
+        )
     }
 }

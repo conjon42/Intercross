@@ -11,7 +11,7 @@ import org.phenoapps.intercross.data.models.*
 
 @Database(entities = [Event::class, Parent::class,
     Wishlist::class, Settings::class, PollenGroup::class,
-    Metadata::class, MetadataValues::class],
+    Meta::class, MetadataValues::class],
         views = [WishlistView::class], version = 2)
 @TypeConverters(Converters::class)
 abstract class IntercrossDatabase : RoomDatabase() {
@@ -26,7 +26,7 @@ abstract class IntercrossDatabase : RoomDatabase() {
 
     companion object {
 
-        const val DATABASE_NAME = "intercross.db"
+        const val DATABASE_NAME = "INTERCROSS"
 
         //singleton pattern
         @Volatile private var instance: IntercrossDatabase? = null
@@ -42,7 +42,6 @@ abstract class IntercrossDatabase : RoomDatabase() {
         private fun buildDatabase(ctx: Context): IntercrossDatabase {
 
             return Room.databaseBuilder(ctx, IntercrossDatabase::class.java, DATABASE_NAME)
-                .fallbackToDestructiveMigrationOnDowngrade() //allows flexible dev tests for going back db versions
                 .addMigrations(MigrationV2MetaData()) //v1 -> v2 migration added JSON based metadata
                 .setJournalMode(JournalMode.TRUNCATE) //truncate mode makes it easier to export/import database w/o having to manage WAL files.
                 .build()

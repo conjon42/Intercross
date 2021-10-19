@@ -5,15 +5,17 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.preference.*
 import kotlinx.coroutines.*
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.MetaValuesRepository
 import org.phenoapps.intercross.data.MetadataRepository
 import org.phenoapps.intercross.data.models.Event
-import org.phenoapps.intercross.data.models.Metadata
+import org.phenoapps.intercross.data.models.Meta
 import org.phenoapps.intercross.data.models.MetadataValues
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.MetaValuesViewModel
@@ -26,7 +28,6 @@ import org.phenoapps.intercross.dialogs.MetadataDefaultEditorDialog
 import org.phenoapps.intercross.interfaces.MetadataManager
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.KeyUtil
-import org.phenoapps.intercross.util.observeOnce
 
 class WorkflowFragment : ToolbarPreferenceFragment(
     R.xml.workflow_preferences, R.string.root_workflow), MetadataManager, CoroutineScope by MainScope() {
@@ -56,7 +57,7 @@ class WorkflowFragment : ToolbarPreferenceFragment(
 
     private var mEvents: List<Event> = ArrayList()
     private lateinit var mMetaValuesList: List<MetadataValues>
-    private lateinit var mMetadataList: List<Metadata>
+    private lateinit var mMetaList: List<Meta>
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -73,7 +74,7 @@ class WorkflowFragment : ToolbarPreferenceFragment(
 
         metadataViewModel.metadata.observe(viewLifecycleOwner) {
             it?.let {
-                mMetadataList = it
+                mMetaList = it
             }
         }
 
@@ -131,41 +132,42 @@ class WorkflowFragment : ToolbarPreferenceFragment(
 
                 setOnPreferenceClickListener {
 
-                    context?.let { ctx ->
+                    findNavController().navigate(WorkflowFragmentDirections
+                        .actionFromWorkflowToMetadataList())
 
-                        val defaults = mMetadataList.map { it.defaultValue }
-
-                        val properties = mMetadataList.map { it.property }
-
-                        val viewed = properties.zip(defaults).map { "${it.first} -> ${it.second}" }
-                            .toTypedArray()
-
-                        if (properties.isNotEmpty()) {
-
-                            AlertDialog.Builder(ctx).setSingleChoiceItems(viewed, 0) { dialog, item ->
-
-                                val default = mMetadataList.find { it.property == properties[item] }?.defaultValue ?: 1
-
-                                MetadataDefaultEditorDialog(ctx,
-                                    mMetadataList[item].id ?: -1L,
-                                    properties[item],
-                                    default,
-                                    this@WorkflowFragment).show()
-
-                                dialog.dismiss()
-
-                            }.show()
-
-                        } else Toast.makeText(ctx, R.string.fragment_settings_no_metadata_exists, Toast.LENGTH_SHORT).show()
-                    }
+//                    context?.let { ctx ->
+//
+//                        val defaults = mMetaList.map { it.defaultValue }
+//
+//                        val properties = mMetaList.map { it.property }
+//
+//                        val viewed = properties.zip(defaults).map { "${it.first} -> ${it.second}" }
+//                            .toTypedArray()
+//
+//                        if (properties.isNotEmpty()) {
+//
+//                            AlertDialog.Builder(ctx).setSingleChoiceItems(viewed, 0) { dialog, item ->
+//
+//                                val default = mMetaList.find { it.property == properties[item] }?.defaultValue ?: 1
+//
+//                                MetadataDefaultEditorDialog(ctx,
+//                                    mMetaList[item].id ?: -1L,
+//                                    properties[item],
+//                                    default,
+//                                    this@WorkflowFragment).show()
+//
+//                                dialog.dismiss()
+//
+//                            }.show()
+//
+//                        } else Toast.makeText(ctx, R.string.fragment_settings_no_metadata_exists, Toast.LENGTH_SHORT).show()
+//                    }
 
                     true
                 }
             }
         }
     }
-
-    override fun onMetadataUpdated(property: String, value: Int) {}
 
     //asks the user to delete the property,
     override fun onMetadataLongClicked(rowid: Long, property: String) {
@@ -205,7 +207,7 @@ class WorkflowFragment : ToolbarPreferenceFragment(
             withContext(Dispatchers.IO) {
                 //insert a new row
                 val mid = metadataViewModel.insert(
-                    Metadata(property, value)
+                    Meta(property, value)
                 )
 
                 mEvents.forEach {
@@ -223,7 +225,7 @@ class WorkflowFragment : ToolbarPreferenceFragment(
         launch {
             withContext(Dispatchers.IO) {
                 metadataViewModel.update(
-                    Metadata(property, value, rowId)
+                    Meta(property, value, rowId)
                 )
             }
         }
@@ -235,7 +237,7 @@ class WorkflowFragment : ToolbarPreferenceFragment(
         launch {
             withContext(Dispatchers.IO) {
                 metadataViewModel.delete(
-                    Metadata(property, id = rowid)
+                    Meta(property, id = rowid)
                 )
 
                 mMetaValuesList.filter { it.metaId == rowid.toInt() }.forEach {
@@ -243,5 +245,11 @@ class WorkflowFragment : ToolbarPreferenceFragment(
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        (activity as MainActivity).supportActionBar?.show()
     }
 }

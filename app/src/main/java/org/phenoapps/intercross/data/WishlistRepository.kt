@@ -30,6 +30,8 @@ class WishlistRepository private constructor(
 
     fun getAll() = wishlistDao.getAll()
 
+    fun getWishes() = wishlistDao.getWishes()
+
     fun getAllCounts() = wishlistDao.getAllCounts()
 
     fun getAllCommutativeWishCounts() = wishlistDao.getAllCommutativeWishCounts()
@@ -37,10 +39,6 @@ class WishlistRepository private constructor(
     fun getCrossblock() = wishlistDao.getCrossblock()
 
     fun getCommutativeCrossblock() = wishlistDao.getCommutativeCrossBlock()
-
-    fun getMaleHeaders() = wishlistDao.getMaleHeaders()
-
-    fun getFemaleHeaders() = wishlistDao.getFemaleHeaders()
 
     companion object {
         @Volatile private var instance: WishlistRepository? = null

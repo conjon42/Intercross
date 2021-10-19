@@ -13,6 +13,12 @@ class DatabaseFragment : ToolbarPreferenceFragment(R.xml.database_preferences, R
         KeyUtil(context)
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        (activity as MainActivity).supportActionBar?.show()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 

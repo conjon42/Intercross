@@ -1,13 +1,17 @@
 package org.phenoapps.intercross.fragments.wish_factory
 
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.SimpleListAdapter
 import org.phenoapps.intercross.data.ParentsRepository
+import org.phenoapps.intercross.data.models.Parent
+import org.phenoapps.intercross.data.viewmodels.CrossSharedViewModel
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentWfChooseFemaleBinding
+import org.phenoapps.intercross.fragments.EventsFragmentDirections
 import org.phenoapps.intercross.fragments.IntercrossBaseFragment
 import org.phenoapps.intercross.interfaces.OnSimpleItemClicked
 import org.phenoapps.intercross.util.SnackbarQueue
@@ -43,6 +47,31 @@ class FemaleChoiceFragment : IntercrossBaseFragment<FragmentWfChooseFemaleBindin
                 .filter { it.name.isNotBlank() }
                 .map { it.codeId to it.name }
                 .distinctBy { it.first })
+
+            arguments?.let { args ->
+                with(args) {
+                    if ("barcode" in keySet()) {
+                        getString("barcode")?.let { code ->
+                            val mom = moms.find { it.codeId == code }
+                            val femaleName = if (mom != null) {
+                                mom.name
+                            } else {
+                                parentList.insert(Parent(code, 0))
+                                code
+                            }
+                            findNavController().navigate(FemaleChoiceFragmentDirections
+                                .actionFromFemalesToMalesFragment(code, femaleName))
+                        }
+                    }
+                }
+            }
+        }
+
+        mBinding.wfChooseFemaleBarcodeScanBtn.setOnClickListener {
+
+            findNavController().navigate(FemaleChoiceFragmentDirections
+                .actionFromFemalesToBarcodeScanFragment())
+
         }
     }
 

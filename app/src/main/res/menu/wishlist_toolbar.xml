@@ -11,4 +11,9 @@
         android:icon="@drawable/ic_nv_import_white"
         android:title="@string/import_file"
         app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/action_wishlist_delete_all"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:title="@string/menu_cross_count_delete_all_title"
+        app:showAsAction="ifRoom"/>
 </menu>
