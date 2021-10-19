@@ -135,14 +135,15 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
         val progressText = getString(R.string.progress)
         val minimumText = getString(R.string.minimum)
         val maximumText = getString(R.string.maximum)
+        val completedText = getString(R.string.completed)
 
         val data = arrayListOf<List<CrossCountFragment.CellData>>()
-        val completed = arrayListOf<CrossCountFragment.CellData>()
+
         entries.forEach {
-            completed.add(CrossCountFragment.CellData("OK",
-                complete = it.progress.toIntOrNull() ?: 0 >= it.minimum.toIntOrNull() ?: 0
-            ))
             data.add(listOf(
+                CrossCountFragment.CellData("",
+                    complete = it.progress.toIntOrNull() ?: 0 >= it.minimum.toIntOrNull() ?: 0
+                ),
                 CrossCountFragment.CellData(it.m, it.mid),
                 CrossCountFragment.CellData(it.f, it.fid),
                 CrossCountFragment.CellData(it.progress),
@@ -160,13 +161,14 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
             (adapter as? TableViewAdapter)?.setAllItems(
                 listOf(
+                    CrossCountFragment.CellData(completedText),
                     CrossCountFragment.CellData(maleText),
                     CrossCountFragment.CellData(femaleText),
                     CrossCountFragment.CellData(progressText),
                     CrossCountFragment.CellData(minimumText),
                     CrossCountFragment.CellData(maximumText)
                 ),
-                completed,
+                listOf(),
                 data
             )
 
@@ -443,23 +445,20 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
         val children = if (isCommutativeCrossing) getChildrenCommutative(female, male)
         else getChildren(female, male)
 
-        if (children.size == 1) {
-            children.first().id?.let { id ->
-                findNavController().navigate(WishlistFragmentDirections
-                    .globalActionToEventDetail(id))
-            }
-        } else {
-            context?.let { ctx ->
-                Dialogs.list(
-                    AlertDialog.Builder(ctx),
-                    getString(R.string.click_item_for_child_details),
-                    getString(R.string.no_child_exists),
-                    children
-                ) { id ->
+        context?.let { ctx ->
+            Dialogs.list(
+                AlertDialog.Builder(ctx),
+                getString(R.string.click_item_for_child_details),
+                getString(R.string.no_child_exists),
+                male, female, children,
+                { id ->
 
                     findNavController().navigate(WishlistFragmentDirections
                         .globalActionToEventDetail(id))
-                }
+                }) { male, female ->
+
+                findNavController().navigate(WishlistFragmentDirections
+                    .actionFromWishlistToEventsList(male, female))
             }
         }
     }
@@ -475,8 +474,8 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
             try {
 
-                val male = (r[0] as? CrossCountFragment.CellData)?.uuid
-                val female = (r[1] as? CrossCountFragment.CellData)?.uuid
+                val male = (r[1] as? CrossCountFragment.CellData)?.uuid
+                val female = (r[2] as? CrossCountFragment.CellData)?.uuid
 
                 male?.let { maleId ->
                     female?.let { femaleId ->

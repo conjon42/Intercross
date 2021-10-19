@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -26,10 +27,14 @@ public class TableViewAdapter extends AbstractTableAdapter<CrossCountFragment.Ce
     static class CellViewHolder extends AbstractSorterViewHolder {
 
         final TextView textView;
+        final ImageView imageView;
+        final LinearLayout linearLayout;
 
         public CellViewHolder(View itemView) {
             super(itemView);
 
+            linearLayout = itemView.findViewById(R.id.list_item_table_cell_container);
+            imageView = itemView.findViewById(R.id.list_item_table_cell_iv);
             textView = itemView.findViewById(R.id.list_item_table_cell_tv);
         }
     }
@@ -42,6 +47,7 @@ public class TableViewAdapter extends AbstractTableAdapter<CrossCountFragment.Ce
             super(itemView);
 
             imageView = itemView.findViewById(R.id.list_item_table_checkmark_iv);
+            imageView.setVisibility(View.GONE);
         }
     }
 
@@ -90,7 +96,11 @@ public class TableViewAdapter extends AbstractTableAdapter<CrossCountFragment.Ce
          if (cellItemModel != null) {
              viewHolder.textView.setText(cellItemModel.getText());
              if (cellItemModel.getComplete()) {
-                 viewHolder.itemView.setBackgroundColor(Color.GREEN);
+                 viewHolder.textView.setVisibility(View.INVISIBLE);
+                 viewHolder.imageView.setVisibility(View.VISIBLE);
+             } else {
+                 viewHolder.textView.setVisibility(View.VISIBLE);
+                 viewHolder.imageView.setVisibility(View.INVISIBLE);
              }
          }
 
@@ -98,8 +108,9 @@ public class TableViewAdapter extends AbstractTableAdapter<CrossCountFragment.Ce
          // Then you should consider the below lines. Otherwise, you can ignore them.
  
          // It is necessary to remeasure itself.
-        // viewHolder.container.getLayoutParams().width = LinearLayout.LayoutParams.WRAP_CONTENT;
-         viewHolder.textView.requestLayout();
+         viewHolder.linearLayout.getLayoutParams().width = LinearLayout.LayoutParams.WRAP_CONTENT;
+         //viewHolder.imageView.requestLayout();
+         //viewHolder.textView.requestLayout();
      }
 
      /**

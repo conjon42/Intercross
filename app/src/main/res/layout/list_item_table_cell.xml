@@ -3,7 +3,7 @@
     android:id="@+id/list_item_table_cell_container"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_margin="16dp">
+    android:layout_margin="8dp">
     <TextView
         android:id="@+id/list_item_table_cell_tv"
         android:layout_width="wrap_content"
@@ -13,5 +13,12 @@
         android:ellipsize="end"
         android:text="\t\t\t\t\t"
         android:textAppearance="?android:attr/textAppearanceListItemSmall"
-        android:gravity="center_vertical"/>
+        android:gravity="start"/>
+    <ImageView
+        android:id="@+id/list_item_table_cell_iv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/ic_done_outline_black_24dp"
+        android:visibility="invisible"
+        android:contentDescription="TODO" />
 </LinearLayout>
