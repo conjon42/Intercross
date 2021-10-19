@@ -102,6 +102,11 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
         summaryTabLayout.getTabAt(0)?.select()
 
         setupTabLayout()
+
+        fragmentCrossCountSearchButton.setOnClickListener {
+            findNavController().navigate(CrossCountFragmentDirections
+                .actionFromCrossCountToSearch())
+        }
     }
 
     private fun startObservers() {
@@ -139,7 +144,7 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
     private fun showChildren(male: String, female: String, data: List<Event>) {
 
         context?.let { ctx ->
-            Dialogs.list(
+            Dialogs.listAndBuildCross(
                 AlertDialog.Builder(ctx),
                 getString(R.string.click_item_for_child_details),
                 getString(R.string.no_child_exists),

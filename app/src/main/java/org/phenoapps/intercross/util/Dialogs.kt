@@ -66,10 +66,10 @@ class Dialogs {
          */
         //TODO: create adapter variant to show ubiquitous event view s.a in the main fragmnet
         //TODO: Maybe add search function to filter codes
-        fun list(builder: AlertDialog.Builder, title: String, empty: String,
-                 male: String, female: String, events: List<Event>,
-                 function: (Long) -> Unit,
-                 makeCrossFunction: (String, String) -> Unit) {
+        fun listAndBuildCross(builder: AlertDialog.Builder, title: String, empty: String,
+                              male: String, female: String, events: List<Event>,
+                              function: (Long) -> Unit,
+                              makeCrossFunction: (String, String) -> Unit) {
 
             builder.setTitle(if (events.isEmpty()) empty else title)
                 .setNeutralButton(R.string.make_cross_option) { dialog, which ->
@@ -80,9 +80,33 @@ class Dialogs {
                 .setItems(events.map { event -> event.eventDbId }.toTypedArray()) { dialog, index ->
 
                     function(events[index].id ?: -1L)
+            builder.setTitle(if (events.isEmpty()) empty else title)
+                .setNeutralButton(R.string.make_cross_option) { dialog, which ->
 
                     dialog.dismiss()
 
+                }
+                .setNegativeButton(R.string.cancel) { _, _ -> }
+                .create()
+                .show()
+
+        }
+
+        fun list(builder: AlertDialog.Builder, title: String, empty: String,
+                              events: List<Event>,
+                              function: (Long) -> Unit,
+                              onDismiss: () -> Unit) {
+
+            builder.setTitle(if (events.isEmpty()) empty else title)
+                .setItems(events.map { event -> event.eventDbId }.toTypedArray()) { dialog, index ->
+
+                    function(events[index].id ?: -1L)
+
+                    dialog.dismiss()
+
+                }
+                .setOnDismissListener {
+                    onDismiss()
                 }
                 .setNegativeButton(R.string.cancel) { _, _ -> }
                 .create()

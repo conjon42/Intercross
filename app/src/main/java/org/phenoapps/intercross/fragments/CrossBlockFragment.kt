@@ -273,7 +273,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
                 event.femaleObsUnitDbId == fid && event.maleObsUnitDbId == mid
             }
 
-            Dialogs.list(AlertDialog.Builder(ctx),
+            Dialogs.listAndBuildCross(AlertDialog.Builder(ctx),
                 getString(R.string.click_item_for_child_details),
                 getString(R.string.no_child_exists),
                 mid, fid, children, { id ->

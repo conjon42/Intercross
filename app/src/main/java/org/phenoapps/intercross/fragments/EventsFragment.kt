@@ -160,6 +160,20 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         }
 
+        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+
+        arguments?.getString("male")?.let { male ->
+            if (maleFirst) {
+                mBinding.firstText.setText(male)
+            } else mBinding.secondText.setText(male)
+        }
+
+        arguments?.getString("female")?.let { female ->
+            if (maleFirst) {
+                mBinding.secondText.setText(female)
+            } else mBinding.firstText.setText(female)
+        }
+
         recyclerView.adapter = EventsAdapter(this@EventsFragment, viewModel)
 
         recyclerView.layoutManager = LinearLayoutManager(context)

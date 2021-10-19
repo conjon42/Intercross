@@ -446,7 +446,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
         else getChildren(female, male)
 
         context?.let { ctx ->
-            Dialogs.list(
+            Dialogs.listAndBuildCross(
                 AlertDialog.Builder(ctx),
                 getString(R.string.click_item_for_child_details),
                 getString(R.string.no_child_exists),
