@@ -15,9 +15,11 @@ class Dialogs {
          * Generic dialog to run a function if the OK/Neutral button are pressed.
          * If the ok button is pressed the boolean parameter to the function is set to true, false otherwise.
          */
-        fun booleanOption(builder: AlertDialog.Builder, title: String,
-                          positiveText: String, negativeText: String,
-                          neutralText: String, function: (Boolean) -> Unit) {
+        fun booleanOption(
+            builder: AlertDialog.Builder, title: String,
+            positiveText: String, negativeText: String,
+            neutralText: String, function: (Boolean) -> Unit
+        ) {
 
             builder.apply {
 
@@ -66,10 +68,12 @@ class Dialogs {
          */
         //TODO: create adapter variant to show ubiquitous event view s.a in the main fragmnet
         //TODO: Maybe add search function to filter codes
-        fun listAndBuildCross(builder: AlertDialog.Builder, title: String, empty: String,
-                              male: String, female: String, events: List<Event>,
-                              function: (Long) -> Unit,
-                              makeCrossFunction: (String, String) -> Unit) {
+        fun listAndBuildCross(
+            builder: AlertDialog.Builder, title: String, empty: String,
+            male: String, female: String, events: List<Event>,
+            function: (Long) -> Unit,
+            makeCrossFunction: (String, String) -> Unit
+        ) {
 
             builder.setTitle(if (events.isEmpty()) empty else title)
                 .setNeutralButton(R.string.make_cross_option) { dialog, which ->
@@ -80,25 +84,29 @@ class Dialogs {
                 .setItems(events.map { event -> event.eventDbId }.toTypedArray()) { dialog, index ->
 
                     function(events[index].id ?: -1L)
-            builder.setTitle(if (events.isEmpty()) empty else title)
-                .setNeutralButton(R.string.make_cross_option) { dialog, which ->
+                    builder.setTitle(if (events.isEmpty()) empty else title)
+                        .setNeutralButton(R.string.make_cross_option) { dialog, which ->
 
-                    dialog.dismiss()
+                            dialog.dismiss()
+
+                        }
+                        .setNegativeButton(R.string.cancel) { _, _ -> }
+                        .create()
+                        .show()
 
                 }
-                .setNegativeButton(R.string.cancel) { _, _ -> }
-                .create()
-                .show()
-
         }
 
-        fun list(builder: AlertDialog.Builder, title: String, empty: String,
-                              events: List<Event>,
-                              function: (Long) -> Unit,
-                              onDismiss: () -> Unit) {
+        fun list(
+            builder: AlertDialog.Builder, title: String, empty: String,
+            events: List<Event>,
+            function: (Long) -> Unit,
+            onDismiss: () -> Unit
+        ) {
 
             builder.setTitle(if (events.isEmpty()) empty else title)
-                .setItems(events.map { event -> event.eventDbId }.toTypedArray()) { dialog, index ->
+                .setItems(events.map { event -> event.eventDbId }
+                    .toTypedArray()) { dialog, index ->
 
                     function(events[index].id ?: -1L)
 
@@ -114,7 +122,14 @@ class Dialogs {
 
         }
 
-        fun onOk(builder: AlertDialog.Builder, title: String, cancel: String, ok: String, message: String? = "", function: () -> Unit) {
+        fun onOk(
+            builder: AlertDialog.Builder,
+            title: String,
+            cancel: String,
+            ok: String,
+            message: String? = "",
+            function: () -> Unit
+        ) {
 
             builder.apply {
 

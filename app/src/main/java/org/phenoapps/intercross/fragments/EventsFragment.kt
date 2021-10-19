@@ -124,9 +124,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         if (mPref.getBoolean("first_load", true)) {
 
             settingsModel.insert(mSettings
-                    .apply {
-                        isUUID = true
-                    })
+                .apply {
+                    isUUID = true
+                })
 
             launch {
                 withContext(Dispatchers.IO) {
@@ -141,25 +141,11 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             mPref.edit().putBoolean("first_load", false).apply()
         }
 
-        //if this was called from crosscount/crossblock or wishlist fragment then populate the male/female tv
-        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
-
-        argFemale?.let { female ->
-            if (maleFirst) mBinding.secondText.setText(female)
-            else mBinding.firstText.setText(female)
-        }
-
-        argMale?.let { male ->
-            if (maleFirst) mBinding.firstText.setText(male)
-            else mBinding.secondText.setText(male)
-        }
-
         if (mSettings.isUUID) {
-
             mBinding.editTextCross.setText(UUID.randomUUID().toString())
-
         }
 
+        //if this was called from crosscount/crossblock or wishlist fragment then populate the male/female tv
         val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
 
         arguments?.getString("male")?.let { male ->
@@ -232,11 +218,14 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                     if (value.isNotBlank()) {
 
-                        val codes = mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }.distinct()
+                        val codes =
+                            mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }
+                                .distinct()
 
                         if (mBinding.editTextCross.text.toString() in codes) {
 
-                            if (mBinding.crossTextHolder.error == null) mBinding.crossTextHolder.error = error
+                            if (mBinding.crossTextHolder.error == null) mBinding.crossTextHolder.error =
+                                error
 
                         } else mBinding.crossTextHolder.error = null
 
@@ -362,7 +351,12 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             if (value.isEmpty() && !blank) {
 
-                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.you_must_enter_male_name)))
+                mSnackbar.push(
+                    SnackbarQueue.SnackJob(
+                        mBinding.root,
+                        getString(R.string.you_must_enter_male_name)
+                    )
+                )
 
                 return
             }
@@ -441,14 +435,18 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         //setup on item swipe to delete
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
 
-            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
                 return false
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
 
                 (recyclerView.adapter as EventsAdapter)
-                        .currentList[viewHolder.adapterPosition].also { event ->
+                    .currentList[viewHolder.adapterPosition].also { event ->
 
                     event.id?.let {
 
@@ -457,10 +455,19 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                         mSnackbar.push(SnackbarQueue.SnackJob(root, event.eventDbId, undoString) {
 
                             scope.launch {
-                                CrossUtil(requireContext()).submitCrossEvent(activity,
-                                    event.femaleObsUnitDbId, event.maleObsUnitDbId,
-                                    event.eventDbId, mSettings, settingsModel, viewModel,
-                                    mParents, parentsList, mWishlistProgress, mMetadata, metaValuesViewModel
+                                CrossUtil(requireContext()).submitCrossEvent(
+                                    activity,
+                                    event.femaleObsUnitDbId,
+                                    event.maleObsUnitDbId,
+                                    event.eventDbId,
+                                    mSettings,
+                                    settingsModel,
+                                    viewModel,
+                                    mParents,
+                                    parentsList,
+                                    mWishlistProgress,
+                                    mMetadata,
+                                    metaValuesViewModel
                                 )
                             }
                         })
@@ -604,7 +611,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             }
         }
 
-        private fun View.dpToPix(dp: Float) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics).roundToInt()
+        private fun View.dpToPix(dp: Float) =
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics)
+                .roundToInt()
 
     }
 
@@ -693,13 +702,15 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         if (cross.isNotBlank()) numFilled++
 
         //change save button fill percentage using corresponding xml shapes
-        saveButton.background = ContextCompat.getDrawable(requireContext(),
-                when (numFilled) {
-                    0,1,2 -> R.drawable.button_save_empty
-                    //1 -> R.drawable.button_save_third
-                    //2 -> R.drawable.button_save_two_thirds
-                    else -> R.drawable.button_save_full
-                })
+        saveButton.background = ContextCompat.getDrawable(
+            requireContext(),
+            when (numFilled) {
+                0, 1, 2 -> R.drawable.button_save_empty
+                //1 -> R.drawable.button_save_third
+                //2 -> R.drawable.button_save_two_thirds
+                else -> R.drawable.button_save_full
+            }
+        )
 
         return ((male.isNotBlank() || blank) && female.isNotBlank()
                 && (cross.isNotBlank() || (mSettings.isUUID || mSettings.isPattern)))
@@ -736,7 +747,10 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 if (parent != null) {
 
-                    Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.cross_id_already_exists_as_parent))
+                    Dialogs.notify(
+                        AlertDialog.Builder(requireContext()),
+                        getString(R.string.cross_id_already_exists_as_parent)
+                    )
 
                 } else {
 
@@ -747,24 +761,26 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                             with(CrossUtil(ctx)) {
 
                                 val eid = submitCrossEvent(
-                                        activity,
-                                        female,
-                                        male,
-                                        value,
-                                        mSettings,
-                                        settingsModel,
-                                        viewModel,
-                                        mParents,
-                                        parentsList,
-                                        mWishlistProgress,
-                                        mMetadata,
-                                        metaValuesViewModel
-                                    )
+                                    activity,
+                                    female,
+                                    male,
+                                    value,
+                                    mSettings,
+                                    settingsModel,
+                                    viewModel,
+                                    mParents,
+                                    parentsList,
+                                    mWishlistProgress,
+                                    mMetadata,
+                                    metaValuesViewModel
+                                )
 
                                 activity?.runOnUiThread {
 
-                                    checkPrefToOpenCrossEvent(findNavController(),
-                                                EventsFragmentDirections.actionToEventFragment(eid))
+                                    checkPrefToOpenCrossEvent(
+                                        findNavController(),
+                                        EventsFragmentDirections.actionToEventFragment(eid)
+                                    )
                                 }
                             }
                         }
@@ -777,13 +793,21 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                     mBinding.recyclerView.scrollToPosition(0)
                 }, 250)
 
-            } else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.cross_id_already_exists_as_event))
+            } else Dialogs.notify(
+                AlertDialog.Builder(requireContext()),
+                getString(R.string.cross_id_already_exists_as_event)
+            )
 
         } else {
 
             if (female.isBlank()) {
 
-                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.you_must_enter_female_name)))
+                mSnackbar.push(
+                    SnackbarQueue.SnackJob(
+                        mBinding.root,
+                        getString(R.string.you_must_enter_female_name)
+                    )
+                )
 
                 if (!maleFirst) {
                     mBinding.firstText.requestFocus()
@@ -791,13 +815,23 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             } else if (value.isBlank()) {
 
-                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.you_must_enter_cross_name)))
+                mSnackbar.push(
+                    SnackbarQueue.SnackJob(
+                        mBinding.root,
+                        getString(R.string.you_must_enter_cross_name)
+                    )
+                )
 
                 mBinding.editTextCross.requestFocus()
 
             } else {
 
-                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.you_must_enter_male_name)))
+                mSnackbar.push(
+                    SnackbarQueue.SnackJob(
+                        mBinding.root,
+                        getString(R.string.you_must_enter_male_name)
+                    )
+                )
 
                 //request focus on the edit text that is missing
                 if (maleFirst) {
@@ -825,8 +859,10 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             }
 
             setPositiveButton(setPerson) { _, _ ->
-                findNavController().navigate(EventsFragmentDirections
-                    .actionFromEventsToPreferences(true))
+                findNavController().navigate(
+                    EventsFragmentDirections
+                        .actionFromEventsToPreferences(true)
+                )
             }
         }
 
