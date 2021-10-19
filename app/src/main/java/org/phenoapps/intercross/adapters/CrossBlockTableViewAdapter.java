@@ -37,10 +37,12 @@ public class CrossBlockTableViewAdapter extends AbstractTableAdapter<CrossBlockF
     static class RowHeaderViewHolder extends AbstractViewHolder {
 
         final TextView textView;
+        final LinearLayout linearLayout;
 
         public RowHeaderViewHolder(@NonNull View itemView) {
             super(itemView);
 
+            linearLayout = itemView.findViewById(R.id.list_item_table_cell_container);
             textView = itemView.findViewById(R.id.list_item_table_cell_tv);
         }
     }
@@ -88,7 +90,9 @@ public class CrossBlockTableViewAdapter extends AbstractTableAdapter<CrossBlockF
          CellViewHolder viewHolder = (CellViewHolder) holder;
 
          if (cellItemModel != null) {
-             viewHolder.linearLayout.setBackgroundColor(cellItemModel.getProgressColor());
+             if (cellItemModel.getFid().isEmpty() && cellItemModel.getMid().isEmpty()) {
+                 viewHolder.linearLayout.setBackgroundColor(Color.WHITE);
+             } else viewHolder.linearLayout.setBackgroundColor(cellItemModel.getProgressColor());
          }
 
          // If your TableView should have auto resize for cells & columns.
@@ -206,6 +210,8 @@ public class CrossBlockTableViewAdapter extends AbstractTableAdapter<CrossBlockF
              rowHeaderViewHolder.textView.setText(rowHeaderItemModel.getText());
          }
 
+         rowHeaderViewHolder.linearLayout.getLayoutParams().width = LinearLayout.LayoutParams.WRAP_CONTENT;
+         rowHeaderViewHolder.linearLayout.requestLayout();
          rowHeaderViewHolder.textView.requestLayout();
      }
 

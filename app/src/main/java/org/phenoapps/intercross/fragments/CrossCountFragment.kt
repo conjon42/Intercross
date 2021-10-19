@@ -136,30 +136,23 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
         else showNonCommutativeChildren(male, female)
     }
 
-    private fun showChildren(data: List<Event>) {
+    private fun showChildren(male: String, female: String, data: List<Event>) {
 
-        if (data.size == 1) {
-
-            data.first().let { event ->
-                findNavController()
-                    .navigate(CrossCountFragmentDirections
-                        .globalActionToEventDetail(event.id ?: -1))
-
-            }
-
-        } else {
-
-            context?.let { ctx ->
-                Dialogs.list(
-                    AlertDialog.Builder(ctx),
-                    getString(R.string.click_item_for_child_details),
-                    getString(R.string.no_child_exists),
-                    data) { id ->
+        context?.let { ctx ->
+            Dialogs.list(
+                AlertDialog.Builder(ctx),
+                getString(R.string.click_item_for_child_details),
+                getString(R.string.no_child_exists),
+                male, female, data, { id ->
 
                     findNavController()
                         .navigate(CrossCountFragmentDirections
                             .globalActionToEventDetail(id))
-                }
+                }) { male, female ->
+
+                findNavController()
+                    .navigate(CrossCountFragmentDirections
+                        .actionFromCrosscountToEventsList(male, female))
             }
         }
     }
@@ -260,7 +253,7 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
                     data?.let { events ->
 
-                        showChildren(events.filter { e ->
+                        showChildren(male, female, events.filter { e ->
                             (e.maleObsUnitDbId == male && e.femaleObsUnitDbId == female)
                                     || (e.maleObsUnitDbId == female && e.femaleObsUnitDbId == male)})
                     }
@@ -279,7 +272,7 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
                     data?.let { events ->
 
-                        showChildren(events.filter { e -> e.maleObsUnitDbId == male
+                        showChildren(male, female, events.filter { e -> e.maleObsUnitDbId == male
                                 && e.femaleObsUnitDbId == female })
                     }
                 })

@@ -66,26 +66,27 @@ class Dialogs {
          */
         //TODO: create adapter variant to show ubiquitous event view s.a in the main fragmnet
         //TODO: Maybe add search function to filter codes
-        fun list(builder: AlertDialog.Builder, title: String, empty: String, events: List<Event>, function: (Long) -> Unit) {
+        fun list(builder: AlertDialog.Builder, title: String, empty: String,
+                 male: String, female: String, events: List<Event>,
+                 function: (Long) -> Unit,
+                 makeCrossFunction: (String, String) -> Unit) {
 
-            if (events.isNotEmpty()) {
+            builder.setTitle(if (events.isEmpty()) empty else title)
+                .setNeutralButton(R.string.make_cross_option) { dialog, which ->
 
-                builder.setTitle(title)
-                        .setItems(events.map { event -> event.eventDbId }.toTypedArray()) { dialog, index ->
+                    makeCrossFunction(male, female)
 
-                            function(events[index].id ?: -1L)
+                }
+                .setItems(events.map { event -> event.eventDbId }.toTypedArray()) { dialog, index ->
 
-                            dialog.dismiss()
+                    function(events[index].id ?: -1L)
 
-                        }
-                        .setNegativeButton(R.string.cancel) { _, _ -> }
-                        .create()
-                        .show()
+                    dialog.dismiss()
 
-            } else {
-
-                notify(builder, empty)
-            }
+                }
+                .setNegativeButton(R.string.cancel) { _, _ -> }
+                .create()
+                .show()
 
         }
 
