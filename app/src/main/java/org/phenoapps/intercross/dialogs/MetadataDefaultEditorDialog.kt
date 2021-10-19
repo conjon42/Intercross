@@ -11,6 +11,7 @@ import org.phenoapps.intercross.interfaces.MetadataManager
  * A cancelable dialog for updating default fields in a metadata property.
  */
 class MetadataDefaultEditorDialog(private val ctx: Context,
+                                  private val rowId: Long,
                                   private val property: String,
                                   private val default: Int,
                                   private val listener: MetadataManager) : Dialog(ctx, R.style.Dialog) {
@@ -22,7 +23,7 @@ class MetadataDefaultEditorDialog(private val ctx: Context,
 
         setCanceledOnTouchOutside(true)
 
-        setTitle(R.string.dialog_metadata_updater_title)
+        setTitle(R.string.dialog_metadata_manager_title)
 
         setupUi()
 
@@ -44,11 +45,18 @@ class MetadataDefaultEditorDialog(private val ctx: Context,
 
             if (value.text.isNotBlank() && intVal != null) {
 
-                listener.onMetadataDefaultUpdated(property.text.toString(), intVal)
+                listener.onMetadataDefaultUpdated(rowId, property.text.toString(), intVal)
 
                 dismiss()
 
             } else Toast.makeText(ctx, R.string.dialog_metadata_value_must_be_integer, Toast.LENGTH_SHORT).show()
+        }
+
+        findViewById<Button>(R.id.dialog_metadata_updater_value_delete_button).setOnClickListener {
+
+            listener.onMetadataLongClicked(this.rowId, this.property)
+
+            dismiss()
         }
     }
 }

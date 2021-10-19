@@ -2,9 +2,7 @@ package org.phenoapps.intercross.fragments
 
 import android.os.Build
 import android.os.Bundle
-import android.view.GestureDetector
-import android.view.MotionEvent
-import android.view.View
+import android.view.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.GestureDetectorCompat
@@ -73,7 +71,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
     @RequiresApi(Build.VERSION_CODES.M)
     override fun CrossBlockManagerBinding.afterCreateView() {
 
-        setHasOptionsMenu(false)
+        setHasOptionsMenu(true)
 
         //(activity as MainActivity).supportActionBar?.hide()
 
@@ -203,10 +201,26 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
         setupTabLayout()
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_parents_toolbar_initiate_wf -> {
+
+                findNavController().navigate(CrossBlockFragmentDirections
+                    .actionFromCrossblockToWishFactory())
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+
+        inflater.inflate(R.menu.crossblock_toolbar, menu)
+
+    }
+
     override fun onResume() {
         super.onResume()
-
-        //(activity as MainActivity).supportActionBar?.hide()
 
         mBinding.summaryTabLayout.getTabAt(2)?.select()
 

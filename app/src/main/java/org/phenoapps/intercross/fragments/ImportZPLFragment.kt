@@ -18,19 +18,16 @@ class ImportZPLFragment : IntercrossBaseFragment<FragmentImportZplBinding>(R.lay
         KeyUtil(context)
     }
 
-    private val importZplFile by lazy {
+    private val importZplFile = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
 
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let {
 
-            uri?.let {
+            val text = FileUtil(requireContext()).readText(requireContext(), it)
 
-                val text = FileUtil(requireContext()).readText(requireContext(), it)
+            codeTextView.text = text
 
-                codeTextView.text = text
+            mPref.edit().putString("ZPL_CODE", text.toString()).apply()
 
-                mPref.edit().putString("ZPL_CODE", text.toString()).apply()
-
-            }
         }
     }
 

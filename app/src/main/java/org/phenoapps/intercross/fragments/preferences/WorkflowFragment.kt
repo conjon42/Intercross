@@ -6,26 +6,42 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.preference.*
-import com.google.gson.JsonArray
-import com.google.gson.JsonParser
-import com.google.gson.JsonPrimitive
-import com.google.gson.JsonSyntaxException
+import kotlinx.coroutines.*
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.IntercrossDatabase
+import org.phenoapps.intercross.data.MetaValuesRepository
+import org.phenoapps.intercross.data.MetadataRepository
 import org.phenoapps.intercross.data.models.Event
+import org.phenoapps.intercross.data.models.Metadata
+import org.phenoapps.intercross.data.models.MetadataValues
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
+import org.phenoapps.intercross.data.viewmodels.MetaValuesViewModel
+import org.phenoapps.intercross.data.viewmodels.MetadataViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.MetaValuesViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.MetadataViewModelFactory
 import org.phenoapps.intercross.dialogs.MetadataCreatorDialog
 import org.phenoapps.intercross.dialogs.MetadataDefaultEditorDialog
 import org.phenoapps.intercross.interfaces.MetadataManager
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.KeyUtil
+import org.phenoapps.intercross.util.observeOnce
 
 class WorkflowFragment : ToolbarPreferenceFragment(
-    R.xml.workflow_preferences, R.string.root_workflow), MetadataManager {
+    R.xml.workflow_preferences, R.string.root_workflow), MetadataManager, CoroutineScope by MainScope() {
 
-    private val eventsList: EventListViewModel by viewModels {
+    private val metaValuesViewModel: MetaValuesViewModel by viewModels {
+        MetaValuesViewModelFactory(MetaValuesRepository
+            .getInstance(IntercrossDatabase.getInstance(requireContext()).metaValuesDao()))
+    }
+
+    private val metadataViewModel: MetadataViewModel by viewModels {
+        MetadataViewModelFactory(MetadataRepository
+            .getInstance(IntercrossDatabase.getInstance(requireContext()).metadataDao()))
+    }
+
+    private val eventsModel: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository
             .getInstance(IntercrossDatabase.getInstance(requireContext()).eventsDao()))
     }
@@ -38,8 +54,28 @@ class WorkflowFragment : ToolbarPreferenceFragment(
         KeyUtil(context)
     }
 
+    private var mEvents: List<Event> = ArrayList()
+    private lateinit var mMetaValuesList: List<MetadataValues>
+    private lateinit var mMetadataList: List<Metadata>
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        eventsModel.events.observe(viewLifecycleOwner) {
+            mEvents = it
+        }
+
+        metaValuesViewModel.metaValues.observe(viewLifecycleOwner) {
+            it?.let {
+                mMetaValuesList = it
+            }
+        }
+
+        metadataViewModel.metadata.observe(viewLifecycleOwner) {
+            it?.let {
+                mMetadataList = it
+            }
+        }
 
         //ensure metadata creation / setting defaults preference is invisible by default
         context?.let { ctx ->
@@ -97,35 +133,30 @@ class WorkflowFragment : ToolbarPreferenceFragment(
 
                     context?.let { ctx ->
 
-                        eventsList.events.observeOnce {
+                        val defaults = mMetadataList.map { it.defaultValue }
 
-                            it?.first()?.let { x ->
+                        val properties = mMetadataList.map { it.property }
 
-                                val defaults = x.getMetadataDefaults()
+                        val viewed = properties.zip(defaults).map { "${it.first} -> ${it.second}" }
+                            .toTypedArray()
 
-                                val properties = defaults.map { it.first }.toTypedArray()
+                        if (properties.isNotEmpty()) {
 
-                                val viewed = defaults.map { "${it.first} -> ${it.second}" }
-                                    .toTypedArray()
+                            AlertDialog.Builder(ctx).setSingleChoiceItems(viewed, 0) { dialog, item ->
 
-                                if (properties.isNotEmpty()) {
+                                val default = mMetadataList.find { it.property == properties[item] }?.defaultValue ?: 1
 
-                                    AlertDialog.Builder(ctx).setSingleChoiceItems(viewed, 0) { dialog, item ->
+                                MetadataDefaultEditorDialog(ctx,
+                                    mMetadataList[item].id ?: -1L,
+                                    properties[item],
+                                    default,
+                                    this@WorkflowFragment).show()
 
-                                        val default = defaults.toMap()[properties[item]] ?: 1
+                                dialog.dismiss()
 
-                                        MetadataDefaultEditorDialog(ctx,
-                                            properties[item],
-                                            default,
-                                            this@WorkflowFragment).show()
+                            }.show()
 
-                                        dialog.dismiss()
-
-                                    }.show()
-
-                                } else Toast.makeText(ctx, R.string.fragment_settings_no_metadata_exists, Toast.LENGTH_SHORT).show()
-                            }
-                        }
+                        } else Toast.makeText(ctx, R.string.fragment_settings_no_metadata_exists, Toast.LENGTH_SHORT).show()
                     }
 
                     true
@@ -137,8 +168,7 @@ class WorkflowFragment : ToolbarPreferenceFragment(
     override fun onMetadataUpdated(property: String, value: Int) {}
 
     //asks the user to delete the property,
-    //metadata entryset size is monotonic across all rows
-    override fun onMetadataLongClicked(property: String) {
+    override fun onMetadataLongClicked(rowid: Long, property: String) {
 
         context?.let { ctx ->
 
@@ -149,135 +179,69 @@ class WorkflowFragment : ToolbarPreferenceFragment(
                 ok = getString(android.R.string.ok),
                 message = getString(R.string.dialog_confirm_remove_for_all)) {
 
-                eventsList.events.observeOnce {
+                deleteMetadata(property, rowid)
 
-                    it.forEach {
-
-                        eventsList.update(
-                            it.apply {
-                                deleteMetadata(property)
-                            }
-                        )
-                    }
-                }
             }
         }
     }
 
-    override fun onMetadataDefaultUpdated(property: String, value: Int) {
+    override fun onMetadataDefaultUpdated(rowId: Long, property: String, value: Int) {
 
-        eventsList.events.observeOnce {
+        updateMetadataDefault(rowId, value, property)
 
-            it.forEach {
-
-                eventsList.update(
-                    it.apply {
-                        updateMetadataDefault(value, property)
-                    }
-                )
-            }
-        }
     }
 
     //adds the new property to all crosses in the database
     override fun onMetadataCreated(property: String, value: String) {
 
-        eventsList.events.observeOnce {
+        createNewMetadata(value.toInt(), property)
 
-            it.forEach {
+    }
 
-                eventsList.update(
-                    it.apply {
-                        createNewMetadata(value.toInt(), property)
-                    }
+    //adds the new default value and property to the metadata string
+    private fun createNewMetadata(value: Int, property: String) {
+
+        launch {
+            withContext(Dispatchers.IO) {
+                //insert a new row
+                val mid = metadataViewModel.insert(
+                    Metadata(property, value)
+                )
+
+                mEvents.forEach {
+                    metaValuesViewModel.insert(
+                        MetadataValues(it.id?.toInt() ?: -1, mid.toInt(), value)
+                    )
+                }
+            }
+        }
+    }
+
+    //updates a property with a new default value
+    private fun updateMetadataDefault(rowId: Long, value: Int, property: String) {
+
+        launch {
+            withContext(Dispatchers.IO) {
+                metadataViewModel.update(
+                    Metadata(property, value, rowId)
                 )
             }
         }
     }
 
-    //adds the new default value and property to the metadata string
-    private fun Event.createNewMetadata(value: Int, property: String) = try {
-
-        val element = JsonParser.parseString(this.metadata)
-
-        if (element.isJsonObject) {
-
-            val json = element.asJsonObject
-
-            json.remove(property)
-
-            json.add(property, JsonArray(2).apply {
-                add(JsonPrimitive(value))
-                add(JsonPrimitive(value))
-            })
-
-            this.metadata = json.toString()
-
-        } else throw JsonSyntaxException("Malformed metadata format found: ${element.asString}")
-
-    } catch (e: JsonSyntaxException) {
-
-        e.printStackTrace()
-    }
-
-    //updates a property with a new default value
-    private fun Event.updateMetadataDefault(value: Int, property: String) = try {
-
-        val element = JsonParser.parseString(this.metadata)
-
-        if (element.isJsonObject) {
-
-            val json = element.asJsonObject
-
-            json[property].asJsonArray[1] = JsonPrimitive(value)
-
-            this.metadata = json.toString()
-
-        } else throw JsonSyntaxException("Malformed metadata format found: ${element.asString}")
-
-    } catch (e: JsonSyntaxException) {
-
-        e.printStackTrace()
-    }
-
-    //returns array of metadata properties with default values
-    private fun Event.getMetadataDefaults(): List<Pair<String, Int>> = try {
-
-        val element = JsonParser.parseString(this.metadata)
-
-        if (element.isJsonObject) {
-
-            val json = element.asJsonObject
-
-            //return a set of property names to their default values
-            json.entrySet().map { it.key to it.value.asJsonArray[1].asInt }
-
-        } else throw JsonSyntaxException("Malformed metadata format found: ${element.asString}")
-
-    } catch (e: JsonSyntaxException) {
-
-        e.printStackTrace()
-
-        listOf()
-    }
-
     //deletes the given property from the metdata string
-    private fun Event.deleteMetadata(property: String) = try {
+    private fun deleteMetadata(property: String, rowid: Long) {
 
-        val element = JsonParser.parseString(this.metadata)
+        launch {
+            withContext(Dispatchers.IO) {
+                metadataViewModel.delete(
+                    Metadata(property, id = rowid)
+                )
 
-        if (element.isJsonObject) {
-
-            val json = element.asJsonObject
-
-            json.remove(property)
-
-            this.metadata = json.toString()
-
-        } else throw JsonSyntaxException("Malformed metadata format found: ${element.asString}")
-
-    } catch (e: JsonSyntaxException) {
-
-        e.printStackTrace()
+                mMetaValuesList.filter { it.metaId == rowid.toInt() }.forEach {
+                    metaValuesViewModel.delete(it)
+                }
+            }
+        }
     }
 }

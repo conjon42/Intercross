@@ -109,12 +109,9 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
         /**
          * Keep track if wishlist repo is empty to disable options items menu
          */
-        wishModel.wishlist.observe(viewLifecycleOwner, {
+        wishModel.wishlist.observe(viewLifecycleOwner, { wishes ->
 
-            it?.let {
-
-                mWishlistEmpty = it.isEmpty()
-            }
+            mWishlistEmpty = wishes.none { it.wishType == "cross" }
         })
     }
 

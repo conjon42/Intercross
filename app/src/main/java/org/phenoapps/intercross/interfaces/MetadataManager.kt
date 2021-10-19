@@ -7,11 +7,11 @@ package org.phenoapps.intercross.interfaces
  */
 interface MetadataManager {
 
-    fun onMetadataCreated(property: String, value: String)
+    fun onMetadataCreated(property: String, value: String) = Unit
 
-    fun onMetadataUpdated(property: String, value: Int)
+    fun onMetadataUpdated(property: String, value: Int) = Unit
 
-    fun onMetadataDefaultUpdated(property: String, value: Int) = Unit
+    fun onMetadataDefaultUpdated(rowid: Long, property: String, value: Int) = Unit
 
-    fun onMetadataLongClicked(property: String)
+    fun onMetadataLongClicked(rowid: Long, property: String) = Unit
 }

@@ -13,35 +13,48 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
-import com.google.gson.JsonArray
-import com.google.gson.JsonParser
-import com.google.gson.JsonPrimitive
-import com.google.gson.JsonSyntaxException
+import kotlinx.android.synthetic.main.fragment_event_detail.*
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.MetadataAdapter
+import org.phenoapps.intercross.adapters.models.MetadataModel
 import org.phenoapps.intercross.data.EventsRepository
+import org.phenoapps.intercross.data.MetaValuesRepository
+import org.phenoapps.intercross.data.MetadataRepository
+import org.phenoapps.intercross.data.WishlistRepository
+import org.phenoapps.intercross.data.dao.EventsDao
 import org.phenoapps.intercross.data.models.Event
-import org.phenoapps.intercross.data.models.Metadata
-import org.phenoapps.intercross.data.viewmodels.EventDetailViewModel
-import org.phenoapps.intercross.data.viewmodels.EventListViewModel
-import org.phenoapps.intercross.data.viewmodels.factory.EventDetailViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentEventDetailBinding
 import org.phenoapps.intercross.interfaces.MetadataManager
-import org.phenoapps.intercross.util.BluetoothUtil
-import org.phenoapps.intercross.util.Dialogs
-import org.phenoapps.intercross.util.FileUtil
-import org.phenoapps.intercross.util.KeyUtil
-
+import org.phenoapps.intercross.data.models.MetadataValues
+import org.phenoapps.intercross.data.models.Metadata
+import org.phenoapps.intercross.data.models.WishlistView
+import org.phenoapps.intercross.data.viewmodels.*
+import org.phenoapps.intercross.data.viewmodels.factory.*
+import org.phenoapps.intercross.util.*
 
 class EventDetailFragment:
     IntercrossBaseFragment<FragmentEventDetailBinding>(R.layout.fragment_event_detail),
     MetadataManager {
 
     private lateinit var mEvent: Event
+    private lateinit var mMetaValuesList: List<MetadataValues>
+    private lateinit var mMetadataList: List<Metadata>
+    private lateinit var mWishlist: List<WishlistView>
 
     private val eventsList: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
+    }
+
+    private val metaValuesViewModel: MetaValuesViewModel by viewModels {
+        MetaValuesViewModelFactory(MetaValuesRepository.getInstance(db.metaValuesDao()))
+    }
+
+    private val metadataViewModel: MetadataViewModel by viewModels {
+        MetadataViewModelFactory(MetadataRepository.getInstance(db.metadataDao()))
+    }
+
+    private val wishList: WishlistViewModel by viewModels {
+        WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
     }
 
     private val mPref by lazy {
@@ -71,45 +84,6 @@ class EventDetailFragment:
 
     }
 
-    //updates a property's value
-    private fun Event.updateMetadata(value: Int, property: String) = try {
-
-        val element = JsonParser.parseString(this.metadata)
-
-        if (element.isJsonObject) {
-
-            val json = element.asJsonObject
-
-            if (json.has(property)) {
-
-                val old = json.getAsJsonArray(property)
-
-                json.remove(property)
-
-                json.add(property, JsonArray(2).apply {
-                    add(JsonPrimitive(value))
-                    add(old[1])
-                })
-
-                this.metadata = json.toString()
-
-            } else {
-
-                json.add(property, JsonArray(2).apply {
-                    add(JsonPrimitive(value))
-                    add(JsonPrimitive(value))
-                })
-
-                this.metadata = json.toString()
-            }
-
-        } else throw JsonSyntaxException("Malformed metadata format found: ${element.asString}")
-
-    } catch (e: JsonSyntaxException) {
-
-        e.printStackTrace()
-    }
-
     override fun FragmentEventDetailBinding.afterCreateView() {
 
         arguments?.getLong("eid")?.let { rowid ->
@@ -132,8 +106,6 @@ class EventDetailFragment:
             eventDetailMetadataRecyclerView.adapter = MetadataAdapter(this@EventDetailFragment)
 
             refreshObservers()
-
-            refreshMetadata()
         }
     }
 
@@ -141,20 +113,39 @@ class EventDetailFragment:
     //this doesn't listen forever to avoid circular recursive updates
     private fun refreshMetadata() {
 
-        eventDetailViewModel.metadata.observeOnce { metadata ->
+        val eid = mEvent.id?.toInt() ?: -1
+        metadataViewModel.metadata.observeOnce(viewLifecycleOwner) { metadata ->
 
-            val json = JsonParser.parseString(metadata)
+            eventDetailViewModel.metadata.observeOnce(viewLifecycleOwner) { values ->
 
-            (mBinding.eventDetailMetadataRecyclerView.adapter as MetadataAdapter)
-                .submitList(json.asJsonObject.entrySet()
-                    .map { Metadata(it.key, it.value.asJsonArray[0].asInt) }
-                    .sortedBy { it.property })
+                //merge the metadata properties with either the default values or saved values
+                val actualMeta = arrayListOf<EventsDao.CrossMetadata>()
+                for (data in metadata) {
+                    if (values.any { it.eid == eid && data.property == it.property }) {
+                        values.find { data.property == it.property }?.let {
+                            actualMeta.add(EventsDao.CrossMetadata(
+                                eid, data.property, it.value
+                            ))
+                        }
+                    } else actualMeta.add(
+                        EventsDao.CrossMetadata(eid, data.property, data.defaultValue))
+                }
 
-            mBinding.eventDetailMetadataRecyclerView.adapter?.notifyDataSetChanged()
+                (mBinding.eventDetailMetadataRecyclerView.adapter as MetadataAdapter)
+                    .submitList(actualMeta
+                        .map { MetadataModel(it.property, it.value.toString()) }
+                        .sortedBy { it.property })
+
+                mBinding.eventDetailMetadataRecyclerView.adapter?.notifyDataSetChanged()
+            }
         }
     }
 
     private fun FragmentEventDetailBinding.refreshObservers() {
+
+        wishList.wishes.observe(viewLifecycleOwner) { crossblock ->
+            mWishlist = crossblock
+        }
 
         if (::eventDetailViewModel.isInitialized) {
 
@@ -165,6 +156,8 @@ class EventDetailFragment:
                     mEvent = it
 
                     event = it
+
+                    refreshMetadata()
 
                     eventDetailLayout.event = it
 
@@ -192,7 +185,7 @@ class EventDetailFragment:
 
                     dadCode = parents.dadCode
 
-                    eventsList.events.observe(viewLifecycleOwner, Observer {
+                    eventsList.events.observe(viewLifecycleOwner) {
 
                         it?.let { events ->
 
@@ -230,8 +223,18 @@ class EventDetailFragment:
                                 }
                             }
                         }
-                    })
+                    }
                 }
+            }
+        }
+
+        metaValuesViewModel.metaValues.observe(viewLifecycleOwner) {
+            mMetaValuesList = it
+        }
+
+        metadataViewModel.metadata.observeOnce(viewLifecycleOwner) {
+            it?.let {
+                mMetadataList = it
             }
         }
     }
@@ -273,29 +276,46 @@ class EventDetailFragment:
         return super.onOptionsItemSelected(item)
     }
 
-    //extension function for live data to only observe once when the data is not null
-    private fun <T> LiveData<T>.observeOnce(observer: Observer<T>) {
-        observe(viewLifecycleOwner, object : Observer<T> {
-            override fun onChanged(t: T?) {
-                t?.let { data ->
-                    observer.onChanged(data)
-                    removeObserver(this)
-                }
-            }
-        })
-    }
-
     //updates a single row value for the current event
+    //or inserts a new metadata value row if this value has not been saved previously
     override fun onMetadataUpdated(property: String, value: Int) {
 
-        eventsList.update(mEvent.apply {
+        val eid = mEvent.id?.toInt() ?: -1
 
-            updateMetadata(value, property)
+        mMetadataList.find { it.property == property }?.id?.toInt()?.let { metaId ->
 
-        })
+            val values = mMetaValuesList.filter { it.eid == eid && it.metaId == metaId }
+            if (mMetaValuesList.isNotEmpty() && values.isNotEmpty()) { //update the old value
+
+                metaValuesViewModel.update(MetadataValues(
+                    eid, metaId, value, values.first().id))
+
+            } else { //insert a new row
+
+                metaValuesViewModel.insert(
+                    MetadataValues(
+                    eid,
+                    metaId,
+                    value
+                ))
+            }
+        }
+
+        checkWishlist(property, value)
     }
 
-    override fun onMetadataLongClicked(property: String) {}
+    private fun checkWishlist(property: String, value: Int) {
 
-    override fun onMetadataCreated(property: String, value: String) {}
+        context?.let { ctx ->
+            val mom = mEvent.femaleObsUnitDbId
+            val dad = mEvent.maleObsUnitDbId
+            val relaventWishes = mWishlist.filter { wish -> wish.momId == mom && wish.dadId == dad }
+            val propertyWishes = relaventWishes.filter { wish -> wish.wishType == property }
+            if (propertyWishes.any { wish -> wish.wishMax in 1..value }) {
+                Dialogs.notify(AlertDialog.Builder(ctx), getString(R.string.maximum_wish_met, property))
+            } else if (propertyWishes.any { wish -> wish.wishMin in 1..value }) {
+                Dialogs.notify(AlertDialog.Builder(ctx), getString(R.string.minimum_wish_met, property))
+            }
+        }
+    }
 }

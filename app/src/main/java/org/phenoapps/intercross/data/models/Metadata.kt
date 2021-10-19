@@ -1,19 +1,26 @@
 package org.phenoapps.intercross.data.models
 
+import androidx.annotation.Keep
 import androidx.recyclerview.widget.DiffUtil
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.Index
+import androidx.room.PrimaryKey
 
-class Metadata(val property: String, val value: Int) {
-    companion object {
+/**
+ * Metadata table to hold default values, unique property names.
+ */
+@Keep
+@Entity(tableName = "metadata",
+        indices = [Index(value = ["property"], unique = true)])
+data class Metadata(
 
-        class DiffCallback : DiffUtil.ItemCallback<Metadata>() {
+        @ColumnInfo(name = "property")
+        var property: String,
 
-            override fun areItemsTheSame(oldItem: Metadata, newItem: Metadata): Boolean {
-                return oldItem.property == newItem.property && oldItem.value == newItem.value
-            }
+        @ColumnInfo(name = "defaultValue")
+        var defaultValue: Int = 0,
 
-            override fun areContentsTheSame(oldItem: Metadata, newItem: Metadata): Boolean {
-                return oldItem.property == newItem.property && oldItem.value == newItem.value
-            }
-        }
-    }
-}
+        @ColumnInfo(name = "mid")
+        @PrimaryKey(autoGenerate = true)
+        var id: Long? = null): BaseTable()

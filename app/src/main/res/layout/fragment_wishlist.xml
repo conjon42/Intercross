@@ -42,6 +42,7 @@
         </com.google.android.material.tabs.TabLayout>
 
         <TextView
+            android:layout_marginEnd="16dp"
             android:id="@+id/maleHeader"
             style="@style/CellText.Header"
             android:layout_width="0dp"
@@ -56,6 +57,7 @@
             app:layout_constraintTop_toBottomOf="@id/summary_tab_layout" />
 
         <TextView
+            android:layout_marginEnd="16dp"
             android:id="@+id/femaleHeader"
             style="@style/CellText.Header"
             android:layout_width="0dp"

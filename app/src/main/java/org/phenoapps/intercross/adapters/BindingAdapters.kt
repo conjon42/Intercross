@@ -1,18 +1,10 @@
 package org.phenoapps.intercross.adapters
 
-import android.graphics.Bitmap
-import android.graphics.Color
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.view.marginStart
 import androidx.databinding.BindingAdapter
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.EncodeHintType
-import com.google.zxing.qrcode.QRCodeWriter
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
-import kotlinx.coroutines.coroutineScope
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.models.CrossType
 import org.phenoapps.intercross.data.models.Event

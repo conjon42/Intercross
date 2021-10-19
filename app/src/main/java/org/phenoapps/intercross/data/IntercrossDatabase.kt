@@ -5,17 +5,13 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import org.phenoapps.intercross.data.dao.EventsDao
-import org.phenoapps.intercross.data.dao.ParentsDao
-import org.phenoapps.intercross.data.dao.PollenGroupDao
-import org.phenoapps.intercross.data.dao.SettingsDao
-import org.phenoapps.intercross.data.dao.WishlistDao
+import org.phenoapps.intercross.data.dao.*
 import org.phenoapps.intercross.data.migrations.MigrationV2MetaData
 import org.phenoapps.intercross.data.models.*
 
-//added database migration from version 1 -> version 2 6/28/2021 see MigrationV2MetaData for documentation.
 @Database(entities = [Event::class, Parent::class,
-    Wishlist::class, Settings::class, PollenGroup::class],
+    Wishlist::class, Settings::class, PollenGroup::class,
+    Metadata::class, MetadataValues::class],
         views = [WishlistView::class], version = 2)
 @TypeConverters(Converters::class)
 abstract class IntercrossDatabase : RoomDatabase() {
@@ -25,6 +21,8 @@ abstract class IntercrossDatabase : RoomDatabase() {
     abstract fun wishlistDao(): WishlistDao
     abstract fun settingsDao(): SettingsDao
     abstract fun pollenGroupDao(): PollenGroupDao
+    abstract fun metadataDao(): MetadataDao
+    abstract fun metaValuesDao(): MetaValuesDao
 
     companion object {
 

@@ -24,26 +24,21 @@ import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
-import org.phenoapps.intercross.data.EventsRepository
-import org.phenoapps.intercross.data.ParentsRepository
-import org.phenoapps.intercross.data.SettingsRepository
-import org.phenoapps.intercross.data.WishlistRepository
+import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
+import org.phenoapps.intercross.data.models.Metadata
 import org.phenoapps.intercross.data.models.Settings
 import org.phenoapps.intercross.data.models.WishlistView
 import org.phenoapps.intercross.data.viewmodels.*
-import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.*
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
 import org.phenoapps.intercross.util.*
 import java.util.*
 import kotlin.math.roundToInt
 
-
-class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fragment_events) {
+class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fragment_events),
+    CoroutineScope by MainScope() {
 
     private val viewModel: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
@@ -61,11 +56,21 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
     }
 
+    private val metaValuesViewModel: MetaValuesViewModel by viewModels {
+        MetaValuesViewModelFactory(MetaValuesRepository.getInstance(db.metaValuesDao()))
+    }
+
+    private val metadataViewModel: MetadataViewModel by viewModels {
+        MetadataViewModelFactory(MetadataRepository.getInstance(db.metadataDao()))
+    }
+
     private var mParents: List<Parent> = ArrayList()
 
     private var mSettings: Settings = Settings()
 
     private var mEvents: List<Event> = ArrayList()
+
+    private var mMetadata: List<Metadata> = ArrayList()
 
     private var mEventsEmpty = true
 
@@ -102,24 +107,30 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     override fun FragmentEventsBinding.afterCreateView() {
 
-        activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-
-        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
-
         if ("demo" in BuildConfig.BUILD_TYPE) {
 
-            pref.edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
+            mPref.edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
 
         }
 
-        if (pref.getBoolean("first_load", true)) {
+        if (mPref.getBoolean("first_load", true)) {
 
             settingsModel.insert(mSettings
                     .apply {
                         isUUID = true
                     })
 
-            pref.edit().putBoolean("first_load", false).apply()
+            launch {
+                withContext(Dispatchers.IO) {
+                    for (property in arrayOf("fruits", "flowers", "seeds")) {
+                        metadataViewModel.insert(
+                            Metadata(property, 0)
+                        )
+                    }
+                }
+            }
+
+            mPref.edit().putBoolean("first_load", false).apply()
         }
 
         if (mSettings.isUUID) {
@@ -158,6 +169,10 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         val error = getString(R.string.ErrorCodeExists)
 
         val isCommutative = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
+
+        metadataViewModel.metadata.observe(viewLifecycleOwner) {
+            mMetadata = it
+        }
 
         parentsList.parents.observe(viewLifecycleOwner, {
 
@@ -407,10 +422,10 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                         mSnackbar.push(SnackbarQueue.SnackJob(root, event.eventDbId, undoString) {
 
                             scope.launch {
-                                CrossUtil(requireContext()).submitCrossEvent(mBinding.root,
+                                CrossUtil(requireContext()).submitCrossEvent(activity,
                                     event.femaleObsUnitDbId, event.maleObsUnitDbId,
                                     event.eventDbId, mSettings, settingsModel, viewModel,
-                                    mParents, parentsList, mWishlistProgress
+                                    mParents, parentsList, mWishlistProgress, mMetadata, metaValuesViewModel
                                 )
                             }
                         })
@@ -697,7 +712,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                             with(CrossUtil(ctx)) {
 
                                 val eid = submitCrossEvent(
-                                        mBinding.root,
+                                        activity,
                                         female,
                                         male,
                                         value,
@@ -706,7 +721,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                                         viewModel,
                                         mParents,
                                         parentsList,
-                                        mWishlistProgress
+                                        mWishlistProgress,
+                                        mMetadata,
+                                        metaValuesViewModel
                                     )
 
                                 activity?.runOnUiThread {

@@ -39,4 +39,5 @@ class EventListViewModel(private val eventRepo: EventsRepository): BaseViewModel
 
     val events = eventRepo.selectAll()
 
+    val metadata = eventRepo.getMetadata()
 }

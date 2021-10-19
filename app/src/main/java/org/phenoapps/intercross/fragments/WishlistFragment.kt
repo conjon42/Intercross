@@ -15,15 +15,25 @@ import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.WishlistAdapter
 import org.phenoapps.intercross.data.EventsRepository
+import org.phenoapps.intercross.data.MetaValuesRepository
+import org.phenoapps.intercross.data.MetadataRepository
 import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.models.Event
+import org.phenoapps.intercross.data.models.Metadata
+import org.phenoapps.intercross.data.models.MetadataValues
+import org.phenoapps.intercross.data.models.WishlistView
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
+import org.phenoapps.intercross.data.viewmodels.MetaValuesViewModel
+import org.phenoapps.intercross.data.viewmodels.MetadataViewModel
 import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.MetaValuesViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.MetadataViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentWishlistBinding
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.KeyUtil
+import org.phenoapps.intercross.util.observeOnce
 
 /**
  * Summary Fragment is a recycler list of currenty crosses.
@@ -39,6 +49,14 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
         WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
     }
 
+    private val metaValuesViewModel: MetaValuesViewModel by viewModels {
+        MetaValuesViewModelFactory(MetaValuesRepository.getInstance(db.metaValuesDao()))
+    }
+
+    private val metadataViewModel: MetadataViewModel by viewModels {
+        MetadataViewModelFactory(MetadataRepository.getInstance(db.metadataDao()))
+    }
+
     private val mPref by lazy {
         PreferenceManager.getDefaultSharedPreferences(context)
     }
@@ -49,6 +67,8 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
     private var wishlistEmpty = true
 
+    private var mMetaValuesList: List<MetadataValues> = ArrayList()
+    private var mMetadataList: List<Metadata> = ArrayList()
     private var mEvents: List<Event> = ArrayList()
 
     override fun FragmentWishlistBinding.afterCreateView() {
@@ -66,13 +86,17 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
         val isCommutative = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
 
         eventsModel.events.observe(viewLifecycleOwner, {
+            mEvents = it
 
-            it?.let {
+            metadataViewModel.metadata.observe(viewLifecycleOwner) {
+                mMetadataList = it
 
-                mEvents = it
+                metaValuesViewModel.metaValues.observe(viewLifecycleOwner) {
+                    mMetaValuesList = it
 
-                if (isCommutative) loadCommutativeWishlist()
-                else loadWishlist()
+                    if (isCommutative) loadCommutativeWishlist()
+                    else loadWishlist()
+                }
             }
         })
 
@@ -100,20 +124,53 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
             it?.let { block ->
 
-                val crosses = block.filter { wish -> wish.wishType == "cross" }
+                val data = ArrayList<CrossCountFragment.WishlistData>()
+
+                //get cross wishes which are automatically counted in the wishlist view
+                val crosses = block.filter { wish -> wish.wishType == "cross" }.map { res ->
+                    CrossCountFragment.WishlistData(res.dadName, res.momName,
+                        res.wishProgress.toString() + "/" + res.wishMin + "/" + res.wishMax.toString(),
+                        getChildren(res))
+                }
+
+                data.addAll(crosses)
+
+                //get all other wish types and use metadata tables to populate the wish progress
+                val otherWishes = block.filter { it.wishType != "cross" }.map { row ->
+
+                    //get children to accumulate their metadata
+                    val children = getChildren(row)
+                    var progress = 0
+                    val metadata = mMetadataList.filter { it.property == row.wishType }
+                    if (metadata.isNotEmpty()) {
+                        val meta = metadata.first()
+                        progress = mMetaValuesList.filter { it.metaId == meta.id?.toInt()
+                                && it.eid in children.map { it.id?.toInt() }}
+                            .map { it.value ?: 0 }.sum()
+                    }
+                    CrossCountFragment.WishlistData(row.dadName, row.momName,
+                        "$progress/${row.wishMin}/${row.wishMax}",
+                        children)
+                }
+
+                data.addAll(otherWishes)
 
                 wishlistEmpty = crosses.isEmpty()
 
                 (recyclerView.adapter as WishlistAdapter)
-                    .submitList(crosses.map { res ->
-                        CrossCountFragment.WishlistData(res.dadName, res.momName,
-                            res.wishProgress.toString() + "/" + res.wishMin + "/" + res.wishMax.toString(), mEvents.filter {
-                                    event -> event.femaleObsUnitDbId == res.momId && event.maleObsUnitDbId == res.dadId
-                            })
-                    })
+                    .submitList(data.toList())
 
             }
         })
+    }
+
+    private fun getChildrenCommutative(data: WishlistView): List<Event> = mEvents.filter {
+            event -> (event.femaleObsUnitDbId == data.momId && event.maleObsUnitDbId == data.dadId)
+            || (event.femaleObsUnitDbId == data.dadId && event.maleObsUnitDbId == data.momId)
+    }
+
+    private fun getChildren(data: WishlistView): List<Event> = mEvents.filter {
+        event -> event.femaleObsUnitDbId == data.momId && event.maleObsUnitDbId == data.dadId
     }
 
     private fun FragmentWishlistBinding.loadCommutativeWishlist() {
@@ -122,17 +179,41 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
             it?.let { block ->
 
-                val crosses = block.filter { wish -> wish.wishType == "cross" }
+                val data = ArrayList<CrossCountFragment.WishlistData>()
+
+                //get cross wishes which are automatically counted in the wishlist view
+                val crosses = block.filter { wish -> wish.wishType == "cross" }.map { res ->
+                    CrossCountFragment.WishlistData(res.dadName, res.momName,
+                        res.wishProgress.toString() + "/" + res.wishMin + "/" + res.wishMax.toString(),
+                        getChildrenCommutative(res))
+                }
+
+                data.addAll(crosses)
+
+                //get all other wish types and use metadata tables to populate the wish progress
+                val otherWishes = block.filter { it.wishType != "cross" }.map { row ->
+
+                    //get children to accumulate their metadata
+                    val children = getChildrenCommutative(row)
+                    var progress = 0
+                    val metadata = mMetadataList.filter { it.property == row.wishType }
+                    if (metadata.isNotEmpty()) {
+                        val meta = metadata.first()
+                        progress = mMetaValuesList.filter { it.metaId == meta.id?.toInt()
+                                && it.eid in children.map { it.id?.toInt() }}
+                            .map { it.value ?: 0 }.sum()
+                    }
+                    CrossCountFragment.WishlistData(row.dadName, row.momName,
+                        "$progress/${row.wishMin}/${row.wishMax}",
+                        children)
+                }
+
+                data.addAll(otherWishes)
 
                 wishlistEmpty = crosses.isEmpty()
 
                 (recyclerView.adapter as WishlistAdapter)
-                    .submitList(crosses.map { res ->
-                        CrossCountFragment.WishlistData(res.dadName, res.momName,
-                            res.wishProgress.toString() + "/" + res.wishMin + "/" + res.wishMax.toString(), mEvents.filter {
-                                    event -> event.femaleObsUnitDbId == res.momId && event.maleObsUnitDbId == res.dadId
-                            })
-                    })
+                    .submitList(data.toList())
 
             }
         })
@@ -255,6 +336,12 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
         when(item.itemId) {
+
+            R.id.action_parents_toolbar_initiate_wf -> {
+
+                findNavController().navigate(WishlistFragmentDirections
+                    .actionFromWishlistToWishFactory())
+            }
 
             R.id.action_import -> {
 

@@ -1,14 +1,15 @@
 package org.phenoapps.intercross.data.dao
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Transaction
+import androidx.room.*
 import org.phenoapps.intercross.data.models.Event
 
 @Dao
 interface EventsDao : BaseDao<Event> {
+
+    data class CrossMetadata(val eid: Int, val property: String, val value: Int)
+
+    data class CrossMetadataWithDefaults(val eid: Int, val property: String, val value: Int, val defaultValue: Int)
 
     data class ParentCount(val mom: String, val momReadable: String, val dad: String, val dadReadable: String, val count: Int)
 
@@ -38,8 +39,18 @@ interface EventsDao : BaseDao<Event> {
     """)
     fun getParents(eid: Long): LiveData<ParentData>
 
-    @Query("SELECT metadata FROM events WHERE eid = :eid")
-    fun getMetadata(eid: Long): LiveData<String>
+    @Query("""SELECT DISTINCT E.eid, M.property, V.value 
+                    FROM events as E, metaValues as V, metadata as M 
+                    JOIN events ON E.eid = V.eid 
+                    JOIN metadata ON M.mid = V.metaId""")
+    fun getMetadata(): LiveData<List<CrossMetadata>>
+
+    @Query("""SELECT DISTINCT E.eid, M.property, V.value, M.defaultValue
+                    FROM events as E, metaValues as V, metadata as M 
+                    JOIN events ON E.eid = V.eid 
+                    JOIN metadata ON M.mid = V.metaId
+                    WHERE E.eid = :eid""")
+    fun getMetadata(eid: Long): LiveData<List<CrossMetadataWithDefaults>>
 
     @Query("""SELECT m.*, d.*
                     FROM events as m, events as d, events as x
@@ -73,19 +84,10 @@ interface EventsDao : BaseDao<Event> {
     @Query("SELECT DISTINCT * FROM events")
     fun getCrosses(): List<Event>
 
-    @Query("SELECT * FROM events as e WHERE e.codeId = :name LIMIT 1")
-    fun getPollination(name: String): LiveData<Event>
-
-    @Query("SELECT * FROM events as e WHERE e.codeId = :name LIMIT 1")
-    fun getHarvest(name: String): LiveData<Event>
-
-    @Query("SELECT * FROM events as e WHERE e.codeId = :name LIMIT 1")
-    fun getThresh(name: String): LiveData<Event>
-
     @Transaction
     @Query("DELETE FROM events")
     fun drop()
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertEvent(event: Event): Long
 }

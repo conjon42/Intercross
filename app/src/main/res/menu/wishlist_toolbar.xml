@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/action_parents_toolbar_initiate_wf"
+        android:icon="@drawable/ic_add_black_24dp"
+        android:title="@string/toolbar_parents_add_wish"
+        app:showAsAction="ifRoom"/>
+    <item
         android:id="@+id/action_import"
         android:icon="@drawable/ic_nv_import_white"
         android:title="@string/import_file"

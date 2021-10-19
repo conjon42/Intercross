@@ -4,8 +4,6 @@ import android.graphics.Color
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -13,16 +11,16 @@ import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.PercentFormatter
+import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
 import com.google.android.material.tabs.TabLayout
-import com.google.gson.JsonParser
-import com.google.gson.JsonSyntaxException
-import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.adapters.SummaryAdapter
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.WishlistRepository
+import org.phenoapps.intercross.data.dao.EventsDao
 import org.phenoapps.intercross.data.models.CrossType
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
@@ -35,8 +33,8 @@ import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFact
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentDataSummaryBinding
 import org.phenoapps.intercross.util.Dialogs
+import org.phenoapps.intercross.util.observeOnce
 import java.util.*
-
 
 /**
  * @author: Chaney
@@ -68,9 +66,12 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
         WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
     }
 
+    private val MAX_LABEL_LENGTH = 16
+
     private lateinit var mEvents: List<Event>
     private lateinit var mParents: List<Parent>
     private lateinit var mWishlist: List<Wishlist>
+    private lateinit var mMetadata: List<EventsDao.CrossMetadata>
 
     //a quick wrapper function for tab selection
     private fun tabSelected(onSelect: (TabLayout.Tab?) -> Unit) = object : TabLayout.OnTabSelectedListener {
@@ -166,18 +167,6 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
     //used to load label/value pair data into the adapter's view holder
     open class ListEntry(open var label: String, open var value: Float)
 
-    //extension function for live data to only observe once when the data is not null
-    private fun <T> LiveData<T>.observeOnce(observer: Observer<T>) {
-        observe(viewLifecycleOwner, object : Observer<T> {
-            override fun onChanged(t: T?) {
-                t?.let { data ->
-                    observer.onChanged(data)
-                    removeObserver(this)
-                }
-            }
-        })
-    }
-
     private fun FragmentDataSummaryBinding.setupBottomNavBar() {
 
         bottomNavBar.setOnNavigationItemSelectedListener { item ->
@@ -221,11 +210,16 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
      */
     private fun FragmentDataSummaryBinding.startObservers() {
 
-        eventsModel.events.observeOnce { data ->
+        eventsModel.metadata.observeOnce(viewLifecycleOwner) { metadata ->
+
+            mMetadata = metadata
+        }
+
+        eventsModel.events.observeOnce(viewLifecycleOwner) { data ->
 
             mEvents = data
 
-            parentsModel.parents.observeOnce { parents ->
+            parentsModel.parents.observeOnce(viewLifecycleOwner) { parents ->
 
                 mParents = parents
 
@@ -233,9 +227,9 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
             }
         }
 
-        wishModel.wishlist.observeOnce { wishes ->
+        wishModel.wishlist.observeOnce(viewLifecycleOwner) { wishes ->
 
-            mWishlist = wishes
+            mWishlist = wishes.filter { it.wishType == "cross" }
         }
     }
 
@@ -365,30 +359,20 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
      * For example Event eid=1 metadata={fruits=[1,2], seeds=[9,7]} would return
      * [fruits to 1, seeds to 9]
      */
-    private fun Event.toEntrySet(): List<Pair<String, Int>> = try {
+    private fun toEntrySet(): List<Pair<String, Int>> {
 
-        val element = JsonParser.parseString(this.metadata)
-
-        if (element.isJsonObject) {
-
-            val json = element.asJsonObject
-
-            json.entrySet().filter { it.key != null }.map { it.key to it.value.asJsonArray.get(0).asInt }
-
-        } else throw JsonSyntaxException("Malformed metadata format found: ${element.asString}")
-
-    } catch (e: JsonSyntaxException) {
-
-        e.printStackTrace()
-
-        listOf()
+        return if (::mMetadata.isInitialized) {
+            mMetadata.map {
+                it.property to it.value
+            }
+        } else listOf()
     }
 
     private fun setMetaData(): BarDataSet = BarDataSet(ArrayList<BarEntry>().apply {
 
         if (::mEvents.isInitialized) {
 
-            mEvents.flatMap { it.toEntrySet() } // [(seeds, 1), (flowers, 1), (seeds, 2), ....]
+            toEntrySet() // [(seeds, 1), (flowers, 1), (seeds, 2), ....]
                 .groupBy { it.first }   //[(seeds, [1, 2]), (flowers, [1]), ...]
                 .map { it.key to it.value.sumBy { values -> values.second } } //[(seeds, 3), (flowers, 1), ...]
                 .mapIndexed { index, pair -> BarEntry(
@@ -455,10 +439,16 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
 
         val labels = arrayListOf<String>()
         for (i in 0 until dataset.entryCount) {
-            labels.add(dataset.getEntryForIndex(i).data as? String ?: "?")
+            val label = dataset.getEntryForIndex(i).data as? String ?: "?"
+            labels.add(if (label.length > MAX_LABEL_LENGTH)
+                label.subSequence(0, MAX_LABEL_LENGTH).toString() else label)
         }
 
+        dataSummaryBarChart.setDrawValueAboveBar(true)
+
         dataSummaryBarChart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
+
+        dataSummaryBarChart.xAxis.granularity = 1f
 
         dataSummaryBarChart.data = data
 
@@ -467,7 +457,9 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
         dataSummaryBarChart.invalidate()
 
         (dataSummaryRecyclerView.adapter as? SummaryAdapter)?.submitList(
-            dataset.values?.map { ListEntry(it?.data as? String ?: "?", it.y) }
+            dataset.values?.map {
+                ListEntry(it?.data as? String ?: "?", it.y)
+            }
         )
     }
 }

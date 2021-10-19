@@ -18,23 +18,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.data.EventsRepository
-import org.phenoapps.intercross.data.ParentsRepository
-import org.phenoapps.intercross.data.SettingsRepository
-import org.phenoapps.intercross.data.WishlistRepository
+import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.data.models.Event
+import org.phenoapps.intercross.data.models.Metadata
 import org.phenoapps.intercross.data.models.Parent
 import org.phenoapps.intercross.data.models.Settings
 import org.phenoapps.intercross.data.models.WishlistView
-import org.phenoapps.intercross.data.viewmodels.CrossSharedViewModel
-import org.phenoapps.intercross.data.viewmodels.EventListViewModel
-import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
-import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
-import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
-import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.*
+import org.phenoapps.intercross.data.viewmodels.factory.*
 import org.phenoapps.intercross.databinding.FragmentBarcodeScanBinding
 import org.phenoapps.intercross.util.CrossUtil
 import org.phenoapps.intercross.util.FileUtil
@@ -68,6 +59,14 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
         WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
     }
 
+    private val metaValuesViewModel: MetaValuesViewModel by viewModels {
+        MetaValuesViewModelFactory(MetaValuesRepository.getInstance(db.metaValuesDao()))
+    }
+
+    private val metadataViewModel: MetadataViewModel by viewModels {
+        MetadataViewModelFactory(MetadataRepository.getInstance(db.metadataDao()))
+    }
+
     private val scope = CoroutineScope(Dispatchers.IO)
 
     private val mSharedViewModel: CrossSharedViewModel by activityViewModels()
@@ -83,6 +82,8 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
     private var mEvents = ArrayList<Event>()
 
     private var mParents = ArrayList<Parent>()
+
+    private var mMetadata = ArrayList<Metadata>()
 
     private var lastText: String? = null
 
@@ -287,6 +288,10 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
         }
 
+        metadataViewModel.metadata.observe(viewLifecycleOwner) {
+            mMetadata = ArrayList(it)
+        }
+
         viewModel.events.observe(viewLifecycleOwner, {
             it?.let {
                 mEvents = ArrayList(it)
@@ -325,7 +330,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                     val eid =
                         withContext(Dispatchers.Default) {
                             submitCrossEvent(
-                                mBinding.root,
+                                activity,
                                 female,
                                 male,
                                 cross,
@@ -334,7 +339,9 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                                 viewModel,
                                 mParents,
                                 parentsModel,
-                                mWishlist)
+                                mWishlist,
+                                mMetadata,
+                                metaValuesViewModel)
                     }
 
                     activity?.runOnUiThread {

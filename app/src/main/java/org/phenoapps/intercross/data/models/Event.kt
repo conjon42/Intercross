@@ -7,9 +7,6 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.google.gson.JsonParser
-import com.google.gson.JsonPrimitive
-import com.google.gson.JsonSyntaxException
 import org.phenoapps.intercross.data.models.embedded.EventMetaData
 
 /**
@@ -42,8 +39,6 @@ data class Event(
         var type: CrossType=CrossType.UNKNOWN,
 
         var sex: Int = -1, //by default sex is unknown
-
-        var metadata: String = metadataDefault,
 
         @ColumnInfo(name = "eid")
         @PrimaryKey(autoGenerate = true)
@@ -81,68 +76,21 @@ data class Event(
                 return oldItem.id == newItem.id
             }
         }
-
-        const val metadataDefault = """{"fruits":[0,0], "seeds":[0,0], "flowers":[0,0]}"""
     }
 
+    //TODO add metadata
     override fun toString(): String {
 
-        val json = metadata.toJson()
-
-        return "$eventDbId,$femaleObsUnitDbId,$maleObsUnitDbId,$timestamp,$person,$experiment,$type${if (json.isEmpty()) String() else ",$json"}"
+        return "$eventDbId,$femaleObsUnitDbId,$maleObsUnitDbId,$timestamp,$person,$experiment,$type"
 
     }
 
+    //TODO add metadata
     fun toPollenGroupString(malesRepr: String, groupName: String?): String {
 
         var group = groupName ?: maleObsUnitDbId
 
-        val json = metadata.toJson()
-
-        return "$eventDbId,$femaleObsUnitDbId,$maleObsUnitDbId::$group::$malesRepr,$timestamp,$person,$experiment,${CrossType.POLY},${if (json.isEmpty()) String() else ",$json"}"
+        return "$eventDbId,$femaleObsUnitDbId,$maleObsUnitDbId::$group::$malesRepr,$timestamp,$person,$experiment,${CrossType.POLY}"
 
     }
-
-    fun getMetadataHeaders(): String = try {
-
-        val element = JsonParser.parseString(metadata)
-
-        if (element.isJsonObject) {
-
-            val json = element.asJsonObject
-
-            if (json.entrySet().isEmpty()) String()
-            else json.entrySet().joinToString(",", ",") { it.key }
-
-        } else String()
-
-    } catch (e: JsonSyntaxException) {
-
-        e.printStackTrace()
-
-        String()
-    }
-
-    //takes a json string and creates a comma delimited string of its values
-    //in this case the json is always an object with json arrays as values with two entries, the value and default value
-    private fun String.toJson(): String = try {
-
-        val element = JsonParser.parseString(this)
-
-        if (element.isJsonObject) {
-
-            val json = element.asJsonObject
-
-            if (json.entrySet().isEmpty()) String()
-            else json.entrySet().joinToString(",") { it.value.asJsonArray[0].asJsonPrimitive.toString() }
-
-        } else String()
-
-    } catch (e: JsonSyntaxException) {
-
-        e.printStackTrace()
-
-        String()
-    }
-
 }
