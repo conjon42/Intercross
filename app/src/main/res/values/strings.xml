@@ -59,8 +59,16 @@
     <string name="continuous_scan_and_submit">Continuous scan and submit.</string>
     <string name="test">TEST</string>
     <string name="import_a_zpl_file">Import a ZPL file</string>
-    <string name="zpl_default">^XA ^DFR:SAMPLE.GRF^FS ^FO100,75^A0,25,20^FN1^FS ^FO200,75^A0N,25,20^BQN,2,6^FDQA,^FN2^FS ^FO450,75^A0,25,20^FN3^FS ^XZ</string>
-    <string name="zpl_parameter_instructions">FN1–4 are used to pass data. 1 is the text cross id, 2 is a barcode, 3 is the date, 4 is the person</string>
+    <string name="zpl_default" formatted="false">
+        ^XA^DFR:TEMPLATE^FS
+        ^PW406
+        ^LH10,10^FS
+        ^FO0,0^A0,25,20^FN1^FS
+        ^FO140,30^BQN,2,3,H,^FN2^FS
+        ^FO140,170^A0,25,20^FN5^FS
+        ^XZ
+    </string>
+    <string name="zpl_parameter_instructions" formatted="false">FN1–6 are ZPL fields used to pass data.\n\n<b>Required:</b> The name of the template must be TEMPLATE as shown in the above example.\n\n<b>For basic cross prints</b>\n\tFN1=the cross id\n\tFN2=the cross id but should be used for barcodes\n\tFN3=the female cross id\n\tFN4=the male cross id\n\tFN5=the timestamp of the cross\n\tFN6=the person who made the cross.\n<b>Note:</b> parent label prints cannot be customized yet.\nUse Labelary: http://labelary.com/viewer.html to define a label easily.\nThe template is designed for 2"x1" labels\nUse Zebra Printer Setup app to calibrate and define media settings.</string>
     <string name="import_zpl">Import ZPL</string>
     <string name="female">Female</string>
     <string name="male">Male</string>
@@ -288,9 +296,9 @@
     <string name="import_error_format_field">Only CSV and XLS files can be imported as a field</string>
     <string name="import_error_format_trait">Only TRT files can be imported as a trait list</string>
     <string name="dialog_planned_crosses_load_title">Planned Crosses</string>
-    <string name="dialog_planned_crosses_summary">Cross Project Name: %s\nNumber of pairs to import: %s</string>
+    <string name="dialog_planned_crosses_summary">Cross Project Name: %1$s\nNumber of pairs to import: %2$s</string>
     <string name="dialog_cross_project_load_title">Cross Project Creator</string>
-    <string name="dialog_cross_project_summary">%s created with id: %s</string>
+    <string name="dialog_cross_project_summary">%1$s created with id: %2$s</string>
     <string name="brapi_export">BrAPI Export</string>
     <string name="fragment_brapi_import_no_planned_crosses_found">No planned crosses found in the chosen cross project.</string>
     <string name="menu_brapi_export_new_crossing_project">Create new crossing project.</string>
@@ -304,5 +312,7 @@
     <string name="brapi_germplasm_import">BrAPI Germplasm Fragment</string>
     <string name="fragment_brapi_export_crosses_failed">Failed to export crosses.</string>
     <string name="pref_brapi_server_title">BrAPI Server Address</string>
+    <string name="error_importing_file">There was an error importing the file.</string>
+    <string name="error_no_bluetooth_permission">Bluetooth permission is required to print.</string>
 
 </resources>

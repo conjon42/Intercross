@@ -512,151 +512,26 @@ class FileUtil(private val ctx: Context) {
 
     }
 
-    //    fun parseUri(uri: Uri): List<String> {
-    //
-    //        val fileUri = uri.path ?: ""
-    //       /* val fileName =
-    //                if (fileUri.lastIndexOf('/') != -1) {
-    //                    fileUri.substring(fileUri.lastIndexOf('/') + 1)
-    //                } else ""*/
-    //        val filePath = FileUtil(ctx).getPath(uri)
-    //
-    //        val lastDot = fileUri.lastIndexOf(".")
-    //
-    //        return when (fileUri.substring(lastDot + 1)) {
-    //            "xlsx", "xls" -> {
-    //                parseExcelSheet(filePath)
-    //            }
-    //            "tsv" -> {
-    //                parseTextFile(uri, "\t")
-    //            }
-    //            "csv", "txt" -> {
-    //                parseTextFile(uri, ",")
-    //            }
-    //            else -> ArrayList()
-    //        }
-    //
-    //    }
+    private fun parseTextFile(it: Uri): List<String> {
 
-        @WorkerThread
-        fun getFilePath(context: Context, uri: Uri): String? = context.run {
-            when {
+        var ret = ArrayList<String>()
 
-                Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT ->
-                    getDataColumn(uri, null, null)
+        try {
 
-                else -> getPathKitkatPlus(uri)
+            val stream = ctx.contentResolver.openInputStream(it)
+
+            stream?.let {
+
+                val reader = BufferedReader(InputStreamReader(it))
+
+                ret = ArrayList(reader.readLines())
             }
+        } catch (fo: FileNotFoundException) {
+            fo.printStackTrace()
+        } catch (io: IOException) {
+            io.printStackTrace()
         }
 
-        private fun Context.getPathKitkatPlus(uri: Uri): String? {
-            when {
-                DocumentsContract.isDocumentUri(applicationContext, uri) -> {
-                    val docId = DocumentsContract.getDocumentId(uri)
-                    when {
-                        uri.isExternalStorageDocument -> {
-                            val parts = docId.split(":")
-                            if ("primary".equals(parts[0], true)) {
-                                return "${Environment.getExternalStorageDirectory()}/${parts[1]}"
-                            }
-                        }
-                        uri.isDownloadsDocument -> {
-                            val contentUri = ContentUris.withAppendedId(
-                                    Uri.parse("content://downloads/public_downloads"),
-                                    docId.toLong()
-                            )
-                            return getDataColumn(contentUri, null, null)
-                        }
-                        uri.isMediaDocument -> {
-                            val parts = docId.split(":")
-                            val contentUri = when (parts[0].toLowerCase(Locale.ROOT)) {
-                                "image" -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                                "video" -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-                                "audio" -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-                                else -> return null
-                            }
-                            return getDataColumn(contentUri, "_id=?", arrayOf(parts[1]))
-                        }
-                    }
-                }
-                "content".equals(uri.scheme, true) -> {
-                    return if (uri.isGooglePhotosUri) {
-                        uri.lastPathSegment
-                    } else {
-                        getDataColumn(uri, null, null)
-                    }
-                }
-                "file".equals(uri.scheme, true) -> {
-                    return uri.path
-                }
-            }
-            return null
-        }
-
-        private fun Context.getDataColumn(uri: Uri, selection: String?, args: Array<String>?): String? {
-            contentResolver?.query(uri, arrayOf("_data"), selection, args, null)?.use {
-                if (it.moveToFirst()) {
-                    return it.getString(it.getColumnIndexOrThrow("_data"))
-                }
-            }
-            return null
-        }
-
-        private val Uri.isExternalStorageDocument: Boolean
-            get() = authority == "com.android.externalstorage.documents"
-
-        private val Uri.isDownloadsDocument: Boolean
-            get() = authority == "com.android.providers.downloads.documents"
-
-        private val Uri.isMediaDocument: Boolean
-            get() = authority == "com.android.providers.media.documents"
-
-        private val Uri.isGooglePhotosUri: Boolean
-            get() = authority == "com.google.android.apps.photos.content"
-
-//        private fun parseExcelSheet(filePath: String): List<String> {
-//    //        val workbook = WorkbookFactory.create(File(filePath))
-//    //        return if (workbook.numberOfSheets > 0) {
-//    //            workbook.getSheetAt(0).rowIterator().asSequence().toList().map {
-//    //                it.cellIterator().asSequence().joinToString(",")
-//    //            }
-//    //        } else ArrayList()
-//            return ArrayList()
-//        }
-
-        private fun parseTextFile(it: Uri): List<String> {
-
-            var ret = ArrayList<String>()
-
-            try {
-
-                val stream = ctx.contentResolver.openInputStream(it)
-
-                stream?.let {
-
-                    val reader = BufferedReader(InputStreamReader(it))
-
-                    ret = ArrayList(reader.readLines())
-                }
-            } catch (fo: FileNotFoundException) {
-                fo.printStackTrace()
-            } catch (io: IOException) {
-                io.printStackTrace()
-            }
-
-            return ret
-        }
-
-        fun readText(context: Context, uri: Uri?): CharSequence {
-
-            uri?.let {
-
-                val lines = File(getFilePath(context, uri)).readLines()
-
-                return lines.joinToString("\n")
-            }
-
-            return String()
-        }
-
+        return ret
+    }
 }

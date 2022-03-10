@@ -1,11 +1,15 @@
 package org.phenoapps.intercross.fragments
 
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
@@ -32,6 +36,17 @@ import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.SnackbarQueue
 
 class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.fragment_parents) {
+
+    private val requestBluetoothPermissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+
+        granted?.let { grant ->
+
+            if (grant.filter { it.value == false }.isNotEmpty()) {
+
+                Toast.makeText(context, R.string.error_no_bluetooth_permission, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     private val viewModel: ParentsListViewModel by viewModels {
         ParentsListViewModelFactory(ParentsRepository.getInstance(db.parentsDao()))
@@ -293,7 +308,11 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
                 val outParents = mFemaleAdapter.currentList.filterIsInstance(Parent::class.java)
 
-                BluetoothUtil().print(requireContext(), outParents.filter { p -> p.selected }.toTypedArray())
+                if (checkBluetoothRuntimePermission()) {
+
+                    BluetoothUtil().print(requireContext(), outParents.filter { p -> p.selected }.toTypedArray())
+
+                }
 
             } else {
 
@@ -306,8 +325,11 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
                         .filter { p -> p.selected }
                         .map { group -> Parent(group.codeId, 1, group.name)}
 
-                BluetoothUtil().print(requireContext(), outAll.toTypedArray())
+                if (checkBluetoothRuntimePermission()) {
 
+                    BluetoothUtil().print(requireContext(), outAll.toTypedArray())
+
+                }
             }
         }
 
@@ -322,6 +344,38 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 //            gdc.onTouchEvent(motionEvent)
 //        })
 
+    }
+
+    private fun checkBluetoothRuntimePermission(): Boolean {
+
+        var permit = true
+
+        context?.let { ctx ->
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (ctx.checkSelfPermission(android.Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
+                    && ctx.checkSelfPermission(android.Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+                    permit = true
+                } else {
+                    requestBluetoothPermissions.launch(arrayOf(
+                        android.Manifest.permission.BLUETOOTH_SCAN,
+                        android.Manifest.permission.BLUETOOTH_CONNECT
+                    ))
+                }
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (ctx.checkSelfPermission(android.Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED
+                    && ctx.checkSelfPermission(android.Manifest.permission.BLUETOOTH_ADMIN) == PackageManager.PERMISSION_GRANTED) {
+                    permit = true
+                } else {
+                    requestBluetoothPermissions.launch(arrayOf(
+                        android.Manifest.permission.BLUETOOTH,
+                        android.Manifest.permission.BLUETOOTH_ADMIN
+                    ))
+                }
+            }
+        }
+
+        return permit
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

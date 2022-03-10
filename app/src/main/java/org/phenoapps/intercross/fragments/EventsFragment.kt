@@ -156,7 +156,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             }
         })
 
-        viewModel.events.observe(viewLifecycleOwner, {
+        viewModel.events.observe(viewLifecycleOwner) {
 
             it?.let {
 
@@ -170,7 +170,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                     if (value.isNotBlank()) {
 
-                        val codes = mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }.distinct()
+                        val codes =
+                            mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }
+                                .distinct()
 
                         if (editTextCross.text.toString() in codes) {
 
@@ -187,9 +189,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 (recyclerView.adapter as? EventsAdapter)?.submitList(it)
             }
-        })
+        }
 
-        settingsModel.settings.observe(viewLifecycleOwner, {
+        settingsModel.settings.observe(viewLifecycleOwner) {
 
             it?.let {
 
@@ -198,18 +200,18 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                 mBinding.settings = it
 
             }
-        })
+        }
 
-        wishStore.wishes.observe(viewLifecycleOwner, {
+        wishStore.wishes.observe(viewLifecycleOwner) {
 
             it?.let {
 
                 mWishlistProgress = it.filter { wish -> wish.wishType == "cross" }
             }
 
-        })
+        }
 
-        mSharedViewModel.lastScan.observe(viewLifecycleOwner, {
+        mSharedViewModel.lastScan.observe(viewLifecycleOwner) {
 
             it?.let {
 
@@ -262,7 +264,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                     mSharedViewModel.lastScan.value = ""
                 }
             }
-        })
+        }
     }
 
     private fun afterFirstText(value: String) {

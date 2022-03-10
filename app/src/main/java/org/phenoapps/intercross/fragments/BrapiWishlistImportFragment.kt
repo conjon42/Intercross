@@ -1,12 +1,17 @@
 package org.phenoapps.intercross.fragments
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
+import android.os.Build
 import android.util.Log
 import android.view.View
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.google.gson.JsonObject
 import kotlinx.android.synthetic.main.fragment_barcode_scan.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -153,11 +158,10 @@ class BrapiWishlistImportFragment: IntercrossBaseFragment<FragmentBrapiImportBin
                                         female = plan.parent1
                                     }
 
-                                    val infoMap = plan.additionalInfo.withDefault { null }
                                     //insert wishlist row, check if brapi has wish metadata
-                                    val wishMin by infoMap //delegate metadata from brapi additional info map
-                                    val wishMax by infoMap
-                                    val wishType by infoMap
+                                    val wishMin = plan.additionalInfo.get("wishMin")?.asInt
+                                    val wishMax = plan.additionalInfo.get("wishMax")?.asInt
+                                    val wishType = plan.additionalInfo.get("wishType")?.asString
 
                                     //TODO: need external references for both parent1 and parent2, otherwise brapi overwrites observationUnitDbId
                                     wishViewModel.insert(
@@ -167,8 +171,8 @@ class BrapiWishlistImportFragment: IntercrossBaseFragment<FragmentBrapiImportBin
                                             femaleName = female.observationUnitName,
                                             maleName = male.observationUnitName,
                                             wishType = wishType ?: "cross",
-                                            wishMin = wishMin?.toIntOrNull() ?: 1,
-                                            wishMax = wishMax?.toIntOrNull() ?: 10
+                                            wishMin = wishMin ?: 1,
+                                            wishMax = wishMax ?: 10
                                         )
                                     )
 
@@ -238,6 +242,7 @@ class BrapiWishlistImportFragment: IntercrossBaseFragment<FragmentBrapiImportBin
     /**
      * TODO: This is what field book uses, might need to be updated
      */
+    @SuppressLint("MissingPermission")
     private fun isConnected(context: Context): Boolean {
 
         val connMgr = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -374,7 +379,14 @@ class BrapiWishlistImportFragment: IntercrossBaseFragment<FragmentBrapiImportBin
         }
     }
 
-    override fun FragmentBrapiImportBinding.afterCreateView() {
+    private val requestPhoneStatePermission = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+
+        if (granted.filter { it.value == false }.isNotEmpty()) {
+            initiate()
+        }
+    }
+
+    private fun initiate() {
 
         activity?.let { act ->
 
@@ -406,5 +418,26 @@ class BrapiWishlistImportFragment: IntercrossBaseFragment<FragmentBrapiImportBin
                 findNavController().popBackStack()
             }
         }
+    }
+
+    override fun FragmentBrapiImportBinding.afterCreateView() {
+
+        activity?.let { act ->
+
+            var permit = false
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (act.checkSelfPermission(android.Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
+                    && act.checkSelfPermission(android.Manifest.permission.ACCESS_NETWORK_STATE) == PackageManager.PERMISSION_GRANTED) {
+                    permit = true
+                } else requestPhoneStatePermission.launch(arrayOf(
+                    android.Manifest.permission.READ_PHONE_STATE,
+                    android.Manifest.permission.ACCESS_NETWORK_STATE))
+            } else permit = true
+
+            if (permit) initiate()
+
+            setHasOptionsMenu(true)
+        }
+
     }
 }
