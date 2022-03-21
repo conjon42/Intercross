@@ -72,6 +72,10 @@ import java.util.Map;
 
 import static com.google.android.gms.common.util.CollectionUtils.listOf;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+
 public class BrAPIServiceV2 implements BrAPIService{
 
     private final Context context;
@@ -144,7 +148,15 @@ public class BrAPIServiceV2 implements BrAPIService{
 
     private BrAPIImage mapImage(FieldBookImage image) {
         BrAPIImage request = new BrAPIImage();
-        request.setAdditionalInfo(image.getAdditionalInfo());
+        JsonObject object = new JsonObject();
+        Map<String, String> info = image.getAdditionalInfo();
+        if (info != null) {
+            for (Map.Entry<String, String> entry : info.entrySet()) {
+                JsonElement element = new JsonPrimitive(entry.getValue());
+                object.add(entry.getKey(), element);
+            }
+        }
+        request.setAdditionalInfo(object);
         request.setCopyright(image.getCopyright());
         request.setDescription(image.getDescription());
         request.setDescriptiveOntologyTerms(image.getDescriptiveOntologyTerms());
@@ -163,7 +175,14 @@ public class BrAPIServiceV2 implements BrAPIService{
 
     private FieldBookImage mapToImage(BrAPIImage image) {
         FieldBookImage request = new FieldBookImage();
-        request.setAdditionalInfo(image.getAdditionalInfo());
+        Map<String, String> info = new HashMap<>();
+        JsonObject object = image.getAdditionalInfo();
+        if (object != null) {
+            for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
+                info.put(entry.getKey(), entry.getValue().getAsString());
+            }
+        }
+        request.setAdditionalInfo(info);
         request.setDescription(image.getDescription());
         request.setDescriptiveOntologyTerms(image.getDescriptiveOntologyTerms());
         request.setFileName(image.getImageFileName());

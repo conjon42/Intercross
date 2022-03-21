@@ -1,15 +1,20 @@
 package org.phenoapps.intercross.fragments
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
+import android.os.Build
 import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.google.gson.JsonObject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -145,6 +150,7 @@ class BrapiExportFragment: IntercrossBaseFragment<FragmentBrapiImportBinding>(R.
     /**
      * TODO: This is what field book uses, might need to be updated
      */
+    @SuppressLint("MissingPermission")
     private fun isConnected(context: Context): Boolean {
 
         val connMgr = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -441,9 +447,9 @@ class BrapiExportFragment: IntercrossBaseFragment<FragmentBrapiImportBinding>(R.
 
         mProjects?.let { crossProject ->
 
-            parentsViewModel.parents.observe(viewLifecycleOwner, { parents ->
+            parentsViewModel.parents.observe(viewLifecycleOwner) { parents ->
 
-                viewModel.events.observe(viewLifecycleOwner, { crosses ->
+                viewModel.events.observe(viewLifecycleOwner) { crosses ->
 
                     mBinding.progressVisibility = View.VISIBLE
 
@@ -456,7 +462,7 @@ class BrapiExportFragment: IntercrossBaseFragment<FragmentBrapiImportBinding>(R.
                             //this.plannedCrossDbId = UUID.randomUUID().toString()
                             //this.plannedCrossName = "Test"
                             //load wish metadata into additional info map
-                            this.additionalInfo = mapOf()
+                            this.additionalInfo = JsonObject()
                             this.crossAttributes = listOf()
                             //this.crossName =
                             this.crossType = cross.type.toBrAPICrossType()
@@ -464,17 +470,20 @@ class BrapiExportFragment: IntercrossBaseFragment<FragmentBrapiImportBinding>(R.
                             crossingProjectName = crossProject.crossingProjectName
                             parent1 = BrAPICrossParent().apply {
                                 this.observationUnitDbId = cross.femaleObsUnitDbId
-                                parents.find { it.codeId ==  cross.femaleObsUnitDbId }?.let { parent ->
-                                    this.observationUnitName = parent.name
-                                    this.parentType = if (parent.sex == 0) BrAPIParentType.FEMALE else BrAPIParentType.MALE
+                                parents.find { it.codeId == cross.femaleObsUnitDbId }
+                                    ?.let { parent ->
+                                        this.observationUnitName = parent.name
+                                        this.parentType =
+                                            if (parent.sex == 0) BrAPIParentType.FEMALE else BrAPIParentType.MALE
 
-                                }
+                                    }
                             }
                             parent2 = BrAPICrossParent().apply {
                                 this.observationUnitDbId = cross.maleObsUnitDbId
-                                parents.find { it.codeId ==  cross.maleObsUnitDbId }?.let { parent ->
+                                parents.find { it.codeId == cross.maleObsUnitDbId }?.let { parent ->
                                     this.observationUnitName = parent.name
-                                    this.parentType = if (parent.sex == 0) BrAPIParentType.FEMALE else BrAPIParentType.MALE
+                                    this.parentType =
+                                        if (parent.sex == 0) BrAPIParentType.FEMALE else BrAPIParentType.MALE
                                 }
                             }
                             //this.pollinationTimeStamp =
@@ -497,19 +506,29 @@ class BrapiExportFragment: IntercrossBaseFragment<FragmentBrapiImportBinding>(R.
 
                             mBinding.progressVisibility = View.GONE
 
-                            Toast.makeText(context,
-                                getString(R.string.fragment_brapi_export_crosses_failed), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                getString(R.string.fragment_brapi_export_crosses_failed),
+                                Toast.LENGTH_SHORT
+                            ).show()
 
                         }
 
                         handleFailure(fail)
                     }
-                })
-            })
+                }
+            }
         }
     }
 
-    override fun FragmentBrapiImportBinding.afterCreateView() {
+    private val requestPhoneStatePermission = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+
+        if (granted.filter { it.value == false }.isNotEmpty()) {
+            initiate()
+        }
+    }
+
+    private fun initiate() {
 
         activity?.let { act ->
 
@@ -543,6 +562,24 @@ class BrapiExportFragment: IntercrossBaseFragment<FragmentBrapiImportBinding>(R.
 
                 findNavController().popBackStack()
             }
+        }
+    }
+
+    override fun FragmentBrapiImportBinding.afterCreateView() {
+
+        activity?.let { act ->
+
+            var permit = false
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (act.checkSelfPermission(android.Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
+                    && act.checkSelfPermission(android.Manifest.permission.ACCESS_NETWORK_STATE) == PackageManager.PERMISSION_GRANTED) {
+                    permit = true
+                } else requestPhoneStatePermission.launch(arrayOf(
+                    android.Manifest.permission.READ_PHONE_STATE,
+                    android.Manifest.permission.ACCESS_NETWORK_STATE))
+            } else permit = true
+
+            if (permit) initiate()
 
             setHasOptionsMenu(true)
         }

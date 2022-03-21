@@ -78,15 +78,12 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
     private var lastText: String? = null
 
-    private val checkCamPermissions by lazy {
+    private val checkCamPermissions = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
 
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) {
 
-            if (granted) {
+            mBinding.setupBarcodeScanner()
 
-                mBinding.setupBarcodeScanner()
-
-            }
         }
     }
 

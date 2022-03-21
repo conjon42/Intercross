@@ -1,4 +1,8 @@
 <changelog>
+    <release versionCode="102" versionName="v1.0.2" date="2022-03-21">
+        <bug>Fixed bug with ZPL import</bug>
+    </release>
+
     <release versionCode="101" versionName="v1.0.1" date="2020-09-18">
         <new>Added cross ID to labels</new>
         <bug>Fixed individual cross search</bug>

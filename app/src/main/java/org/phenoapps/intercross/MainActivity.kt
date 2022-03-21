@@ -1,6 +1,8 @@
 package org.phenoapps.intercross
 
 import android.content.res.Configuration
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.view.MenuItem
@@ -42,7 +44,7 @@ import org.phenoapps.intercross.fragments.EventsFragmentDirections
 import org.phenoapps.intercross.fragments.PatternFragment
 import org.phenoapps.intercross.util.*
 import java.io.File
-import java.util.*
+import java.lang.IllegalArgumentException
 import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {
@@ -69,114 +71,121 @@ class MainActivity : AppCompatActivity() {
         PollenGroupListViewModelFactory(PollenGroupRepository.getInstance(mDatabase.pollenGroupDao()))
     }
 
-    private val exportCrossesFile by lazy {
+    private val exportCrossesFile = registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
 
-        registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
+        //check if uri is null or maybe throws an exception
 
-            //check if uri is null or maybe throws an exception
+        uri?.let { nonNullUri ->
 
-            uri?.let { nonNullUri ->
+            try {
 
-                try {
+                FileUtil(this).exportCrossesToFile(nonNullUri, mEvents, mParents, mGroups)
 
-                    FileUtil(this).exportCrossesToFile(nonNullUri, mEvents, mParents, mGroups)
+            } catch (e: Exception) {
 
-                } catch (e: Exception) {
+                e.printStackTrace()
 
-                    e.printStackTrace()
-
-                }
             }
-
         }
-
     }
 
     /**
      * Ask the user to either drop table before import or append to the current table.
      *
      */
-    private val importedFileContent by lazy {
+    private val importedFileContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
 
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        //TODO documentation says uri can't be null, but it can...might want to check this for a bug
+        uri?.let {
 
-            //TODO documentation says uri can't be null, but it can...might want to check this for a bug
-            uri?.let {
+            try {
 
-                val tables = FileUtil(this).parseInputFile(it)
+                importFromUri(it)
 
-                CoroutineScope(Dispatchers.IO).launch {
+            } catch (e: Exception) {
 
-                    if (tables.size == 3) {
+                e.printStackTrace()
 
-                        if (tables[0].isNotEmpty()) {
+                Toast.makeText(this, R.string.error_importing_file, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
-                            val crosses = tables[0].filterIsInstance(Event::class.java)
+    private val checkPermissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted -> }
 
-                            val polycrosses = crosses.filter { it.type == CrossType.POLY }
+    private fun importFromUri(uri: Uri) {
 
-                            val nonPolys = crosses - polycrosses
+        val tables = FileUtil(this).parseInputFile(uri)
 
-                            polycrosses.forEach { poly ->
+        CoroutineScope(Dispatchers.IO).launch {
 
-                                val maleGroup = poly.maleObsUnitDbId
+            if (tables.size == 3) {
 
-                                if (maleGroup.isNotBlank()
-                                        && "::" in maleGroup
-                                        && "{" in maleGroup
-                                        && "}" in maleGroup) {
+                if (tables[0].isNotEmpty()) {
 
-                                    val tokens = maleGroup.split("::")
+                    val crosses = tables[0].filterIsInstance(Event::class.java)
 
-                                    val groupId = tokens[0]
+                    val polycrosses = crosses.filter { it.type == CrossType.POLY }
 
-                                    val groupName = tokens[1]
+                    val nonPolys = crosses - polycrosses
 
-                                    var males = tokens[2]
+                    polycrosses.forEach { poly ->
 
-                                    males = males.replace("{", "").replace("}", "")
+                        val maleGroup = poly.maleObsUnitDbId
 
-                                    males.split(";").forEach {
+                        if (maleGroup.isNotBlank()
+                            && "::" in maleGroup
+                            && "{" in maleGroup
+                            && "}" in maleGroup) {
 
-                                        val pid = parentsList.insertForId(Parent(it, 1))
+                            val tokens = maleGroup.split("::")
 
-                                        groupList.insert(PollenGroup(groupId, groupName, pid))
-                                    }
+                            val groupId = tokens[0]
 
-                                    eventsModel.insert(poly.apply {
+                            val groupName = tokens[1]
 
-                                        maleObsUnitDbId = groupId
+                            var males = tokens[2]
 
-                                    })
-                                }
+                            males = males.replace("{", "").replace("}", "")
 
+                            males.split(";").forEach {
+
+                                val pid = parentsList.insertForId(Parent(it, 1))
+
+                                groupList.insert(PollenGroup(groupId, groupName, pid))
                             }
 
-                            nonPolys.forEach { cross ->
+                            eventsModel.insert(poly.apply {
 
-                                parentsList.insert(Parent(cross.maleObsUnitDbId, 1), Parent(cross.femaleObsUnitDbId, 0))
+                                maleObsUnitDbId = groupId
 
-                            }
-
-                            eventsModel.insert(*nonPolys.toTypedArray())
-
+                            })
                         }
 
-                        if (tables[1].isNotEmpty()) {
-
-                            parentsList.insert(*tables[1].filterIsInstance(Parent::class.java).toTypedArray())
-
-                        }
-
-                        if (tables[2].isNotEmpty()) {
-
-                            wishModel.insert(*tables[2].filterIsInstance(Wishlist::class.java).toTypedArray())
-
-                        }
                     }
+
+                    nonPolys.forEach { cross ->
+
+                        parentsList.insert(Parent(cross.maleObsUnitDbId, 1), Parent(cross.femaleObsUnitDbId, 0))
+
+                    }
+
+                    eventsModel.insert(*nonPolys.toTypedArray())
+
+                }
+
+                if (tables[1].isNotEmpty()) {
+
+                    parentsList.insert(*tables[1].filterIsInstance(Parent::class.java).toTypedArray())
+
+                }
+
+                if (tables[2].isNotEmpty()) {
+
+                    wishModel.insert(*tables[2].filterIsInstance(Wishlist::class.java).toTypedArray())
+
                 }
             }
-
         }
     }
 
@@ -318,44 +327,59 @@ class MainActivity : AppCompatActivity() {
 
         startObservers()
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            checkPermissions.launch(arrayOf(
+                android.Manifest.permission.BLUETOOTH_CONNECT,
+                android.Manifest.permission.BLUETOOTH_SCAN,
+                android.Manifest.permission.BLUETOOTH_ADMIN,
+                android.Manifest.permission.BLUETOOTH,
+                android.Manifest.permission.INTERNET
+            ))
+        } else {
+            checkPermissions.launch(arrayOf(
+                android.Manifest.permission.BLUETOOTH_ADMIN,
+                android.Manifest.permission.BLUETOOTH,
+                android.Manifest.permission.INTERNET
+            ))
+        }
     }
 
     private fun startObservers() {
 
-        eventsModel.events.observe(this, {
+        eventsModel.events.observe(this) {
 
             it?.let {
 
                 mEvents = it
 
             }
-        })
+        }
 
-        parentsList.parents.observe(this, {
+        parentsList.parents.observe(this) {
 
             it?.let {
 
                 mParents = it
             }
-        })
+        }
 
-        wishModel.wishlist.observe(this, {
+        wishModel.wishlist.observe(this) {
 
             it?.let {
 
                 mWishlist = it
 
             }
-        })
+        }
 
-        groupList.groups.observe(this, {
+        groupList.groups.observe(this) {
 
             it?.let {
 
                 mGroups = it
 
             }
-        })
+        }
 
     }
 
@@ -429,8 +453,11 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.action_nav_about -> {
 
-                    mNavController.navigate(EventsFragmentDirections.actionToAbout())
-
+                    try {
+                        mNavController.navigate(EventsFragmentDirections.actionToAbout())
+                    } catch (e: IllegalArgumentException) {
+                        e.printStackTrace()
+                    }
                 }
             }
 

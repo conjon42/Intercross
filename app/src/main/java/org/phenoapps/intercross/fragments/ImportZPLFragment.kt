@@ -6,24 +6,28 @@ import kotlinx.android.synthetic.main.fragment_pattern.*
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.databinding.FragmentImportZplBinding
 import org.phenoapps.intercross.util.FileUtil
+import java.io.FileInputStream
+import java.io.FileReader
+import java.io.InputStreamReader
 
 class ImportZPLFragment : IntercrossBaseFragment<FragmentImportZplBinding>(R.layout.fragment_import_zpl) {
 
-    private val importZplFile by lazy {
+    private val importZplFile = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
 
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let {
 
-            uri?.let {
+            val text = InputStreamReader(context?.contentResolver?.openInputStream(uri))
+                .readLines()
+                .joinToString("\n")
 
-                val text = FileUtil(requireContext()).readText(requireContext(), it)
+            //val text = FileUtil(requireContext()).readText(requireContext(), it)
 
-                codeTextView.text = text
+            codeTextView.text = text
 
-                val edit = PreferenceManager.getDefaultSharedPreferences(requireContext()).edit()
+            val edit = PreferenceManager.getDefaultSharedPreferences(requireContext()).edit()
 
-                edit.putString("ZPL_CODE", text.toString()).apply()
+            edit.putString("ZPL_CODE", text).apply()
 
-            }
         }
     }
 
