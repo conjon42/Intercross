@@ -12,36 +12,35 @@ apply plugin: 'com.google.firebase.crashlytics'
 
 android {
 
-//    signingConfigs {
-//
-//        playStoreConfig {
-//            Properties keystoreProps = new Properties()
-//            keystoreProps.load(new FileInputStream(file('keystore.config')))
-//
-//            keyAlias keystoreProps['keyAlias']
-//            keyPassword keystoreProps['keyPassword']
-//            storePassword keystoreProps['storePassword']
-//            storeFile file('intercross.keystore.jks')
-//        }
-//    }
+    signingConfigs {
+        playStoreConfig {
+            Properties keystoreProps = new Properties()
+            if (file('keystore.config').exists()) {
+                keystoreProps.load(new FileInputStream(file('keystore.config')))
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+                storePassword keystoreProps['storePassword']
+                storeFile file('intercross.keystore.jks')
+            }
+        }
+    }
 
     compileSdkVersion 31
 
     buildFeatures {
-        dataBinding = true
+        dataBinding true
     }
 
     defaultConfig {
         applicationId "org.phenoapps.intercross"
         minSdkVersion 21
         targetSdkVersion 31
-        versionCode 9
-        versionName "1.0.1"
+        versionCode 10
+        versionName "1.0.2"
         vectorDrawables.useSupportLibrary true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
         manifestPlaceholders = [appAuthRedirectScheme: 'fieldbook']
-//        signingConfig signingConfigs.config
     }
 
     buildTypes {
@@ -53,7 +52,7 @@ android {
             debuggable false
             jniDebuggable false
             renderscriptDebuggable false
-            //signingConfig signingConfigs.playStoreConfig //Add your own signing config
+            signingConfig signingConfigs.playStoreConfig //Add your own signing config
             pseudoLocalesEnabled false
             zipAlignEnabled true
             shrinkResources true
@@ -219,10 +218,4 @@ dependencies {
     implementation 'net.openid:appauth:0.9.0'
     implementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava' //google messed up some packages, this package is temporary until the issue is fixed (Feb 2021)
 
-}
-
-static def getLocalProp(key) {
-    def Properties props = new Properties()
-    props.load(new FileInputStream(new File('local.properties')))
-    return props[key]
 }
