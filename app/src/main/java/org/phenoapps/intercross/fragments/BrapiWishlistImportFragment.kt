@@ -8,7 +8,6 @@ import android.widget.*
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.gson.Gson
-import kotlinx.android.synthetic.main.fragment_barcode_scan.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

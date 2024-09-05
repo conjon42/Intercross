@@ -12,7 +12,7 @@ import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
 class ParentsListViewModelFactory(val repo: ParentsRepository): ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
 
         return ParentsListViewModel(repo) as T
     }

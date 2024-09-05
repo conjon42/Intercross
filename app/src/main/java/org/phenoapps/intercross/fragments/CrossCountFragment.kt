@@ -51,7 +51,7 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
     private var mWishlistEmpty = true
 
     private val mPref by lazy {
-        PreferenceManager.getDefaultSharedPreferences(context)
+        PreferenceManager.getDefaultSharedPreferences(requireContext())
     }
 
     private val mKeyUtil by lazy {

@@ -9,7 +9,7 @@ class SettingsViewModelFactory(private val repo: SettingsRepository
 ) : ViewModelProvider.Factory {
 
     @SuppressWarnings("UNCHECKED_CAST")
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
 
         return SettingsViewModel(repo) as T
     }

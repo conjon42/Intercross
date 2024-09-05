@@ -10,7 +10,7 @@ class EventDetailViewModelFactory(private val repo: EventsRepository,
 ) : ViewModelProvider.Factory {
 
     @SuppressWarnings("UNCHECKED_CAST")
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
 
         return EventDetailViewModel(repo, eventId) as T
     }

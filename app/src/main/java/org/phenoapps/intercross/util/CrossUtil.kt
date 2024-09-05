@@ -96,7 +96,7 @@ class CrossUtil(val context: Context) {
 
         FileUtil(context).ringNotification(true)
 
-        FirebaseCrashlytics.getInstance().log("Cross created: $name $date")
+        //TODO FirebaseCrashlytics.getInstance().log("Cross created: $name $date")
 
         //issue 40 was to disable toast messages when crosses are created
         //val wasCreated = context.getString(R.string.was_created)
