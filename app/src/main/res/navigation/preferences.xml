@@ -31,9 +31,9 @@
             app:destination="@+id/database_preference_fragment"
             app:launchSingleTop="true"/>
 
-        <action android:id="@+id/action_from_settings_to_brapi_fragment"
-            app:destination="@+id/brapi_preference_fragment"
-            app:launchSingleTop="true"/>
+<!--        <action android:id="@+id/action_from_settings_to_brapi_fragment"-->
+<!--            app:destination="@+id/brapi_preference_fragment"-->
+<!--            app:launchSingleTop="true"/>-->
 
         <action android:id="@+id/action_from_settings_to_about_fragment"
             app:destination="@+id/about_preference_fragment"
@@ -68,9 +68,9 @@
         android:name="org.phenoapps.intercross.fragments.preferences.DatabaseFragment"
         android:label="@string/preferences_database_fragment_label"/>
 
-    <fragment android:id="@+id/brapi_preference_fragment"
-        android:name="org.phenoapps.intercross.fragments.preferences.BrapiFragment"
-        android:label="@string/preferences_brapi_fragment_label"/>
+<!--    <fragment android:id="@+id/brapi_preference_fragment"-->
+<!--        android:name="org.phenoapps.intercross.fragments.preferences.BrapiFragment"-->
+<!--        android:label="@string/preferences_brapi_fragment_label"/>-->
 
     <fragment android:id="@+id/naming_preference_fragment"
         android:name="org.phenoapps.intercross.fragments.preferences.NamingFragment"

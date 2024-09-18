@@ -51,7 +51,7 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
     private var mWishlistEmpty = true
 
     private val mPref by lazy {
-        PreferenceManager.getDefaultSharedPreferences(context)
+        PreferenceManager.getDefaultSharedPreferences(requireContext())
     }
 
     private val mKeyUtil by lazy {
@@ -144,7 +144,7 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
     private fun showChildren(male: String, female: String, data: List<Event>) {
 
         context?.let { ctx ->
-            Dialogs.listAndBuildCross(
+            Dialogs.list(
                 AlertDialog.Builder(ctx),
                 getString(R.string.click_item_for_child_details),
                 getString(R.string.no_child_exists),

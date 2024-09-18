@@ -48,7 +48,7 @@ class WorkflowFragment : ToolbarPreferenceFragment(
     }
 
     private val mPref by lazy {
-        PreferenceManager.getDefaultSharedPreferences(context)
+        PreferenceManager.getDefaultSharedPreferences(requireContext())
     }
 
     private val mKeyUtil by lazy {

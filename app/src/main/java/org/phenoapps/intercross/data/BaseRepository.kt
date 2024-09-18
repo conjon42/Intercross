@@ -14,7 +14,7 @@ open class BaseRepository<T> constructor(private val dao: BaseDao<T>) {
         }
     }
 
-    suspend fun update(vararg items: T?) {
+    suspend fun update(vararg items: T) {
 
         withContext(IO) {
 
@@ -22,7 +22,7 @@ open class BaseRepository<T> constructor(private val dao: BaseDao<T>) {
         }
     }
 
-    suspend fun delete(vararg items: T?) {
+    suspend fun delete(vararg items: T) {
 
         withContext(IO) {
 

@@ -11,7 +11,6 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.evrencoskun.tableview.listener.ITableViewListener
 import com.google.android.material.tabs.TabLayout
-import kotlinx.android.synthetic.main.fragment_barcode_scan.*
 import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.CrossBlockTableViewAdapter
@@ -49,7 +48,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
     private var mEvents: List<Event> = ArrayList()
 
     private val mPref by lazy {
-        PreferenceManager.getDefaultSharedPreferences(context)
+        PreferenceManager.getDefaultSharedPreferences(requireContext())
     }
 
     private val mKeyUtil by lazy {
@@ -273,7 +272,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
                 event.femaleObsUnitDbId == fid && event.maleObsUnitDbId == mid
             }
 
-            Dialogs.listAndBuildCross(AlertDialog.Builder(ctx),
+            Dialogs.list(AlertDialog.Builder(ctx),
                 getString(R.string.click_item_for_child_details),
                 getString(R.string.no_child_exists),
                 mid, fid, children, { id ->

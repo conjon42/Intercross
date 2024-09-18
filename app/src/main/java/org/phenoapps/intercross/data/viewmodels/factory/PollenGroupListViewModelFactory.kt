@@ -8,7 +8,7 @@ import org.phenoapps.intercross.data.viewmodels.PollenGroupListViewModel
 class PollenGroupListViewModelFactory(val repo: PollenGroupRepository): ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
 
         return PollenGroupListViewModel(repo) as T
     }

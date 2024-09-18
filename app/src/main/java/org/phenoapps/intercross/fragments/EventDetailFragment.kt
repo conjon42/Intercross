@@ -14,7 +14,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
-import kotlinx.android.synthetic.main.fragment_event_detail.*
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.MetadataAdapter
 import org.phenoapps.intercross.adapters.models.MetadataModel
@@ -59,7 +58,7 @@ class EventDetailFragment:
     }
 
     private val mPref by lazy {
-        PreferenceManager.getDefaultSharedPreferences(context)
+        PreferenceManager.getDefaultSharedPreferences(requireContext())
     }
 
     private val mKeyUtil by lazy {
@@ -262,16 +261,17 @@ class EventDetailFragment:
                 }
                 R.id.action_delete -> {
 
-                    Dialogs.onOk(AlertDialog.Builder(requireContext()),
-                            getString(R.string.delete_cross_entry_title),
-                            getString(R.string.cancel),
-                            getString(R.string.zxing_button_ok)) {
-
-                        eventsList.deleteById(mEvent.id ?: -1L)
-
-                        findNavController().popBackStack()
-
-                    }
+                    //TODO
+//                    Dialogs.onOk(AlertDialog.Builder(requireContext()),
+//                            getString(R.string.delete_cross_entry_title),
+//                            getString(R.string.cancel),
+//                            getString(R.string.zxing_button_ok)) {
+//
+//                        eventsList.deleteById(mEvent.id ?: -1L)
+//
+//                        findNavController().popBackStack()
+//
+//                    }
                 }
             }
         }

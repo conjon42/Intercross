@@ -20,7 +20,6 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.*
-import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
@@ -64,6 +63,14 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         MetadataViewModelFactory(MetadataRepository.getInstance(db.metadataDao()))
     }
 
+    private val argMale: String? by lazy {
+        arguments?.getString("male")
+    }
+
+    private val argFemale: String? by lazy {
+        arguments?.getString("female")
+    }
+
     private var mParents: List<Parent> = ArrayList()
 
     private var mSettings: Settings = Settings()
@@ -83,7 +90,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
     private val scope = CoroutineScope(Dispatchers.IO)
 
     private val mPref by lazy {
-        PreferenceManager.getDefaultSharedPreferences(context)
+        PreferenceManager.getDefaultSharedPreferences(requireContext())
     }
 
     private val mKeyUtil by lazy {
@@ -107,11 +114,12 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     override fun FragmentEventsBinding.afterCreateView() {
 
-        if ("demo" in BuildConfig.BUILD_TYPE) {
-
-            mPref.edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
-
-        }
+        //TODO
+//        if ("demo" in BuildConfig.BUILD_TYPE) {
+//
+//            mPref.edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
+//
+//        }
 
         if (mPref.getBoolean("first_load", true)) {
 
@@ -131,6 +139,19 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             }
 
             mPref.edit().putBoolean("first_load", false).apply()
+        }
+
+        //if this was called from crosscount/crossblock or wishlist fragment then populate the male/female tv
+        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+
+        argFemale?.let { female ->
+            if (maleFirst) mBinding.secondText.setText(female)
+            else mBinding.firstText.setText(female)
+        }
+
+        argMale?.let { male ->
+            if (maleFirst) mBinding.firstText.setText(male)
+            else mBinding.secondText.setText(male)
         }
 
         if (mSettings.isUUID) {

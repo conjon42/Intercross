@@ -8,11 +8,11 @@ import androidx.room.Update
 interface BaseDao<T> {
 
     @Update
-    fun update(vararg e: T?): Int
+    fun update(vararg e: T): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg items: T)
 
     @Delete
-    fun delete(vararg e: T?): Int
+    fun delete(vararg e: T): Int
 }

@@ -2,7 +2,6 @@ package org.phenoapps.intercross.fragments.wish_factory
 
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import kotlinx.android.synthetic.main.fragment_barcode_scan.*
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.SimpleListAdapter
 import org.phenoapps.intercross.data.EventsRepository

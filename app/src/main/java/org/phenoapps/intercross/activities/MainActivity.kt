@@ -18,7 +18,7 @@ import com.bytehamster.lib.preferencesearch.SearchPreferenceResultListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.phenoapps.intercross.BuildConfig
+//import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.data.models.*
@@ -164,12 +164,12 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
             writeStream(exampleParents, R.raw.parents_example)
 
             writeStream(exampleZpl, R.raw.example)
-
-            if ("demo" in BuildConfig.BUILD_TYPE) {
-
-                writeStream(exampleWishLarge, R.raw.large_wishlist)
-
-            }
+//TODO
+//            if ("demo" in BuildConfig.BUILD_TYPE) {
+//
+//                writeStream(exampleWishLarge, R.raw.large_wishlist)
+//
+//            }
         }
     }
 
@@ -439,34 +439,36 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     fun launchImport() {
 
-        if (mAuthPref.getString(mKeyUtil.brapiKeys.brapiTokenKey, null) != null) {
+        //if (mAuthPref.getString(mKeyUtil.brapiKeys.brapiTokenKey, null) != null) {
             //show a dialog asking user to import from local file or brapi
-            AlertDialog.Builder(this)
-                .setSingleChoiceItems(arrayOf("Local", "BrAPI"), 0) { dialog, which ->
-                    when (which) {
-                        //import file from local directory
-                        0 -> importedFileContent?.launch("*/*")
-
-                        //start brapi import fragment
-                        1 -> mNavController.navigate(CrossCountFragmentDirections.globalActionToWishlistImport())
-
-                    }
-
-                    dialog.dismiss()
-                }
-                .show()
-        } else {
+            //TODO
+//            AlertDialog.Builder(this)
+//                .setSingleChoiceItems(arrayOf("Local", "BrAPI"), 0) { dialog, which ->
+//                    when (which) {
+//                        //import file from local directory
+//                        0 -> importedFileContent?.launch("*/*")
+//
+//                        //start brapi import fragment
+//                        1 -> mNavController.navigate(CrossCountFragmentDirections.globalActionToWishlistImport())
+//
+//                    }
+//
+//                    dialog.dismiss()
+//                }
+//                .show()
+        //} else {
             importedFileContent?.launch("*/*")
-        }
+        //}
     }
 
     fun showExportDialog(onDismiss: () -> Unit) {
 
-        val tokenCheck = mAuthPref.getString(mKeyUtil.brapiKeys.brapiTokenKey, null)
+        //TODO
+        //val tokenCheck = mAuthPref.getString(mKeyUtil.brapiKeys.brapiTokenKey, null)
         val importCheck = mPref.getString(mKeyUtil.brapiHasBeenImported, null)
         val defaultFileNamePrefix = getString(R.string.default_crosses_export_file_name)
 
-        if (tokenCheck != null || importCheck != null) {
+        if (importCheck != null) { //(tokenCheck != null || importCheck != null) {
 
             AlertDialog.Builder(this)
                 .setTitle(R.string.dialog_export_title)
@@ -582,7 +584,7 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
                 in mKeyUtil.printKeySet -> R.id.printing_preference_fragment
                 in mKeyUtil.dbKeySet -> R.id.database_preference_fragment
                 in mKeyUtil.aboutKeySet -> R.id.about_preference_fragment
-                else -> R.id.brapi_preference_fragment
+                else -> throw RuntimeException() //todo R.id.brapi_preference_fragment
             }
         )
     }

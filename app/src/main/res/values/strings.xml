@@ -415,6 +415,7 @@
     <string name="frag_metadata_list_delete_dialog_title">Delete this metadata?</string>
     <string name="frag_metadata_confirm_delete_message">This will delete all metadata values for this property.</string>
     <string name="make_cross_option">Make Cross</string>
+    <string name="make_cross_option">Make Cross</string>
     <string name="search_fragment_label">Search</string>
 
 </resources>
