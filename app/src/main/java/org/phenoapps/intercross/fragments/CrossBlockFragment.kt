@@ -70,7 +70,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
         /**
          * list for events model, disable options menu for summary if the list is empty
          */
-        eventsModel.events.observe(viewLifecycleOwner, {
+        eventsModel.events.observe(viewLifecycleOwner) {
 
             it?.let {
 
@@ -78,26 +78,26 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
 
                 if (isCommutative) {
 
-                    wishModel.commutativeCrossblock.observe(viewLifecycleOwner, { block ->
+                    wishModel.commutativeCrossblock.observe(viewLifecycleOwner) { block ->
 
                         mWishlist = block
 
                         setupTable(mWishlist)
 
-                    })
+                    }
 
                 } else {
 
-                    wishModel.crossblock.observe(viewLifecycleOwner, { block ->
+                    wishModel.crossblock.observe(viewLifecycleOwner) { block ->
 
                         mWishlist = block
 
                         setupTable(mWishlist)
 
-                    })
+                    }
                 }
             }
-        })
+        }
 
         summaryTabLayout.getTabAt(2)?.select()
 
@@ -272,7 +272,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
                 event.femaleObsUnitDbId == fid && event.maleObsUnitDbId == mid
             }
 
-            Dialogs.list(AlertDialog.Builder(ctx),
+            Dialogs.listAndBuildCross(AlertDialog.Builder(ctx),
                 getString(R.string.click_item_for_child_details),
                 getString(R.string.no_child_exists),
                 mid, fid, children, { id ->

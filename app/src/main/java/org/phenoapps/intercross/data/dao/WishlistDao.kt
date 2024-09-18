@@ -40,7 +40,7 @@ interface WishlistDao : BaseDao<Wishlist> {
         SELECT DISTINCT femaleDbId as momId, femaleName as momName, maleDbId as dadId, maleName as dadName, wishMin, wishMax, wishType,
             (SELECT COUNT(*) 
             FROM events as child
-            WHERE (w.femaleDbId = child.mom and w.maleDbId = child.dad)
+            WHERE (w.femaleDbId = child.mom and ((w.maleDbId = child.dad) or (child.dad = "blank" and w.maleDbId = "-1")))
                 or (w.femaleDbId = child.dad and w.maleDbId = child.mom)) as wishProgress
         FROM wishlist as w
         WHERE wishType = 'cross' ORDER BY wishProgress DESC

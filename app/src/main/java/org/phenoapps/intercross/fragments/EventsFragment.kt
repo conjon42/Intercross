@@ -160,8 +160,6 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         }
 
-        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
-
         arguments?.getString("male")?.let { male ->
             if (maleFirst) {
                 mBinding.firstText.setText(male)
@@ -209,16 +207,16 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             mMetadata = it
         }
 
-        parentsList.parents.observe(viewLifecycleOwner, {
+        parentsList.parents.observe(viewLifecycleOwner) {
 
             it?.let {
 
                 mParents = it
 
             }
-        })
+        }
 
-        viewModel.events.observe(viewLifecycleOwner, {
+        viewModel.events.observe(viewLifecycleOwner) {
 
             it?.let {
 
@@ -232,11 +230,14 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                     if (value.isNotBlank()) {
 
-                        val codes = mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }.distinct()
+                        val codes =
+                            mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }
+                                .distinct()
 
                         if (mBinding.editTextCross.text.toString() in codes) {
 
-                            if (mBinding.crossTextHolder.error == null) mBinding.crossTextHolder.error = error
+                            if (mBinding.crossTextHolder.error == null) mBinding.crossTextHolder.error =
+                                error
 
                         } else mBinding.crossTextHolder.error = null
 
@@ -249,9 +250,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 (mBinding.recyclerView.adapter as? EventsAdapter)?.submitList(it)
             }
-        })
+        }
 
-        settingsModel.settings.observe(viewLifecycleOwner, {
+        settingsModel.settings.observe(viewLifecycleOwner) {
 
             it?.let {
 
@@ -260,32 +261,32 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                 mBinding.settings = it
 
             }
-        })
+        }
 
         if (isCommutative) {
 
-            wishStore.commutativeWishes.observe(viewLifecycleOwner, {
+            wishStore.commutativeWishes.observe(viewLifecycleOwner) {
 
                 it?.let {
 
                     mWishlistProgress = it.filter { wish -> wish.wishType == "cross" }
                 }
 
-            })
+            }
 
         } else {
 
-            wishStore.wishes.observe(viewLifecycleOwner, {
+            wishStore.wishes.observe(viewLifecycleOwner) {
 
                 it?.let {
 
                     mWishlistProgress = it.filter { wish -> wish.wishType == "cross" }
                 }
 
-            })
+            }
         }
 
-        mSharedViewModel.lastScan.observe(viewLifecycleOwner, {
+        mSharedViewModel.lastScan.observe(viewLifecycleOwner) {
 
             it?.let {
 
@@ -300,16 +301,19 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                             afterFirstText(it)
 
                         }
+
                         mBinding.secondText.id -> {
 
                             afterSecondText(it)
 
                         }
+
                         mBinding.editTextCross.id -> {
 
                             afterThirdText(it)
 
                         }
+
                         else -> {
 
                             /**
@@ -339,7 +343,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                     mSharedViewModel.lastScan.value = ""
                 }
             }
-        })
+        }
     }
 
     private fun afterFirstText(value: String) {

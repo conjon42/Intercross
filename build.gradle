@@ -7,6 +7,9 @@ buildscript {
         maven {
             url "https://plugins.gradle.org/m2/"
         }
+
+        maven { url 'https://jitpack.io' }
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
     }
 
     dependencies {
@@ -15,7 +18,7 @@ buildscript {
 
         classpath "com.mikepenz.aboutlibraries.plugin:aboutlibraries-plugin:11.2.3"
 
-        classpath 'com.android.tools.build:gradle:8.6.0-rc01'
+        classpath 'com.android.tools.build:gradle:8.5.0-rc02'
 
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.21'
 
@@ -31,16 +34,16 @@ buildscript {
     }
 }
 
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
 allprojects {
     repositories {
         mavenCentral()
         google()
+        maven { url "https://jitpack.io" }
         maven { url 'https://raw.github.com/saki4510t/libcommon/master/repository/' }
-
     }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
 }
 

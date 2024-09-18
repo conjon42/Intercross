@@ -116,10 +116,10 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
         /**
          * Keep track if wishlist repo is empty to disable options items menu
          */
-        wishModel.wishlist.observe(viewLifecycleOwner, { wishes ->
+        wishModel.wishlist.observe(viewLifecycleOwner) { wishes ->
 
             mWishlistEmpty = wishes.none { it.wishType == "cross" }
-        })
+        }
     }
 
     /**
@@ -144,7 +144,7 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
     private fun showChildren(male: String, female: String, data: List<Event>) {
 
         context?.let { ctx ->
-            Dialogs.list(
+            Dialogs.listAndBuildCross(
                 AlertDialog.Builder(ctx),
                 getString(R.string.click_item_for_child_details),
                 getString(R.string.no_child_exists),
@@ -250,50 +250,53 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
     private fun showCommutativeChildren(male: String, female: String) {
 
-        eventsModel.parents.observe(viewLifecycleOwner, {
+        eventsModel.parents.observe(viewLifecycleOwner) {
 
             it?.let { crosses ->
 
-                eventsModel.events.observe(viewLifecycleOwner, { data ->
+                eventsModel.events.observe(viewLifecycleOwner) { data ->
 
                     data?.let { events ->
 
                         showChildren(male, female, events.filter { e ->
                             (e.maleObsUnitDbId == male && e.femaleObsUnitDbId == female)
-                                    || (e.maleObsUnitDbId == female && e.femaleObsUnitDbId == male)})
+                                    || (e.maleObsUnitDbId == female && e.femaleObsUnitDbId == male)
+                        })
                     }
-                })
+                }
             }
-        })
+        }
     }
 
     private fun showNonCommutativeChildren(male: String, female: String) {
 
-        eventsModel.parents.observe(viewLifecycleOwner, {
+        eventsModel.parents.observe(viewLifecycleOwner) {
 
             it?.let { crosses ->
 
-                eventsModel.events.observe(viewLifecycleOwner, { data ->
+                eventsModel.events.observe(viewLifecycleOwner) { data ->
 
                     data?.let { events ->
 
-                        showChildren(male, female, events.filter { e -> e.maleObsUnitDbId == male
-                                && e.femaleObsUnitDbId == female })
+                        showChildren(male, female, events.filter { e ->
+                            e.maleObsUnitDbId == male
+                                    && e.femaleObsUnitDbId == female
+                        })
                     }
-                })
+                }
             }
-        })
+        }
     }
 
     private fun loadCommutativeCrossCounts() {
 
-        eventsModel.parents.observe(viewLifecycleOwner, {
+        eventsModel.parents.observe(viewLifecycleOwner) {
 
             it?.let { crosses ->
 
                 val crossData = ArrayList<CrossData>()
 
-                eventsModel.events.observe(viewLifecycleOwner, { data ->
+                eventsModel.events.observe(viewLifecycleOwner) { data ->
 
                     data?.let { events ->
 
@@ -305,7 +308,8 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
                                     parentrow.mom,
                                     parentrow.count.toString(),
                                     parentrow.person,
-                                    parentrow.date)
+                                    parentrow.date
+                                )
                             )
                         }
 
@@ -327,20 +331,20 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
                             else setupTable(data)
                         }
                     }
-                })
+                }
             }
-        })
+        }
     }
 
     private fun loadNonCommutativeCrossCounts() {
 
-        eventsModel.parents.observe(viewLifecycleOwner, {
+        eventsModel.parents.observe(viewLifecycleOwner) {
 
             it?.let { crosses ->
 
                 val crossData = ArrayList<CrossData>()
 
-                eventsModel.events.observe(viewLifecycleOwner, { data ->
+                eventsModel.events.observe(viewLifecycleOwner) { data ->
 
                     data?.let { events ->
 
@@ -352,7 +356,8 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
                                     parentrow.mom,
                                     parentrow.count.toString(),
                                     parentrow.person,
-                                    parentrow.date)
+                                    parentrow.date
+                                )
                             )
 
                         }
@@ -361,9 +366,9 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
                         else setupTable(crossData)
 
                     }
-                })
+                }
             }
-        })
+        }
     }
 
     private fun FragmentCrossCountBinding.setupTabLayout() {

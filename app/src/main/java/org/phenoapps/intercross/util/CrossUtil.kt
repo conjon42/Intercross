@@ -120,8 +120,10 @@ class CrossUtil(val context: Context) {
 
     private fun checkCommutativeWishlist(f: String, m: String, wishlist: List<WishlistView>) {
 
-        wishlist.filter { (it.momId == f && it.dadId == m)
-                || (it.momId == m && it.dadId == f) }.forEach { item ->
+        val dadId = if (m == "blank") "-1" else m
+
+        wishlist.filter { (it.momId == f && it.dadId == dadId)
+                || (it.momId == dadId && it.dadId == f) }.forEach { item ->
 
             if (item.wishProgress + 1 >= item.wishMin && item.wishMin != 0) {
 
@@ -142,7 +144,9 @@ class CrossUtil(val context: Context) {
 
     private fun checkWishlist(f: String, m: String, wishlist: List<WishlistView>) {
 
-        wishlist.find { it.momId == f && it.dadId == m }?.let { item ->
+        val dadId = if (m == "blank") "-1" else m
+
+        wishlist.find { it.momId == f && it.dadId == dadId }?.let { item ->
 
             if (item.wishProgress + 1 >= item.wishMin && item.wishMin != 0) {
 
