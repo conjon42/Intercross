@@ -31,7 +31,6 @@ import org.phenoapps.intercross.databinding.FragmentCrossCountBinding
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.KeyUtil
 import java.lang.IndexOutOfBoundsException
-import java.util.*
 import kotlin.collections.ArrayList
 
 /**
@@ -39,6 +38,10 @@ import kotlin.collections.ArrayList
  * Users can navigate to and from cross block and wishlist fragments.
  */
 class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.layout.fragment_cross_count), ITableViewListener {
+
+    companion object {
+        const val SORT_DELAY_MS = 500L
+    }
 
     private val eventsModel: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
@@ -544,7 +547,7 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
             Handler(Looper.getMainLooper()).postDelayed({
                 mIsSorting = false
-            }, 10000)
+            }, SORT_DELAY_MS)
         }
     }
 
