@@ -23,7 +23,6 @@ import org.phenoapps.intercross.databinding.FragmentSearchBinding
 import org.phenoapps.intercross.interfaces.OnSimpleItemClicked
 import org.phenoapps.intercross.util.KeyUtil
 import org.phenoapps.intercross.util.observeOnce
-import java.util.*
 
 class SearchFragment : IntercrossBaseFragment<FragmentSearchBinding>(R.layout.fragment_search),
     CoroutineScope by MainScope(), OnSimpleItemClicked {
@@ -40,7 +39,7 @@ class SearchFragment : IntercrossBaseFragment<FragmentSearchBinding>(R.layout.fr
     }
 
     private val mPref by lazy {
-        PreferenceManager.getDefaultSharedPreferences(context)
+        PreferenceManager.getDefaultSharedPreferences(requireContext())
     }
 
     private val mKeyUtil by lazy {

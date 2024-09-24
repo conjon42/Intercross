@@ -7,7 +7,7 @@ import org.phenoapps.intercross.data.fts.tables.Crosses
 interface CrossesDao {
 
     @Update
-    fun update(vararg e: Crosses?): Int
+    fun update(vararg e: Crosses): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg items: Crosses)
