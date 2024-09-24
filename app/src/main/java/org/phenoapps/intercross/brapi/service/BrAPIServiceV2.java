@@ -85,12 +85,13 @@ public class BrAPIServiceV2 implements BrAPIService{
         this.mKeyUtil = new KeyUtil(context);
         // Make timeout longer. Set it to 60 seconds for now
         BrAPIClient apiClient = new BrAPIClient(BrAPIService.getBrapiUrl(context), 60000);
-        try {
-             apiClient.authenticate(t -> context.getSharedPreferences("Settings", 0)
-                        .getString(mKeyUtil.getBrapiKeys().getBrapiTokenKey(), null));
-        } catch (ApiException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            //TODO
+////             apiClient.authenticate(t -> context.getSharedPreferences("Settings", 0)
+////                        .getString(mKeyUtil.getBrapiKeys().getBrapiTokenKey(), null));
+//        } catch (ApiException e) {
+//            e.printStackTrace();
+//        }
         this.imagesApi = new ImagesApi(apiClient);
         this.studiesApi = new StudiesApi(apiClient);
         this.programsApi = new ProgramsApi(apiClient);

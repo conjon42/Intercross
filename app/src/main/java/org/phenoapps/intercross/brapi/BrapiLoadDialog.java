@@ -204,17 +204,18 @@ public class BrapiLoadDialog extends Dialog implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.brapi_save_btn:
-                saveStudy();
-                break;
-            case R.id.brapi_cancel_btn:
-                dismiss();
-                break;
-            default:
-                break;
-        }
-        dismiss();
+        //TODO
+//        switch (v.getId()) {
+//            case R.id.brapi_save_btn:
+//                saveStudy();
+//                break;
+//            case R.id.brapi_cancel_btn:
+//                dismiss();
+//                break;
+//            default:
+//                break;
+//        }
+//        dismiss();
     }
 
     private void saveStudy() {

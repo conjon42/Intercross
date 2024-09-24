@@ -20,7 +20,6 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.*
-import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
@@ -91,7 +90,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
     private val scope = CoroutineScope(Dispatchers.IO)
 
     private val mPref by lazy {
-        PreferenceManager.getDefaultSharedPreferences(context)
+        PreferenceManager.getDefaultSharedPreferences(requireContext())
     }
 
     private val mKeyUtil by lazy {
@@ -115,11 +114,12 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     override fun FragmentEventsBinding.afterCreateView() {
 
-        if ("demo" in BuildConfig.BUILD_TYPE) {
-
-            mPref.edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
-
-        }
+        //TODO
+//        if ("demo" in BuildConfig.BUILD_TYPE) {
+//
+//            mPref.edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
+//
+//        }
 
         if (mPref.getBoolean("first_load", true)) {
 

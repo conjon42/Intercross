@@ -104,8 +104,9 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.r
         with(findPreference<PreferenceScreen>(getString(R.string.root_brapi))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
-                    findNavController().navigate(SettingsFragmentDirections
-                        .actionFromSettingsToBrapiFragment())
+                    //TODO
+//                    findNavController().navigate(SettingsFragmentDirections
+//                        .actionFromSettingsToBrapiFragment())
 
                     true
                 }

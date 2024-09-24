@@ -53,7 +53,8 @@ open class ToolbarPreferenceFragment(private val xml: Int, private val key: Int)
             .getString(mKeyUtil.argProfAskPerson, "false")
 
         if (askPerson == "true") {
-            preferenceManager.showDialog(findPreference<EditTextPreference>(mKeyUtil.profPersonKey))
+            //TODO
+            //preferenceManager.showDialog(findPreference<EditTextPreference>(mKeyUtil.profPersonKey))
         }
     }
 

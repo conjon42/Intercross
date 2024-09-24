@@ -62,7 +62,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
     }
 
     private val mPref by lazy {
-        PreferenceManager.getDefaultSharedPreferences(context)
+        PreferenceManager.getDefaultSharedPreferences(requireContext())
     }
 
     private val mKeyUtil by lazy {

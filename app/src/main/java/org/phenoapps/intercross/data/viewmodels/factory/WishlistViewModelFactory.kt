@@ -8,7 +8,7 @@ import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 class WishlistViewModelFactory(private val repo: WishlistRepository) : ViewModelProvider.Factory {
 
     @SuppressWarnings("UNCHECKED_CAST")
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
 
         return WishlistViewModel(repo) as T
     }
