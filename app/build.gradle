@@ -17,7 +17,6 @@ android {
 
             if (file('keystore.config').exists()) {
                 keystoreProps.load(new FileInputStream(file('keystore.config')))
-
                 keyAlias keystoreProps['keyAlias']
                 keyPassword keystoreProps['keyPassword']
                 storePassword keystoreProps['storePassword']
@@ -28,6 +27,7 @@ android {
 
     buildFeatures {
         dataBinding = true
+        buildConfig = true
     }
 
     defaultConfig {
@@ -238,6 +238,8 @@ dependencies {
     implementation "org.brapi:brapi-java-model:2.0-SNAPSHOT"
 
     implementation 'net.openid:appauth:0.9.0'
+    implementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava' //google messed up some packages, this package is temporary until the issue is fixed (Feb 2021)
+
     implementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava' //google messed up some packages, this package is temporary until the issue is fixed (Feb 2021)
 
 }

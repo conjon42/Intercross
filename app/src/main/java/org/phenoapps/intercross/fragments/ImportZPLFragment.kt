@@ -30,7 +30,7 @@ class ImportZPLFragment : IntercrossBaseFragment<FragmentImportZplBinding>(R.lay
 
             mBinding.codeTextView.text = text
 
-            mPref.edit().putString("ZPL_CODE", text).apply()
+            mPref.edit().putString("ZPL_CODE", text.toString()).apply()
 
         }
     }

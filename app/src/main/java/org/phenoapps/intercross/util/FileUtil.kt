@@ -887,33 +887,4 @@ class FileUtil(private val ctx: Context) {
 
         return ret
     }
-
-    fun readText(context: Context, uri: Uri?): CharSequence {
-
-        try {
-
-            uri?.let {
-
-                getFilePath(context, uri)?.let { path ->
-
-                    val lines = File(path).readLines()
-
-                    return lines.joinToString("\n")
-
-                }
-
-            }
-
-        } catch (e: IOException) {
-
-            e.printStackTrace()
-
-        } catch (e: Exception) {
-
-            e.printStackTrace()
-
-        }
-
-        return String()
-    }
 }

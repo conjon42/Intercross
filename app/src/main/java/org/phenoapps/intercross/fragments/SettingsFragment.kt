@@ -1,9 +1,21 @@
 package org.phenoapps.intercross.fragments
 
+import android.content.Context.MODE_PRIVATE
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceScreen
+import android.view.ViewGroup
+import android.widget.EditText
+import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
+import androidx.preference.EditTextPreference
+import androidx.preference.ListPreference
+import androidx.preference.Preference
+import androidx.preference.PreferenceFragmentCompat
+import org.phenoapps.intercross.GeneralKeys
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.fragments.preferences.ToolbarPreferenceFragment
 import org.phenoapps.intercross.util.KeyUtil
@@ -39,18 +51,22 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.r
         //add all xml files to the search preference index
         with(searchPreference?.searchConfiguration) {
             this?.setActivity(activity as AppCompatActivity)
-            arrayOf(R.xml.about_preferences, R.xml.database_preferences, R.xml.naming_preferences,
+            arrayOf(
+                R.xml.about_preferences, R.xml.database_preferences, R.xml.naming_preferences,
                 R.xml.preferences, R.xml.printing_preferences, R.xml.profile_preferences,
-                R.xml.workflow_preferences).forEach {
-                    this?.index(it)
+                R.xml.workflow_preferences
+            ).forEach {
+                this?.index(it)
             }
         }
 
         with(findPreference<PreferenceScreen>(getString(R.string.root_profile))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
-                    findNavController().navigate(SettingsFragmentDirections
-                        .actionFromSettingsToProfileFragment())
+                    findNavController().navigate(
+                        SettingsFragmentDirections
+                            .actionFromSettingsToProfileFragment()
+                    )
 
                     true
                 }
@@ -60,8 +76,10 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.r
         with(findPreference<PreferenceScreen>(getString(R.string.root_naming))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
-                    findNavController().navigate(SettingsFragmentDirections
-                        .actionFromSettingsToNamingFragment())
+                    findNavController().navigate(
+                        SettingsFragmentDirections
+                            .actionFromSettingsToNamingFragment()
+                    )
 
                     true
                 }
@@ -71,8 +89,10 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.r
         with(findPreference<PreferenceScreen>(getString(R.string.root_workflow))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
-                    findNavController().navigate(SettingsFragmentDirections
-                        .actionFromSettingsToWorkflowFragment())
+                    findNavController().navigate(
+                        SettingsFragmentDirections
+                            .actionFromSettingsToWorkflowFragment()
+                    )
 
                     true
                 }
@@ -82,8 +102,10 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.r
         with(findPreference<PreferenceScreen>(getString(R.string.root_printing))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
-                    findNavController().navigate(SettingsFragmentDirections
-                        .actionFromSettingsToPrintingFragment())
+                    findNavController().navigate(
+                        SettingsFragmentDirections
+                            .actionFromSettingsToPrintingFragment()
+                    )
 
                     true
                 }
@@ -93,32 +115,67 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.r
         with(findPreference<PreferenceScreen>(getString(R.string.root_database))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
-                    findNavController().navigate(SettingsFragmentDirections
-                        .actionFromSettingsToDatabaseFragment())
+                    findNavController().navigate(
+                        SettingsFragmentDirections
+                            .actionFromSettingsToDatabaseFragment()
+                    )
 
                     true
-                }
-            }
-        }
+                    with(findPreference<EditTextPreference>(GeneralKeys.BRAPI_BASE_URL)) {
+                        this?.let {
+                            setOnPreferenceChangeListener { _, newValue ->
+                                context.getSharedPreferences("Settings", MODE_PRIVATE)
+                                    .edit()
+                                    .putString(GeneralKeys.BRAPI_BASE_URL, newValue.toString())
+                                    .apply()
+                                true
+                            }
+                        }
+                    }
+                    val printSetup =
+                        findPreference<Preference>("org.phenoapps.intercross.PRINTER_SETUP")
+                    printSetup?.setOnPreferenceClickListener {
+                        val intent = activity?.packageManager
+                            ?.getLaunchIntentForPackage("com.zebra.printersetup")
+                        when (intent) {
+                            null -> {
+                                val i = Intent(Intent.ACTION_VIEW)
+                                i.data = Uri.parse(
+                                    "https://play.google.com/store/apps/details?id=com.zebra.printersetup"
+                                )
+                                startActivity(i)
+                            }
 
-        with(findPreference<PreferenceScreen>(getString(R.string.root_brapi))) {
-            this?.let { it ->
-                it.setOnPreferenceClickListener {
-                    //TODO
+                            else -> {
+                                startActivity(intent)
+                            }
+                        }
+                        true
+                    }
+
+                    with(findPreference<PreferenceScreen>(getString(R.string.root_brapi))) {
+                        this?.let { it ->
+                            it.setOnPreferenceClickListener {
+                                //TODO
 //                    findNavController().navigate(SettingsFragmentDirections
 //                        .actionFromSettingsToBrapiFragment())
 
-                    true
-                }
-            }
-        }
+                                true
+                            }
+                        }
+                    }
 
-        with(findPreference<PreferenceScreen>(getString(R.string.root_about))) {
-            this?.let { it ->
-                it.setOnPreferenceClickListener {
-                    findNavController().navigate(SettingsFragmentDirections.actionToAbout())
+                    with(findPreference<PreferenceScreen>(getString(R.string.root_about))) {
+                        this?.let { it ->
+                            it.setOnPreferenceClickListener {
+                                findNavController().navigate(SettingsFragmentDirections.actionToAbout())
 
-                    true
+                                true
+                            }
+                        }
+
+                        true
+                    }
                 }
             }
         }

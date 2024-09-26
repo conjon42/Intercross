@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.*
+import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
@@ -255,28 +256,28 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         if (isCommutative) {
 
-            wishStore.commutativeWishes.observe(viewLifecycleOwner, {
+            wishStore.commutativeWishes.observe(viewLifecycleOwner) {
 
                 it?.let {
 
                     mWishlistProgress = it.filter { wish -> wish.wishType == "cross" }
                 }
 
-            })
+            }
 
         } else {
 
-            wishStore.wishes.observe(viewLifecycleOwner, {
+            wishStore.wishes.observe(viewLifecycleOwner) {
 
                 it?.let {
 
                     mWishlistProgress = it.filter { wish -> wish.wishType == "cross" }
                 }
 
-            })
+            }
         }
 
-        mSharedViewModel.lastScan.observe(viewLifecycleOwner, {
+        mSharedViewModel.lastScan.observe(viewLifecycleOwner) {
 
             it?.let {
 
@@ -291,16 +292,19 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                             afterFirstText(it)
 
                         }
+
                         mBinding.secondText.id -> {
 
                             afterSecondText(it)
 
                         }
+
                         mBinding.editTextCross.id -> {
 
                             afterThirdText(it)
 
                         }
+
                         else -> {
 
                             /**
@@ -330,17 +334,18 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                     mSharedViewModel.lastScan.value = ""
                 }
             }
-        })
+        }
     }
 
     private fun afterFirstText(value: String) {
 
-        val order = mPref.getBoolean(SettingsFragment.ORDER, false)
-        val blank = mPref.getBoolean(SettingsFragment.BLANK, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+
+        val blank = mPref.getBoolean(mKeyUtil.nameBlankMaleKey, false)
 
         mBinding.firstText.setText(value)
 
-        if (!order && blank) {
+        if (!maleFirst && blank) {
 
             askUserNewExperimentName()
 
@@ -366,6 +371,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             }
 
         }
+
         if ((mSettings.isPattern || mSettings.isUUID)) {
 
             askUserNewExperimentName()

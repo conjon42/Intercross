@@ -448,9 +448,9 @@ class BrapiExportFragment: IntercrossBaseFragment<FragmentBrapiImportBinding>(R.
 
         mProjects?.let { crossProject ->
 
-            parentsViewModel.parents.observe(viewLifecycleOwner, { parents ->
+            parentsViewModel.parents.observe(viewLifecycleOwner) { parents ->
 
-                viewModel.events.observe(viewLifecycleOwner { crosses ->
+                viewModel.events.observe(viewLifecycleOwner) { crosses ->
 
                     mBinding.progressVisibility = View.VISIBLE
 
@@ -507,8 +507,11 @@ class BrapiExportFragment: IntercrossBaseFragment<FragmentBrapiImportBinding>(R.
 
                             mBinding.progressVisibility = View.GONE
 
-                            Toast.makeText(context,
-                                getString(org.phenoapps.intercross.R.string.fragment_brapi_export_crosses_failed), android.widget.Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                getString(org.phenoapps.intercross.R.string.fragment_brapi_export_crosses_failed),
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
 
                         }
 
@@ -516,6 +519,8 @@ class BrapiExportFragment: IntercrossBaseFragment<FragmentBrapiImportBinding>(R.
                     }
                 }
             }
+        }
+    }
 
     override fun FragmentBrapiImportBinding.afterCreateView() {
 

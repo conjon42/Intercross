@@ -99,6 +99,14 @@
                 app:argType="string"
                 android:defaultValue=""/>
         </action>
+        <action
+            android:id="@+id/action_to_wishlist_import"
+            app:destination="@+id/brapi_wishlist_import_fragment"
+            app:popUpTo="@id/events_fragment"/>
+        <action
+            android:id="@+id/action_to_brapi_export"
+            app:destination="@+id/brapi_export_fragment"
+            app:popUpTo="@id/events_fragment"/>
     </fragment>
 
     <fragment

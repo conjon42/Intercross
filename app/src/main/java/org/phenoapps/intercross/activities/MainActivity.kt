@@ -22,6 +22,7 @@ import com.bytehamster.lib.preferencesearch.SearchPreferenceResultListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.phenoapps.intercross.BuildConfig
 //import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.*
@@ -91,7 +92,7 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
             try {
 
-                FileUtil(this).exportCrossesToFile(nonNullUri, mEvents, mParents, mGroups)
+                FileUtil(this).exportCrossesToFile(nonNullUri, mEvents, mParents, mGroups, mMetadata, mMetaValues)
 
             } catch (e: Exception) {
 
@@ -105,14 +106,31 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
      * User selects a new uri document with CreateDocument(), default name is intercross.db
      * which can be changed where this is launched.
      */
-    var exportDatabase: ActivityResultLauncher<String>? = null
+    val exportDatabase = registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
+
+        uri?.let { x ->
+
+            FileUtil(this).exportDatabase(x)
+
+        }
+    }
 
     /**
      * Used in main activity to import a user-chosen database.
      * User selects a uri from a GetContent() call which is passed to FileUtil to copy streams.
      * Finally, the app is recreated to use the new database.
      */
-    var importDatabase: ActivityResultLauncher<String>? = null
+    val importDatabase = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+
+        uri?.let { x ->
+
+            FileUtil(this).importDatabase(x)
+
+            finish()
+
+            startActivity(intent)
+        }
+    }
 
     /**
      * Ask the user to either drop table before import or append to the current table.
@@ -289,32 +307,9 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-
-        //change the hamburger toggle to a back button whenever the fragment is
-        //not the main events fragment
-        mNavController.addOnDestinationChangedListener { _, destination, _ ->
-            when (destination.id) {
-                R.id.events_fragment -> {
-                    mDrawerToggle.isDrawerIndicatorEnabled = true
-                    mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
-
-                }
-                else -> {
-                    mDrawerToggle.isDrawerIndicatorEnabled = false
-                    mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-
-                }
-            }
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
-
-        setupLaunchers()
 
         setupDirs()
 
@@ -353,166 +348,6 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
                 android.Manifest.permission.BLUETOOTH,
                 android.Manifest.permission.INTERNET
             ))
-        }
-    }
-
-    private fun setupLaunchers() {
-
-        exportCrossesFile = registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
-
-            uri?.let { nonNullUri ->
-
-                FileUtil(this).exportCrossesToFile(nonNullUri, mEvents, mParents, mGroups, mMetadata, mMetaValues)
-
-            }
-        }
-
-        exportDatabase = registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
-
-            uri?.let { x ->
-
-                FileUtil(this).exportDatabase(x)
-
-            }
-        }
-
-        importDatabase = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-
-            uri?.let { x ->
-
-                FileUtil(this).importDatabase(x)
-
-                finish()
-
-                startActivity(intent)
-            }
-        }
-
-        setupImportFileLauncher()
-    }
-
-    private fun setupImportFileLauncher() {
-        importedFileContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-
-            //TODO documentation says uri can't be null, but it can...might want to check this for a bug
-            uri?.let {
-
-                val tables = FileUtil(this).parseInputFile(it)
-
-                CoroutineScope(Dispatchers.IO).launch {
-
-                    //keep track of eids inserted to match metadata values
-                    val eids = ArrayList<Long>()
-                    if (tables.size == 5) {
-
-                        if (tables[0].isNotEmpty()) {
-
-                            val crosses = tables[0].filterIsInstance(Event::class.java)
-
-                            val polycrosses = crosses.filter { it.type == CrossType.POLY }
-
-                            val nonPolys = crosses - polycrosses
-
-                            polycrosses.forEach { poly ->
-
-                                val maleGroup = poly.maleObsUnitDbId
-
-                                if (maleGroup.isNotBlank()
-                                    && "::" in maleGroup
-                                    && "{" in maleGroup
-                                    && "}" in maleGroup) {
-
-                                    val tokens = maleGroup.split("::")
-
-                                    val groupId = tokens[0]
-
-                                    val groupName = tokens[1]
-
-                                    var males = tokens[2]
-
-                                    males = males.replace("{", "").replace("}", "")
-
-                                    males.split(";").forEach {
-
-                                        val pid = parentsList.insertForId(Parent(it, 1))
-
-                                        groupList.insert(PollenGroup(groupId, groupName, pid))
-                                    }
-
-                                    eids.add(eventsModel.insert(poly.apply {
-
-                                        maleObsUnitDbId = groupId
-
-                                    }))
-                                }
-
-                            }
-
-                            nonPolys.forEach { cross ->
-
-                                parentsList.insert(Parent(cross.maleObsUnitDbId, 1), Parent(cross.femaleObsUnitDbId, 0))
-
-                            }
-
-                            nonPolys.toTypedArray().forEach { e ->
-                                eids.add(eventsModel.insert(e))
-                            }
-
-                        }
-
-                        if (tables[1].isNotEmpty()) {
-
-                            tables[1].filterIsInstance(Parent::class.java).forEach { parent ->
-
-                                //issue 39 introduced sex = 2, which means to import the line as both male and female parents.
-                                if (parent.sex == 2) {
-                                    with (parent) {
-                                        parentsList.insert(Parent(codeId, 0, name))
-                                        parentsList.insert(Parent(codeId, 1, name))
-                                    }
-                                } else parentsList.insert(parent)
-                            }
-                        }
-
-                        if (tables[2].isNotEmpty()) {
-
-                            wishModel.insert(*tables[2].filterIsInstance(Wishlist::class.java).toTypedArray())
-
-                        }
-
-                        if (tables[3].isNotEmpty() //import metadata and values
-                            && tables[4].isNotEmpty()) {
-
-                            //get unique metadata to insert
-                            val metadata = tables[3].filterIsInstance(Meta::class.java)
-                                .distinctBy { m -> m.property}
-                            metadata.forEachIndexed { index, m ->
-                                metadataViewModel.insert(m)
-                            }
-
-                            val values = tables[4].filterIsInstance(MetadataValues::class.java)
-
-                            var next = 0
-                            var nextEid = 0
-                            values.forEachIndexed { index, value ->
-
-                                val eid = eids[nextEid].toInt() //get the relevant event id
-                                val property = metadata[next++].property
-                                if (next == metadata.size) {
-                                    nextEid++
-                                    next = 0
-                                }
-
-                                val mid = metadataViewModel.getId(property)
-
-                                //get the inserted
-                                metaValuesViewModel.insert(
-                                    MetadataValues(eid, mid, value.value))
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 

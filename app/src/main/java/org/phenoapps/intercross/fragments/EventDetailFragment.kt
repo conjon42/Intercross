@@ -313,7 +313,7 @@ class EventDetailFragment:
                     Dialogs.onOk(AlertDialog.Builder(requireContext()),
                             getString(R.string.delete_cross_entry_title),
                             getString(R.string.cancel),
-                            getString(R.string.zxing_button_ok)) {
+                            getString(android.R.string.ok)) {
 
                         eventsList.deleteById(mEvent.id ?: -1L)
 

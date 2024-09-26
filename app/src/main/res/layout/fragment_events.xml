@@ -171,6 +171,8 @@
             android:scaleType="fitCenter"
             android:tint="#ffffff"
             app:layout_constraintBottom_toTopOf="@id/bottom_nav_bar"
+            app:tint="#ffffff"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:srcCompat="@drawable/ic_barcode_scan" />
 

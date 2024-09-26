@@ -1,5 +1,7 @@
 package org.phenoapps.intercross.fragments
 
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
@@ -9,6 +11,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.ActionMenuView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
@@ -38,6 +41,17 @@ import org.phenoapps.intercross.util.Dialogs
 
 class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.fragment_parents),
     CoroutineScope by MainScope() {
+
+    private val requestBluetoothPermissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+
+        granted?.let { grant ->
+
+            if (grant.filter { it.value == false }.isNotEmpty()) {
+
+                Toast.makeText(context, R.string.error_no_bluetooth_permission, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     private val viewModel: ParentsListViewModel by viewModels {
         ParentsListViewModelFactory(ParentsRepository.getInstance(db.parentsDao()))
@@ -231,7 +245,7 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
         bottomNavBar.selectedItemId = R.id.action_nav_parents
 
-        setupBottomNavBar()
+        //setupBottomNavBar()
 
         setupToolbar()
 
@@ -332,57 +346,119 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
      * Similarly poly groups will not be deleted if used as a parent.
      * The count could also add the number of males when a poly is selected but as of now it just deletes/prints the group id.
      */
-    private fun FragmentParentsBinding.deleteParents() {
+//    private fun FragmentParentsBinding.deleteParents() {
+//
+//        context?.let { ctx ->
+//
+//            Dialogs.onOk(
+//                AlertDialog.Builder(ctx),
+//                getString(R.string.frag_parent_delete_selected_title),
+//                getString(android.R.string.cancel),
+//                getString(android.R.string.ok),
+//                getString(R.string.frag_parent_confirm_delete_message)
+//            ) {
+//
+//                if (tabLayout.getTabAt(0)?.isSelected == true) {
+//
+//                    val out: List<Parent> =
+//                        mFemaleAdapter.currentList.filterIsInstance(Parent::class.java)
+//                            .filter { p -> p.selected }
+//
+//                    //find all parents with crosses (that are selected)
+//                    val parentOfCrossed =
+//                        out.filter { p -> mCrosses.any { crossed -> p.codeId == crossed.femaleObsUnitDbId } }
+//
+//                    viewModel.delete(*(out - parentOfCrossed).toTypedArray())
+//
+//                    if (!parentOfCrossed.isEmpty()) {
+//
+//                        Toast.makeText(
+//                            context, R.string.frag_parents_parents_not_deleted_reason,
+//                            Toast.LENGTH_SHORT
+//                        ).show()
+//                    }
+//
+//                } else {
+//
+//                    val outParents = mMaleAdapter.currentList.filterIsInstance(Parent::class.java)
+//                        .filter { p -> p.selected }
+//
+//                    val outGroups =
+//                        mMaleAdapter.currentList.filterIsInstance(PollenGroup::class.java)
+//                            .filter { g -> g.selected }
+//
+//                    if (checkBluetoothRuntimePermission()) {
+//
+//                        BluetoothUtil().print(
+//                            requireContext(),
+//                            outParents.filter { p -> p.selected }.toTypedArray()
+//                        )
+//
+//                    }
+//
+//                    val parentOfCrossed =
+//                        outParents.filter { p -> mCrosses.any { crossed -> p.codeId == crossed.maleObsUnitDbId } }
+//                    val parentOfGroup =
+//                        outGroups.filter { p -> mCrosses.any { crossed -> p.codeId == crossed.maleObsUnitDbId } }
+//
+//                    viewModel.delete(*(outParents - parentOfCrossed).toTypedArray())
+//
+//                    groupList.deleteByCode(((outGroups - parentOfGroup).map { g -> g.codeId }))
+//
+//                    if (parentOfCrossed.isNotEmpty() || parentOfGroup.isNotEmpty()) {
+//
+//                        Toast.makeText(
+//                            context, R.string.frag_parents_parents_not_deleted_reason,
+//                            Toast.LENGTH_SHORT
+//                        ).show()
+//                    }
+//
+//                    if (checkBluetoothRuntimePermission()) {
+//
+//                        BluetoothUtil().print(requireContext(), outAll.toTypedArray())
+//
+//                    }
+//                }
+//            }
+//        }
+//    }
+
+    private fun checkBluetoothRuntimePermission(): Boolean {
+
+        var permit = true
 
         context?.let { ctx ->
 
-            Dialogs.onOk(AlertDialog.Builder(ctx),
-                getString(R.string.frag_parent_delete_selected_title),
-                getString(android.R.string.cancel),
-                getString(android.R.string.ok),
-                getString(R.string.frag_parent_confirm_delete_message)) {
-
-                if (tabLayout.getTabAt(0)?.isSelected == true) {
-
-                    val out: List<Parent> = mFemaleAdapter.currentList.filterIsInstance(Parent::class.java)
-                        .filter { p -> p.selected }
-
-                    //find all parents with crosses (that are selected)
-                    val parentOfCrossed = out.filter { p -> mCrosses.any { crossed -> p.codeId == crossed.femaleObsUnitDbId } }
-
-                    viewModel.delete(*(out-parentOfCrossed).toTypedArray())
-
-                    if (!parentOfCrossed.isEmpty()) {
-
-                        Toast.makeText(context, R.string.frag_parents_parents_not_deleted_reason,
-                            Toast.LENGTH_SHORT).show()
-                    }
-
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (ctx.checkSelfPermission(android.Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
+                    && ctx.checkSelfPermission(android.Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    permit = true
                 } else {
-
-                    val outParents = mMaleAdapter.currentList.filterIsInstance(Parent::class.java)
-                        .filter { p -> p.selected }
-
-                    val outGroups = mMaleAdapter.currentList.filterIsInstance(PollenGroup::class.java)
-                        .filter { g -> g.selected }
-
-                    val parentOfCrossed = outParents.filter { p -> mCrosses.any { crossed -> p.codeId == crossed.maleObsUnitDbId } }
-                    val parentOfGroup = outGroups.filter { p -> mCrosses.any { crossed -> p.codeId == crossed.maleObsUnitDbId } }
-
-                    viewModel.delete(*(outParents-parentOfCrossed).toTypedArray())
-
-                    groupList.deleteByCode(((outGroups-parentOfGroup).map { g -> g.codeId }))
-
-                    if (parentOfCrossed.isNotEmpty() || parentOfGroup.isNotEmpty()) {
-
-                        Toast.makeText(
-                            context, R.string.frag_parents_parents_not_deleted_reason,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                    requestBluetoothPermissions.launch(
+                        arrayOf(
+                            android.Manifest.permission.BLUETOOTH_SCAN,
+                            android.Manifest.permission.BLUETOOTH_CONNECT
+                        )
+                    )
+                }
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (ctx.checkSelfPermission(android.Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED
+                    && ctx.checkSelfPermission(android.Manifest.permission.BLUETOOTH_ADMIN) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    permit = true
+                } else {
+                    requestBluetoothPermissions.launch(
+                        arrayOf(
+                            android.Manifest.permission.BLUETOOTH,
+                            android.Manifest.permission.BLUETOOTH_ADMIN
+                        )
+                    )
                 }
             }
         }
+
+        return permit
     }
 
     private fun FragmentParentsBinding.printParents() {
@@ -391,104 +467,116 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
             val outParents = mFemaleAdapter.currentList.filterIsInstance(Parent::class.java)
 
-            BluetoothUtil().print(requireContext(), outParents.filter { p -> p.selected }.toTypedArray())
+            BluetoothUtil().print(
+                requireContext(),
+                outParents.filter { p -> p.selected }.toTypedArray()
+            )
 
-        } else {
-
-            val outParents = mMaleAdapter.currentList
-                .filterIsInstance(Parent::class.java)
-                .filter { p -> p.selected }
-
-            val outAll = outParents + mMaleAdapter.currentList
-                .filterIsInstance(PollenGroup::class.java)
-                .filter { p -> p.selected }
-                .map { group -> Parent(group.codeId, 1, group.name)}
-
-            BluetoothUtil().print(requireContext(), outAll.toTypedArray())
-
+//                override fun onCreate(savedInstanceState: Bundle?) {
+//
+//                } else {
+//
+//                    val outParents = mMaleAdapter.currentList
+//                        .filterIsInstance(Parent::class.java)
+//                        .filter { p -> p.selected }
+//
+//                    val outAll = outParents + mMaleAdapter.currentList
+//                        .filterIsInstance(PollenGroup::class.java)
+//                        .filter { p -> p.selected }
+//                        .map { group -> Parent(group.codeId, 1, group.name) }
+//
+//                    BluetoothUtil().print(requireContext(), outAll.toTypedArray())
+//
+//                }
+//            }
+//
+//            override fun onResume() {
+//                super.onResume()
+//
+//                mBinding.bottomNavBar.selectedItemId = R.id.action_nav_parents
+//            }
+//
+//            override fun onCreate(savedInstanceState: Bundle?) {
+//                super.onCreate(savedInstanceState)
+//                setHasOptionsMenu(true)
+//            }
+//
+//            override fun onOptionsItemSelected(item: MenuItem): Boolean {
+//
+//                when (item.itemId) {
+//
+//                    R.id.action_import -> {
+//
+//                        (activity as? MainActivity)?.launchImport()
+//
+//                    }
+//
+//                    R.id.action_parents_delete -> {
+//                        mBinding.deleteParents()
+//                    }
+//
+//                    R.id.action_parents_print -> {
+//                        mBinding.printParents()
+//                    }
+//
+//                    android.R.id.home -> {
+//                        findNavController().popBackStack()
+//                    }
+//
+//                    else -> true
+//                }
+//
+//                return super.onOptionsItemSelected(item)
+//            }
+//
+//            private fun FragmentParentsBinding.setupBottomNavBar() {
+//
+//                bottomNavBar.setOnNavigationItemSelectedListener { item ->
+//
+//                    when (item.itemId) {
+//
+//                        R.id.action_nav_settings -> {
+//
+//                            findNavController().navigate(R.id.global_action_to_settings_fragment)
+//                        }
+//
+//                        R.id.action_nav_export -> {
+//
+//                            (activity as MainActivity).showExportDialog {
+//
+//                                bottomNavBar.selectedItemId = R.id.action_nav_parents
+//                            }
+//
+//                        }
+//
+//                        R.id.action_nav_home -> {
+//
+//                            findNavController().navigate(ParentsFragmentDirections.globalActionToEvents())
+//
+//                        }
+//
+//                        R.id.action_nav_cross_count -> {
+//
+//                            findNavController().navigate(ParentsFragmentDirections.globalActionToCrossCount())
+//                        }
+//                    }
+//
+//                    true
+//                }
+//            }
+//
+//            private fun FragmentParentsBinding.swipeLeft() {
+//
+//                tabLayout.getTabAt(1)?.select()
+//
+//            }
+//
+//            private fun FragmentParentsBinding.swipeRight() {
+//
+//                tabLayout.getTabAt(0)?.select()
+//
+//            }
+//        }
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        mBinding.bottomNavBar.selectedItemId = R.id.action_nav_parents
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        when(item.itemId) {
-
-            R.id.action_import -> {
-
-                (activity as? MainActivity)?.launchImport()
-
-            }
-
-            R.id.action_parents_delete -> {
-                mBinding.deleteParents()
-            }
-
-            R.id.action_parents_print -> {
-                mBinding.printParents()
-            }
-
-            android.R.id.home -> {
-                findNavController().popBackStack()
-            }
-            else -> true
-        }
-
-        return super.onOptionsItemSelected(item)
-    }
-
-    private fun FragmentParentsBinding.setupBottomNavBar() {
-
-        bottomNavBar.setOnNavigationItemSelectedListener { item ->
-
-            when (item.itemId) {
-
-                R.id.action_nav_settings -> {
-
-                    findNavController().navigate(R.id.global_action_to_settings_fragment)
-                }
-                R.id.action_nav_export -> {
-
-                    (activity as MainActivity).showExportDialog {
-
-                        bottomNavBar.selectedItemId = R.id.action_nav_parents
-                    }
-
-                }
-                R.id.action_nav_home -> {
-
-                    findNavController().navigate(ParentsFragmentDirections.globalActionToEvents())
-
-                }
-                R.id.action_nav_cross_count -> {
-
-                    findNavController().navigate(ParentsFragmentDirections.globalActionToCrossCount())
-                }
-            }
-
-            true
-        }
-    }
-
-    private fun FragmentParentsBinding.swipeLeft() {
-
-        tabLayout.getTabAt(1)?.select()
-
-    }
-
-    private fun FragmentParentsBinding.swipeRight() {
-
-        tabLayout.getTabAt(0)?.select()
-
     }
 }
