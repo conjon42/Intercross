@@ -57,6 +57,10 @@
                 android:defaultValue="true"
                 app:argType="boolean"/>
         </action>
+        <action
+            android:id="@+id/action_to_brapi_export"
+            app:destination="@+id/brapi_export_fragment"
+            app:popUpTo="@id/events_fragment"/>
     </fragment>
 
     <fragment

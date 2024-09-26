@@ -6,6 +6,9 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.databinding.FragmentImportZplBinding
 import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.util.KeyUtil
+import java.io.FileInputStream
+import java.io.FileReader
+import java.io.InputStreamReader
 
 class ImportZPLFragment : IntercrossBaseFragment<FragmentImportZplBinding>(R.layout.fragment_import_zpl) {
 
@@ -21,11 +24,13 @@ class ImportZPLFragment : IntercrossBaseFragment<FragmentImportZplBinding>(R.lay
 
         uri?.let {
 
-            val text = FileUtil(requireContext()).readText(requireContext(), it)
+            val text = InputStreamReader(context?.contentResolver?.openInputStream(uri))
+                .readLines()
+                .joinToString("\n")
 
-            //TODO codeTextView.text = text
+            mBinding.codeTextView.text = text
 
-            mPref.edit().putString("ZPL_CODE", text.toString()).apply()
+            mPref.edit().putString("ZPL_CODE", text).apply()
 
         }
     }

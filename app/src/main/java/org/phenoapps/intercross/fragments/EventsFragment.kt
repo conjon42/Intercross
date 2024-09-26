@@ -114,12 +114,13 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     override fun FragmentEventsBinding.afterCreateView() {
 
-        //TODO
-//        if ("demo" in BuildConfig.BUILD_TYPE) {
-//
-//            mPref.edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
-//
-//        }
+        activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+
+        if ("demo" in BuildConfig.BUILD_TYPE) {
+
+            mPref.edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
+
+        }
 
         if (mPref.getBoolean("first_load", true)) {
 
@@ -174,6 +175,8 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         (activity as MainActivity).supportActionBar?.hide()
 
+        activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
+
         setupUI()
 
     }
@@ -195,16 +198,16 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             mMetadata = it
         }
 
-        parentsList.parents.observe(viewLifecycleOwner, {
+        parentsList.parents.observe(viewLifecycleOwner) {
 
             it?.let {
 
                 mParents = it
 
             }
-        })
+        }
 
-        viewModel.events.observe(viewLifecycleOwner, {
+        viewModel.events.observe(viewLifecycleOwner) {
 
             it?.let {
 
@@ -218,7 +221,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                     if (value.isNotBlank()) {
 
-                        val codes = mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }.distinct()
+                        val codes =
+                            mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }
+                                .distinct()
 
                         if (mBinding.editTextCross.text.toString() in codes) {
 
@@ -235,9 +240,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 (mBinding.recyclerView.adapter as? EventsAdapter)?.submitList(it)
             }
-        })
+        }
 
-        settingsModel.settings.observe(viewLifecycleOwner, {
+        settingsModel.settings.observe(viewLifecycleOwner) {
 
             it?.let {
 
@@ -246,7 +251,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                 mBinding.settings = it
 
             }
-        })
+        }
 
         if (isCommutative) {
 
@@ -330,9 +335,16 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun afterFirstText(value: String) {
 
+        val order = mPref.getBoolean(SettingsFragment.ORDER, false)
+        val blank = mPref.getBoolean(SettingsFragment.BLANK, false)
+
         mBinding.firstText.setText(value)
 
-        mBinding.secondText.requestFocus()
+        if (!order && blank) {
+
+            askUserNewExperimentName()
+
+        } else mBinding.secondText.requestFocus()
     }
 
     private fun afterSecondText(value: String) {
@@ -354,7 +366,6 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             }
 
         }
-
         if ((mSettings.isPattern || mSettings.isUUID)) {
 
             askUserNewExperimentName()

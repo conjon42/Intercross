@@ -13,6 +13,8 @@ import org.brapi.client.v2.model.queryParams.core.TrialQueryParams;
 import org.brapi.client.v2.model.queryParams.germplasm.CrossingProjectQueryParams;
 import org.brapi.client.v2.model.queryParams.germplasm.GermplasmQueryParams;
 import org.brapi.client.v2.model.queryParams.germplasm.PlannedCrossQueryParams;
+import org.brapi.client.v2.model.queryParams.phenotype.ObservationUnitQueryParams;
+import org.brapi.client.v2.model.queryParams.phenotype.VariableQueryParams;
 import org.brapi.client.v2.modules.core.ProgramsApi;
 import org.brapi.client.v2.modules.core.StudiesApi;
 import org.brapi.client.v2.modules.core.TrialsApi;
@@ -28,9 +30,11 @@ import org.brapi.v2.model.TimeAdapter;
 import org.brapi.v2.model.core.BrAPIProgram;
 import org.brapi.v2.model.core.BrAPIStudy;
 import org.brapi.v2.model.core.BrAPITrial;
+import org.brapi.v2.model.core.request.BrAPIStudySearchRequest;
 import org.brapi.v2.model.core.request.BrAPITrialSearchRequest;
 import org.brapi.v2.model.core.response.BrAPIProgramListResponse;
 import org.brapi.v2.model.core.response.BrAPIStudyListResponse;
+import org.brapi.v2.model.core.response.BrAPIStudySingleResponse;
 import org.brapi.v2.model.core.response.BrAPITrialListResponse;
 import org.brapi.v2.model.germ.BrAPICross;
 import org.brapi.v2.model.germ.BrAPICrossingProject;
@@ -43,12 +47,17 @@ import org.brapi.v2.model.germ.response.BrAPIPlannedCrossesListResponse;
 import org.brapi.v2.model.pheno.BrAPIImage;
 import org.brapi.v2.model.pheno.BrAPIObservation;
 import org.brapi.v2.model.pheno.BrAPIObservationUnit;
+import org.brapi.v2.model.pheno.BrAPIObservationUnitLevelRelationship;
+import org.brapi.v2.model.pheno.BrAPIObservationUnitPosition;
 import org.brapi.v2.model.pheno.BrAPIPositionCoordinateTypeEnum;
+import org.brapi.v2.model.pheno.BrAPIScaleValidValuesCategories;
 import org.brapi.v2.model.pheno.request.BrAPIObservationUnitSearchRequest;
 import org.brapi.v2.model.pheno.response.BrAPIImageListResponse;
 import org.brapi.v2.model.pheno.response.BrAPIImageSingleResponse;
 import org.brapi.v2.model.pheno.response.BrAPIObservationListResponse;
 import org.brapi.v2.model.pheno.response.BrAPIObservationUnitListResponse;
+import org.brapi.v2.model.pheno.response.BrAPIObservationVariableListResponse;
+import org.phenoapps.intercross.GeneralKeys;
 import org.phenoapps.intercross.brapi.model.BrapiProgram;
 import org.phenoapps.intercross.brapi.model.BrapiStudyDetails;
 import org.phenoapps.intercross.brapi.model.BrapiTrial;
@@ -63,6 +72,10 @@ import java.util.List;
 import java.util.Map;
 
 import static com.google.android.gms.common.util.CollectionUtils.listOf;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 public class BrAPIServiceV2 implements BrAPIService{
 
@@ -140,7 +153,15 @@ public class BrAPIServiceV2 implements BrAPIService{
 
     private BrAPIImage mapImage(FieldBookImage image) {
         BrAPIImage request = new BrAPIImage();
-        //request.setAdditionalInfo(image.getAdditionalInfo());
+        JsonObject object = new JsonObject();
+        Map<String, String> info = image.getAdditionalInfo();
+        if (info != null) {
+            for (Map.Entry<String, String> entry : info.entrySet()) {
+                JsonElement element = new JsonPrimitive(entry.getValue());
+                object.add(entry.getKey(), element);
+            }
+        }
+        request.setAdditionalInfo(object);
         request.setCopyright(image.getCopyright());
         request.setDescription(image.getDescription());
         request.setDescriptiveOntologyTerms(image.getDescriptiveOntologyTerms());
@@ -159,7 +180,14 @@ public class BrAPIServiceV2 implements BrAPIService{
 
     private FieldBookImage mapToImage(BrAPIImage image) {
         FieldBookImage request = new FieldBookImage();
-        //request.setAdditionalInfo(image.getAdditionalInfo());
+        Map<String, String> info = new HashMap<>();
+        JsonObject object = image.getAdditionalInfo();
+        if (object != null) {
+            for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
+                info.put(entry.getKey(), entry.getValue().getAsString());
+            }
+        }
+        request.setAdditionalInfo(info);
         request.setDescription(image.getDescription());
         request.setDescriptiveOntologyTerms(image.getDescriptiveOntologyTerms());
         request.setFileName(image.getImageFileName());

@@ -1,5 +1,6 @@
 package org.phenoapps.intercross.util
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.Context
@@ -20,8 +21,11 @@ class BluetoothUtil {
         BluetoothAdapter.getDefaultAdapter()
     }
 
+    //suppressed false positive lint message, permissions is checked on runtime before thread is launched
     //operation that uses the provided context to prompt the user for a paired bluetooth device
+    @SuppressLint("MissingPermission")
     private fun choose(ctx: Context, f: () -> Unit) {
+
 
         /*Filter out some classes of bluetooth devices
         mBluetoothAdapter.bondedDevices.forEach {
@@ -88,26 +92,41 @@ class BluetoothUtil {
         } else f()
     }
 
+    //new smaller template
+    private var template = """
+        ^XA^DFR:TEMPLATE^FS
+        ^PW406
+        ^LH10,10^FS
+        ^FO0,0^A0,25,20^FN1^FS
+        ^FO140,30^BQN,2,3,H,^FN2^FS
+        ^FO140,170^A0,25,20^FN5^FS
+        ^XZ
+    """.trimIndent()
+
     //qr code with magnification 5 is about 150dots which is <1in
     //ZQ510 printer is 208 dots/in, 8dots/mm
     //command to store the template format
-    private var template = "^XA" +      //start of ZPL command
-            "^MNA^MMT,N" +              //set as non-continuous label
-            "^DFR:TEMPLATE.ZPL^FS" +    //download format as TEMPLATE.ZPL
-            "^FO75,50^BQ,2,5,Q^FN1^FS" + //qr code for code id
-            "^A0N,32,32" +                 //sets font
-            "^FO250,50" +
-            "^FB300,1,1,L,0^FN2^FS" +
-            "^A0N,32,32" +                 //sets font
-            "^FO250,100" +
-            "^FB300,1,1,L,0^FN3^FS" +
-            "^A0N,32,32" +                 //sets font
-            "^FO250,150" +
-            "^FB300,1,1,L,0^FN4^FS" +
-            "^A0N,32,32" +                 //sets font
-            "^FO250,200" +
-            "^FB300,1,1,L,0^FN5^FS" +
-            "^XZ"
+//Old template
+//    private var template = "^XA" +      //start of ZPL command
+//            "^MNA^MMT,N" +              //set as non-continuous label
+//            "^DFR:TEMPLATE.ZPL^FS" +    //download format as TEMPLATE.ZPL
+//            "^FO75,0^BQN,2,4,H^FN1^FS" + //qr code for code id
+//            "^A0N,32,32" +                 //sets font
+//            "^FO250,0" +
+//            "^FB300,1,1,L,0^FN2^FS" +
+//            "^A0N,32,32" +                 //sets font
+//            "^FO250,50" +
+//            "^FB300,1,1,L,0^FN3^FS" +
+//            "^A0N,32,32" +                 //sets font
+//            "^FO250,100" +
+//            "^FB300,1,1,L,0^FN4^FS" +
+//            "^A0N,32,32" +                 //sets font
+//            "^FO250,150" +
+//            "^FB300,1,1,L,0^FN5^FS" +
+//            "^A0N,32,32" +                 //sets font
+//            "^FO250,200" +
+//            "^FB300,1,1,L,0^FN1^FS" +
+//            "^XZ"
 
     /*var template = """
         ^XA

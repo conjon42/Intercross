@@ -95,15 +95,12 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
         KeyUtil(context)
     }
 
-    private val checkCamPermissions by lazy {
+    private val checkCamPermissions = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
 
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) {
 
-            if (granted) {
+            mBinding.setupBarcodeScanner()
 
-                mBinding.setupBarcodeScanner()
-
-            }
         }
     }
 
@@ -272,19 +269,19 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
         if (isCommutative) {
 
-            wishModel.commutativeWishes.observe(viewLifecycleOwner, {
+            wishModel.commutativeWishes.observe(viewLifecycleOwner) {
                 it?.let {
                     mWishlist = it.filter { wish -> wish.wishType == "cross" }
                 }
-            })
+            }
 
         } else {
 
-            wishModel.wishes.observe(viewLifecycleOwner, {
+            wishModel.wishes.observe(viewLifecycleOwner) {
                 it?.let {
                     mWishlist = it.filter { wish -> wish.wishType == "cross" }
                 }
-            })
+            }
 
         }
 
@@ -292,17 +289,17 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
             mMetadata = ArrayList(it)
         }
 
-        viewModel.events.observe(viewLifecycleOwner, {
+        viewModel.events.observe(viewLifecycleOwner) {
             it?.let {
                 mEvents = ArrayList(it)
             }
-        })
+        }
 
-        settingsModel.settings.observe(viewLifecycleOwner, {
+        settingsModel.settings.observe(viewLifecycleOwner) {
             it?.let {
                 mSettings = it
             }
-        })
+        }
 
         mSharedViewModel.name.value = ""
         mSharedViewModel.female.value = ""

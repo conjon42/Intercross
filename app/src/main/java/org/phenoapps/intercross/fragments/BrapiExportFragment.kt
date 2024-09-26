@@ -1,13 +1,17 @@
 package org.phenoapps.intercross.fragments
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
+import android.os.Build
 import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.gson.JsonObject
@@ -147,6 +151,7 @@ class BrapiExportFragment: IntercrossBaseFragment<FragmentBrapiImportBinding>(R.
     /**
      * TODO: This is what field book uses, might need to be updated
      */
+    @SuppressLint("MissingPermission")
     private fun isConnected(context: Context): Boolean {
 
         val connMgr = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -445,7 +450,7 @@ class BrapiExportFragment: IntercrossBaseFragment<FragmentBrapiImportBinding>(R.
 
             parentsViewModel.parents.observe(viewLifecycleOwner, { parents ->
 
-                viewModel.events.observe(viewLifecycleOwner, { crosses ->
+                viewModel.events.observe(viewLifecycleOwner { crosses ->
 
                     mBinding.progressVisibility = View.VISIBLE
 
@@ -458,8 +463,7 @@ class BrapiExportFragment: IntercrossBaseFragment<FragmentBrapiImportBinding>(R.
                             //this.plannedCrossDbId = UUID.randomUUID().toString()
                             //this.plannedCrossName = "Test"
                             //load wish metadata into additional info map
-                            //TODO when v2 and 37b are merged, add additional info into brapi export/import
-                            //this.additionalInfo = JsonObject() //mapOf()
+                            this.additionalInfo = JsonObject()
                             this.crossAttributes = listOf()
                             //this.crossName =
                             this.crossType = cross.type.toBrAPICrossType()
@@ -467,17 +471,20 @@ class BrapiExportFragment: IntercrossBaseFragment<FragmentBrapiImportBinding>(R.
                             crossingProjectName = crossProject.crossingProjectName
                             parent1 = BrAPICrossParent().apply {
                                 this.observationUnitDbId = cross.femaleObsUnitDbId
-                                parents.find { it.codeId ==  cross.femaleObsUnitDbId }?.let { parent ->
-                                    this.observationUnitName = parent.name
-                                    this.parentType = if (parent.sex == 0) BrAPIParentType.FEMALE else BrAPIParentType.MALE
+                                parents.find { it.codeId == cross.femaleObsUnitDbId }
+                                    ?.let { parent ->
+                                        this.observationUnitName = parent.name
+                                        this.parentType =
+                                            if (parent.sex == 0) BrAPIParentType.FEMALE else BrAPIParentType.MALE
 
-                                }
+                                    }
                             }
                             parent2 = BrAPICrossParent().apply {
                                 this.observationUnitDbId = cross.maleObsUnitDbId
-                                parents.find { it.codeId ==  cross.maleObsUnitDbId }?.let { parent ->
+                                parents.find { it.codeId == cross.maleObsUnitDbId }?.let { parent ->
                                     this.observationUnitName = parent.name
-                                    this.parentType = if (parent.sex == 0) BrAPIParentType.FEMALE else BrAPIParentType.MALE
+                                    this.parentType =
+                                        if (parent.sex == 0) BrAPIParentType.FEMALE else BrAPIParentType.MALE
                                 }
                             }
                             //this.pollinationTimeStamp =
@@ -501,16 +508,14 @@ class BrapiExportFragment: IntercrossBaseFragment<FragmentBrapiImportBinding>(R.
                             mBinding.progressVisibility = View.GONE
 
                             Toast.makeText(context,
-                                getString(R.string.fragment_brapi_export_crosses_failed), Toast.LENGTH_SHORT).show()
+                                getString(org.phenoapps.intercross.R.string.fragment_brapi_export_crosses_failed), android.widget.Toast.LENGTH_SHORT).show()
 
                         }
 
                         handleFailure(fail)
                     }
-                })
-            })
-        }
-    }
+                }
+            }
 
     override fun FragmentBrapiImportBinding.afterCreateView() {
 

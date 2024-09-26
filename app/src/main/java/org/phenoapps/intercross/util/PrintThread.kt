@@ -1,5 +1,6 @@
 package org.phenoapps.intercross.util
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.os.Looper
@@ -41,6 +42,8 @@ class PrintThread(private val ctx: Context, private val template: String,
         start()
     }
 
+    //suppressed false positive lint message, permissions is checked on runtime before thread is launched
+    @SuppressLint("MissingPermission")
     override fun run() {
 
         Looper.prepare()
@@ -103,25 +106,22 @@ class PrintThread(private val ctx: Context, private val template: String,
 
                                         }
 
-                                        printer.sendCommand("^XA^XFR:TEMPLATE.ZPL" +
+                                        printer.sendCommand("^XA^XFR:TEMPLATE" +
                                                 "^FN1^FD${it.eventDbId}^FS" +
-                                                "^FN2^FD${it.femaleObsUnitDbId}^FS" +
-                                                "^FN3^FD${it.maleObsUnitDbId}^FS" +
-                                                "^FN4^FD${timestamp}^FS" +
-                                                "^FN5^FD${it.person}^FS^XZ")
+                                                "^FN2^FDH, ${it.eventDbId}^FS" +
+                                                "^FN3^FD${it.femaleObsUnitDbId}^FS" +
+                                                "^FN4^FD${it.maleObsUnitDbId}^FS" +
+                                                "^FN5^FD${timestamp}^FS" +
+                                                "^FN6^FD${it.person}^FS^XZ")
                                     }
                                 }
                                 1 -> {
                                     mParents.forEach {
 
-                                        val unknown = ctx.getString(R.string.unknown)
-                                        printer.sendCommand("^XA^XFR:TEMPLATE.ZPL" +
-                                                "^XA^XFR:TEMPLATE.ZPL" +
+                                        printer.sendCommand("^XA^XFR:TEMPLATE" +
                                                 "^FN1^FD${it.codeId}^FS" +
-                                                "^FN2^FD${it.name}^FS" +
-                                                "^FN3^FD${unknown}^FS" +
-                                                "^FN4^FD^FS" +
-                                                "^FN5^FD^FS^XZ")
+                                                "^FN2^FDH, ${it.codeId}^FS" +
+                                                "^XZ")
                                     }
                                 }
                             }

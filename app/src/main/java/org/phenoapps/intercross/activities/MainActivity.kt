@@ -1,5 +1,8 @@
 package org.phenoapps.intercross.activities
 
+import android.content.res.Configuration
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.view.MenuItem
@@ -10,6 +13,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
@@ -21,6 +25,11 @@ import kotlinx.coroutines.launch
 //import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.*
+import org.phenoapps.intercross.data.EventsRepository
+import org.phenoapps.intercross.data.IntercrossDatabase
+import org.phenoapps.intercross.data.ParentsRepository
+import org.phenoapps.intercross.data.PollenGroupRepository
+import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.models.*
 import org.phenoapps.intercross.data.viewmodels.*
 import org.phenoapps.intercross.data.viewmodels.factory.*
@@ -30,7 +39,7 @@ import org.phenoapps.intercross.fragments.EventsFragmentDirections
 import org.phenoapps.intercross.fragments.PatternFragment
 import org.phenoapps.intercross.util.*
 import java.io.File
-import java.util.*
+import java.lang.IllegalArgumentException
 import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
@@ -69,15 +78,28 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         PreferenceManager.getDefaultSharedPreferences(this)
     }
 
-    private val mAuthPref by lazy {
-        getSharedPreferences("auth", MODE_PRIVATE)
-    }
 
     private val mKeyUtil by lazy {
         KeyUtil(this)
     }
 
-    private var exportCrossesFile: ActivityResultLauncher<String>? = null
+    private val exportCrossesFile = registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
+
+        //check if uri is null or maybe throws an exception
+
+        uri?.let { nonNullUri ->
+
+            try {
+
+                FileUtil(this).exportCrossesToFile(nonNullUri, mEvents, mParents, mGroups)
+
+            } catch (e: Exception) {
+
+                e.printStackTrace()
+
+            }
+        }
+    }
 
     /**
      * User selects a new uri document with CreateDocument(), default name is intercross.db
@@ -96,7 +118,101 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
      * Ask the user to either drop table before import or append to the current table.
      *
      */
-    private var importedFileContent: ActivityResultLauncher<String>? = null
+    private val importedFileContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+
+        //TODO documentation says uri can't be null, but it can...might want to check this for a bug
+        uri?.let {
+
+            try {
+
+                importFromUri(it)
+
+            } catch (e: Exception) {
+
+                e.printStackTrace()
+
+                Toast.makeText(this, R.string.error_importing_file, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private val checkPermissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted -> }
+
+    private fun importFromUri(uri: Uri) {
+
+        val tables = FileUtil(this).parseInputFile(uri)
+
+        CoroutineScope(Dispatchers.IO).launch {
+
+            if (tables.size == 3) {
+
+                if (tables[0].isNotEmpty()) {
+
+                    val crosses = tables[0].filterIsInstance(Event::class.java)
+
+                    val polycrosses = crosses.filter { it.type == CrossType.POLY }
+
+                    val nonPolys = crosses - polycrosses
+
+                    polycrosses.forEach { poly ->
+
+                        val maleGroup = poly.maleObsUnitDbId
+
+                        if (maleGroup.isNotBlank()
+                            && "::" in maleGroup
+                            && "{" in maleGroup
+                            && "}" in maleGroup) {
+
+                            val tokens = maleGroup.split("::")
+
+                            val groupId = tokens[0]
+
+                            val groupName = tokens[1]
+
+                            var males = tokens[2]
+
+                            males = males.replace("{", "").replace("}", "")
+
+                            males.split(";").forEach {
+
+                                val pid = parentsList.insertForId(Parent(it, 1))
+
+                                groupList.insert(PollenGroup(groupId, groupName, pid))
+                            }
+
+                            eventsModel.insert(poly.apply {
+
+                                maleObsUnitDbId = groupId
+
+                            })
+                        }
+
+                    }
+
+                    nonPolys.forEach { cross ->
+
+                        parentsList.insert(Parent(cross.maleObsUnitDbId, 1), Parent(cross.femaleObsUnitDbId, 0))
+
+                    }
+
+                    eventsModel.insert(*nonPolys.toTypedArray())
+
+                }
+
+                if (tables[1].isNotEmpty()) {
+
+                    parentsList.insert(*tables[1].filterIsInstance(Parent::class.java).toTypedArray())
+
+                }
+
+                if (tables[2].isNotEmpty()) {
+
+                    wishModel.insert(*tables[2].filterIsInstance(Wishlist::class.java).toTypedArray())
+
+                }
+            }
+        }
+    }
 
     private var mEvents: List<Event> = ArrayList()
 
@@ -164,12 +280,33 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
             writeStream(exampleParents, R.raw.parents_example)
 
             writeStream(exampleZpl, R.raw.example)
-//TODO
-//            if ("demo" in BuildConfig.BUILD_TYPE) {
-//
-//                writeStream(exampleWishLarge, R.raw.large_wishlist)
-//
-//            }
+
+            if ("demo" in BuildConfig.BUILD_TYPE) {
+
+                writeStream(exampleWishLarge, R.raw.large_wishlist)
+
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        //change the hamburger toggle to a back button whenever the fragment is
+        //not the main events fragment
+        mNavController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.events_fragment -> {
+                    mDrawerToggle.isDrawerIndicatorEnabled = true
+                    mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+
+                }
+                else -> {
+                    mDrawerToggle.isDrawerIndicatorEnabled = false
+                    mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+
+                }
+            }
         }
     }
 
@@ -202,6 +339,21 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
         startObservers()
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            checkPermissions.launch(arrayOf(
+                android.Manifest.permission.BLUETOOTH_CONNECT,
+                android.Manifest.permission.BLUETOOTH_SCAN,
+                android.Manifest.permission.BLUETOOTH_ADMIN,
+                android.Manifest.permission.BLUETOOTH,
+                android.Manifest.permission.INTERNET
+            ))
+        } else {
+            checkPermissions.launch(arrayOf(
+                android.Manifest.permission.BLUETOOTH_ADMIN,
+                android.Manifest.permission.BLUETOOTH,
+                android.Manifest.permission.INTERNET
+            ))
+        }
     }
 
     private fun setupLaunchers() {
@@ -366,40 +518,40 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     private fun startObservers() {
 
-        eventsModel.events.observe(this, {
+        eventsModel.events.observe(this) {
 
             it?.let {
 
                 mEvents = it
 
             }
-        })
+        }
 
-        parentsList.parents.observe(this, {
+        parentsList.parents.observe(this) {
 
             it?.let {
 
                 mParents = it
             }
-        })
+        }
 
-        wishModel.wishlist.observe(this, {
+        wishModel.wishlist.observe(this) {
 
             it?.let {
 
                 mWishlist = it.filter { it.wishType == "cross" }
 
             }
-        })
+        }
 
-        groupList.groups.observe(this, {
+        groupList.groups.observe(this) {
 
             it?.let {
 
                 mGroups = it
 
             }
-        })
+        }
 
         metadataViewModel.metadata.observe(this) {
 
