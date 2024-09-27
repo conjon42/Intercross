@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.findNavController
 import androidx.preference.Preference
 import org.phenoapps.intercross.R
@@ -49,7 +50,7 @@ class PrintingFragment : ToolbarPreferenceFragment(R.xml.printing_preferences, R
 
     override fun onResume() {
         super.onResume()
-
-        (activity as MainActivity).supportActionBar?.show()
+        (activity as MainActivity).setBackButtonToolbar()
+        (activity as AppCompatActivity).supportActionBar?.show()
     }
 }

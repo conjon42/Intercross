@@ -2,12 +2,18 @@ package org.phenoapps.intercross.fragments.preferences
 
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import androidx.preference.*
-import kotlinx.coroutines.*
+import androidx.preference.Preference
+import androidx.preference.PreferenceManager
+import androidx.preference.SwitchPreference
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.data.EventsRepository
@@ -24,7 +30,6 @@ import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFacto
 import org.phenoapps.intercross.data.viewmodels.factory.MetaValuesViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.MetadataViewModelFactory
 import org.phenoapps.intercross.dialogs.MetadataCreatorDialog
-import org.phenoapps.intercross.dialogs.MetadataDefaultEditorDialog
 import org.phenoapps.intercross.interfaces.MetadataManager
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.KeyUtil
@@ -249,7 +254,7 @@ class WorkflowFragment : ToolbarPreferenceFragment(
 
     override fun onResume() {
         super.onResume()
-
-        (activity as MainActivity).supportActionBar?.show()
+        (activity as MainActivity).setBackButtonToolbar()
+        (activity as AppCompatActivity).supportActionBar?.show()
     }
 }

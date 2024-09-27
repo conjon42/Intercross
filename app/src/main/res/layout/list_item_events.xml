@@ -110,22 +110,9 @@
             android:ellipsize="end"
             android:singleLine="true"
             app:layout_constraintStart_toEndOf="@id/barcodeView"
-            app:layout_constraintBottom_toTopOf="@id/crossIdTextView"
+            app:layout_constraintBottom_toTopOf="@id/codeTextView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/codeTextView" />
-
-        <TextView
-            android:id="@+id/crossIdTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@{event.eventDbId}"
-            android:gravity="start"
-            android:ellipsize="end"
-            android:singleLine="true"
-            app:layout_constraintStart_toEndOf="@id/barcodeView"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/personTextView" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

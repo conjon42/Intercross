@@ -1,7 +1,6 @@
 package org.phenoapps.intercross.data.models
 
 import androidx.annotation.Keep
-import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index

@@ -2,6 +2,7 @@ package org.phenoapps.intercross.fragments.preferences
 
 import android.os.Bundle
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.Preference
 import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
@@ -15,8 +16,8 @@ class DatabaseFragment : ToolbarPreferenceFragment(R.xml.database_preferences, R
 
     override fun onResume() {
         super.onResume()
-
-        (activity as MainActivity).supportActionBar?.show()
+        (activity as MainActivity).setBackButtonToolbar()
+        (activity as AppCompatActivity).supportActionBar?.show()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -2,12 +2,12 @@ package org.phenoapps.intercross.fragments.preferences
 
 import android.os.Bundle
 import android.view.View
+import androidx.appcompat.widget.Toolbar
 import androidx.navigation.fragment.findNavController
-import androidx.preference.EditTextPreference
 import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.util.KeyUtil
 
 /**
@@ -35,13 +35,10 @@ open class ToolbarPreferenceFragment(private val xml: Int, private val key: Int)
         setupBottomNavBar()
 
         setHasOptionsMenu(true)
-
     }
 
     override fun onResume() {
         super.onResume()
-
-        (activity as MainActivity).supportActionBar?.hide()
 
         mBottomNavBar?.selectedItemId = R.id.action_nav_settings
 
@@ -60,7 +57,7 @@ open class ToolbarPreferenceFragment(private val xml: Int, private val key: Int)
 
     private fun setupBottomNavBar() {
 
-        mBottomNavBar?.setOnNavigationItemSelectedListener { item ->
+        mBottomNavBar?.setOnItemSelectedListener { item ->
 
             when (item.itemId) {
 

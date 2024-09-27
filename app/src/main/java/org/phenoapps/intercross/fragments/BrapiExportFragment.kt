@@ -2,16 +2,15 @@ package org.phenoapps.intercross.fragments
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.PackageManager
 import android.net.ConnectivityManager
-import android.os.Build
 import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.widget.*
-import androidx.activity.result.contract.ActivityResultContracts
+import android.widget.ArrayAdapter
+import android.widget.ListView
+import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.gson.JsonObject
@@ -19,10 +18,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.brapi.v2.model.BrAPIExternalReference
-import org.brapi.v2.model.BrApiGeoJSON
-import org.brapi.v2.model.germ.*
-import org.brapi.v2.model.pheno.*
-import org.json.JSONObject
+import org.brapi.v2.model.germ.BrAPICross
+import org.brapi.v2.model.germ.BrAPICrossParent
+import org.brapi.v2.model.germ.BrAPICrossType
+import org.brapi.v2.model.germ.BrAPICrossingProject
+import org.brapi.v2.model.germ.BrAPIGermplasm
+import org.brapi.v2.model.germ.BrAPIParentType
+import org.brapi.v2.model.pheno.BrAPIObservationUnit
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.brapi.model.BrapiTrial
 import org.phenoapps.intercross.brapi.service.BrAPIService
@@ -40,9 +42,6 @@ import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFacto
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentBrapiImportBinding
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashSet
 
 class BrapiExportFragment: IntercrossBaseFragment<FragmentBrapiImportBinding>(R.layout.fragment_brapi_import) {
 

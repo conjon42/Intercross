@@ -14,8 +14,6 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import org.phenoapps.intercross.R
@@ -27,18 +25,26 @@ import org.phenoapps.intercross.data.MetadataRepository
 import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.dao.EventsDao
 import org.phenoapps.intercross.data.models.Event
+import org.phenoapps.intercross.data.models.Meta
+import org.phenoapps.intercross.data.models.MetadataValues
+import org.phenoapps.intercross.data.models.WishlistView
+import org.phenoapps.intercross.data.viewmodels.EventDetailViewModel
+import org.phenoapps.intercross.data.viewmodels.EventListViewModel
+import org.phenoapps.intercross.data.viewmodels.MetaValuesViewModel
+import org.phenoapps.intercross.data.viewmodels.MetadataViewModel
+import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
+import org.phenoapps.intercross.data.viewmodels.factory.EventDetailViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.MetaValuesViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.MetadataViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentEventDetailBinding
 import org.phenoapps.intercross.interfaces.MetadataManager
-import org.phenoapps.intercross.data.models.MetadataValues
-import org.phenoapps.intercross.data.models.Meta
-import org.phenoapps.intercross.data.models.WishlistView
-import org.phenoapps.intercross.data.viewmodels.*
-import org.phenoapps.intercross.data.viewmodels.factory.*
-import org.phenoapps.intercross.util.*
 import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.FileUtil
-import java.util.jar.Manifest
+import org.phenoapps.intercross.util.KeyUtil
+import org.phenoapps.intercross.util.observeOnce
 
 class EventDetailFragment:
     IntercrossBaseFragment<FragmentEventDetailBinding>(R.layout.fragment_event_detail),

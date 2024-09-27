@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.viewModels
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
@@ -22,12 +23,12 @@ import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
-import org.phenoapps.intercross.databinding.CrossBlockManagerBinding
+import org.phenoapps.intercross.databinding.FragmentCrossBlockBinding
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.KeyUtil
 
 
-class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.layout.cross_block_manager),
+class CrossBlockFragment : IntercrossBaseFragment<FragmentCrossBlockBinding>(R.layout.fragment_cross_block),
     ITableViewListener {
 
     private val eventsModel: EventListViewModel by viewModels {
@@ -55,7 +56,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
         KeyUtil(context)
     }
 
-    override fun CrossBlockManagerBinding.afterCreateView() {
+    override fun FragmentCrossBlockBinding.afterCreateView() {
 
         setHasOptionsMenu(true)
 
@@ -169,7 +170,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
     override fun onResume() {
         super.onResume()
 
-        (activity as MainActivity).supportActionBar?.show()
+        (activity as? AppCompatActivity)?.setSupportActionBar(mBinding.fragCrossBlockTb)
 
         mBinding.summaryTabLayout.getTabAt(2)?.select()
 
@@ -190,7 +191,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
         override fun onTabReselected(tab: TabLayout.Tab?) {}
     }
 
-    private fun CrossBlockManagerBinding.setupTabLayout() {
+    private fun FragmentCrossBlockBinding.setupTabLayout() {
 
         summaryTabLayout.addOnTabSelectedListener(tabSelected { tab ->
 
@@ -219,7 +220,7 @@ class CrossBlockFragment : IntercrossBaseFragment<CrossBlockManagerBinding>(R.la
         })
     }
 
-    private fun CrossBlockManagerBinding.setupBottomNavBar() {
+    private fun FragmentCrossBlockBinding.setupBottomNavBar() {
 
         bottomNavBar.setOnNavigationItemSelectedListener { item ->
 

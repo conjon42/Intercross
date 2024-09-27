@@ -6,11 +6,18 @@ import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
 import androidx.navigation.NavDirections
 import androidx.preference.PreferenceManager
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.data.models.*
-import org.phenoapps.intercross.data.viewmodels.*
-import java.util.*
+import org.phenoapps.intercross.data.models.Event
+import org.phenoapps.intercross.data.models.Meta
+import org.phenoapps.intercross.data.models.MetadataValues
+import org.phenoapps.intercross.data.models.Parent
+import org.phenoapps.intercross.data.models.Settings
+import org.phenoapps.intercross.data.models.WishlistView
+import org.phenoapps.intercross.data.viewmodels.EventListViewModel
+import org.phenoapps.intercross.data.viewmodels.MetaValuesViewModel
+import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
+import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
+import java.util.UUID
 
 class CrossUtil(val context: Context) {
 

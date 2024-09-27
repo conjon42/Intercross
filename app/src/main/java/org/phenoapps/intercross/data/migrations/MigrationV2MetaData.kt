@@ -5,8 +5,6 @@ import androidx.core.database.getIntOrNull
 import androidx.core.database.getStringOrNull
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
 
 /**
  * Room database migration class for going from version 1 to 2

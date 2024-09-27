@@ -7,14 +7,8 @@ import android.os.Bundle
 import android.view.View
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceScreen
-import android.view.ViewGroup
-import android.widget.EditText
-import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
 import androidx.preference.EditTextPreference
-import androidx.preference.ListPreference
 import androidx.preference.Preference
-import androidx.preference.PreferenceFragmentCompat
 import org.phenoapps.intercross.GeneralKeys
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.fragments.preferences.ToolbarPreferenceFragment
@@ -23,6 +17,7 @@ import org.phenoapps.intercross.util.KeyUtil
 import androidx.appcompat.app.AppCompatActivity
 
 import com.bytehamster.lib.preferencesearch.SearchPreference
+import org.phenoapps.intercross.activities.MainActivity
 
 /**
  * Root preferences fragment that populates the setting categories.
@@ -41,6 +36,11 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.r
                 findNavController().navigate(SettingsFragmentDirections
                     .actionFromSettingsToProfileFragment())
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as MainActivity).setBackButtonToolbar()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -121,63 +121,65 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.r
                     )
 
                     true
-                    with(findPreference<EditTextPreference>(GeneralKeys.BRAPI_BASE_URL)) {
-                        this?.let {
-                            setOnPreferenceChangeListener { _, newValue ->
-                                context.getSharedPreferences("Settings", MODE_PRIVATE)
-                                    .edit()
-                                    .putString(GeneralKeys.BRAPI_BASE_URL, newValue.toString())
-                                    .apply()
-                                true
-                            }
-                        }
-                    }
-                    val printSetup =
-                        findPreference<Preference>("org.phenoapps.intercross.PRINTER_SETUP")
-                    printSetup?.setOnPreferenceClickListener {
-                        val intent = activity?.packageManager
-                            ?.getLaunchIntentForPackage("com.zebra.printersetup")
-                        when (intent) {
-                            null -> {
-                                val i = Intent(Intent.ACTION_VIEW)
-                                i.data = Uri.parse(
-                                    "https://play.google.com/store/apps/details?id=com.zebra.printersetup"
-                                )
-                                startActivity(i)
-                            }
+                }
+            }
+        }
 
-                            else -> {
-                                startActivity(intent)
-                            }
-                        }
-                        true
-                    }
+        with(findPreference<EditTextPreference>(GeneralKeys.BRAPI_BASE_URL)) {
+            this?.let {
+                setOnPreferenceChangeListener { _, newValue ->
+                    context.getSharedPreferences("Settings", MODE_PRIVATE)
+                        .edit()
+                        .putString(GeneralKeys.BRAPI_BASE_URL, newValue.toString())
+                        .apply()
+                    true
+                }
+            }
+        }
 
-                    with(findPreference<PreferenceScreen>(getString(R.string.root_brapi))) {
-                        this?.let { it ->
-                            it.setOnPreferenceClickListener {
-                                //TODO
+        val printSetup =
+            findPreference<Preference>("org.phenoapps.intercross.PRINTER_SETUP")
+        printSetup?.setOnPreferenceClickListener {
+            val intent = activity?.packageManager
+                ?.getLaunchIntentForPackage("com.zebra.printersetup")
+            when (intent) {
+                null -> {
+                    val i = Intent(Intent.ACTION_VIEW)
+                    i.data = Uri.parse(
+                        "https://play.google.com/store/apps/details?id=com.zebra.printersetup"
+                    )
+                    startActivity(i)
+                }
+
+                else -> {
+                    startActivity(intent)
+                }
+            }
+            true
+        }
+
+        with(findPreference<PreferenceScreen>(getString(R.string.root_brapi))) {
+            this?.let { it ->
+                it.setOnPreferenceClickListener {
+                    //TODO
 //                    findNavController().navigate(SettingsFragmentDirections
 //                        .actionFromSettingsToBrapiFragment())
 
-                                true
-                            }
-                        }
-                    }
-
-                    with(findPreference<PreferenceScreen>(getString(R.string.root_about))) {
-                        this?.let { it ->
-                            it.setOnPreferenceClickListener {
-                                findNavController().navigate(SettingsFragmentDirections.actionToAbout())
-
-                                true
-                            }
-                        }
-
-                        true
-                    }
+                    true
                 }
             }
+        }
+
+        with(findPreference<PreferenceScreen>(getString(R.string.root_about))) {
+            this?.let { it ->
+                it.setOnPreferenceClickListener {
+                    findNavController().navigate(SettingsFragmentDirections.actionToAbout())
+
+                    true
+                }
+            }
+
+            true
         }
     }
 }

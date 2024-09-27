@@ -172,8 +172,6 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         startObservers()
 
-        bottomNavBar.selectedItemId = R.id.action_nav_home
-
         (activity as MainActivity).supportActionBar?.hide()
 
         activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
@@ -432,6 +430,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             true
         }
+
+        bottomNavBar.selectedItemId = R.id.action_nav_home
+
     }
 
     private fun FragmentEventsBinding.setupRecyclerView() {

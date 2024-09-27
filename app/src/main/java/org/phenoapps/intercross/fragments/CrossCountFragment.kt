@@ -8,6 +8,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.viewModels
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
@@ -397,7 +398,7 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
     override fun onResume() {
         super.onResume()
 
-        (activity as MainActivity).supportActionBar?.show()
+        (activity as? AppCompatActivity)?.setSupportActionBar(mBinding.fragCrossCountTb)
 
         mBinding.bottomNavBar.selectedItemId = R.id.action_nav_cross_count
 
@@ -406,7 +407,6 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
-
 
         setHasOptionsMenu(true)
     }
@@ -479,7 +479,7 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
                 R.id.action_nav_settings -> {
 
-                    findNavController().navigate(R.id.global_action_to_settings_fragment)
+                    findNavController().navigate(CrossCountFragmentDirections.globalActionToSettingsFragment())
                 }
                 R.id.action_nav_parents -> {
 

@@ -17,17 +17,13 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.net.toUri
 import androidx.preference.PreferenceManager
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.adapters.models.MetadataModel
 import org.phenoapps.intercross.data.IntercrossDatabase
-import org.phenoapps.intercross.data.dao.EventsDao
 import org.phenoapps.intercross.data.models.*
-import org.phenoapps.intercross.data.models.Meta
 import java.io.*
 import java.util.*
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
-import kotlin.collections.ArrayList
 
 
 class FileUtil(private val ctx: Context) {

@@ -1,21 +1,14 @@
 package org.phenoapps.intercross.fragments
 
-import android.os.Bundle
 import android.util.Log
-import android.view.*
-import android.widget.*
-import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
+import android.view.View
+import android.widget.Toast
 import androidx.navigation.fragment.findNavController
-import androidx.preference.PreferenceManager
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.brapi.service.BrAPIServiceV2
-import org.phenoapps.intercross.brapi.service.BrapiPaginationManager
-import org.phenoapps.intercross.databinding.FragmentBrapiImportBinding
 import org.phenoapps.intercross.databinding.FragmentCrossProjectCreatorBinding
-import java.util.*
 
 class CrossProjectCreatorFragment:
     IntercrossBaseFragment<FragmentCrossProjectCreatorBinding>(R.layout.fragment_cross_project_creator),

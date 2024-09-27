@@ -4,17 +4,13 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
-import androidx.navigation.Navigation
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.databinding.ListItemWishlistRowBinding
 import org.phenoapps.intercross.fragments.CrossCountFragment
-import org.phenoapps.intercross.fragments.SummaryFragmentDirections
-import org.phenoapps.intercross.util.Dialogs
 
 
 /**

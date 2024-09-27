@@ -2,6 +2,7 @@ package org.phenoapps.intercross.fragments.wish_factory
 
 import android.Manifest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.navigation.fragment.findNavController
 import com.google.zxing.ResultPoint
@@ -102,10 +103,9 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
     override fun onResume() {
         super.onResume()
-
         mBarcodeScanner.resume()
-
-        (activity as MainActivity).supportActionBar?.show()
+        (activity as MainActivity).setBackButtonToolbar()
+        (activity as AppCompatActivity).supportActionBar?.show()
     }
 
     override fun onPause() {

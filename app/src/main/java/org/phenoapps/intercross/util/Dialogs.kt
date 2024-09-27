@@ -1,10 +1,7 @@
 package org.phenoapps.intercross.util
 
 import androidx.appcompat.app.AlertDialog
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.adapters.EventsAdapter
 import org.phenoapps.intercross.data.models.Event
 
 class Dialogs {

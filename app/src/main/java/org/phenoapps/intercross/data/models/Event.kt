@@ -3,11 +3,9 @@ package org.phenoapps.intercross.data.models
 import androidx.annotation.Keep
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
-import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import org.phenoapps.intercross.data.models.embedded.EventMetaData
 
 /**
  * Event is the main table that holds barcode data.

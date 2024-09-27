@@ -1,17 +1,16 @@
 package org.phenoapps.intercross.fragments.wish_factory
 
-import androidx.fragment.app.activityViewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.adapters.SimpleListAdapter
 import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.models.Parent
-import org.phenoapps.intercross.data.viewmodels.CrossSharedViewModel
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentWfChooseFemaleBinding
-import org.phenoapps.intercross.fragments.EventsFragmentDirections
 import org.phenoapps.intercross.fragments.IntercrossBaseFragment
 import org.phenoapps.intercross.interfaces.OnSimpleItemClicked
 import org.phenoapps.intercross.util.SnackbarQueue
@@ -73,6 +72,12 @@ class FemaleChoiceFragment : IntercrossBaseFragment<FragmentWfChooseFemaleBindin
                 .actionFromFemalesToBarcodeScanFragment())
 
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as MainActivity).setBackButtonToolbar()
+        (activity as AppCompatActivity).supportActionBar?.show()
     }
 
     override fun onItemClicked(pair: Pair<String, String>) {

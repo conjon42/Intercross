@@ -1,8 +1,10 @@
 package org.phenoapps.intercross.fragments.wish_factory
 
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.models.Wishlist
 import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
@@ -69,5 +71,11 @@ class SummaryFragment : IntercrossBaseFragment<FragmentWfSummaryBinding>(R.layou
             findNavController().navigate(SummaryFragmentDirections
                 .actionFromWfToWishlistBack())
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as MainActivity).setBackButtonToolbar()
+        (activity as AppCompatActivity).supportActionBar?.show()
     }
 }

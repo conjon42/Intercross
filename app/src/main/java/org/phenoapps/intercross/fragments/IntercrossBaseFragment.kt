@@ -37,21 +37,15 @@ abstract class IntercrossBaseFragment<T : ViewDataBinding>(
 
         mBinding = DataBindingUtil.inflate(localInflater, layoutId, container, false)
 
+        (activity as? MainActivity)?.supportActionBar?.hide()
+        (activity as? MainActivity)?.setSupportActionBar(null)
+
         return with(mBinding) {
 
             afterCreateView()
 
             root
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        if (findNavController().currentDestination?.id
-            !in setOf(R.id.parents_fragment, R.id.events_fragment, R.id.barcode_scan_fragment))
-            (activity as MainActivity).supportActionBar?.show()
-        else (activity as MainActivity).supportActionBar?.hide()
     }
 
     override fun onDestroyView() {

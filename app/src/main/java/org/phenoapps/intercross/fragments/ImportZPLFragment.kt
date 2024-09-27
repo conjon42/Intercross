@@ -4,10 +4,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.preference.PreferenceManager
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.databinding.FragmentImportZplBinding
-import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.util.KeyUtil
-import java.io.FileInputStream
-import java.io.FileReader
 import java.io.InputStreamReader
 
 class ImportZPLFragment : IntercrossBaseFragment<FragmentImportZplBinding>(R.layout.fragment_import_zpl) {

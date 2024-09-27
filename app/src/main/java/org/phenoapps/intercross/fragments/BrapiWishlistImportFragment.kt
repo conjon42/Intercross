@@ -2,16 +2,14 @@ package org.phenoapps.intercross.fragments
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.PackageManager
 import android.net.ConnectivityManager
-import android.os.Build
 import android.util.Log
 import android.view.View
-import android.widget.*
-import androidx.activity.result.contract.ActivityResultContracts
+import android.widget.ArrayAdapter
+import android.widget.ListView
+import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.google.gson.JsonObject
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,9 +31,6 @@ import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFact
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentBrapiImportBinding
 import org.phenoapps.intercross.dialogs.WishlistImportDialog
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashSet
 
 /*
 Programs -> Crossing Project (programDbId) -> Crosses

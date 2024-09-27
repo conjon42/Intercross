@@ -1,13 +1,5 @@
 package org.phenoapps.intercross.fragments.preferences
 
-import android.os.Bundle
-import android.view.View
-import androidx.navigation.fragment.findNavController
-import androidx.preference.*
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import org.phenoapps.intercross.R
-import org.phenoapps.intercross.activities.MainActivity
-
 /**
  * Extends PhenoLib BrapiFragment with toolbar navigation.
  */

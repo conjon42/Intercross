@@ -1,9 +1,10 @@
 package org.phenoapps.intercross.fragments.wish_factory
 
-import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.adapters.SimpleListAdapter
 import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.PollenGroupRepository
@@ -110,5 +111,11 @@ class MaleChoiceFragment : IntercrossBaseFragment<FragmentWfChooseMaleBinding>(R
         mBinding.wfMaleNextBt.setOnClickListener {
             navigateToTypeChoiceFragment(pair)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as MainActivity).setBackButtonToolbar()
+        (activity as AppCompatActivity).supportActionBar?.show()
     }
 }

@@ -1,7 +1,9 @@
 package org.phenoapps.intercross.fragments.wish_factory
 
+import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.findNavController
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.databinding.FragmentWfChooseWishValuesBinding
 import org.phenoapps.intercross.fragments.IntercrossBaseFragment
 import org.phenoapps.intercross.util.SnackbarQueue
@@ -55,5 +57,11 @@ class ValuesChoiceFragment : IntercrossBaseFragment<FragmentWfChooseWishValuesBi
                 getString(R.string.frag_wf_values_min_must_not_be_null)))
 
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as MainActivity).setBackButtonToolbar()
+        (activity as AppCompatActivity).supportActionBar?.show()
     }
 }

@@ -8,12 +8,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.widget.Toolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/frag_parents_tb"
             android:layout_height="?attr/actionBarSize"
             android:layout_width="match_parent"
             android:background="?attr/colorPrimary"
             android:gravity="center_vertical|start"
+            app:menu="@menu/parents_toolbar"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -30,20 +31,13 @@
                 android:textAppearance="?attr/textAppearanceHeadline5"
                 tools:text="8"/>
 
-            <androidx.appcompat.widget.ActionMenuView
-                android:id="@+id/frag_parents_action_menu_view"
-                android:gravity="end"
-                android:layout_gravity="end"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-        </android.widget.Toolbar>
+        </androidx.appcompat.widget.Toolbar>
 
         <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/frag_parents_select_all_cb"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="2dp"
             android:layout_marginTop="10dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/tabLayout"

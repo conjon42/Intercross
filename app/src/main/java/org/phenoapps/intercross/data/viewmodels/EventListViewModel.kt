@@ -1,10 +1,7 @@
 package org.phenoapps.intercross.data.viewmodels
 
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.models.Event
 

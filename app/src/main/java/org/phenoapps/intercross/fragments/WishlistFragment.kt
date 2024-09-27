@@ -8,6 +8,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.viewModels
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
@@ -395,7 +396,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
     override fun onResume() {
         super.onResume()
 
-        (activity as MainActivity).supportActionBar?.show()
+        (activity as? AppCompatActivity)?.setSupportActionBar(mBinding.fragWishlistTb)
 
         mBinding.summaryTabLayout.getTabAt(1)?.select()
 

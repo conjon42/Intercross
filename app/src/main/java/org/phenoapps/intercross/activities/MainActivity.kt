@@ -1,19 +1,17 @@
 package org.phenoapps.intercross.activities
 
-import android.content.res.Configuration
+//import org.phenoapps.intercross.BuildConfig
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.view.MenuItem
 import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
@@ -23,25 +21,42 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.phenoapps.intercross.BuildConfig
-//import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.IntercrossDatabase
+import org.phenoapps.intercross.data.MetaValuesRepository
+import org.phenoapps.intercross.data.MetadataRepository
 import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.PollenGroupRepository
 import org.phenoapps.intercross.data.WishlistRepository
-import org.phenoapps.intercross.data.models.*
-import org.phenoapps.intercross.data.viewmodels.*
-import org.phenoapps.intercross.data.viewmodels.factory.*
+import org.phenoapps.intercross.data.models.CrossType
+import org.phenoapps.intercross.data.models.Event
+import org.phenoapps.intercross.data.models.Meta
+import org.phenoapps.intercross.data.models.MetadataValues
+import org.phenoapps.intercross.data.models.Parent
+import org.phenoapps.intercross.data.models.PollenGroup
+import org.phenoapps.intercross.data.models.Wishlist
+import org.phenoapps.intercross.data.viewmodels.EventListViewModel
+import org.phenoapps.intercross.data.viewmodels.MetaValuesViewModel
+import org.phenoapps.intercross.data.viewmodels.MetadataViewModel
+import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
+import org.phenoapps.intercross.data.viewmodels.PollenGroupListViewModel
+import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
+import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.MetaValuesViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.MetadataViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.ActivityMainBinding
-import org.phenoapps.intercross.fragments.CrossCountFragmentDirections
 import org.phenoapps.intercross.fragments.EventsFragmentDirections
 import org.phenoapps.intercross.fragments.PatternFragment
-import org.phenoapps.intercross.util.*
+import org.phenoapps.intercross.util.DateUtil
+import org.phenoapps.intercross.util.Dialogs
+import org.phenoapps.intercross.util.FileUtil
+import org.phenoapps.intercross.util.KeyUtil
+import org.phenoapps.intercross.util.SnackbarQueue
 import java.io.File
-import java.lang.IllegalArgumentException
-import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
@@ -162,73 +177,71 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
         CoroutineScope(Dispatchers.IO).launch {
 
-            if (tables.size == 3) {
+            if (tables.size == 5) {
 
-                if (tables[0].isNotEmpty()) {
+                val crosses = tables[0].filterIsInstance<Event>()
 
-                    val crosses = tables[0].filterIsInstance(Event::class.java)
+                val polycrosses = crosses.filter { it.type == CrossType.POLY }
 
-                    val polycrosses = crosses.filter { it.type == CrossType.POLY }
+                val nonPolys = crosses - polycrosses
 
-                    val nonPolys = crosses - polycrosses
+                polycrosses.forEach { poly ->
 
-                    polycrosses.forEach { poly ->
+                    val maleGroup = poly.maleObsUnitDbId
 
-                        val maleGroup = poly.maleObsUnitDbId
+                    if (maleGroup.isNotBlank()
+                        && "::" in maleGroup
+                        && "{" in maleGroup
+                        && "}" in maleGroup) {
 
-                        if (maleGroup.isNotBlank()
-                            && "::" in maleGroup
-                            && "{" in maleGroup
-                            && "}" in maleGroup) {
+                        val tokens = maleGroup.split("::")
 
-                            val tokens = maleGroup.split("::")
+                        val groupId = tokens[0]
 
-                            val groupId = tokens[0]
+                        val groupName = tokens[1]
 
-                            val groupName = tokens[1]
+                        var males = tokens[2]
 
-                            var males = tokens[2]
+                        males = males.replace("{", "").replace("}", "")
 
-                            males = males.replace("{", "").replace("}", "")
+                        males.split(";").forEach {
 
-                            males.split(";").forEach {
+                            val pid = parentsList.insertForId(Parent(it, 1))
 
-                                val pid = parentsList.insertForId(Parent(it, 1))
-
-                                groupList.insert(PollenGroup(groupId, groupName, pid))
-                            }
-
-                            eventsModel.insert(poly.apply {
-
-                                maleObsUnitDbId = groupId
-
-                            })
+                            groupList.insert(PollenGroup(groupId, groupName, pid))
                         }
 
+                        eventsModel.insert(poly.apply {
+
+                            maleObsUnitDbId = groupId
+
+                        })
                     }
 
-                    nonPolys.forEach { cross ->
+                }
 
-                        parentsList.insert(Parent(cross.maleObsUnitDbId, 1), Parent(cross.femaleObsUnitDbId, 0))
+                nonPolys.forEach { cross ->
 
-                    }
-
-                    eventsModel.insert(*nonPolys.toTypedArray())
+                    parentsList.insert(Parent(cross.maleObsUnitDbId, 1), Parent(cross.femaleObsUnitDbId, 0))
 
                 }
 
-                if (tables[1].isNotEmpty()) {
+                eventsModel.insert(*nonPolys.toTypedArray())
 
-                    parentsList.insert(*tables[1].filterIsInstance(Parent::class.java).toTypedArray())
-
-                }
-
-                if (tables[2].isNotEmpty()) {
-
-                    wishModel.insert(*tables[2].filterIsInstance(Wishlist::class.java).toTypedArray())
-
-                }
             }
+
+            if (tables[1].isNotEmpty()) {
+
+                parentsList.insert(*tables[1].filterIsInstance<Parent>().toTypedArray())
+
+            }
+
+            if (tables[2].isNotEmpty()) {
+
+                wishModel.insert(*tables[2].filterIsInstance<Wishlist>().toTypedArray())
+
+            }
+
         }
     }
 
@@ -349,6 +362,18 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
                 android.Manifest.permission.INTERNET
             ))
         }
+
+        mBinding.mainTb.setNavigationOnClickListener {
+            onBackPressed()
+        }
+    }
+
+    fun setBackButtonToolbar() {
+        setSupportActionBar(mBinding.mainTb)
+
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowHomeEnabled(true)
+        supportActionBar?.hide()
     }
 
     private fun startObservers() {
@@ -444,7 +469,7 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 //                }
 //                .show()
         //} else {
-            importedFileContent?.launch("*/*")
+        importedFileContent.launch("*/*")
         //}
     }
 

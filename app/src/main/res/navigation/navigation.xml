@@ -291,7 +291,7 @@
         android:id="@+id/crossblock_fragment"
         android:name="org.phenoapps.intercross.fragments.CrossBlockFragment"
         android:label="@string/cross_block_label"
-        tools:layout="@layout/cross_block_manager">
+        tools:layout="@layout/fragment_cross_block">
 
         <action android:id="@+id/action_from_crossblock_to_events_list"
             app:destination="@+id/events_fragment"
@@ -321,8 +321,7 @@
     <!-- Global Actions used by Navigation Drawer -->
     <action android:id="@+id/global_action_to_settings_fragment"
         app:destination="@id/preferences"
-        app:launchSingleTop="true"
-        app:popUpTo="@id/preferences"/>
+        app:launchSingleTop="true"/>
 
     <action android:id="@+id/global_action_to_event_detail"
         app:destination="@id/event_fragment"/>

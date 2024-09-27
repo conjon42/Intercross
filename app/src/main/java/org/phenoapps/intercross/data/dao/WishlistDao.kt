@@ -6,7 +6,6 @@ import androidx.room.Query
 import androidx.room.Transaction
 import org.phenoapps.intercross.data.models.Wishlist
 import org.phenoapps.intercross.data.models.WishlistView
-import org.phenoapps.intercross.fragments.CrossBlockFragment
 
 @Dao
 interface WishlistDao : BaseDao<Wishlist> {

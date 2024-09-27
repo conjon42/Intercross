@@ -2,6 +2,7 @@ package org.phenoapps.intercross.fragments.preferences
 
 import android.os.Bundle
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.preference.Preference
@@ -69,7 +70,7 @@ class NamingFragment : ToolbarPreferenceFragment(R.xml.naming_preferences, R.str
 
     override fun onResume() {
         super.onResume()
-
-        (activity as MainActivity).supportActionBar?.show()
+        (activity as MainActivity).setBackButtonToolbar()
+        (activity as AppCompatActivity).supportActionBar?.show()
     }
 }

@@ -1,14 +1,13 @@
 package org.phenoapps.intercross.fragments.wish_factory
 
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.adapters.SimpleListAdapter
-import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.MetadataRepository
-import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.MetadataViewModel
-import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.MetadataViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentWfChooseWishTypeBinding
 import org.phenoapps.intercross.fragments.IntercrossBaseFragment
@@ -78,5 +77,11 @@ class TypeChoiceFragment : IntercrossBaseFragment<FragmentWfChooseWishTypeBindin
            findNavController().navigate(TypeChoiceFragmentDirections
                .actionFromTypesToValuesFragment(femaleId, femaleName, maleId, maleName, pair.second))
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as MainActivity).setBackButtonToolbar()
+        (activity as AppCompatActivity).supportActionBar?.show()
     }
 }

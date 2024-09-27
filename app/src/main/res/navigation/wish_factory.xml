@@ -97,7 +97,7 @@
     <fragment android:id="@+id/wf_summary_fragment"
         android:name="org.phenoapps.intercross.fragments.wish_factory.SummaryFragment">
         <action android:id="@+id/action_from_wf_to_wishlist_back"
-            app:popUpTo="@id/wishlist_fragment"
+            app:popUpTo="@id/events_fragment"
             app:launchSingleTop="true"
             app:destination="@id/wishlist_fragment"/>
     </fragment>
