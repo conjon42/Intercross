@@ -427,5 +427,6 @@
     <string name="pref_brapi_server_title">BrAPI Server Address</string>
     <string name="error_importing_file">There was an error importing the file.</string>
     <string name="error_no_bluetooth_permission">Bluetooth permission is required to print.</string>
+    <string name="search_fragment_label">Search</string>
 
 </resources>

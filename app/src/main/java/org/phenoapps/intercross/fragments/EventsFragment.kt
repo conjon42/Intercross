@@ -162,6 +162,18 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         }
 
+        arguments?.getString("male")?.let { male ->
+            if (maleFirst) {
+                mBinding.firstText.setText(male)
+            } else mBinding.secondText.setText(male)
+        }
+
+        arguments?.getString("female")?.let { female ->
+            if (maleFirst) {
+                mBinding.secondText.setText(female)
+            } else mBinding.firstText.setText(female)
+        }
+
         recyclerView.adapter = EventsAdapter(this@EventsFragment, viewModel)
 
         recyclerView.layoutManager = LinearLayoutManager(context)
@@ -226,7 +238,8 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                         if (mBinding.editTextCross.text.toString() in codes) {
 
-                            if (mBinding.crossTextHolder.error == null) mBinding.crossTextHolder.error = error
+                            if (mBinding.crossTextHolder.error == null) mBinding.crossTextHolder.error =
+                                error
 
                         } else mBinding.crossTextHolder.error = null
 

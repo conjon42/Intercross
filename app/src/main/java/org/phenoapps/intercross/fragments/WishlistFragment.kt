@@ -95,7 +95,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
         mPref.edit().putString("last_visited_summary", "wishlist").apply()
 
 
-        eventsModel.events.observe(viewLifecycleOwner, {
+        eventsModel.events.observe(viewLifecycleOwner) {
             mEvents = it
 
             metadataViewModel.metadata.observe(viewLifecycleOwner) {
@@ -107,7 +107,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
                     load()
                 }
             }
-        })
+        }
 
         summaryTabLayout.getTabAt(1)?.select()
 
@@ -143,7 +143,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
         entries.forEach {
             data.add(listOf(
                 CrossCountFragment.CellData("",
-                    complete = it.progress.toIntOrNull() ?: 0 >= it.minimum.toIntOrNull() ?: 0
+                    complete = (it.progress.toIntOrNull() ?: 0) >= (it.minimum.toIntOrNull() ?: 0)
                 ),
                 CrossCountFragment.CellData(it.m, it.mid),
                 CrossCountFragment.CellData(it.f, it.fid),
@@ -209,7 +209,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
     private fun loadWishlist() {
 
-        wishModel.wishes.observe(viewLifecycleOwner, {
+        wishModel.wishes.observe(viewLifecycleOwner) {
 
             it?.let { block ->
 
@@ -217,11 +217,13 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
                 //get cross wishes which are automatically counted in the wishlist view
                 val crosses = block.filter { wish -> wish.wishType == "cross" }.map { res ->
-                    WishlistData(res.dadName, res.momName,
+                    WishlistData(
+                        res.dadName, res.momName,
                         res.wishProgress.toString(),
                         res.wishMin.toString(),
                         res.wishMax.toString(),
-                        res.dadId, res.momId)
+                        res.dadId, res.momId
+                    )
                 }
 
                 data.addAll(crosses)
@@ -235,12 +237,16 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
                     val metadata = mMetaList.filter { it.property == row.wishType }
                     if (metadata.isNotEmpty()) {
                         val meta = metadata.first()
-                        progress = mMetaValuesList.filter { it.metaId == meta.id?.toInt()
-                                && it.eid in children.map { it.id?.toInt() }}
+                        progress = mMetaValuesList.filter {
+                            it.metaId == meta.id?.toInt()
+                                    && it.eid in children.map { it.id?.toInt() }
+                        }
                             .map { it.value ?: 0 }.sum()
                     }
-                    WishlistData(row.dadName, row.momName, progress.toString(),
-                        row.wishMin.toString(), row.wishMax.toString(), row.dadId, row.momId)
+                    WishlistData(
+                        row.dadName, row.momName, progress.toString(),
+                        row.wishMin.toString(), row.wishMax.toString(), row.dadId, row.momId
+                    )
                 }
 
                 data.addAll(otherWishes)
@@ -250,12 +256,12 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
                 setupTable(data)
 
             }
-        })
+        }
     }
 
     private fun loadCommutativeWishlist() {
 
-        wishModel.commutativeWishes.observe(viewLifecycleOwner, {
+        wishModel.commutativeWishes.observe(viewLifecycleOwner) {
 
             it?.let { block ->
 
@@ -263,11 +269,13 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
                 //get cross wishes which are automatically counted in the wishlist view
                 val crosses = block.filter { wish -> wish.wishType == "cross" }.map { res ->
-                    WishlistData(res.dadName, res.momName,
+                    WishlistData(
+                        res.dadName, res.momName,
                         res.wishProgress.toString(),
                         res.wishMin.toString(),
                         res.wishMax.toString(),
-                        res.dadId, res.momId)
+                        res.dadId, res.momId
+                    )
                 }
 
                 data.addAll(crosses)
@@ -281,13 +289,17 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
                     val metadata = mMetaList.filter { it.property == row.wishType }
                     if (metadata.isNotEmpty()) {
                         val meta = metadata.first()
-                        progress = mMetaValuesList.filter { it.metaId == meta.id?.toInt()
-                                && it.eid in children.map { it.id?.toInt() }}
+                        progress = mMetaValuesList.filter {
+                            it.metaId == meta.id?.toInt()
+                                    && it.eid in children.map { it.id?.toInt() }
+                        }
                             .map { it.value ?: 0 }.sum()
                     }
-                    WishlistData(row.dadName, row.momName, progress.toString(),
+                    WishlistData(
+                        row.dadName, row.momName, progress.toString(),
                         row.wishMin.toString(), row.wishMax.toString(),
-                        row.dadId, row.momId)
+                        row.dadId, row.momId
+                    )
                 }
 
                 data.addAll(otherWishes)
@@ -296,7 +308,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
                 setupTable(data)
             }
-        })
+        }
     }
 
     //a quick wrapper function for tab selection
@@ -447,7 +459,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
         else getChildren(female, male)
 
         context?.let { ctx ->
-            Dialogs.list(
+            Dialogs.listAndBuildCross(
                 AlertDialog.Builder(ctx),
                 getString(R.string.click_item_for_child_details),
                 getString(R.string.no_child_exists),

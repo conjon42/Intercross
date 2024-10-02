@@ -41,6 +41,15 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
         manifestPlaceholders = ['appAuthRedirectScheme': "fieldbook"]
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += [
+                        "room.schemaLocation":"$projectDir/schemas".toString(),
+                        "room.incremental":"true",
+                        "room.expandProjection":"true"]
+            }
+        }
     }
 
     buildTypes {
@@ -64,6 +73,7 @@ android {
             manifestPlaceholders = [crashlyticsCollectionEnabled: "false"]
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+
     }
 
     compileOptions {
@@ -100,7 +110,8 @@ dependencies {
 
     def firebase_version = "17.5.0"
 
-    api fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
+    implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
+
     kapt 'com.android.databinding:compiler:3.1.4'
     kapt "androidx.room:room-compiler:$room_lifecycle_version"
 
@@ -232,10 +243,6 @@ dependencies {
 // Recommended: Add the Firebase SDK for Google Analytics.
     implementation 'com.google.firebase:firebase-analytics-ktx:17.5.0'
     implementation "com.google.firebase:firebase-crashlytics:17.2.1"
-
-    implementation "org.brapi:brapi-java-client:2.0-SNAPSHOT"
-
-    implementation "org.brapi:brapi-java-model:2.0-SNAPSHOT"
 
     implementation 'net.openid:appauth:0.9.0'
     implementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava' //google messed up some packages, this package is temporary until the issue is fixed (Feb 2021)
