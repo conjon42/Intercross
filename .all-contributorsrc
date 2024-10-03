@@ -25,6 +25,15 @@
         "test",
         "doc"
       ]
+    },
+    {
+      "login": "romil2807",
+      "name": "Romil Shah",
+      "avatar_url": "https://avatars.githubusercontent.com/u/59645533?v=4",
+      "profile": "https://github.com/romil2807",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
@@ -32,5 +41,7 @@
   "projectOwner": "PhenoApps",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "skipCi": true
+  "skipCi": true,
+  "commitType": "docs",
+  "commitConvention": "angular"
 }

@@ -33,10 +33,13 @@ Development of Field Book is possible because of the support received from the f
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 <table>
-  <tr>
-    <td align="center"><a href="https://github.com/trife"><img src="https://avatars.githubusercontent.com/u/1869534?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Trevor Rife</b></sub></a><br /><a href="#projectManagement-trife" title="Project Management">📆</a> <a href="#design-trife" title="Design">🎨</a></td>
-    <td align="center"><a href="https://github.com/chaneylc"><img src="https://avatars.githubusercontent.com/u/5421632?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Chaney Courtney</b></sub></a><br /><a href="https://github.com/PhenoApps/Intercross/commits?author=chaneylc" title="Code">💻</a> <a href="https://github.com/PhenoApps/Intercross/commits?author=chaneylc" title="Tests">⚠️</a> <a href="https://github.com/PhenoApps/Intercross/commits?author=chaneylc" title="Documentation">📖</a></td>
-  </tr>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/trife"><img src="https://avatars.githubusercontent.com/u/1869534?v=4?s=100" width="100px;" alt="Trevor Rife"/><br /><sub><b>Trevor Rife</b></sub></a><br /><a href="#projectManagement-trife" title="Project Management">📆</a> <a href="#design-trife" title="Design">🎨</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/chaneylc"><img src="https://avatars.githubusercontent.com/u/5421632?v=4?s=100" width="100px;" alt="Chaney Courtney"/><br /><sub><b>Chaney Courtney</b></sub></a><br /><a href="https://github.com/PhenoApps/Intercross/commits?author=chaneylc" title="Code">💻</a> <a href="https://github.com/PhenoApps/Intercross/commits?author=chaneylc" title="Tests">⚠️</a> <a href="https://github.com/PhenoApps/Intercross/commits?author=chaneylc" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/romil2807"><img src="https://avatars.githubusercontent.com/u/59645533?v=4?s=100" width="100px;" alt="Romil Shah"/><br /><sub><b>Romil Shah</b></sub></a><br /><a href="https://github.com/PhenoApps/Intercross/commits?author=romil2807" title="Code">💻</a></td>
+    </tr>
+  </tbody>
 </table>
 
 <!-- markdownlint-restore -->
