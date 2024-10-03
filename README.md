@@ -1,13 +1,32 @@
-# Intercross <a href="https://play.google.com/store/apps/details?id=org.phenoapps.intercross"><img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="50"></a>
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+# <img width="25" src="https://raw.githubusercontent.com/PhenoApps/Intercross/refs/heads/master/app/src/main/ic_launcher-web.png"> Intercross
+
+[![Downloads](https://img.shields.io/endpoint?url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dorg.phenoapps.intercross%26l%3DDownloads%26m%3D%24totalinstalls)](https://play.google.com/store/apps/details?id=com.fieldbook.tracker)
+[![Rating](https://img.shields.io/endpoint?color=green&logo=google-play&logoColor=green&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dorg.phenoapps.intercross%26l%3DRating%26m%3D%25E2%25AD%2590%2520%24rating)](https://play.google.com/store/apps/details?id=org.phenoapps.intercross)
+[![License: GPL v2](https://img.shields.io/badge/License-GPL_v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+[![Latest](https://img.shields.io/github/v/release/phenoapps/intercross)](https://github.com/PhenoApps/Intercross/releases/latest) 
 [![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
+<!-- ![Build Status](https://img.shields.io/github/actions/workflow/status/PhenoApps/Intercross/github-release.yml) -->
+<!-- [![Crowdin](https://badges.crowdin.net/intercross/localized.svg)](https://crowdin.com/project/intercross) -->
 
-Intercross tracks parental and cross IDs as crosses are made, who makes each cross, and where each cross is made. Cross labels can be printed to Zebra label printers and lists of crosses can be exported to local files.
+Intercross tracks parental and cross IDs as crosses are made, who makes each cross, and where each cross is made. Cross labels can be printed to Zebra label printers and lists of crosses can be exported to local files. Intercross is part of the broader PhenoApps initiative, an effort to modernize plant breeding and genetics data collection and organization via by developing new strategies and tools for data capture.
 
-Intercross is part of the broader PhenoApps initiative, an effort to modernize plant breeding and genetics data collection and organization via by developing new strategies and tools for data capture.
+## 📖 Help
+Check the [user manual](https://intercross.phenoapps.org) and the [wiki](https://github.com/PhenoApps/Field-Book/wiki) for usage instructions. If you run into a problem while using Intercross, search [existing issues](https://github.com/PhenoApps/Intercross/issues) and [discussions](https://github.com/PhenoApps/Intercross/discussions) to see if it is currently being addressed. If you have a new feature idea or want to report a new bug, [create a new issue](https://github.com/PhenoApps/Intercross/issues/new/choose).
 
-Development of Intercross has been supported by the National Science Foundation under Grant No. (1543958). Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.
+## 🌎 Contribute
+Visit our [translation page](https://crowdin.com/project/intercross) to help translate Field Book to your language. To submit code or new features, please review our [contribution guidelines](https://github.com/PhenoApps/Field-Book/wiki/Contributing) before opening a [pull request](https://github.com/PhenoApps/Intercross/pulls).
+
+## ⬇️ Updates
+Intercross is available on [Google Play version](https://play.google.com/store/apps/details?id=org.phenoapps.intercross). The most Up-to-date version can also be downloaded our [GitHub releases](https://github.com/PhenoApps/Field-Book/releases/latest).
+
+## 💰 Funding 
+Development of Field Book is possible because of the support received from the following organizations:
+- McKnight Foundation [Collaborative Crop Research Program](https://www.ccrp.org/grants/one-handheld-per-breeder/)
+- National Science Foundation [No. 1543958](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1543958)
+- USDA NIFA FACT [No. 2019-67021-29931](https://portal.nifa.usda.gov/web/crisprojectpages/1019820-fact-geospatial-plant-breeding.html)
+- USAID [No. 7200AA‐19LE‐00005](https://ilci.cornell.edu/)
+- USDA NIFA SCRI [No. 2022-51181-38449](https://portal.nifa.usda.gov/lmd4/recent_awards)
+- USDA NIFA AG2PI [No. 2022-70412-38454](https://www.ag2pi.org/resources/ag2pi-funded-seed-grants/)
 
 ## Contributors
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
