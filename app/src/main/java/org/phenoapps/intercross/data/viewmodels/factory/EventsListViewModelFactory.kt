@@ -10,7 +10,7 @@ class EventsListViewModelFactory(
 ) : ViewModelProvider.Factory {
 
     @SuppressWarnings("UNCHECKED_CAST")
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
 
         return EventListViewModel(repo) as T
     }

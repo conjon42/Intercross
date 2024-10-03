@@ -4,17 +4,15 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.util.Log
 import android.view.View
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import kotlinx.android.synthetic.main.fragment_barcode_scan.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.brapi.v2.model.germ.BrAPICrossParent
 import org.brapi.v2.model.germ.BrAPICrossingProject
-import org.brapi.v2.model.germ.BrAPIPlannedCross
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.brapi.model.BrapiTrial
 import org.phenoapps.intercross.brapi.service.BrAPIService
@@ -22,17 +20,11 @@ import org.phenoapps.intercross.brapi.service.BrAPIServiceV2
 import org.phenoapps.intercross.brapi.service.BrapiPaginationManager
 import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.WishlistRepository
-import org.phenoapps.intercross.data.models.Parent
-import org.phenoapps.intercross.data.models.Wishlist
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
 import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentBrapiImportBinding
-import org.phenoapps.intercross.dialogs.WishlistImportDialog
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashSet
 
 /*
 Programs -> Crossing Project (programDbId) -> Crosses

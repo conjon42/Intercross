@@ -72,66 +72,83 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:orientation="horizontal"
+                    android:weightSum="1">
 
                     <LinearLayout
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:visibility="@{momName.length() == 0 ? View.GONE : View.VISIBLE}">
+                        android:orientation="vertical"
+                        android:layout_weight="0.9">
 
-                        <ImageView
-                            android:id="@+id/momCrossImage"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:layout_marginTop="16dp"
-                            android:contentDescription="@string/qr_code_for_parent"
-                            app:setQRCode="@{momCode}"/>
-
-                        <Button
-                            android:id="@+id/femaleName"
-                            android:layout_width="0dp"
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_margin="8dp"
-                            android:layout_weight="1"
-                            android:backgroundTint="@color/colorAccent"
-                            android:ellipsize="end"
-                            android:gravity="start"
-                            android:maxLines="1"
-                            android:text="@{momName}"
-                            android:textAlignment="viewStart"
-                            android:textSize="18sp" />
+                            android:orientation="horizontal"
+                            android:visibility="@{momName.length() == 0 ? View.GONE : View.VISIBLE}">
+
+                            <ImageView
+                                android:id="@+id/momCrossImage"
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:layout_marginTop="16dp"
+                                android:contentDescription="@string/qr_code_for_parent"
+                                android:background="@drawable/ic_female_black_24dp"/>
+
+                            <Button
+                                android:id="@+id/femaleName"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="8dp"
+                                android:layout_weight="1"
+                                android:backgroundTint="@color/colorAccent"
+                                android:ellipsize="end"
+                                android:gravity="start"
+                                android:maxLines="1"
+                                android:text="@{momName}"
+                                android:textAlignment="viewStart"
+                                android:textSize="18sp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:visibility="@{dadName.length() == 0 ? View.GONE : View.VISIBLE}">
+
+                            <ImageView
+                                android:id="@+id/dadCrossImage"
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:layout_marginTop="16dp"
+                                android:contentDescription="@string/qr_code_for_parent"
+                                android:background="@drawable/ic_male_black_24dp"/>
+
+                            <Button
+                                android:id="@+id/maleName"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="8dp"
+                                android:layout_weight="1"
+                                android:backgroundTint="@color/colorAccent"
+                                android:ellipsize="end"
+                                android:gravity="start"
+                                android:maxLines="1"
+                                android:text="@{dadName}"
+                                android:textAlignment="viewStart"
+                                android:textSize="18sp" />
+                        </LinearLayout>
+
                     </LinearLayout>
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:visibility="@{dadName.length() == 0 ? View.GONE : View.VISIBLE}">
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:background="@drawable/ic_close_black_24dp"
+                        android:layout_gravity="center_vertical"/>
 
-                        <ImageView
-                            android:id="@+id/dadCrossImage"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:layout_marginTop="16dp"
-                            android:contentDescription="@string/qr_code_for_parent"
-                            app:setQRCode="@{dadCode}"/>
-
-                        <Button
-                            android:id="@+id/maleName"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="8dp"
-                            android:layout_weight="1"
-                            android:backgroundTint="@color/colorAccent"
-                            android:ellipsize="end"
-                            android:gravity="start"
-                            android:maxLines="1"
-                            android:text="@{dadName}"
-                            android:textAlignment="viewStart"
-                            android:textSize="18sp" />
-                    </LinearLayout>
                 </LinearLayout>
+
             </LinearLayout>
 
             <RelativeLayout
@@ -149,62 +166,17 @@
                     android:layout_height="wrap_content"
                     android:text="@string/metaData"/>
 
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/flowerTextLayout"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                <androidx.recyclerview.widget.RecyclerView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/Flowers"
-                    android:layout_below="@id/metaDataLabel">
+                    android:id="@+id/event_detail_metadata_recycler_view"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    android:orientation="vertical"
+                    xmlns:tools="http://schemas.android.com/tools"
+                    tools:itemCount="8"
+                    tools:listitem="@layout/list_item_metadata"
+                    android:layout_below="@id/metaDataLabel"/>
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/flowerText"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:imeOptions="actionDone"
-                        android:inputType="number"
-                        android:text="@{Integer.toString(event.metaData.flowers)}"
-                        android:selectAllOnFocus="true"/>
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/fruitTextLayout"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/Fruits"
-                    android:layout_below="@id/flowerTextLayout">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/fruitText"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:imeOptions="actionDone"
-                        android:inputType="number"
-                        android:text="@{Integer.toString(event.metaData.fruits)}"
-                        android:selectAllOnFocus="true"/>
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/seedTextLayout"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/Seeds"
-                    android:layout_below="@id/fruitTextLayout">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/seedText"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:imeOptions="actionDone"
-                        android:inputType="number"
-                        android:text="@{Integer.toString(event.metaData.seeds)}"
-                        android:selectAllOnFocus="true"/>
-                </com.google.android.material.textfield.TextInputLayout>
             </RelativeLayout>
         </RelativeLayout>
     </ScrollView>

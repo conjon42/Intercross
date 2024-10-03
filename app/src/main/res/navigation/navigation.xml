@@ -6,56 +6,57 @@
     android:id="@+id/main_graph"
     app:startDestination="@+id/events_fragment">
 
+    <include app:graph="@navigation/preferences"/>
+    <include app:graph="@navigation/wish_factory"/>
+
     <!-- Events Fragment is the main entry fragment that shows the entire crossing table -->
-    <fragment
-        android:id="@+id/events_fragment"
+    <fragment android:id="@+id/events_fragment"
         android:name="org.phenoapps.intercross.fragments.EventsFragment"
         android:label="@string/events_fragment_label"
         tools:layout="@layout/fragment_events">
 
-        <action
-            android:id="@+id/action_to_barcode_scan_fragment"
+        <action android:id="@+id/action_to_barcode_scan_fragment"
             app:destination="@id/barcode_scan_fragment">
             <argument
                 android:name="mode"
                 app:argType="integer"
                 android:defaultValue="0"/>
         </action>
-        <action
-            android:id="@+id/action_to_event_fragment"
+        <action android:id="@+id/action_to_event_fragment"
             app:destination="@id/event_fragment"
             app:popUpTo="@id/events_fragment">
         </action>
-        <action
-            android:id="@+id/action_to_summary_fragment"
-            app:destination="@+id/summary_fragment"
+        <action android:id="@+id/action_to_cross_count_fragment"
+            app:destination="@+id/cross_count_fragment"
             app:popUpTo="@id/events_fragment">
         </action>
-        <action
-            android:id="@+id/action_to_wishlist_fragment"
+        <action android:id="@+id/action_to_wishlist_fragment"
             app:destination="@+id/wishlist_fragment"
             app:popUpTo="@id/events_fragment">
         </action>
-        <action
-            android:id="@+id/action_to_parents_fragment"
+        <action android:id="@+id/action_to_parents_fragment"
             app:destination="@+id/parents_fragment"
             app:popUpTo="@id/events_fragment"/>
-        <action
-            android:id="@+id/action_to_crossblock"
+        <action android:id="@+id/action_to_crossblock"
             app:destination="@+id/crossblock_fragment"
             app:popUpTo="@id/events_fragment"/>
-        <action
-            android:id="@+id/action_to_about"
-            app:destination="@+id/about_fragment"
+        <action android:id="@+id/action_to_summary"
+            app:destination="@+id/summary_fragment"
             app:popUpTo="@id/events_fragment"/>
-        <action
-            android:id="@+id/action_to_wishlist_import"
-            app:destination="@+id/brapi_wishlist_import_fragment"
+        <action android:id="@+id/action_to_about"
+            app:destination="@+id/about_fragment"
             app:popUpTo="@id/events_fragment"/>
         <action
             android:id="@+id/action_to_parents_import"
             app:destination="@+id/brapi_parents_import_fragment"
             app:popUpTo="@id/events_fragment"/>
+        <action android:id="@+id/action_from_events_to_preferences"
+            app:destination="@+id/preferences"
+            app:popUpTo="@id/events_fragment">
+            <argument android:name="org.phenoapps.intercross.ASK_PERSON"
+                android:defaultValue="true"
+                app:argType="boolean"/>
+        </action>
         <action
             android:id="@+id/action_to_brapi_export"
             app:destination="@+id/brapi_export_fragment"
@@ -98,6 +99,14 @@
                 app:argType="string"
                 android:defaultValue=""/>
         </action>
+        <action
+            android:id="@+id/action_to_wishlist_import"
+            app:destination="@+id/brapi_wishlist_import_fragment"
+            app:popUpTo="@id/events_fragment"/>
+        <action
+            android:id="@+id/action_to_brapi_export"
+            app:destination="@+id/brapi_export_fragment"
+            app:popUpTo="@id/events_fragment"/>
     </fragment>
 
     <fragment
@@ -121,16 +130,31 @@
         android:label="@string/about_title"/>
 
     <fragment
+        android:id="@+id/summary_fragment"
+        android:name="org.phenoapps.intercross.fragments.SummaryFragment"
+        android:label="@string/summary_title">
+        <action android:id="@+id/action_to_cross_count"
+            app:destination="@id/cross_count_fragment"
+            app:popUpTo="@id/events_fragment"/>
+        <action android:id="@+id/action_to_crossblock"
+            app:destination="@id/crossblock_fragment"
+            app:popUpTo="@id/events_fragment"/>
+        <action android:id="@+id/action_to_wishlist"
+            app:destination="@id/wishlist_fragment"
+            app:popUpTo="@id/events_fragment"/>
+    </fragment>
+
+    <fragment
         android:id="@+id/barcode_scan_fragment"
         android:name="org.phenoapps.intercross.fragments.BarcodeScanFragment"
         android:label="@string/barcode_scan_label"
         tools:layout="@layout/fragment_barcode_scan">
-        <action
-            android:id="@+id/action_to_event_fragment_from_scan"
+        <action android:id="@+id/action_to_event_fragment_from_scan"
             app:destination="@id/event_fragment" />
-        <action
-            android:id="@+id/action_to_events_from_scan"
+        <action android:id="@+id/action_to_events_from_scan"
             app:destination="@id/events_fragment"/>
+        <action android:id="@+id/action_from_scan_to_event_detail"
+            app:destination="@+id/event_fragment"/>
     </fragment>
 
     <fragment
@@ -141,6 +165,10 @@
         <argument
             android:name="eid"
             app:argType="long"/>
+        <action android:id="@+id/action_to_event_refresh"
+            app:destination="@id/event_fragment"
+            app:popUpTo="@id/events_fragment"
+            app:launchSingleTop="true"/>
         <action android:id="@+id/action_to_parent_event"
             app:destination="@id/event_fragment"
             app:popUpTo="@id/events_fragment">
@@ -167,20 +195,6 @@
                 app:argType="integer"
                 android:defaultValue="0"/>
         </action>
-    </fragment>
-
-    <fragment
-        android:id="@+id/settings_fragment"
-        android:name="org.phenoapps.intercross.fragments.SettingsFragment"
-        android:label="@string/settings_label">
-        <action
-            android:id="@+id/action_to_pattern_fragment"
-            app:destination="@id/pattern_fragment"
-            app:launchSingleTop="true" />
-        <action
-            android:id="@+id/action_to_import_zpl_fragment"
-            app:destination="@id/import_zpl_fragment"
-            app:launchSingleTop="true" />
     </fragment>
 
     <fragment
@@ -225,65 +239,133 @@
         android:id="@+id/wishlist_fragment"
         android:name="org.phenoapps.intercross.fragments.WishlistFragment"
         android:label="@string/wishlist_label"
-        tools:layout="@layout/fragment_summary">
+        tools:layout="@layout/fragment_cross_count">
 
-        <action
-            android:id="@+id/action_to_summary"
-            app:destination="@id/summary_fragment"
+        <action android:id="@+id/action_from_wishlist_to_events_list"
+            app:destination="@+id/events_fragment"
+            app:popUpTo="@id/wishlist_fragment">
+            <argument app:argType="string"
+                android:name="male"/>
+            <argument app:argType="string"
+                android:name="female"/>
+        </action>
+        <action android:id="@+id/action_to_cross_count"
+            app:destination="@id/cross_count_fragment"
             app:popUpTo="@id/events_fragment"/>
-
         <action android:id="@+id/action_to_crossblock"
             app:destination="@id/crossblock_fragment"
             app:popUpTo="@id/events_fragment"/>
+        <action android:id="@+id/action_to_summary"
+            app:destination="@+id/summary_fragment"
+            app:popUpTo="@id/events_fragment"/>
+        <action android:id="@+id/action_from_wishlist_to_wish_factory"
+            app:destination="@id/wish_factory"
+            app:popUpTo="@id/wishlist_fragment"/>
     </fragment>
 
     <fragment
-        android:id="@+id/summary_fragment"
-        android:name="org.phenoapps.intercross.fragments.SummaryFragment"
+        android:id="@+id/search_fragment"
+        android:name="org.phenoapps.intercross.fragments.SearchFragment"
+        android:label="@string/search_fragment_label"
+        tools:layout="@layout/fragment_search">
+        <action android:id="@+id/action_from_search_to_event_detail"
+            app:destination="@id/event_fragment"
+            app:popUpTo="@id/search_fragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/cross_count_fragment"
+        android:name="org.phenoapps.intercross.fragments.CrossCountFragment"
         android:label="@string/summary_label"
-        tools:layout="@layout/fragment_summary">
-        <action
-            android:id="@+id/action_to_wishlist"
+        tools:layout="@layout/fragment_cross_count">
+        <action android:id="@+id/action_from_cross_count_to_search"
+            app:destination="@+id/search_fragment"
+            app:popUpTo="@id/cross_count_fragment"/>
+        <action android:id="@+id/action_from_crosscount_to_events_list"
+            app:destination="@+id/events_fragment"
+            app:popUpTo="@id/cross_count_fragment">
+            <argument app:argType="string"
+                android:name="male"/>
+            <argument app:argType="string"
+                android:name="female"/>
+        </action>
+        <action android:id="@+id/action_to_wishlist"
             app:destination="@id/wishlist_fragment"
             app:popUpTo="@id/events_fragment"/>
-
         <action android:id="@+id/action_to_crossblock"
             app:destination="@id/crossblock_fragment"
             app:popUpTo="@id/events_fragment"/>
         <action android:id="@+id/action_to_event_detail"
             app:destination="@id/event_fragment"/>
+        <action android:id="@+id/action_to_summary"
+            app:destination="@+id/summary_fragment"
+            app:popUpTo="@id/events_fragment"/>
     </fragment>
 
     <fragment
         android:id="@+id/crossblock_fragment"
         android:name="org.phenoapps.intercross.fragments.CrossBlockFragment"
         android:label="@string/cross_block_label"
-        tools:layout="@layout/cross_block_manager">
+        tools:layout="@layout/fragment_cross_block">
 
-        <action
-            android:id="@+id/action_to_summary"
-            app:destination="@id/summary_fragment"
+        <action android:id="@+id/action_from_crossblock_to_events_list"
+            app:destination="@+id/events_fragment"
+            app:popUpTo="@id/crossblock_fragment">
+            <argument app:argType="string"
+                android:name="male"/>
+            <argument app:argType="string"
+                android:name="female"/>
+        </action>
+        <action android:id="@+id/action_to_cross_count"
+            app:destination="@id/cross_count_fragment"
             app:popUpTo="@id/events_fragment"/>
-
         <action android:id="@+id/action_to_wishlist"
             app:destination="@id/wishlist_fragment"
             app:popUpTo="@id/events_fragment"/>
-
         <action android:id="@+id/action_to_event_detail"
             app:destination="@+id/event_fragment"
             app:popUpTo="@id/crossblock_fragment"/>
-
+        <action android:id="@+id/action_to_summary"
+            app:destination="@+id/summary_fragment"
+            app:popUpTo="@id/events_fragment"/>
+        <action android:id="@+id/action_from_crossblock_to_wish_factory"
+            app:destination="@id/wish_factory"
+            app:popUpTo="@id/crossblock_fragment"/>
     </fragment>
 
-
     <!-- Global Actions used by Navigation Drawer -->
-    <action
-        android:id="@+id/global_action_to_settings_fragment"
-        app:destination="@id/settings_fragment"
-        app:launchSingleTop="true"
-        app:popUpTo="@id/settings_fragment"/>
+    <action android:id="@+id/global_action_to_settings_fragment"
+        app:destination="@id/preferences"
+        app:launchSingleTop="true"/>
 
-    <action
-        android:id="@+id/global_action_to_event_detail"
+    <action android:id="@+id/global_action_to_event_detail"
         app:destination="@id/event_fragment"/>
+
+    <action android:id="@+id/global_action_to_events"
+        app:destination="@id/events_fragment"
+        app:popUpTo="@id/events_fragment"
+        app:launchSingleTop="true"/>
+
+    <action android:id="@+id/global_action_to_parents"
+        app:destination="@id/parents_fragment"
+        app:launchSingleTop="true"
+        app:popUpTo="@id/parents_fragment"/>
+
+    <action android:id="@+id/global_action_to_cross_count"
+        app:destination="@id/cross_count_fragment"
+        app:popUpTo="@id/cross_count_fragment"
+        app:launchSingleTop="true"/>
+
+    <action android:id="@+id/global_action_to_wishlist_import"
+        app:destination="@+id/brapi_wishlist_import_fragment"
+        app:launchSingleTop="true"
+        app:popUpTo="@id/cross_count_fragment"/>
+
+    <action android:id="@+id/global_action_to_brapi_auth"
+        app:destination="@+id/brapi_auth_fragment"
+        app:launchSingleTop="true"/>
+
+    <action android:id="@+id/global_action_to_brapi_export"
+        app:destination="@+id/brapi_export_fragment"
+        app:popUpTo="@id/events_fragment"/>
 </navigation>

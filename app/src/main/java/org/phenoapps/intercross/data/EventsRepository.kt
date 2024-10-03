@@ -13,9 +13,15 @@ class EventsRepository
 
     fun getParentCount() = eventsDao.getParentCount()
 
+    fun getMetadata() = eventsDao.getMetadata()
+
+    fun getMetadata(eid: Long) = eventsDao.getMetadata(eid)
+
     fun getParents(eid: Long) = eventsDao.getParents(eid)
 
     suspend fun getEvent(eid: Long) = eventsDao.selectById(eid)
+
+    fun getRowid(e: Event): Long = eventsDao.getRowid(e.eventDbId, e.femaleObsUnitDbId, e.maleObsUnitDbId, e.timestamp)
 
     suspend fun drop() {
 
@@ -34,6 +40,8 @@ class EventsRepository
 
         }
     }
+
+    fun insert(event: Event): Long = eventsDao.insertEvent(event)
 
     fun loadCrosses() = eventsDao.selectAllLive()
 

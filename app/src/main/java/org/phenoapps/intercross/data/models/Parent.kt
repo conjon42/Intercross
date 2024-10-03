@@ -2,6 +2,7 @@ package org.phenoapps.intercross.data.models
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
@@ -13,7 +14,7 @@ import androidx.room.PrimaryKey
  */
 @Entity(tableName = "parents", indices = [Index(value = ["codeId"], unique = true)])
 data class Parent(@ColumnInfo(name = "codeId")
-                  val codeId: String, val sex: Int): BaseParent() {
+                  val codeId: String, var sex: Int): BaseParent() {
 
     /**
      * Selected column is only used for saving check box states.
@@ -29,6 +30,7 @@ data class Parent(@ColumnInfo(name = "codeId")
 
     var isPoly: Boolean = false
 
+    @Ignore
     constructor(codeId: String, sex: Int, name: String?, isPoly: Boolean = false): this(codeId, sex) {
 
         name?.let { readableName ->

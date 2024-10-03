@@ -10,7 +10,7 @@ import androidx.room.DatabaseView
 SELECT DISTINCT femaleDbId as momId, femaleName as momName, maleDbId as dadId, maleName as dadName, wishMin, wishMax, wishType,
 	(SELECT COUNT(*) 
 	FROM events as child
-	WHERE w.femaleDbId = child.mom and w.maleDbId = child.dad) as wishProgress
+	WHERE (w.femaleDbId = child.mom and ((w.maleDbId = child.dad) or (child.dad = "blank" and w.maleDbId = "-1")))) as wishProgress
 from wishlist as w
 """)
 data class WishlistView(

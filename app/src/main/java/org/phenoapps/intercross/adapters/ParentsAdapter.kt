@@ -49,8 +49,6 @@ class ParentsAdapter(private val listModel: ParentsListViewModel,
 
                 if (p is Parent) {
 
-                    this.textField.setBackgroundResource(R.drawable.cell)
-
                     name = p.name
 
                     checked = p.selected
@@ -77,7 +75,11 @@ class ParentsAdapter(private val listModel: ParentsListViewModel,
                         })
                     } else if (p is PollenGroup) {
 
-                        groupModel.updateSelectByCode(p.codeId, doneCheckBox.isChecked)
+                        groupModel.update(p.apply {
+
+                            selected = doneCheckBox.isChecked
+
+                        })
                     }
                 }
             }

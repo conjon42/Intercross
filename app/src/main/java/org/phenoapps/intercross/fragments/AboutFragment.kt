@@ -153,7 +153,8 @@ class AboutFragment : MaterialAboutFragment() {
             .withRateButton(rateButton) // enable this to show a "rate app" button in the dialog => clicking it will open the play store; the parent activity or target fragment can also implement IChangelogRateHandler to handle the button click
             .withSummary(false, true) // enable this to show a summary and a "show more" button, the second paramter describes if releases without summary items should be shown expanded or not
             .withTitle(getString(R.string.changelog_title)) // provide a custom title if desired, default one is "Changelog <VERSION>"
-            .withOkButtonLabel(requireContext().getString(R.string.zxing_button_ok)) // provide a custom ok button text if desired, default one is "OK"
+            //TODO
+            //.withOkButtonLabel(requireContext().getString(R.string.zxing_button_ok)) // provide a custom ok button text if desired, default one is "OK"
             .withSorter(ImportanceChangelogSorter())
                 .buildAndShowDialog(activity as AppCompatActivity?, false)
     }

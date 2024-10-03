@@ -17,6 +17,9 @@ interface PollenGroupDao: BaseDao<PollenGroup> {
     @Query("UPDATE pollen_groups SET selected = :selected WHERE codeId = :codeId")
     suspend fun updateSelectByCode(codeId: String, selected: Boolean)
 
+    @Query("UPDATE pollen_groups SET selected = :selected WHERE codeId IN (:ids)")
+    suspend fun updateSelectByCodes(ids: String, selected: Boolean)
+
     @Query("UPDATE pollen_groups SET selected = :selection")
     suspend fun updateSelection(selection: Int)
 }

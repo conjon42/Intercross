@@ -5,21 +5,14 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import org.phenoapps.intercross.data.dao.EventsDao
-import org.phenoapps.intercross.data.dao.ParentsDao
-import org.phenoapps.intercross.data.dao.PollenGroupDao
-import org.phenoapps.intercross.data.dao.SettingsDao
-import org.phenoapps.intercross.data.dao.WishlistDao
-import org.phenoapps.intercross.data.models.Event
-import org.phenoapps.intercross.data.models.Parent
-import org.phenoapps.intercross.data.models.PollenGroup
-import org.phenoapps.intercross.data.models.Settings
-import org.phenoapps.intercross.data.models.Wishlist
-import org.phenoapps.intercross.data.models.WishlistView
+import org.phenoapps.intercross.data.dao.*
+import org.phenoapps.intercross.data.migrations.MigrationV2MetaData
+import org.phenoapps.intercross.data.models.*
 
 @Database(entities = [Event::class, Parent::class,
-    Wishlist::class, Settings::class, PollenGroup::class],
-        views = [WishlistView::class], version = 1)
+    Wishlist::class, Settings::class, PollenGroup::class,
+    Meta::class, MetadataValues::class],
+        views = [WishlistView::class], version = 2, exportSchema = true)
 @TypeConverters(Converters::class)
 abstract class IntercrossDatabase : RoomDatabase() {
 
@@ -28,8 +21,12 @@ abstract class IntercrossDatabase : RoomDatabase() {
     abstract fun wishlistDao(): WishlistDao
     abstract fun settingsDao(): SettingsDao
     abstract fun pollenGroupDao(): PollenGroupDao
+    abstract fun metadataDao(): MetadataDao
+    abstract fun metaValuesDao(): MetaValuesDao
 
     companion object {
+
+        const val DATABASE_NAME = "INTERCROSS"
 
         //singleton pattern
         @Volatile private var instance: IntercrossDatabase? = null
@@ -44,8 +41,10 @@ abstract class IntercrossDatabase : RoomDatabase() {
 
         private fun buildDatabase(ctx: Context): IntercrossDatabase {
 
-            return Room.databaseBuilder(ctx, IntercrossDatabase::class.java, "INTERCROSS")
-                    .build()
+            return Room.databaseBuilder(ctx, IntercrossDatabase::class.java, DATABASE_NAME)
+                .addMigrations(MigrationV2MetaData()) //v1 -> v2 migration added JSON based metadata
+                .setJournalMode(JournalMode.TRUNCATE) //truncate mode makes it easier to export/import database w/o having to manage WAL files.
+                .build()
         }
     }
 }

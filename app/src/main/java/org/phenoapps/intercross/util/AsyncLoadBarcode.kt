@@ -2,13 +2,10 @@ package org.phenoapps.intercross.util
 
 import android.graphics.Bitmap
 import android.graphics.Color
-
 import android.os.AsyncTask
 import android.widget.ImageView
 import com.google.zxing.BarcodeFormat
-import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.QRCodeWriter
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 
 
 //TODO: chaneylc rendered barcodes are not whats printed
@@ -22,18 +19,20 @@ class AsyncLoadBarcode(val imageView: ImageView, val TAG: String) : AsyncTask<St
         if (code?.isNotBlank() != false) {
 
             val bitmatrix = QRCodeWriter()
-                    .encode(code, BarcodeFormat.QR_CODE, 256, 256,
-                            mapOf(EncodeHintType.ERROR_CORRECTION to ErrorCorrectionLevel.Q))
+                    .encode(code, BarcodeFormat.QR_CODE, 256, 256)
 
-            val bmp = Bitmap.createBitmap(bitmatrix.width, bitmatrix.height, Bitmap.Config.RGB_565)
-
-            for (x in 0 until bitmatrix.width) {
-
-                for (y in 0 until bitmatrix.height) {
-
-                    bmp.setPixel(x, y, if (bitmatrix.get(x, y)) Color.BLACK else Color.WHITE)
+            val w = bitmatrix.width
+            val h = bitmatrix.height
+            val pixels = IntArray(w*h)
+            for (y in 0 until h) {
+                val offset = y*w
+                for (x in 0 until w) {
+                    pixels[offset+x] = if (bitmatrix.get(x, y)) Color.BLACK else Color.WHITE
                 }
             }
+
+            val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.RGB_565)
+            bmp.setPixels(pixels, 0, 256, 0, 0, w, h)
 
             return bmp
 

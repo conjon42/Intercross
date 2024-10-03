@@ -27,6 +27,14 @@ class PollenGroupListViewModel(private val repo: PollenGroupRepository): BaseVie
         }
     }
 
+    fun updateSelectByCodes(ids: Array<String>, selected: Boolean) {
+
+        viewModelScope.launch {
+
+            repo.updateSelectByCodes(ids, selected)
+        }
+    }
+
     fun deleteByCode(codeId: List<String>) {
 
         viewModelScope.launch {

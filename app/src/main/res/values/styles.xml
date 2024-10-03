@@ -15,6 +15,13 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="preferenceTheme">@style/AppTheme.PreferenceThemeOverlay</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme.PreferenceThemeOverlay" parent="@style/PreferenceThemeOverlay">
+        <item name="android:layout">@layout/fragment_preferences</item>
     </style>
 
     <style name="LegendText">
@@ -51,9 +58,18 @@
         <item name="android:background">@drawable/text_cell</item>
     </style>
 
-    <style name="CellText.ParentCellText">
+    <style name="ParentCellText">
+        <item name="android:gravity">start</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textAlignment">viewStart</item>
+        <item name="android:ellipsize">marquee</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:scrollHorizontally">true</item>
+        <item name="android:marqueeRepeatLimit">marquee_forever</item>
+        <item name="android:focusable">true</item>
+        <item name="android:focusableInTouchMode">true</item>
         <item name="android:textSize">16sp</item>
-        <item name="android:background">@drawable/text_cell</item>
+        <item name="android:background">@drawable/parent_text_cell</item>
     </style>
 
     <style name="NumericCellText">
@@ -79,6 +95,31 @@
     </style>
     <style name="PlannedCrossesLoadDialog.Title">
         <item name="android:textSize">24sp</item>
+    </style>
+
+    <style name="WishFactory"/>
+    <style name="WishFactory.Summary">
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="Dialog">
+        <item name="android:windowNoTitle">false</item>
+        <item name="android:windowIsFloating">true</item>
+    </style>
+
+    <!-- styles for brapi auth -->
+    <style name="AppToolbar" parent="@style/Widget.AppCompat.Toolbar">
+        <item name="titleTextColor">#343434</item>
+        <item name="drawerArrowStyle">@style/MyDrawerArrowToggle</item>
+        <item name="theme">@style/MyToolbarTheme</item>
+    </style>
+
+    <style name="MyDrawerArrowToggle" parent="@style/Widget.AppCompat.DrawerArrowToggle">
+        <item name="color">#343434</item>
+    </style>
+
+    <style name="MyToolbarTheme">
+        <item name="colorControlNormal">#343434</item>
     </style>
 
 </resources>

@@ -28,8 +28,13 @@ class EventListViewModel(private val eventRepo: EventsRepository): BaseViewModel
         }
     }
 
+    fun getRowid(e: Event): Long = eventRepo.getRowid(e)
+
+    fun insert(item: Event): Long = eventRepo.insert(item)
+
     val parents = eventRepo.getParentCount()
 
     val events = eventRepo.selectAll()
 
+    val metadata = eventRepo.getMetadata()
 }

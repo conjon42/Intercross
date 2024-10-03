@@ -10,6 +10,9 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import org.phenoapps.intercross.activities.MainActivity
+import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.util.SnackbarQueue
 
@@ -28,11 +31,14 @@ abstract class IntercrossBaseFragment<T : ViewDataBinding>(
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        val contextThemeWrapper = ContextThemeWrapper(activity, org.phenoapps.intercross.R.style.AppTheme)
+        val contextThemeWrapper = ContextThemeWrapper(activity, R.style.AppTheme)
 
         val localInflater = inflater.cloneInContext(contextThemeWrapper)
 
         mBinding = DataBindingUtil.inflate(localInflater, layoutId, container, false)
+
+        (activity as? MainActivity)?.supportActionBar?.hide()
+        (activity as? MainActivity)?.setSupportActionBar(null)
 
         return with(mBinding) {
 

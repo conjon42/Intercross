@@ -63,6 +63,7 @@ import org.phenoapps.intercross.brapi.model.BrapiStudyDetails;
 import org.phenoapps.intercross.brapi.model.BrapiTrial;
 import org.phenoapps.intercross.brapi.model.FieldBookImage;
 import org.phenoapps.intercross.brapi.model.Observation;
+import org.phenoapps.intercross.util.KeyUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,16 +91,20 @@ public class BrAPIServiceV2 implements BrAPIService{
     private final ObservationUnitsApi observationUnitsApi;
     private final ObservationVariablesApi traitsApi;
 
+    private KeyUtil mKeyUtil;
+
     public BrAPIServiceV2(Context context) {
         this.context = context;
+        this.mKeyUtil = new KeyUtil(context);
         // Make timeout longer. Set it to 60 seconds for now
         BrAPIClient apiClient = new BrAPIClient(BrAPIService.getBrapiUrl(context), 60000);
-        try {
-             apiClient.authenticate(t -> context.getSharedPreferences("Settings", 0)
-                        .getString(GeneralKeys.BRAPI_TOKEN, null));
-        } catch (ApiException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            //TODO
+////             apiClient.authenticate(t -> context.getSharedPreferences("Settings", 0)
+////                        .getString(mKeyUtil.getBrapiKeys().getBrapiTokenKey(), null));
+//        } catch (ApiException e) {
+//            e.printStackTrace();
+//        }
         this.imagesApi = new ImagesApi(apiClient);
         this.studiesApi = new StudiesApi(apiClient);
         this.programsApi = new ProgramsApi(apiClient);

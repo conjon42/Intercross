@@ -3,11 +3,9 @@ package org.phenoapps.intercross.data.models
 import androidx.annotation.Keep
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
-import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import org.phenoapps.intercross.data.models.embedded.EventMetaData
 
 /**
  * Event is the main table that holds barcode data.
@@ -39,9 +37,6 @@ data class Event(
         var type: CrossType=CrossType.UNKNOWN,
 
         var sex: Int = -1, //by default sex is unknown
-
-        @Embedded
-        val metaData: EventMetaData = EventMetaData(0, 0, 0),
 
         @ColumnInfo(name = "eid")
         @PrimaryKey(autoGenerate = true)
@@ -81,17 +76,19 @@ data class Event(
         }
     }
 
+    //TODO add metadata
     override fun toString(): String {
 
-        return "$eventDbId,$femaleObsUnitDbId,$maleObsUnitDbId,$timestamp,$person,$experiment,$type,${metaData.fruits},${metaData.flowers},${metaData.seeds}"
+        return "$eventDbId,$femaleObsUnitDbId,$maleObsUnitDbId,$timestamp,$person,$experiment,$type"
 
     }
 
+    //TODO add metadata
     fun toPollenGroupString(malesRepr: String, groupName: String?): String {
 
         var group = groupName ?: maleObsUnitDbId
 
-        return "$eventDbId,$femaleObsUnitDbId,$maleObsUnitDbId::$group::$malesRepr,$timestamp,$person,$experiment,${CrossType.POLY},${metaData.fruits},${metaData.flowers},${metaData.seeds}"
+        return "$eventDbId,$femaleObsUnitDbId,$maleObsUnitDbId::$group::$malesRepr,$timestamp,$person,$experiment,${CrossType.POLY}"
 
     }
 }

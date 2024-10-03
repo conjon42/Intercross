@@ -2,17 +2,15 @@ package org.phenoapps.intercross.fragments
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.PackageManager
 import android.net.ConnectivityManager
-import android.os.Build
 import android.util.Log
 import android.view.View
-import android.widget.*
-import androidx.activity.result.contract.ActivityResultContracts
+import android.widget.ArrayAdapter
+import android.widget.ListView
+import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.google.gson.JsonObject
-import kotlinx.android.synthetic.main.fragment_barcode_scan.*
+import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,9 +31,6 @@ import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFact
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentBrapiImportBinding
 import org.phenoapps.intercross.dialogs.WishlistImportDialog
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashSet
 
 /*
 Programs -> Crossing Project (programDbId) -> Crosses
@@ -158,10 +153,11 @@ class BrapiWishlistImportFragment: IntercrossBaseFragment<FragmentBrapiImportBin
                                         female = plan.parent1
                                     }
 
+                                    val infoMap = Gson().fromJson(plan.additionalInfo, HashMap::class.java)
                                     //insert wishlist row, check if brapi has wish metadata
-                                    val wishMin = plan.additionalInfo.get("wishMin")?.asInt
-                                    val wishMax = plan.additionalInfo.get("wishMax")?.asInt
-                                    val wishType = plan.additionalInfo.get("wishType")?.asString
+                                    val wishMin = infoMap["wishMin"] as? String
+                                    val wishMax = infoMap["wishMax"] as? String
+                                    val wishType = infoMap["wishType"] as? String
 
                                     //TODO: need external references for both parent1 and parent2, otherwise brapi overwrites observationUnitDbId
                                     wishViewModel.insert(
@@ -171,8 +167,8 @@ class BrapiWishlistImportFragment: IntercrossBaseFragment<FragmentBrapiImportBin
                                             femaleName = female.observationUnitName,
                                             maleName = male.observationUnitName,
                                             wishType = wishType ?: "cross",
-                                            wishMin = wishMin ?: 1,
-                                            wishMax = wishMax ?: 10
+                                            wishMin = wishMin?.toIntOrNull() ?: 1,
+                                            wishMax = wishMax?.toIntOrNull() ?: 10
                                         )
                                     )
 
@@ -379,14 +375,7 @@ class BrapiWishlistImportFragment: IntercrossBaseFragment<FragmentBrapiImportBin
         }
     }
 
-    private val requestPhoneStatePermission = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
-
-        if (granted.filter { it.value == false }.isNotEmpty()) {
-            initiate()
-        }
-    }
-
-    private fun initiate() {
+    override fun FragmentBrapiImportBinding.afterCreateView() {
 
         activity?.let { act ->
 
@@ -418,26 +407,5 @@ class BrapiWishlistImportFragment: IntercrossBaseFragment<FragmentBrapiImportBin
                 findNavController().popBackStack()
             }
         }
-    }
-
-    override fun FragmentBrapiImportBinding.afterCreateView() {
-
-        activity?.let { act ->
-
-            var permit = false
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (act.checkSelfPermission(android.Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
-                    && act.checkSelfPermission(android.Manifest.permission.ACCESS_NETWORK_STATE) == PackageManager.PERMISSION_GRANTED) {
-                    permit = true
-                } else requestPhoneStatePermission.launch(arrayOf(
-                    android.Manifest.permission.READ_PHONE_STATE,
-                    android.Manifest.permission.ACCESS_NETWORK_STATE))
-            } else permit = true
-
-            if (permit) initiate()
-
-            setHasOptionsMenu(true)
-        }
-
     }
 }

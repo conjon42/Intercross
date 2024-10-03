@@ -4,17 +4,13 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
-import androidx.navigation.Navigation
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.databinding.ListItemWishlistRowBinding
-import org.phenoapps.intercross.fragments.SummaryFragment
-import org.phenoapps.intercross.fragments.SummaryFragmentDirections
-import org.phenoapps.intercross.util.Dialogs
+import org.phenoapps.intercross.fragments.CrossCountFragment
 
 
 /**
@@ -26,18 +22,18 @@ import org.phenoapps.intercross.util.Dialogs
  *
  */
 class WishlistAdapter(val context: Context) :
-        ListAdapter<SummaryFragment.ListEntry, WishlistAdapter.ViewHolder>(SummaryDiffCallback()) {
+        ListAdapter<CrossCountFragment.ListEntry, WishlistAdapter.ViewHolder>(SummaryDiffCallback()) {
 
-    private class SummaryDiffCallback : DiffUtil.ItemCallback<SummaryFragment.ListEntry>() {
+    private class SummaryDiffCallback : DiffUtil.ItemCallback<CrossCountFragment.ListEntry>() {
 
-        override fun areItemsTheSame(oldItem: SummaryFragment.ListEntry,
-                                     newItem: SummaryFragment.ListEntry): Boolean {
+        override fun areItemsTheSame(oldItem: CrossCountFragment.ListEntry,
+                                     newItem: CrossCountFragment.ListEntry): Boolean {
 
             return (oldItem.f == newItem.f) && (oldItem.m == newItem.m)
         }
 
-        override fun areContentsTheSame(oldItem: SummaryFragment.ListEntry,
-                                        newItem: SummaryFragment.ListEntry): Boolean {
+        override fun areContentsTheSame(oldItem: CrossCountFragment.ListEntry,
+                                        newItem: CrossCountFragment.ListEntry): Boolean {
 
             return (oldItem.f == newItem.f) && (oldItem.m == newItem.m)
         }
@@ -73,7 +69,7 @@ class WishlistAdapter(val context: Context) :
     inner class ViewHolder(
             private val binding: ListItemWishlistRowBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(data: SummaryFragment.ListEntry) {
+        fun bind(data: CrossCountFragment.ListEntry) {
 
             with(binding) {
 
@@ -98,14 +94,7 @@ class WishlistAdapter(val context: Context) :
                 //uses inner view holder to create list of crosses used for that wish item
                 onClick = View.OnClickListener {
 
-                    Dialogs.list(AlertDialog.Builder(context),
-                            context.getString(R.string.click_item_for_child_details),
-                            context.getString(R.string.no_child_exists),
-                            data.events) { id ->
 
-                        Navigation.findNavController(root)
-                                .navigate(SummaryFragmentDirections.globalActionToEventDetail(id))
-                    }
 
                 }
             }

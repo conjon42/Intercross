@@ -8,6 +8,41 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/frag_parents_tb"
+            android:layout_height="?attr/actionBarSize"
+            android:layout_width="match_parent"
+            android:background="?attr/colorPrimary"
+            android:gravity="center_vertical|start"
+            app:menu="@menu/parents_toolbar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+
+            <TextView
+                android:id="@+id/frag_parents_toolbar_count_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:gravity="start"
+                android:textColor="#FFFFFF"
+                android:textAppearance="?attr/textAppearanceHeadline5"
+                tools:text="8"/>
+
+        </androidx.appcompat.widget.Toolbar>
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/frag_parents_select_all_cb"
+            android:layout_marginStart="2dp"
+            android:layout_marginTop="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tabLayout"
+            app:layout_constraintTop_toBottomOf="@id/frag_parents_tb"/>
+
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
             android:layout_width="0dp"
@@ -15,18 +50,19 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
-            android:background="@drawable/cell"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintStart_toEndOf="@id/frag_parents_select_all_cb"
+            app:layout_constraintTop_toBottomOf="@id/frag_parents_tb">
 
             <com.google.android.material.tabs.TabItem
+                android:layout="@null"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/female" />
 
             <com.google.android.material.tabs.TabItem
+                android:layout="@null"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/male" />
@@ -37,10 +73,9 @@
             android:id="@+id/femaleRecycler"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="16dp"
+            android:layout_margin="8dp"
             android:visibility="visible"
-            app:layout_constraintBottom_toTopOf="@+id/newButton"
+            app:layout_constraintBottom_toTopOf="@id/bottom_nav_bar"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
@@ -51,62 +86,38 @@
             android:id="@+id/maleRecycler"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="16dp"
+            android:layout_margin="8dp"
             android:visibility="gone"
-            app:layout_constraintBottom_toTopOf="@+id/newButton"
+            app:layout_constraintBottom_toTopOf="@id/bottom_nav_bar"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tabLayout"
             tools:listitem="@layout/list_item_selectable_parent_row" />
 
-        <Button
-            android:id="@+id/newButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:backgroundTint="@color/colorAccent"
-            android:text="@string/New"
-            app:layout_constraintBottom_toTopOf="@+id/buttonLayout"
+        <ImageButton
+            android:id="@+id/frag_parents_new_parent_btn"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_margin="16dp"
+            android:background="@drawable/capture_button_background"
+            android:contentDescription="@string/frag_parents_new_parent_btn"
+            android:cropToPadding="false"
+            android:elevation="5dp"
+            android:scaleType="fitCenter"
+            app:tint="#ffffff"
+            app:layout_constraintBottom_toTopOf="@id/bottom_nav_bar"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:srcCompat="@drawable/ic_add_black_24dp" />
 
-        <LinearLayout
-            android:id="@+id/buttonLayout"
-            android:layout_width="match_parent"
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_nav_bar"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            app:menu="@menu/menu_bot_nav"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
-            <Button
-                android:id="@+id/deleteButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="8dp"
-                android:layout_weight="1"
-                android:backgroundTint="@color/colorAccent"
-                android:text="@string/delete"
-                tools:ignore="ButtonStyle" />
-
-            <Button
-                android:id="@+id/printButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="8dp"
-                android:layout_weight="1"
-                android:backgroundTint="@color/colorAccent"
-                android:text="@string/print"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                tools:ignore="ButtonStyle" />
-        </LinearLayout>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -1,16 +1,12 @@
 package org.phenoapps.intercross.fragments
 
+import android.app.Activity
 import android.content.Context
-import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.WindowManager
+import android.util.TypedValue
+import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -18,43 +14,31 @@ import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.fragment_events.*
-import kotlinx.android.synthetic.main.fragment_events.recyclerView
-import kotlinx.android.synthetic.main.fragment_events.view.*
+import kotlinx.coroutines.*
 import org.phenoapps.intercross.BuildConfig
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.EventsAdapter
-import org.phenoapps.intercross.data.EventsRepository
-import org.phenoapps.intercross.data.ParentsRepository
-import org.phenoapps.intercross.data.SettingsRepository
-import org.phenoapps.intercross.data.WishlistRepository
+import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
+import org.phenoapps.intercross.data.models.Meta
 import org.phenoapps.intercross.data.models.Settings
 import org.phenoapps.intercross.data.models.WishlistView
-import org.phenoapps.intercross.data.viewmodels.CrossSharedViewModel
-import org.phenoapps.intercross.data.viewmodels.EventListViewModel
-import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
-import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
-import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
-import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.*
+import org.phenoapps.intercross.data.viewmodels.factory.*
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
-import org.phenoapps.intercross.util.CrossUtil
-import org.phenoapps.intercross.util.Dialogs
-import org.phenoapps.intercross.util.FileUtil
-import org.phenoapps.intercross.util.SnackbarQueue
+import org.phenoapps.intercross.util.*
 import java.util.*
+import kotlin.math.roundToInt
 
-class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fragment_events) {
+class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fragment_events),
+    CoroutineScope by MainScope() {
 
     private val viewModel: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
@@ -72,11 +56,29 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
     }
 
+    private val metaValuesViewModel: MetaValuesViewModel by viewModels {
+        MetaValuesViewModelFactory(MetaValuesRepository.getInstance(db.metaValuesDao()))
+    }
+
+    private val metadataViewModel: MetadataViewModel by viewModels {
+        MetadataViewModelFactory(MetadataRepository.getInstance(db.metadataDao()))
+    }
+
+    private val argMale: String? by lazy {
+        arguments?.getString("male")
+    }
+
+    private val argFemale: String? by lazy {
+        arguments?.getString("female")
+    }
+
     private var mParents: List<Parent> = ArrayList()
 
     private var mSettings: Settings = Settings()
 
     private var mEvents: List<Event> = ArrayList()
+
+    private var mMetadata: List<Meta> = ArrayList()
 
     private var mEventsEmpty = true
 
@@ -86,18 +88,26 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private var mFocused: View? = null
 
+    private val scope = CoroutineScope(Dispatchers.IO)
+
+    private val mPref by lazy {
+        PreferenceManager.getDefaultSharedPreferences(requireContext())
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
+
     private fun getFirstOrder(context: Context): String {
 
-        val maleFirst = PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(SettingsFragment.ORDER, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
 
         return if (maleFirst) context.getString(R.string.MaleID) else context.getString(R.string.FemaleID)
     }
 
     private fun getSecondOrder(context: Context): String {
 
-        val maleFirst = PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(SettingsFragment.ORDER, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
 
         return if (maleFirst) context.getString(R.string.FemaleID) else context.getString(R.string.MaleID)
 
@@ -107,22 +117,61 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
-        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
-
         if ("demo" in BuildConfig.BUILD_TYPE) {
 
-            pref.edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
+            mPref.edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
 
         }
 
-        if (pref.getBoolean("first_load", true)) {
+        if (mPref.getBoolean("first_load", true)) {
 
             settingsModel.insert(mSettings
                     .apply {
                         isUUID = true
                     })
 
-            pref.edit().putBoolean("first_load", false).apply()
+            launch {
+                withContext(Dispatchers.IO) {
+                    for (property in arrayOf("fruits", "flowers", "seeds")) {
+                        metadataViewModel.insert(
+                            Meta(property, 0)
+                        )
+                    }
+                }
+            }
+
+            mPref.edit().putBoolean("first_load", false).apply()
+        }
+
+        //if this was called from crosscount/crossblock or wishlist fragment then populate the male/female tv
+        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+
+        argFemale?.let { female ->
+            if (maleFirst) mBinding.secondText.setText(female)
+            else mBinding.firstText.setText(female)
+        }
+
+        argMale?.let { male ->
+            if (maleFirst) mBinding.firstText.setText(male)
+            else mBinding.secondText.setText(male)
+        }
+
+        if (mSettings.isUUID) {
+
+            mBinding.editTextCross.setText(UUID.randomUUID().toString())
+
+        }
+
+        arguments?.getString("male")?.let { male ->
+            if (maleFirst) {
+                mBinding.firstText.setText(male)
+            } else mBinding.secondText.setText(male)
+        }
+
+        arguments?.getString("female")?.let { female ->
+            if (maleFirst) {
+                mBinding.secondText.setText(female)
+            } else mBinding.firstText.setText(female)
         }
 
         recyclerView.adapter = EventsAdapter(this@EventsFragment, viewModel)
@@ -135,26 +184,39 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         startObservers()
 
+        (activity as MainActivity).supportActionBar?.hide()
+
         activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
 
         setupUI()
 
     }
 
-    private fun startObservers() {
+    override fun onResume() {
+        super.onResume()
 
-        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        mBinding.bottomNavBar.selectedItemId = R.id.action_nav_home
+
+    }
+
+    private fun startObservers() {
 
         val error = getString(R.string.ErrorCodeExists)
 
-        parentsList.parents.observe(viewLifecycleOwner, {
+        val isCommutative = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
+
+        metadataViewModel.metadata.observe(viewLifecycleOwner) {
+            mMetadata = it
+        }
+
+        parentsList.parents.observe(viewLifecycleOwner) {
 
             it?.let {
 
                 mParents = it
 
             }
-        })
+        }
 
         viewModel.events.observe(viewLifecycleOwner) {
 
@@ -164,9 +226,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 mEventsEmpty = it.isEmpty()
 
-                editTextCross.addTextChangedListener {
+                mBinding.editTextCross.addTextChangedListener {
 
-                    val value = editTextCross.text.toString()
+                    val value = mBinding.editTextCross.text.toString()
 
                     if (value.isNotBlank()) {
 
@@ -174,20 +236,21 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                             mEvents.map { event -> event.eventDbId } + mParents.map { parent -> parent.codeId }
                                 .distinct()
 
-                        if (editTextCross.text.toString() in codes) {
+                        if (mBinding.editTextCross.text.toString() in codes) {
 
-                            if (crossTextHolder.error == null) crossTextHolder.error = error
+                            if (mBinding.crossTextHolder.error == null) mBinding.crossTextHolder.error =
+                                error
 
-                        } else crossTextHolder.error = null
+                        } else mBinding.crossTextHolder.error = null
 
                     } else {
 
-                        crossTextHolder.error = null
+                        mBinding.crossTextHolder.error = null
 
                     }
                 }
 
-                (recyclerView.adapter as? EventsAdapter)?.submitList(it)
+                (mBinding.recyclerView.adapter as? EventsAdapter)?.submitList(it)
             }
         }
 
@@ -202,13 +265,27 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             }
         }
 
-        wishStore.wishes.observe(viewLifecycleOwner) {
+        if (isCommutative) {
 
-            it?.let {
+            wishStore.commutativeWishes.observe(viewLifecycleOwner) {
 
-                mWishlistProgress = it.filter { wish -> wish.wishType == "cross" }
+                it?.let {
+
+                    mWishlistProgress = it.filter { wish -> wish.wishType == "cross" }
+                }
+
             }
 
+        } else {
+
+            wishStore.wishes.observe(viewLifecycleOwner) {
+
+                it?.let {
+
+                    mWishlistProgress = it.filter { wish -> wish.wishType == "cross" }
+                }
+
+            }
         }
 
         mSharedViewModel.lastScan.observe(viewLifecycleOwner) {
@@ -221,39 +298,43 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                     when (mFocused?.id) {
 
-                        firstText.id -> {
+                        mBinding.firstText.id -> {
 
                             afterFirstText(it)
 
                         }
-                        secondText.id -> {
+
+                        mBinding.secondText.id -> {
 
                             afterSecondText(it)
 
                         }
-                        editTextCross.id -> {
+
+                        mBinding.editTextCross.id -> {
 
                             afterThirdText(it)
 
                         }
+
                         else -> {
 
                             /**
                              * if nothing is focused check each text field and apply current settings
                              */
-                            val first = firstText.text.toString()
-                            val second = secondText.text.toString()
+                            val first = mBinding.firstText.text.toString()
+                            val second = mBinding.secondText.text.toString()
                             //val third = editTextCross.text.toString()
 
-                            val order = pref.getBoolean(SettingsFragment.ORDER, false)
-                            val blank = pref.getBoolean(SettingsFragment.BLANK, false)
+                            val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+
+                            val blank = mPref.getBoolean(mKeyUtil.nameBlankMaleKey, false)
 
                             //first check first text, if male first and allow blank males then skip to second text
-                            if (first.isBlank() && !(order && blank)) {
+                            if (first.isBlank() && !(maleFirst && blank)) {
 
                                 afterFirstText(it)
 
-                            } else if (second.isBlank() && !(!order && blank)) {
+                            } else if (second.isBlank() && !(!maleFirst && blank)) {
 
                                 afterSecondText(it)
 
@@ -269,44 +350,49 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun afterFirstText(value: String) {
 
-        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
 
-        val order = pref.getBoolean(SettingsFragment.ORDER, false)
-        val blank = pref.getBoolean(SettingsFragment.BLANK, false)
+        val blank = mPref.getBoolean(mKeyUtil.nameBlankMaleKey, false)
 
-        firstText.setText(value)
+        mBinding.firstText.setText(value)
 
-        if (!order && blank) {
+        if (!maleFirst && blank) {
 
             askUserNewExperimentName()
 
-        } else secondText.requestFocus()
+        } else mBinding.secondText.requestFocus()
     }
 
     private fun afterSecondText(value: String) {
 
-//        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
 
-//        val order = pref.getBoolean(SettingsFragment.ORDER, false)
-//        val blank = pref.getBoolean(SettingsFragment.BLANK, false)
+        val blank = mPref.getBoolean(mKeyUtil.nameBlankMaleKey, false)
 
-        secondText.setText(value)
+        mBinding.secondText.setText(value)
+
+        //check if female first, then check if string is empty to show error message
+        if (!maleFirst) {
+
+            if (value.isEmpty() && !blank) {
+
+                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.you_must_enter_male_name)))
+
+                return
+            }
+
+        }
 
         if ((mSettings.isPattern || mSettings.isUUID)) {
 
             askUserNewExperimentName()
 
-        } else editTextCross.requestFocus()
+        } else mBinding.editTextCross.requestFocus()
     }
 
     private fun afterThirdText(value: String) {
 
-//        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
-
-//        val order = pref.getBoolean(SettingsFragment.ORDER, false)
-//        val blank = pref.getBoolean(SettingsFragment.BLANK, false)
-
-        editTextCross.setText(value)
+        mBinding.editTextCross.setText(value)
 
         askUserNewExperimentName()
     }
@@ -319,7 +405,46 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         setupButtons()
 
+        setupBottomNavBar()
+
         setHasOptionsMenu(true)
+
+    }
+
+    private fun FragmentEventsBinding.setupBottomNavBar() {
+
+        bottomNavBar.setOnNavigationItemSelectedListener { item ->
+
+            when (item.itemId) {
+
+                R.id.action_nav_settings -> {
+
+                    findNavController().navigate(R.id.global_action_to_settings_fragment)
+                }
+                R.id.action_nav_parents -> {
+
+                    findNavController().navigate(EventsFragmentDirections.globalActionToParents())
+
+                }
+                R.id.action_nav_export -> {
+
+                    (activity as MainActivity).showExportDialog {
+
+                        bottomNavBar.selectedItemId = R.id.action_nav_home
+
+                    }
+                }
+                R.id.action_nav_cross_count -> {
+
+                    findNavController().navigate(EventsFragmentDirections.actionToCrossCountFragment())
+
+                }
+            }
+
+            true
+        }
+
+        bottomNavBar.selectedItemId = R.id.action_nav_home
 
     }
 
@@ -348,12 +473,13 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                         mSnackbar.push(SnackbarQueue.SnackJob(root, event.eventDbId, undoString) {
 
-                            CrossUtil(requireContext()).submitCrossEvent(mBinding.root,
+                            scope.launch {
+                                CrossUtil(requireContext()).submitCrossEvent(activity,
                                     event.femaleObsUnitDbId, event.maleObsUnitDbId,
                                     event.eventDbId, mSettings, settingsModel, viewModel,
-                                    mParents, parentsList, mWishlistProgress
-                            )
-
+                                    mParents, parentsList, mWishlistProgress, mMetadata, metaValuesViewModel
+                                )
+                            }
                         })
                     }
                 }
@@ -363,26 +489,26 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun resetDataEntry() {
 
-        firstText.setText("")
+        mBinding.firstText.setText("")
 
-        secondText.setText("")
+        mBinding.secondText.setText("")
 
-        editTextCross.setText("")
+        mBinding.editTextCross.setText("")
 
         when {
 
             mSettings.isPattern -> {
 
-                editTextCross.setText(mSettings.pattern)
+                mBinding.editTextCross.setText(mSettings.pattern)
             }
 
             mSettings.isUUID -> {
 
-                editTextCross.setText(UUID.randomUUID().toString())
+                mBinding.editTextCross.setText(UUID.randomUUID().toString())
             }
         }
 
-        firstText.requestFocus()
+        mBinding.firstText.requestFocus()
     }
 
     private fun FragmentEventsBinding.setupTextInput() {
@@ -408,11 +534,17 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             if (hasFocus) mFocused = v
 
-            if (hasFocus && (PreferenceManager.getDefaultSharedPreferences(requireContext())
-                            .getString("org.phenoapps.intercross.PERSON", "") ?: "").isBlank()) {
+            if (hasFocus && (mPref.getString(mKeyUtil.profPersonKey, "") ?: "").isBlank()) {
                 askUserForPerson()
             }
 
+        }
+
+        //https://stackoverflow.com/questions/3425932/detecting-when-user-has-dismissed-the-soft-keyboard
+        activity?.addKeyboardToggleListener { shown ->
+
+            if (shown) bottomNavBar.visibility = View.GONE
+            else bottomNavBar.visibility = View.VISIBLE
         }
 
         secondText.addTextChangedListener(emptyGuard)
@@ -429,11 +561,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 val value = firstText.text.toString()
 
-                if (value.isNotBlank()) {
-
-                    afterFirstText(value)
-
-                } else secondText.requestFocus()
+                afterFirstText(value)
 
                 return@OnEditorActionListener true
             }
@@ -448,11 +576,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 val value = secondText.text.toString()
 
-                if (value.isNotBlank()) {
-
-                    afterSecondText(value)
-
-                } else editTextCross.requestFocus()
+                afterSecondText(value)
 
                 return@OnEditorActionListener true
             }
@@ -480,20 +604,68 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     }
 
+    open class KeyboardToggleListener(
+        private val root: View?,
+        private val onKeyboardToggleAction: (shown: Boolean) -> Unit
+    ) : ViewTreeObserver.OnGlobalLayoutListener {
+        private var shown = false
+        override fun onGlobalLayout() {
+            root?.run {
+                val heightDiff = rootView.height - height
+                val thresh = 550
+                val keyboardShown = heightDiff > thresh
+                if (shown != keyboardShown) {
+                    onKeyboardToggleAction.invoke(keyboardShown)
+                    shown = keyboardShown
+                }
+            }
+        }
+
+        private fun View.dpToPix(dp: Float) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics).roundToInt()
+
+    }
+
+    fun Activity.addKeyboardToggleListener(onKeyboardToggleAction: (shown: Boolean) -> Unit): KeyboardToggleListener? {
+        val root = findViewById<View>(android.R.id.content)
+        val listener = KeyboardToggleListener(root, onKeyboardToggleAction)
+        return root?.viewTreeObserver?.run {
+            addOnGlobalLayoutListener(listener)
+            listener
+        }
+    }
+
     private fun FragmentEventsBinding.setupButtons() {
 
         saveButton.isEnabled = isInputValid()
 
         button.setOnClickListener {
 
-            if ((PreferenceManager.getDefaultSharedPreferences(requireContext())
-                            .getString("org.phenoapps.intercross.PERSON", "") ?: "").isBlank()) {
+            if (mPref.getString(mKeyUtil.profPersonKey, "").isNullOrBlank()) {
                 askUserForPerson()
             } else {
 
                 findNavController().navigate(EventsFragmentDirections.actionToBarcodeScanFragment())
 
             }
+        }
+
+        button.setOnLongClickListener {
+
+            if (mPref.getString(mKeyUtil.profPersonKey, "").isNullOrBlank()) {
+                askUserForPerson()
+            } else {
+
+                findNavController().navigate(EventsFragmentDirections.actionToBarcodeScanFragment(2))
+
+            }
+
+            true
+        }
+
+        fragmentEventsSearchButton.setOnClickListener {
+
+            findNavController().navigate(EventsFragmentDirections.actionToBarcodeScanFragment(1))
+
         }
 
         saveButton.setOnClickListener {
@@ -507,8 +679,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             secondText.setText("")
 
-            val person = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                    .getString("org.phenoapps.intercross.PERSON", "") ?: ""
+            val person = mPref.getString(mKeyUtil.profPersonKey, "") ?: ""
 
             if (person.isNotBlank()) firstText.requestFocus()
         }
@@ -516,10 +687,10 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun FragmentEventsBinding.isInputValid(): Boolean {
 
-        val allowBlank = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getBoolean(SettingsFragment.BLANK, false)
-        val maleFirst = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getBoolean(SettingsFragment.ORDER, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+
+        val blank = mPref.getBoolean(mKeyUtil.nameBlankMaleKey, false)
+
         val male: String
         val female: String
         val cross: String = editTextCross.text.toString()
@@ -533,7 +704,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         //calculate how full the save button should be
         var numFilled = 0
-        if (allowBlank) numFilled++
+        if (blank) numFilled++
         else if (male.isNotBlank()) numFilled++
         if (female.isNotBlank()) numFilled++
         if (cross.isNotBlank()) numFilled++
@@ -547,31 +718,30 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                     else -> R.drawable.button_save_full
                 })
 
-        return ((male.isNotBlank() || allowBlank) && female.isNotBlank()
+        return ((male.isNotBlank() || blank) && female.isNotBlank()
                 && (cross.isNotBlank() || (mSettings.isUUID || mSettings.isPattern)))
     }
 
     private fun askUserNewExperimentName() {
 
-        val value = editTextCross.text.toString()
+        val value = mBinding.editTextCross.text.toString()
 
-        val allowBlank = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getBoolean(SettingsFragment.BLANK, false)
-        val maleFirst = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getBoolean(SettingsFragment.ORDER, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+
+        val blank = mPref.getBoolean(mKeyUtil.nameBlankMaleKey, false)
 
         lateinit var male: String
         lateinit var female: String
 
         if (!maleFirst) {
-            female = (firstText.text ?: "").toString()
-            male = (secondText.text ?: "").toString()
+            female = (mBinding.firstText.text ?: "").toString()
+            male = (mBinding.secondText.text ?: "").toString()
         } else {
-            male = (firstText.text ?: "").toString()
-            female = (secondText.text ?: "").toString()
+            male = (mBinding.firstText.text ?: "").toString()
+            female = (mBinding.secondText.text ?: "").toString()
         }
 
-        if (value.isNotBlank() && (male.isNotBlank() || allowBlank) && female.isNotBlank()) {
+        if (value.isNotBlank() && (male.isNotBlank() || blank) && female.isNotBlank()) {
 
             if (male.isBlank()) male = "blank"
 
@@ -587,14 +757,41 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 } else {
 
-                    CrossUtil(requireContext()).submitCrossEvent(mBinding.root, female, male, value, mSettings, settingsModel, viewModel, mParents, parentsList, mWishlistProgress)
+                    scope.launch {
 
+                        context?.let { ctx ->
+
+                            with(CrossUtil(ctx)) {
+
+                                val eid = submitCrossEvent(
+                                        activity,
+                                        female,
+                                        male,
+                                        value,
+                                        mSettings,
+                                        settingsModel,
+                                        viewModel,
+                                        mParents,
+                                        parentsList,
+                                        mWishlistProgress,
+                                        mMetadata,
+                                        metaValuesViewModel
+                                    )
+
+                                activity?.runOnUiThread {
+
+                                    checkPrefToOpenCrossEvent(findNavController(),
+                                                EventsFragmentDirections.actionToEventFragment(eid))
+                                }
+                            }
+                        }
+                    }
                 }
 
                 resetDataEntry()
 
                 Handler().postDelayed({
-                    recyclerView.scrollToPosition(0)
+                    mBinding.recyclerView.scrollToPosition(0)
                 }, 250)
 
             } else Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.cross_id_already_exists_as_event))
@@ -605,14 +802,24 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.you_must_enter_female_name)))
 
+                if (!maleFirst) {
+                    mBinding.firstText.requestFocus()
+                } else mBinding.secondText.requestFocus()
+
             } else if (value.isBlank()) {
 
                 mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.you_must_enter_cross_name)))
+
+                mBinding.editTextCross.requestFocus()
 
             } else {
 
                 mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.you_must_enter_male_name)))
 
+                //request focus on the edit text that is missing
+                if (maleFirst) {
+                    mBinding.firstText.requestFocus()
+                } else mBinding.secondText.requestFocus()
             }
 
             FileUtil(requireContext()).ringNotification(false)
@@ -624,20 +831,19 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         mBinding.constraintLayoutParent.requestFocus()
 
-        val person = getString(R.string.cancel)
+        val cancel = getString(android.R.string.cancel)
         val personMustBeSet = getString(R.string.person_must_be_set)
         val setPerson = getString(R.string.set_person)
 
         val builder = AlertDialog.Builder(requireContext()).apply {
 
-            setNegativeButton(person) { _, _ ->
+            setNegativeButton(cancel) { _, _ ->
                 mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, personMustBeSet))
             }
 
             setPositiveButton(setPerson) { _, _ ->
-                findNavController().navigate(R.id.settings_fragment, Bundle().apply {
-                    putString("org.phenoapps.intercross.ASK_PERSON", "true")
-                })
+                findNavController().navigate(EventsFragmentDirections
+                    .actionFromEventsToPreferences(true))
             }
         }
 
@@ -645,35 +851,4 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         builder.show()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-
-        inflater.inflate(R.menu.activity_main_toolbar, menu)
-
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        when(item.itemId) {
-
-            R.id.action_search_barcode -> {
-
-                findNavController().navigate(EventsFragmentDirections.actionToBarcodeScanFragment(1))
-
-            }
-            R.id.action_continuous_barcode -> {
-
-                if ((PreferenceManager.getDefaultSharedPreferences(requireContext())
-                                .getString("org.phenoapps.intercross.PERSON", "") ?: "").isBlank()) {
-                    askUserForPerson()
-                } else {
-
-                    findNavController().navigate(EventsFragmentDirections.actionToBarcodeScanFragment(2))
-
-                }
-
-            }
-        }
-        return super.onOptionsItemSelected(item)
-    }
 }

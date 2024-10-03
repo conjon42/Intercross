@@ -3,36 +3,35 @@ package org.phenoapps.intercross.fragments
 import android.Manifest
 import android.graphics.Color
 import android.os.Handler
-import android.preference.PreferenceManager
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import com.google.zxing.ResultPoint
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.DecoratedBarcodeView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.data.EventsRepository
-import org.phenoapps.intercross.data.ParentsRepository
-import org.phenoapps.intercross.data.SettingsRepository
-import org.phenoapps.intercross.data.WishlistRepository
+import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.data.models.Event
+import org.phenoapps.intercross.data.models.Meta
 import org.phenoapps.intercross.data.models.Parent
 import org.phenoapps.intercross.data.models.Settings
 import org.phenoapps.intercross.data.models.WishlistView
-import org.phenoapps.intercross.data.viewmodels.CrossSharedViewModel
-import org.phenoapps.intercross.data.viewmodels.EventListViewModel
-import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
-import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
-import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
-import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.*
+import org.phenoapps.intercross.data.viewmodels.factory.*
 import org.phenoapps.intercross.databinding.FragmentBarcodeScanBinding
 import org.phenoapps.intercross.util.CrossUtil
+import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.FileUtil
+import org.phenoapps.intercross.util.KeyUtil
 import java.util.*
 
 class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.layout.fragment_barcode_scan) {
@@ -62,6 +61,16 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
         WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
     }
 
+    private val metaValuesViewModel: MetaValuesViewModel by viewModels {
+        MetaValuesViewModelFactory(MetaValuesRepository.getInstance(db.metaValuesDao()))
+    }
+
+    private val metadataViewModel: MetadataViewModel by viewModels {
+        MetadataViewModelFactory(MetadataRepository.getInstance(db.metadataDao()))
+    }
+
+    private val scope = CoroutineScope(Dispatchers.IO)
+
     private val mSharedViewModel: CrossSharedViewModel by activityViewModels()
 
     private var mSettings = Settings()
@@ -76,7 +85,17 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
     private var mParents = ArrayList<Parent>()
 
+    private var mMetadata = ArrayList<Meta>()
+
     private var lastText: String? = null
+
+    private val mPrefs by lazy {
+        PreferenceManager.getDefaultSharedPreferences(requireContext())
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
 
     private val checkCamPermissions = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
 
@@ -116,17 +135,46 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
                             zxingBarcodeScanner.setStatusText(getString(R.string.zxing_scan_mode_search))
 
-                            val scannedEvent = mEvents.find { event -> event.eventDbId == result.text.toString() }
+                            val scannedEvent = mEvents.find { event -> event.eventDbId == result.text.toString().toLowerCase(Locale.ROOT) }
 
-                            findNavController().navigate(BarcodeScanFragmentDirections
-                                    .actionToEventFragmentFromScan(scannedEvent?.id ?: -1L))
+                            if (scannedEvent == null) {
 
+                                mParents.find { parent -> parent.codeId == result.text.toString().toLowerCase(Locale.ROOT) }?.let { parent ->
+
+                                    context?.let { ctx ->
+
+                                        val children = mEvents.filter { event ->
+                                            event.femaleObsUnitDbId == parent.codeId || event.maleObsUnitDbId == parent.codeId
+                                        }
+
+                                        mBarcodeScanner.pause()
+
+                                        Dialogs.list(
+                                            AlertDialog.Builder(ctx),
+                                            getString(R.string.click_item_for_child_details),
+                                            getString(R.string.no_child_exists),
+                                            children, { id ->
+
+                                                findNavController()
+                                                    .navigate(BarcodeScanFragmentDirections
+                                                        .actionFromScanToEventDetail(id))
+                                            }) {
+
+                                            mBarcodeScanner.resume()
+                                        }
+                                    }
+                                }
+
+                            } else {
+
+                                findNavController().navigate(BarcodeScanFragmentDirections
+                                    .actionToEventFragmentFromScan(scannedEvent.id ?: -1L))
+                            }
                         }
                         CONTINUOUS -> {
                             zxingBarcodeScanner.setStatusText(getString(R.string.zxing_scan_mode_continuous))
 
-                            val maleFirst = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                                    .getBoolean(SettingsFragment.ORDER, false)
+                            val maleFirst = mPrefs.getBoolean(mKeyUtil.nameCrossOrderKey, false)
 
                             when (maleFirst) {
 
@@ -210,7 +258,15 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
             cameraSettings.isBarcodeSceneModeEnabled = true
 
-            decodeSingle(mCallback)
+            arguments?.let {
+
+                when (it.getInt("mode")) {
+
+                    SEARCH -> decodeContinuous(mCallback)
+
+                    else -> decodeSingle(mCallback)
+                }
+            }
         }
     }
 
@@ -240,6 +296,8 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                 })
         }
 
+        (activity as MainActivity).supportActionBar?.hide()
+
         setupBarcodeScanner()
 
         startObservers()
@@ -247,23 +305,45 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
     private fun startObservers() {
 
-        wishModel.wishes.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
-            it?.let {
-                mWishlist = it.filter { wish -> wish.wishType == "cross" }
-            }
-        })
+        val isCommutative = mPrefs.getBoolean(mKeyUtil.workCommutativeKey, false)
 
-        viewModel.events.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+        if (isCommutative) {
+
+            wishModel.commutativeWishes.observe(viewLifecycleOwner) {
+                it?.let {
+                    mWishlist = it.filter { wish -> wish.wishType == "cross" }
+                }
+            }
+
+        } else {
+
+            wishModel.wishes.observe(viewLifecycleOwner) {
+                it?.let {
+                    mWishlist = it.filter { wish -> wish.wishType == "cross" }
+                }
+            }
+
+        }
+
+        metadataViewModel.metadata.observe(viewLifecycleOwner) {
+            mMetadata = ArrayList(it)
+        }
+
+        viewModel.events.observe(viewLifecycleOwner) {
             it?.let {
                 mEvents = ArrayList(it)
             }
-        })
+        }
 
-        settingsModel.settings.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+        settingsModel.settings.observe(viewLifecycleOwner) {
             it?.let {
                 mSettings = it
             }
-        })
+        }
+
+        parentsModel.parents.observe(viewLifecycleOwner) {
+            mParents = ArrayList(it)
+        }
 
         mSharedViewModel.name.value = ""
         mSharedViewModel.female.value = ""
@@ -282,35 +362,56 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
         if (male.isEmpty()) male = "blank"
 
-        CrossUtil(requireContext()).submitCrossEvent(
-                mBinding.root,
-                female,
-                male,
-                cross,
-                mSettings,
-                settingsModel,
-                viewModel,
-                mParents,
-                parentsModel,
-                mWishlist)
+        scope.launch {
 
-        mSharedViewModel.name.value = ""
-        mSharedViewModel.female.value = ""
-        mSharedViewModel.male.value = ""
+            context?.let { ctx ->
 
-        Handler().postDelayed({
-            mBinding.cross.setImageResource(0)
-            mBinding.female.setImageResource(0)
-            mBinding.male.setImageResource(0)
-            mBarcodeScanner.barcodeView.decodeSingle(mCallback)
-        }, 2000)
+                with(CrossUtil(ctx)) {
 
+                    val eid =
+                        withContext(Dispatchers.Default) {
+                            submitCrossEvent(
+                                activity,
+                                female,
+                                male,
+                                cross,
+                                mSettings,
+                                settingsModel,
+                                viewModel,
+                                mParents,
+                                parentsModel,
+                                mWishlist,
+                                mMetadata,
+                                metaValuesViewModel)
+                    }
+
+                    activity?.runOnUiThread {
+
+                        mSharedViewModel.name.value = ""
+                        mSharedViewModel.female.value = ""
+                        mSharedViewModel.male.value = ""
+
+                        Handler().postDelayed({
+                            mBinding.cross.setImageResource(0)
+                            mBinding.female.setImageResource(0)
+                            mBinding.male.setImageResource(0)
+                            mBarcodeScanner.barcodeView.decodeSingle(mCallback)
+                        }, 2000)
+
+                        checkPrefToOpenCrossEvent(findNavController(),
+                            BarcodeScanFragmentDirections.actionToEventFragmentFromScan(eid))
+                    }
+                }
+            }
+        }
     }
 
     override fun onResume() {
         super.onResume()
 
         mBarcodeScanner.resume()
+
+        (activity as MainActivity).supportActionBar?.show()
     }
 
     override fun onPause() {

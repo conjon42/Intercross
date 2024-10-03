@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_nav_home"
+        android:icon="@drawable/ic_home"
+        android:title="@string/home" />
+    <item
+        android:id="@+id/action_nav_cross_count"
+        android:icon="@drawable/ic_nv_summary"
+        android:title="@string/crosses"/>
+    <item
+        android:id="@+id/action_nav_parents"
+        android:icon="@drawable/ic_nv_parents"
+        android:title="@string/parents" />
+    <item
+        android:id="@+id/action_nav_export"
+        android:icon="@drawable/ic_nv_export"
+        android:title="@string/export" />
+    <item
+        android:id="@+id/action_nav_settings"
+        android:icon="@drawable/ic_nv_settings"
+        android:title="@string/settings" />
+</menu>

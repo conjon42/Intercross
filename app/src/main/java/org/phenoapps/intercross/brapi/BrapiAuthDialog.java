@@ -45,22 +45,23 @@ public class BrapiAuthDialog extends Dialog implements View.OnClickListener {
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.brapi_auth_cancel_btn:
-                // Cancel
-                dismiss();
-                break;
-
-            case R.id.brapi_auth_btn:
-
-                // Start our brapi authentication process.
-                dismiss();
-                // Show our error message if it exists
-                BrapiControllerResponse brapiControllerResponse = BrAPIService.authorizeBrAPI(preferences, context, target);
-                processBrapiControllerMessage(brapiControllerResponse);
-                break;
-
-        }
+        //TODO
+//        switch (view.getId()) {
+//            case R.id.brapi_auth_cancel_btn:
+//                // Cancel
+//                dismiss();
+//                break;
+//
+//            case R.id.brapi_auth_btn:
+//
+//                // Start our brapi authentication process.
+//                dismiss();
+//                // Show our error message if it exists
+//                BrapiControllerResponse brapiControllerResponse = BrAPIService.authorizeBrAPI(preferences, context, target);
+//                processBrapiControllerMessage(brapiControllerResponse);
+//                break;
+//
+//        }
     }
 
     private void processBrapiControllerMessage(BrapiControllerResponse brapiControllerResponse) {

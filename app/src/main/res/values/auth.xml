@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="brapi_auth_account_type">org.phenoapps</string>
+    <string name="brapi_auth_token_type">brapi</string>
+    <string name="brapi_account_label">BrAPI</string>
+</resources>

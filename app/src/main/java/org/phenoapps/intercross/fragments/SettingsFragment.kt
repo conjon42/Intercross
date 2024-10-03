@@ -4,76 +4,122 @@ import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.EditText
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceScreen
 import androidx.preference.EditTextPreference
-import androidx.preference.ListPreference
 import androidx.preference.Preference
-import androidx.preference.PreferenceFragmentCompat
 import org.phenoapps.intercross.GeneralKeys
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.data.IntercrossDatabase
-import org.phenoapps.intercross.data.SettingsRepository
-import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
-import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
+import org.phenoapps.intercross.fragments.preferences.ToolbarPreferenceFragment
+import org.phenoapps.intercross.util.KeyUtil
 
+import androidx.appcompat.app.AppCompatActivity
 
-class SettingsFragment : PreferenceFragmentCompat() {
+import com.bytehamster.lib.preferencesearch.SearchPreference
+import org.phenoapps.intercross.activities.MainActivity
 
-    private val settingsModel: SettingsViewModel by viewModels {
-        SettingsViewModelFactory(SettingsRepository
-                .getInstance(IntercrossDatabase.getInstance(requireContext()).settingsDao()))
+/**
+ * Root preferences fragment that populates the setting categories.
+ * Each category can be clicked to navigate to their corresponding fragment.
+ */
+class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.root_preferences) {
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let { args ->
+            if (args.getBoolean(mKeyUtil.argProfAskPerson))
+                findNavController().navigate(SettingsFragmentDirections
+                    .actionFromSettingsToProfileFragment())
+        }
+    }
 
-        settingsModel.settings.observeForever { settings ->
+    override fun onResume() {
+        super.onResume()
+        (activity as MainActivity).setBackButtonToolbar()
+    }
 
-            settings?.let {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-                findPreference<Preference>("org.phenoapps.intercross.CREATE_PATTERN").apply {
+        val searchPreference = findPreference(mKeyUtil.searchPrefKey) as SearchPreference?
 
-                    this?.let {
-
-                        summary = when {
-
-                            settings.isPattern -> {
-                                "Pattern"
-                            }
-                            !settings.isUUID && !settings.isPattern -> {
-                                "None"
-                            }
-                            else -> {
-                                "UUID"
-                            }
-                        }
-                    }
-                }
+        //add all xml files to the search preference index
+        with(searchPreference?.searchConfiguration) {
+            this?.setActivity(activity as AppCompatActivity)
+            arrayOf(
+                R.xml.about_preferences, R.xml.database_preferences, R.xml.naming_preferences,
+                R.xml.preferences, R.xml.printing_preferences, R.xml.profile_preferences,
+                R.xml.workflow_preferences
+            ).forEach {
+                this?.index(it)
             }
         }
 
-        with(findPreference<Preference>("org.phenoapps.intercross.CREATE_PATTERN")){
-
-            this?.let {
-
-                setOnPreferenceClickListener {
-
-                    findNavController().navigate(SettingsFragmentDirections
-                            .actionToPatternFragment())
+        with(findPreference<PreferenceScreen>(getString(R.string.root_profile))) {
+            this?.let { it ->
+                it.setOnPreferenceClickListener {
+                    findNavController().navigate(
+                        SettingsFragmentDirections
+                            .actionFromSettingsToProfileFragment()
+                    )
 
                     true
                 }
             }
         }
 
-        with(findPreference<Preference>("org.phenoapps.intercross.ZPL_IMPORT")){
-            this?.let {
-                setOnPreferenceClickListener {
-                    findNavController().navigate(SettingsFragmentDirections.actionToImportZplFragment())
+        with(findPreference<PreferenceScreen>(getString(R.string.root_naming))) {
+            this?.let { it ->
+                it.setOnPreferenceClickListener {
+                    findNavController().navigate(
+                        SettingsFragmentDirections
+                            .actionFromSettingsToNamingFragment()
+                    )
+
+                    true
+                }
+            }
+        }
+
+        with(findPreference<PreferenceScreen>(getString(R.string.root_workflow))) {
+            this?.let { it ->
+                it.setOnPreferenceClickListener {
+                    findNavController().navigate(
+                        SettingsFragmentDirections
+                            .actionFromSettingsToWorkflowFragment()
+                    )
+
+                    true
+                }
+            }
+        }
+
+        with(findPreference<PreferenceScreen>(getString(R.string.root_printing))) {
+            this?.let { it ->
+                it.setOnPreferenceClickListener {
+                    findNavController().navigate(
+                        SettingsFragmentDirections
+                            .actionFromSettingsToPrintingFragment()
+                    )
+
+                    true
+                }
+            }
+        }
+
+        with(findPreference<PreferenceScreen>(getString(R.string.root_database))) {
+            this?.let { it ->
+                it.setOnPreferenceClickListener {
+                    findNavController().navigate(
+                        SettingsFragmentDirections
+                            .actionFromSettingsToDatabaseFragment()
+                    )
+
                     true
                 }
             }
@@ -83,54 +129,57 @@ class SettingsFragment : PreferenceFragmentCompat() {
             this?.let {
                 setOnPreferenceChangeListener { _, newValue ->
                     context.getSharedPreferences("Settings", MODE_PRIVATE)
-                            .edit().putString(GeneralKeys.BRAPI_BASE_URL, newValue.toString()).apply()
+                        .edit()
+                        .putString(GeneralKeys.BRAPI_BASE_URL, newValue.toString())
+                        .apply()
                     true
                 }
             }
         }
-        val printSetup = findPreference<Preference>("org.phenoapps.intercross.PRINTER_SETUP")
+
+        val printSetup =
+            findPreference<Preference>("org.phenoapps.intercross.PRINTER_SETUP")
         printSetup?.setOnPreferenceClickListener {
             val intent = activity?.packageManager
-                    ?.getLaunchIntentForPackage("com.zebra.printersetup")
+                ?.getLaunchIntentForPackage("com.zebra.printersetup")
             when (intent) {
                 null -> {
                     val i = Intent(Intent.ACTION_VIEW)
                     i.data = Uri.parse(
-                            "https://play.google.com/store/apps/details?id=com.zebra.printersetup")
+                        "https://play.google.com/store/apps/details?id=com.zebra.printersetup"
+                    )
                     startActivity(i)
                 }
+
                 else -> {
                     startActivity(intent)
                 }
             }
             true
         }
-        return super.onCreateView(inflater, container, savedInstanceState)
-    }
 
-    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        setPreferencesFromResource(R.xml.preferences, rootKey)
+        with(findPreference<PreferenceScreen>(getString(R.string.root_brapi))) {
+            this?.let { it ->
+                it.setOnPreferenceClickListener {
+                    //TODO
+//                    findNavController().navigate(SettingsFragmentDirections
+//                        .actionFromSettingsToBrapiFragment())
 
-        val askPerson = (arguments ?: Bundle())
-                .getString("org.phenoapps.intercross.ASK_PERSON", "false")
-
-        if (askPerson == "true") {
-            preferenceManager.showDialog(findPreference<EditTextPreference>("org.phenoapps.intercross.PERSON"))
+                    true
+                }
+            }
         }
 
-//        preferenceManager.sharedPreferences.registerOnSharedPreferenceChangeListener { _, key ->
-//            val pref = findPreference<Preference>(key)
-//
-//            if (pref is ListPreference) {
-//                pref.setSummary(pref.entry)
-//            }
-//        }
-    }
+        with(findPreference<PreferenceScreen>(getString(R.string.root_about))) {
+            this?.let { it ->
+                it.setOnPreferenceClickListener {
+                    findNavController().navigate(SettingsFragmentDirections.actionToAbout())
 
-    companion object {
-        const val AUDIO_ENABLED = "org.phenoapps.intercross.AUDIO_ENABLED"
-        const val BLANK = "org.phenoapps.intercross.BLANK_MALE_ID"
-        const val ORDER = "org.phenoapps.intercross.CROSS_ORDER"
-        const val COLLECT_INFO = "org.phenoapps.intercross.COLLECT_INFO"
+                    true
+                }
+            }
+
+            true
+        }
     }
 }

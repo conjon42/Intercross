@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import android.preference.PreferenceManager
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import androidx.appcompat.app.AlertDialog
@@ -148,14 +147,16 @@ class BluetoothUtil {
 
     fun print(ctx: Context, events: Array<Event>) {
 
+        val pref = androidx.preference.PreferenceManager.getDefaultSharedPreferences(ctx)
+        val keyUtil = KeyUtil(ctx)
+
         choose(ctx) {
 
-            val importedZpl = PreferenceManager.getDefaultSharedPreferences(ctx).getString("ZPL_CODE", "") ?: ""
+            val importedZpl = pref.getString(keyUtil.argPrintZplCode, "") ?: ""
 
             if (importedZpl.isNotBlank()) {
 
                 PrintThread(ctx, importedZpl, mBtName).printEvents(events)
-
 
             } else {
 
@@ -167,10 +168,22 @@ class BluetoothUtil {
 
     fun print(ctx: Context, parents: Array<Parent>) {
 
+        val pref = androidx.preference.PreferenceManager.getDefaultSharedPreferences(ctx)
+        val keyUtil = KeyUtil(ctx)
+
         choose(ctx) {
 
-            PrintThread(ctx, template, mBtName).printParents(parents)
+            val importedZpl = pref.getString(keyUtil.argPrintZplCode, "") ?: ""
 
+            if (importedZpl.isNotBlank()) {
+
+                PrintThread(ctx, importedZpl, mBtName).printParents(parents)
+
+            } else {
+
+                PrintThread(ctx, template, mBtName).printParents(parents)
+
+            }
         }
     }
 }
