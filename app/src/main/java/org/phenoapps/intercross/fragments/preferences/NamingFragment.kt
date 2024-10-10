@@ -68,7 +68,7 @@ class NamingFragment : ToolbarPreferenceFragment(R.xml.naming_preferences, R.str
         }
     }
 
-    override fun onResume() {
+      override fun onResume() {
         super.onResume()
         (activity as MainActivity).setBackButtonToolbar()
         (activity as AppCompatActivity).supportActionBar?.show()

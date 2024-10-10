@@ -428,5 +428,14 @@
     <string name="error_importing_file">There was an error importing the file.</string>
     <string name="error_no_bluetooth_permission">Bluetooth permission is required to print.</string>
     <string name="search_fragment_label">Search</string>
+    <string name="profile_summary">Profile settings summary</string>
+    <string name="naming_summary">Naming settings summary</string>
+    <string name="workflow_summary">Workflow settings summary</string>
+    <string name="printing_summary">Printing settings summary</string>
+    <string name="database_summary">Database settings summary</string>
+    <string name="brapi_summary">BrAPI settings summary</string>
+    <string name="about_summary">About summary</string>
+
+
 
 </resources>

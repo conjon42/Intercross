@@ -10,11 +10,13 @@ import androidx.preference.PreferenceScreen
 import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import org.phenoapps.intercross.GeneralKeys
-import org.phenoapps.intercross.R
+
 import org.phenoapps.intercross.fragments.preferences.ToolbarPreferenceFragment
 import org.phenoapps.intercross.util.KeyUtil
-
+import org.phenoapps.intercross.R
 import androidx.appcompat.app.AppCompatActivity
+
+
 
 import com.bytehamster.lib.preferencesearch.SearchPreference
 import org.phenoapps.intercross.activities.MainActivity
@@ -59,6 +61,13 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.r
                 this?.index(it)
             }
         }
+        addSummaryToPreference(R.string.root_profile, R.string.profile_summary)
+        addSummaryToPreference(R.string.root_naming, R.string.naming_summary)
+        addSummaryToPreference(R.string.root_workflow, R.string.workflow_summary)
+        addSummaryToPreference(R.string.root_printing, R.string.printing_summary)
+        addSummaryToPreference(R.string.root_database, R.string.database_summary)
+        addSummaryToPreference(R.string.root_brapi, R.string.brapi_summary)
+        addSummaryToPreference(R.string.root_about, R.string.about_summary)
 
         with(findPreference<PreferenceScreen>(getString(R.string.root_profile))) {
             this?.let { it ->
@@ -180,6 +189,11 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.r
             }
 
             true
+        }
+    }
+    private fun addSummaryToPreference(preferenceKey: Int, summaryKey: Int) {
+        findPreference<PreferenceScreen>(getString(preferenceKey))?.apply {
+            summary = getString(summaryKey)
         }
     }
 }

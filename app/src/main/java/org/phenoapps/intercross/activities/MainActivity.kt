@@ -330,18 +330,36 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
             R.layout.activity_main
         )
 
-        supportActionBar.apply {
-            title = ""
-            this?.let {
-                it.themedContext
-                setDisplayHomeAsUpEnabled(true)
-                setHomeButtonEnabled(true)
+        setSupportActionBar(mBinding.mainTb)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowHomeEnabled(true)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+
+        mNavController = Navigation.findNavController(this@MainActivity, R.id.nav_fragment)
+
+        // Set up a listener for destination changes
+        mNavController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.events_fragment -> {
+                    supportActionBar?.setDisplayHomeAsUpEnabled(false)
+                    supportActionBar?.title = ""
+                }
+                R.id.search_fragment -> {
+                    supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                    supportActionBar?.title = "Search"
+                }
+                R.id.cross_count_fragment, R.id.wishlist_fragment, R.id.parents_fragment, R.id.crossblock_fragment -> {
+                    supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                    supportActionBar?.title = destination.label
+                }
+                else -> {
+                    supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                    supportActionBar?.title = destination.label
+                }
             }
         }
 
-        mSnackbar = SnackbarQueue()
 
-        mNavController = Navigation.findNavController(this@MainActivity, R.id.nav_fragment)
 
         mDatabase = IntercrossDatabase.getInstance(this)
 
@@ -575,12 +593,14 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        return when (item.itemId) {
             android.R.id.home -> {
                 onBackPressed()
+                true
             }
+            else -> super.onOptionsItemSelected(item)
         }
-        return super.onOptionsItemSelected(item)
+
     }
 
 
