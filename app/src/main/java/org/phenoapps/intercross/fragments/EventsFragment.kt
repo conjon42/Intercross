@@ -1,8 +1,10 @@
 package org.phenoapps.intercross.fragments
 
 import android.app.Activity
+import android.widget.Toast
 import android.content.Context
 import android.os.Handler
+import android.widget.EditText
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.TypedValue
@@ -534,8 +536,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             if (hasFocus) mFocused = v
 
-            if (hasFocus && (mPref.getString(mKeyUtil.profPersonKey, "") ?: "").isBlank()) {
-                askUserForPerson()
+            if (hasFocus && (mPref.getString(mKeyUtil.profPersonKey, "") ?: "").isBlank() ||
+                (mPref.getString(mKeyUtil.profExpKey, "") ?: "").isBlank()) {
+                askUserForPersonAndExperiment()
             }
 
         }
@@ -640,8 +643,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         button.setOnClickListener {
 
-            if (mPref.getString(mKeyUtil.profPersonKey, "").isNullOrBlank()) {
-                askUserForPerson()
+            if (mPref.getString(mKeyUtil.profPersonKey, "").isNullOrBlank() ||
+                mPref.getString(mKeyUtil.profExpKey, "").isNullOrBlank()) {
+                askUserForPersonAndExperiment()
             } else {
 
                 findNavController().navigate(EventsFragmentDirections.actionToBarcodeScanFragment())
@@ -651,8 +655,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         button.setOnLongClickListener {
 
-            if (mPref.getString(mKeyUtil.profPersonKey, "").isNullOrBlank()) {
-                askUserForPerson()
+            if (mPref.getString(mKeyUtil.profPersonKey, "").isNullOrBlank() ||
+                mPref.getString(mKeyUtil.profExpKey, "").isNullOrBlank()) {
+                askUserForPersonAndExperiment()
             } else {
 
                 findNavController().navigate(EventsFragmentDirections.actionToBarcodeScanFragment(2))
@@ -827,28 +832,27 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         }
     }
 
-    private fun askUserForPerson() {
+    private fun askUserForPersonAndExperiment() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_person_experiment, null)
+        val personEditText = dialogView.findViewById<EditText>(R.id.personEditText)
+        val experimentEditText = dialogView.findViewById<EditText>(R.id.experimentEditText)
 
-        mBinding.constraintLayoutParent.requestFocus()
-
-        val cancel = getString(android.R.string.cancel)
-        val personMustBeSet = getString(R.string.person_must_be_set)
-        val setPerson = getString(R.string.set_person)
-
-        val builder = AlertDialog.Builder(requireContext()).apply {
-
-            setNegativeButton(cancel) { _, _ ->
-                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, personMustBeSet))
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.enter_person_and_experiment)
+            .setView(dialogView)
+            .setPositiveButton(R.string.ok) { _, _ ->
+                val person = personEditText.text.toString()
+                val experiment = experimentEditText.text.toString()
+                if (person.isNotBlank() && experiment.isNotBlank()) {
+                    mPref.edit().putString(mKeyUtil.profPersonKey, person).apply()
+                    mPref.edit().putString(mKeyUtil.profExpKey, experiment).apply()
+                    Toast.makeText(context, R.string.person_and_experiment_saved, Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, R.string.person_and_experiment_required, Toast.LENGTH_SHORT).show()
+                }
             }
-
-            setPositiveButton(setPerson) { _, _ ->
-                findNavController().navigate(EventsFragmentDirections
-                    .actionFromEventsToPreferences(true))
-            }
-        }
-
-        builder.setTitle(personMustBeSet)
-        builder.show()
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
 }

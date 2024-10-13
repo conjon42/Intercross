@@ -265,6 +265,7 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     private lateinit var mNavController: NavController
 
+
     private fun writeStream(file: File, resourceId: Int) {
 
         if (!file.isFile) {
@@ -619,5 +620,18 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
                 else -> throw RuntimeException() //todo R.id.brapi_preference_fragment
             }
         )
+    }
+
+    private fun savePersonAndExperiment(person: String, experiment: String) {
+        val editor = mPref.edit()
+        editor.putString(mKeyUtil.profPersonKey, person)
+        editor.putString(mKeyUtil.profExpKey, experiment)
+        editor.apply()
+    }
+
+    private fun loadPersonAndExperiment(): Pair<String, String> {
+        val person = mPref.getString(mKeyUtil.profPersonKey, "") ?: ""
+        val experiment = mPref.getString(mKeyUtil.profExpKey, "") ?: ""
+        return Pair(person, experiment)
     }
 }

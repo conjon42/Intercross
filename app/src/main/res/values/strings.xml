@@ -259,6 +259,7 @@
     <string name="preferences_database_fragment_label">Database</string>
     <string name="preferences_brapi_fragment_label">Brapi</string>
     <string name="preferences_about_fragment_label">About</string>
+    <string name="brapi_pref_add_account_title">Add Android Account</string>
     <string name="brapi_auth_account_created">Account created.</string>
     <string name="brapi_auth_account_created_failed">Account creation failed.</string>
     <string name="dialog_account_creator_username_hint">New user name</string>
@@ -266,7 +267,6 @@
     <string name="dialog_brapi_account_creator_title">Account Creator</string>
     <string name="dialog_account_creator_username_failed">User name must not be blank.</string>
     <string name="dialog_account_creator_summary">To save your account locally, please enter user credentials.</string>
-    <string name="brapi_pref_add_account_title">Add Android Account</string>
     <string name="brapi_auth_fragment_label">BrAPI Authentication</string>
     <string name="frag_wf_choose_female_summary">Please start by choosing a female parent.</string>
     <string name="frag_wf_summary">Summary</string>
@@ -436,6 +436,11 @@
     <string name="brapi_summary">BrAPI settings summary</string>
     <string name="about_summary">About summary</string>
 
+    <string name="enter_person_and_experiment">Enter Person and Experiment</string>
+    <string name="enter_person_name">Enter person name</string>
+    <string name="enter_experiment_name">Enter experiment name</string>
+    <string name="person_and_experiment_required">Both person and experiment are required</string>
 
-
+    <string name="ok">OK</string>
+    <string name="person_and_experiment_saved">Person and experiment names saved</string>
 </resources>

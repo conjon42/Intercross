@@ -8,9 +8,5 @@
             android:title="Person"
             android:icon="@drawable/ic_setting_person"
             android:key="@string/key_pref_profile_person" />
-        <EditTextPreference
-            android:icon="@drawable/ic_setting_experiment"
-            android:key="@string/key_pref_profile_experiment"
-            android:title="Experiment" />
     </PreferenceCategory>
 </PreferenceScreen>
