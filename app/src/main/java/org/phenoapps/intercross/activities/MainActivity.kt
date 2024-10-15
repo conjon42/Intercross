@@ -560,32 +560,15 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
     }
 
     override fun onBackPressed() {
-
         mNavController.currentDestination?.let { it ->
-
             when (it.id) {
-
-                R.id.pattern_fragment -> {
-
-                    supportFragmentManager.primaryNavigationFragment?.let {
-                        (it.childFragmentManager.fragments[0] as PatternFragment).onBackButtonPressed()
-                        //(supportFragmentManager.primaryNavigationFragment as PatternFragment).onBackButtonPressed()
-                    }
-                }
-                //go back to the last fragment instead of opening the navigation drawer
                 R.id.events_fragment -> {
-
                     if (doubleBackToExitPressedOnce) {
-
                         super.onBackPressed()
-
                         return
                     }
-
                     this.doubleBackToExitPressedOnce = true
-
                     Toast.makeText(this, "Press back again to exit", Toast.LENGTH_SHORT).show()
-
                     Handler().postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
                 }
                 else -> super.onBackPressed()
