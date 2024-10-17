@@ -24,7 +24,7 @@
         app:iconSpaceReserved="false"/>
     <PreferenceScreen android:key="@string/root_database"
         android:title="Database"
-        android:icon="@drawable/ic_storage_black_24dp"
+        android:icon="@drawable/ic_database"
         app:iconSpaceReserved="false"/>
     <PreferenceScreen android:key="@string/root_brapi"
         android:title="BrAPI"

@@ -5,11 +5,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto" >
     <PreferenceCategory app:iconSpaceReserved="false">
         <Preference
-            android:icon="@drawable/ic_nv_import"
+            android:icon="@drawable/ic_database_import"
             android:key="@string/key_pref_db_import"
             android:title="Import Database" />
         <Preference
-            android:icon="@drawable/ic_nv_export"
+            android:icon="@drawable/ic_database_export"
             android:key="@string/key_pref_db_export"
             android:title="Export Database">
         </Preference>
