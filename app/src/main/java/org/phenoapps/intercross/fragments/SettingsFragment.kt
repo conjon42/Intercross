@@ -15,6 +15,7 @@ import org.phenoapps.intercross.fragments.preferences.ToolbarPreferenceFragment
 import org.phenoapps.intercross.util.KeyUtil
 import org.phenoapps.intercross.R
 import androidx.appcompat.app.AppCompatActivity
+import android.util.Log
 
 
 
@@ -62,8 +63,7 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.r
             }
         }
         addSummaryToPreference(R.string.root_profile, R.string.profile_summary)
-        addSummaryToPreference(R.string.root_naming, R.string.naming_summary)
-        addSummaryToPreference(R.string.root_workflow, R.string.workflow_summary)
+        addSummaryToPreference(R.string.root_naming_workflow, R.string.naming_workflow_summary)
         addSummaryToPreference(R.string.root_printing, R.string.printing_summary)
         addSummaryToPreference(R.string.root_database, R.string.database_summary)
         addSummaryToPreference(R.string.root_brapi, R.string.brapi_summary)
@@ -76,33 +76,20 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.r
                         SettingsFragmentDirections
                             .actionFromSettingsToProfileFragment()
                     )
-
                     true
                 }
             }
         }
 
-        with(findPreference<PreferenceScreen>(getString(R.string.root_naming))) {
+        with(findPreference<PreferenceScreen>(getString(R.string.root_naming_workflow))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
-                    findNavController().navigate(
-                        SettingsFragmentDirections
-                            .actionFromSettingsToNamingFragment()
-                    )
-
-                    true
-                }
-            }
-        }
-
-        with(findPreference<PreferenceScreen>(getString(R.string.root_workflow))) {
-            this?.let { it ->
-                it.setOnPreferenceClickListener {
-                    findNavController().navigate(
-                        SettingsFragmentDirections
-                            .actionFromSettingsToWorkflowFragment()
-                    )
-
+                    Log.d("SettingsFragment", "Naming and Workflow preference clicked")
+                    try {
+                        findNavController().navigate(R.id.action_from_settings_to_naming_workflow_fragment)
+                    } catch (e: Exception) {
+                        Log.e("SettingsFragment", "Error navigating to Naming and Workflow: ${e.message}", e)
+                    }
                     true
                 }
             }
@@ -115,20 +102,6 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.r
                         SettingsFragmentDirections
                             .actionFromSettingsToPrintingFragment()
                     )
-
-                    true
-                }
-            }
-        }
-
-        with(findPreference<PreferenceScreen>(getString(R.string.root_database))) {
-            this?.let { it ->
-                it.setOnPreferenceClickListener {
-                    findNavController().navigate(
-                        SettingsFragmentDirections
-                            .actionFromSettingsToDatabaseFragment()
-                    )
-
                     true
                 }
             }
@@ -189,6 +162,18 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.r
             }
 
             true
+        }
+
+        with(findPreference<PreferenceScreen>(getString(R.string.root_database))) {
+            this?.let { it ->
+                it.setOnPreferenceClickListener {
+                    findNavController().navigate(
+                        SettingsFragmentDirections
+                            .actionFromSettingsToDatabaseFragment()
+                    )
+                    true
+                }
+            }
         }
     }
     private fun addSummaryToPreference(preferenceKey: Int, summaryKey: Int) {

@@ -4,6 +4,7 @@ import android.content.Context
 import org.phenoapps.intercross.R
 import kotlin.properties.ReadOnlyProperty
 
+
 /**
  * Utility class for easily accessing preference keys.
  * Converts keys.xml into string fields to be accessed within a context.
@@ -30,6 +31,8 @@ class KeyUtil(private val ctx: Context?) {
     val profileRoot by key(R.string.root_profile)
     val namingRoot by key(R.string.root_naming)
     val workflowRoot by key(R.string.root_workflow)
+    val namingWorkflowRoot by key(R.string.root_naming_workflow)
+    val namingWorkflowKeySet = setOf(namingRoot, namingWorkflowRoot)
     val printingRoot by key(R.string.root_printing)
     val databaseRoot by key(R.string.root_database)
     val aboutRoot by key(R.string.root_about)

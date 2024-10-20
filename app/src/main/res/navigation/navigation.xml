@@ -61,6 +61,10 @@
             android:id="@+id/action_to_brapi_export"
             app:destination="@+id/brapi_export_fragment"
             app:popUpTo="@id/events_fragment"/>
+        <action
+            android:id="@+id/action_from_settings_to_naming_workflow_fragment"
+            app:destination="@id/naming_workflow_preference_fragment"
+            app:popUpTo="@id/events_fragment" />
     </fragment>
 
     <fragment
@@ -368,4 +372,35 @@
     <action android:id="@+id/global_action_to_brapi_export"
         app:destination="@+id/brapi_export_fragment"
         app:popUpTo="@id/events_fragment"/>
+
+    <fragment
+        android:id="@+id/naming_workflow_preference_fragment"
+        android:name="org.phenoapps.intercross.fragments.preferences.NamingWorkflowFragment"
+        android:label="Naming and Workflow">
+        <action
+            android:id="@+id/action_namingWorkflowFragment_to_patternFragment"
+            app:destination="@id/pattern_fragment" />
+        <action
+            android:id="@+id/action_namingWorkflowFragment_to_metadataList"
+            app:destination="@id/metadata_list_fragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/metadata_list_fragment"
+        android:name="org.phenoapps.intercross.fragments.metadata.MetadataListFragment"
+        android:label="Metadata List">
+        <action
+            android:id="@+id/action_from_metadata_list_to_form"
+            app:destination="@id/metadata_form_fragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/metadata_form_fragment"
+        android:name="org.phenoapps.intercross.fragments.metadata.MetadataFormFragment"
+        android:label="Metadata Form">
+        <argument
+            android:name="property"
+            app:argType="string"
+            android:defaultValue="" />
+    </fragment>
 </navigation>

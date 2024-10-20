@@ -595,8 +595,7 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         mNavController.navigate(
             when (result.key) {
                 in mKeyUtil.profileKeySet -> R.id.profile_preference_fragment
-                in mKeyUtil.nameKeySet -> R.id.naming_preference_fragment
-                in mKeyUtil.workKeySet -> R.id.workflow_preference_fragment
+                in mKeyUtil.namingWorkflowKeySet -> R.id.naming_workflow_preference_fragment
                 in mKeyUtil.printKeySet -> R.id.printing_preference_fragment
                 in mKeyUtil.dbKeySet -> R.id.database_preference_fragment
                 in mKeyUtil.aboutKeySet -> R.id.about_preference_fragment

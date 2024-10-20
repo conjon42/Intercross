@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    android:key="@string/root_naming_workflow"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory app:iconSpaceReserved="false">
+        <!-- Naming Preferences -->
+        <SwitchPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_setting_male_blank"
+            android:key="@string/key_pref_naming_blank_male"
+            android:title="Allow blank male ID" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_setting_cross_order"
+            android:key="@string/key_pref_naming_cross_order"
+            android:summary=""
+            android:title="Scan male first" />
+        <Preference
+            android:icon="@drawable/ic_setting_pattern_create"
+            android:key="@string/key_pref_naming_create_pattern"
+            android:title="Create cross ID pattern"
+            android:summary="UUID"/>
+
+        <!-- Workflow Preferences -->
+        <SwitchPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_setting_additional_info"
+            android:key="@string/key_pref_work_collect"
+            android:title="Collect additional information"/>
+        <Preference
+            android:icon="@drawable/ic_note_add_black_24dp"
+            android:key="@string/key_pref_work_meta"
+            android:title="Create Metadata"/>
+        <Preference
+            android:icon="@drawable/ic_update_black_24dp"
+            android:key="@string/key_pref_work_meta_defaults"
+            android:title="Metadata Manager"/>
+        <SwitchPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_setting_sound"
+            android:key="@string/key_pref_work_audio"
+            android:title="Audio notifications"/>
+        <SwitchPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_book_open"
+            android:key="@string/key_pref_work_open_cross"
+            android:title="Open Cross After Creating"/>
+        <SwitchPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_receipt_long_black_24dp"
+            android:key="@string/key_pref_work_commutative"
+            android:title="Commutative Crossing"/>
+    </PreferenceCategory>
+</PreferenceScreen>

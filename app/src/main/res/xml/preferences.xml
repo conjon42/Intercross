@@ -10,13 +10,9 @@
         android:title="Profile"
         android:icon="@drawable/ic_account_circle_black_24dp"
         app:iconSpaceReserved="false"/>
-    <PreferenceScreen android:key="@string/root_naming"
-        android:title="Naming"
-        android:icon="@drawable/ic_badge_black_24dp"
-        app:iconSpaceReserved="false"/>
-    <PreferenceScreen android:key="@string/root_workflow"
-        android:title="Workflow"
-        android:icon="@drawable/ic_account_tree_black_24dp"
+    <PreferenceScreen android:key="@string/root_naming_workflow"
+        android:title="Naming and Workflow"
+        android:icon="@drawable/ic_setting_pattern_create"
         app:iconSpaceReserved="false"/>
     <PreferenceScreen android:key="@string/root_printing"
         android:title="Printing"

@@ -42,6 +42,11 @@
         <action android:id="@+id/action_to_about"
             app:destination="@id/about_fragment"
             app:launchSingleTop="true" />
+
+        <action
+            android:id="@+id/action_from_settings_to_naming_workflow_fragment"
+            app:destination="@id/naming_workflow_preference_fragment"
+            app:launchSingleTop="true"/>
     </fragment>
 
     <fragment android:id="@+id/profile_preference_fragment"
@@ -79,6 +84,18 @@
             android:id="@+id/action_to_pattern_fragment"
             app:destination="@id/pattern_fragment"
             app:launchSingleTop="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/naming_workflow_preference_fragment"
+        android:name="org.phenoapps.intercross.fragments.preferences.NamingWorkflowFragment"
+        android:label="Naming and Workflow">
+        <action
+            android:id="@+id/action_namingWorkflowFragment_to_patternFragment"
+            app:destination="@id/pattern_fragment" />
+        <action
+            android:id="@+id/action_namingWorkflowFragment_to_metadataList"
+            app:destination="@id/metadata_navigation" />
     </fragment>
 
 </navigation>

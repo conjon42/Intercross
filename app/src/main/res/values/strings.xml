@@ -431,6 +431,7 @@
     <string name="profile_summary">Profile settings summary</string>
     <string name="naming_summary">Naming settings summary</string>
     <string name="workflow_summary">Workflow settings summary</string>
+    <string name="root_naming_workflow">Naming and Workflow</string>
     <string name="printing_summary">Printing settings summary</string>
     <string name="database_summary">Database settings summary</string>
     <string name="brapi_summary">BrAPI settings summary</string>
@@ -443,4 +444,5 @@
 
     <string name="ok">OK</string>
     <string name="person_and_experiment_saved">Person and experiment names saved</string>
+    <string name="naming_workflow_summary">Summary for naming and workflow settings</string>
 </resources>
