@@ -7,6 +7,6 @@
         <Preference
             android:icon="@drawable/ic_nv_about"
             android:key="@string/key_pref_about"
-            android:title="About" />
+            android:title="@string/about_title" />
     </PreferenceCategory>
 </PreferenceScreen>

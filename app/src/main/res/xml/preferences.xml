@@ -27,7 +27,7 @@
         android:icon="@drawable/ic_brapi"
         app:iconSpaceReserved="false"/>
     <PreferenceScreen android:key="@string/root_about"
-        android:title="About"
+        android:title="@string/about_title"
         android:icon="@drawable/ic_about_info"
         app:iconSpaceReserved="false"/>
 </PreferenceScreen>

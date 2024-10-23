@@ -447,4 +447,11 @@
     <string name="naming_workflow_summary">Summary for naming and workflow settings</string>
     <string name="preferences_about_title">About</string>
     <string name="about_title_pheno_apps">PhenoApps</string>
+    <string name="check_updates_title">Check for Updates</string>
+    <string name="found_updates_title">Update Available</string>
+    <string name="no_updates_title">Up to Date</string>
+    <string name="about_manual_title">User Manual</string>
+    <string name="citation_card_title">Citation</string>
+    <string name="about_support_title">Support</string>
+    <string name="about_libraries_title">Libraries</string>
 </resources>
