@@ -22,7 +22,7 @@ class NamingFragment : ToolbarPreferenceFragment(R.xml.naming_preferences, R.str
 
     private val settingsModel: SettingsViewModel by viewModels {
         SettingsViewModelFactory(SettingsRepository
-                .getInstance(IntercrossDatabase.getInstance(requireContext()).settingsDao()))
+            .getInstance(IntercrossDatabase.getInstance(requireContext()).settingsDao()))
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -68,7 +68,7 @@ class NamingFragment : ToolbarPreferenceFragment(R.xml.naming_preferences, R.str
         }
     }
 
-      override fun onResume() {
+    override fun onResume() {
         super.onResume()
         (activity as MainActivity).setBackButtonToolbar()
         (activity as AppCompatActivity).supportActionBar?.show()

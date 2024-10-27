@@ -2,11 +2,35 @@
 <PreferenceScreen
     android:key="@string/root_profile"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto" >
-    <PreferenceCategory app:iconSpaceReserved="false">
-        <EditTextPreference
-            android:title="Person"
-            android:icon="@drawable/ic_setting_person"
-            android:key="@string/key_pref_profile_person" />
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <Preference
+        android:key="pref_profile_person"
+        android:title="@string/profile_person"
+        android:icon="@drawable/ic_setting_person" />
+
+    <Preference
+        android:key="pref_profile_reset"
+        android:title="@string/profile_reset"
+        android:icon="@drawable/ic_setting_reset" />
+
+    <PreferenceCategory
+        android:title="@string/profile_settings"
+        app:iconSpaceReserved="false">
+
+        <CheckBoxPreference
+            android:key="pref_require_user_to_collect"
+            android:title="@string/profile_require_user"
+            android:defaultValue="true"
+            android:icon="@drawable/ic_verify" />
+
+        <ListPreference
+            android:key="pref_require_user_interval"
+            android:title="@string/profile_require_interval"
+            android:entries="@array/profile_require_interval_entries"
+            android:entryValues="@array/profile_require_interval_values"
+            android:defaultValue="1"
+            android:icon="@drawable/ic_setting_time" />
+
     </PreferenceCategory>
 </PreferenceScreen>
