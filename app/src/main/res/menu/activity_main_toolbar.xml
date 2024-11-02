@@ -11,4 +11,9 @@
         android:icon="@drawable/ic_tb_white_scan_infinite"
         android:title="@string/continuous_scan_and_submit"
         app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/action_toggle_metadata"
+        android:icon="@drawable/ic_tb_white_metadata"
+        android:title="Toggle Metadata Collection"
+        app:showAsAction="ifRoom"/>
 </menu>

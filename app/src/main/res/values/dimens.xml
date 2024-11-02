@@ -14,4 +14,6 @@
     <dimen name="button_width_numeric">85dp</dimen>
     <dimen name="button_width_disease">60dp</dimen>
 
+    <dimen name="toolbar_elevation">4dp</dimen>
+
 </resources>

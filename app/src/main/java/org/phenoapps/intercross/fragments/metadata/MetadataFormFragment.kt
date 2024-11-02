@@ -18,6 +18,7 @@ import org.phenoapps.intercross.data.viewmodels.factory.MetadataViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentMetadataFormBinding
 import org.phenoapps.intercross.fragments.IntercrossBaseFragment
 import org.phenoapps.intercross.util.observeOnce
+import org.phenoapps.intercross.activities.MainActivity
 
 class MetadataFormFragment: IntercrossBaseFragment<FragmentMetadataFormBinding>(R.layout.fragment_metadata_form),
     CoroutineScope by MainScope() {
@@ -42,6 +43,7 @@ class MetadataFormFragment: IntercrossBaseFragment<FragmentMetadataFormBinding>(
     private var mMetaList: List<Meta>? = null
 
     override fun FragmentMetadataFormBinding.afterCreateView() {
+        (requireActivity() as MainActivity).setBackButtonToolbar()
 
         fragMetadataNameEt.setText(argPropertyName)
 

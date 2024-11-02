@@ -6,6 +6,8 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.view.MenuItem
+import android.view.Menu
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -265,6 +267,8 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     private lateinit var mNavController: NavController
 
+    private var isMetadataEnabled = true
+
     private fun writeStream(file: File, resourceId: Int) {
 
         if (!file.isFile) {
@@ -330,18 +334,26 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
             R.layout.activity_main
         )
 
-        supportActionBar.apply {
-            title = ""
-            this?.let {
-                it.themedContext
-                setDisplayHomeAsUpEnabled(true)
-                setHomeButtonEnabled(true)
-            }
+        mNavController = Navigation.findNavController(this@MainActivity, R.id.nav_fragment)
+
+        mBinding.mainTb.apply {
+            visibility = View.VISIBLE
+            elevation = 4f
+        }
+        setSupportActionBar(mBinding.mainTb)
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setHomeButtonEnabled(true)
+            show()
+        }
+        
+        mNavController.addOnDestinationChangedListener { _, destination, _ ->
+            supportActionBar?.show()
+            mBinding.mainTb.visibility = View.VISIBLE
+            invalidateOptionsMenu()
         }
 
         mSnackbar = SnackbarQueue()
-
-        mNavController = Navigation.findNavController(this@MainActivity, R.id.nav_fragment)
 
         mDatabase = IntercrossDatabase.getInstance(this)
 
@@ -366,14 +378,9 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         mBinding.mainTb.setNavigationOnClickListener {
             onBackPressed()
         }
-    }
 
-    fun setBackButtonToolbar() {
-        setSupportActionBar(mBinding.mainTb)
-
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setDisplayShowHomeEnabled(true)
-        supportActionBar?.hide()
+        isMetadataEnabled = PreferenceManager.getDefaultSharedPreferences(this)
+            .getBoolean("metadata_enabled", true)
     }
 
     private fun startObservers() {
@@ -575,12 +582,27 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        return when (item.itemId) {
+            R.id.action_toggle_metadata -> {
+                isMetadataEnabled = !isMetadataEnabled
+                item.setIcon(if (isMetadataEnabled) 
+                    R.drawable.ic_tb_white_metadata 
+                else 
+                    R.drawable.ic_tb_white_metadata_off
+                )
+                // Store preference
+                PreferenceManager.getDefaultSharedPreferences(this)
+                    .edit()
+                    .putBoolean("metadata_enabled", isMetadataEnabled)
+                    .apply()
+                true
+            }
             android.R.id.home -> {
                 onBackPressed()
+                true
             }
+            else -> super.onOptionsItemSelected(item)
         }
-        return super.onOptionsItemSelected(item)
     }
 
 
@@ -599,5 +621,23 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
                 else -> throw RuntimeException() //todo R.id.brapi_preference_fragment
             }
         )
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.activity_main_toolbar, menu)
+        return true
+    }
+
+    fun setBackButtonToolbar() {
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setHomeButtonEnabled(true)
+            show()
+        }
+        
+        mBinding.mainTb.apply {
+            visibility = View.VISIBLE
+            elevation = 4f
+        }
     }
 }

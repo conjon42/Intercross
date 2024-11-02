@@ -3,6 +3,7 @@ package org.phenoapps.intercross.fragments.metadata
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
@@ -21,6 +22,7 @@ import org.phenoapps.intercross.databinding.FragmentMetadataListBinding
 import org.phenoapps.intercross.fragments.IntercrossBaseFragment
 import org.phenoapps.intercross.interfaces.OnSimpleItemClicked
 import org.phenoapps.intercross.util.Dialogs
+import org.phenoapps.intercross.activities.MainActivity
 
 class MetadataListFragment: IntercrossBaseFragment<FragmentMetadataListBinding>(R.layout.fragment_metadata_list),
     OnSimpleItemClicked, CoroutineScope by MainScope() {
@@ -38,6 +40,15 @@ class MetadataListFragment: IntercrossBaseFragment<FragmentMetadataListBinding>(
     }
 
     override fun FragmentMetadataListBinding.afterCreateView() {
+        (requireActivity() as MainActivity).setBackButtonToolbar()
+
+        val isMetadataEnabled = PreferenceManager.getDefaultSharedPreferences(requireContext())
+            .getBoolean("metadata_enabled", true)
+        
+        if (!isMetadataEnabled) {
+            findNavController().popBackStack()
+            return
+        }
 
         fragMetadataListRv.layoutManager = LinearLayoutManager(context)
         fragMetadataListRv.adapter = SimpleListAdapter(this@MetadataListFragment)

@@ -13,4 +13,5 @@ data class Crosses(
     val femaleName: String?,
     val maleName: String?,
     val date: String,
+    val metadata: String? = null  // Store metadata as JSON string
 )
