@@ -184,19 +184,28 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         startObservers()
 
-        (activity as MainActivity).supportActionBar?.hide()
-
         activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
 
         setupUI()
+
+        // Show toolbar when view is created
+        (activity as? MainActivity)?.setBackButtonToolbar(true)
 
     }
 
     override fun onResume() {
         super.onResume()
 
+        // Always show toolbar in home page
+        (activity as? MainActivity)?.setBackButtonToolbar(true)
+
         mBinding.bottomNavBar.selectedItemId = R.id.action_nav_home
 
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // Don't hide toolbar when leaving - let the next fragment decide
     }
 
     private fun startObservers() {

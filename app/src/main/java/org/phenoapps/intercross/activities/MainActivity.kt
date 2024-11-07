@@ -5,7 +5,9 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.view.Menu
 import android.view.MenuItem
+import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -57,6 +59,7 @@ import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.util.KeyUtil
 import org.phenoapps.intercross.util.SnackbarQueue
 import java.io.File
+import android.text.InputType
 
 class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
@@ -324,24 +327,22 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
         super.onCreate(savedInstanceState)
 
-        setupDirs()
+        mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
-        mBinding = DataBindingUtil.setContentView(this@MainActivity,
-            R.layout.activity_main
-        )
-
-        supportActionBar.apply {
-            title = ""
-            this?.let {
-                it.themedContext
-                setDisplayHomeAsUpEnabled(true)
-                setHomeButtonEnabled(true)
-            }
+        // Set up toolbar immediately after binding
+        setSupportActionBar(mBinding.mainTb)
+        supportActionBar?.apply {
+            title = mPref.getString("current_experiment", "") ?: ""
+            setDisplayHomeAsUpEnabled(true)
+            setDisplayShowHomeEnabled(true)
+            show() // Show by default
         }
+
+        setupDirs()
 
         mSnackbar = SnackbarQueue()
 
-        mNavController = Navigation.findNavController(this@MainActivity, R.id.nav_fragment)
+        mNavController = Navigation.findNavController(this, R.id.nav_fragment)
 
         mDatabase = IntercrossDatabase.getInstance(this)
 
@@ -368,12 +369,16 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         }
     }
 
-    fun setBackButtonToolbar() {
-        setSupportActionBar(mBinding.mainTb)
-
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setDisplayShowHomeEnabled(true)
-        supportActionBar?.hide()
+    fun setBackButtonToolbar(show: Boolean = true) {
+        if (!::mBinding.isInitialized) return
+        
+        setSupportActionBar(mBinding.mainTb) // Re-set the toolbar
+        supportActionBar?.apply {
+            title = mPref.getString("current_experiment", "") ?: ""
+            setDisplayHomeAsUpEnabled(show)
+            setDisplayShowHomeEnabled(show)
+            if (show) show() else hide()
+        }
     }
 
     private fun startObservers() {
@@ -452,8 +457,8 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
     fun launchImport() {
 
         //if (mAuthPref.getString(mKeyUtil.brapiKeys.brapiTokenKey, null) != null) {
-            //show a dialog asking user to import from local file or brapi
-            //TODO
+        //show a dialog asking user to import from local file or brapi
+        //TODO
 //            AlertDialog.Builder(this)
 //                .setSingleChoiceItems(arrayOf("Local", "BrAPI"), 0) { dialog, which ->
 //                    when (which) {
@@ -475,8 +480,6 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     fun showExportDialog(onDismiss: () -> Unit) {
 
-        //TODO
-        //val tokenCheck = mAuthPref.getString(mKeyUtil.brapiKeys.brapiTokenKey, null)
         val importCheck = mPref.getString(mKeyUtil.brapiHasBeenImported, null)
         val defaultFileNamePrefix = getString(R.string.default_crosses_export_file_name)
 
@@ -511,7 +514,7 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
     fun navigateToLastSummaryFragment() {
 
         val lastSummaryFragment = PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
-                .getString("last_visited_summary", "summary")
+            .getString("last_visited_summary", "summary")
 
         /***
          * Prioritize navigation to summary fragment, otherwise pick the last chosen view using preferences
@@ -523,19 +526,19 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
                 if (mEvents.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToCrossCountFragment())
                 else if(mWishlist.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToWishlistFragment())
                 else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
-                        getString(R.string.summary_and_wishlist_empty))
+                    getString(R.string.summary_and_wishlist_empty))
             }
             "crossblock" -> {
                 if (mWishlist.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToCrossblock())
                 else if (mEvents.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToCrossCountFragment())
                 else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
-                        getString(R.string.summary_and_wishlist_empty))
+                    getString(R.string.summary_and_wishlist_empty))
             }
             "wishlist" -> {
                 if (mWishlist.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToWishlistFragment())
                 else if (mEvents.isNotEmpty()) mNavController.navigate(EventsFragmentDirections.actionToCrossCountFragment())
                 else Dialogs.notify(AlertDialog.Builder(this@MainActivity),
-                        getString(R.string.summary_and_wishlist_empty))
+                    getString(R.string.summary_and_wishlist_empty))
             }
         }
     }
@@ -575,14 +578,44 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        return when (item.itemId) {
+            R.id.action_experiment -> {
+                showExperimentDialog()
+                true
+            }
             android.R.id.home -> {
                 onBackPressed()
+                true
             }
+            else -> super.onOptionsItemSelected(item)
         }
-        return super.onOptionsItemSelected(item)
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.toolbar_menu, menu)
+        return true
+    }
+
+    private fun showExperimentDialog() {
+        val currentExperiment = mPref.getString("current_experiment", "") ?: ""
+        
+        val input = EditText(this).apply {
+            setText(currentExperiment)
+            inputType = InputType.TYPE_CLASS_TEXT
+            setSingleLine()
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.current_experiment)
+            .setView(input)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                val experimentName = input.text.toString()
+                mPref.edit().putString("current_experiment", experimentName).apply()
+                supportActionBar?.title = experimentName
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
 
     override fun onSearchResultClicked(result: SearchPreferenceResult) {
 

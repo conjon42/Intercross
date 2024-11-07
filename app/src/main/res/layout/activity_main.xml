@@ -8,17 +8,13 @@
         android:layout_height="match_parent">
 
         <androidx.appcompat.widget.Toolbar
-            android:visibility="gone"
             android:id="@+id/main_tb"
-            android:layout_height="?attr/actionBarSize"
             android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            android:gravity="center_vertical|start"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+            android:elevation="4dp"
+            android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
         <fragment
             android:layout_width="match_parent"
