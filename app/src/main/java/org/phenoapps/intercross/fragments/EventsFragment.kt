@@ -421,7 +421,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                 R.id.action_nav_settings -> {
 
-                    findNavController().navigate(R.id.global_action_to_settings_fragment)
+                    findNavController().navigate(R.id.global_action_to_preferences_fragment)
                 }
                 R.id.action_nav_parents -> {
 

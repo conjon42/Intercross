@@ -1,4 +1,4 @@
-package org.phenoapps.intercross.fragments
+package org.phenoapps.intercross.fragments.preferences
 
 import android.content.Context
 import android.content.Intent

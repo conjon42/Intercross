@@ -428,14 +428,28 @@
     <string name="error_importing_file">There was an error importing the file.</string>
     <string name="error_no_bluetooth_permission">Bluetooth permission is required to print.</string>
     <string name="search_fragment_label">Search</string>
-    <string name="profile_summary">Profile settings summary</string>
-    <string name="naming_summary">Naming settings summary</string>
-    <string name="workflow_summary">Workflow settings summary</string>
-    <string name="root_naming_workflow">Naming and Workflow</string>
-    <string name="printing_summary">Printing settings summary</string>
-    <string name="database_summary">Database settings summary</string>
-    <string name="brapi_summary">BrAPI settings summary</string>
-    <string name="about_summary">About summary</string>
+
+    <!-- PREFERENCES -->
+    <string name="prefs_profile_title">Profile</string>
+    <string name="prefs_behavior_title">Behavior</string>
+    <string name="prefs_printing_title">Printing</string>
+    <string name="prefs_database_title">Database</string>
+    <string name="prefs_brapi_title">BrAPI</string>
+    <string name="prefs_about_title">About</string>
+
+
+    <!-- Behavior Preferences: Naming and Workflow preferences -->
+    <string name="prefs_behavior_naming_category">Naming</string>
+    <string name="prefs_behavior_allow_blank_male">Allow blank male ID</string>
+    <string name="prefs_behavior_scan_male_first">Scan male first</string>
+    <string name="prefs_behavior_create_cross_id_pattern_title">Create cross ID pattern</string>
+    <string name="prefs_behavior_create_cross_id_pattern_summary">UUID</string>
+
+    <string name="prefs_behavior_workflow_category">Workflow</string>
+    <string name="prefs_behavior_collect_additional_info">Collect additional information</string>
+    <string name="prefs_behavior_audio_notifications">Audio notifications</string>
+    <string name="prefs_behavior_open_cross">Open Cross After Creating</string>
+    <string name="prefs_behavior_commutative_crossing">"Commutative Crossing</string>
 
     <string name="enter_person_and_experiment">Enter Person and Experiment</string>
     <string name="enter_person_name">Enter person name</string>

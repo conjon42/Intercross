@@ -1,9 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
-    android:key="@string/root_workflow"
+    android:key="@string/root_behavior"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto" >
-    <PreferenceCategory app:iconSpaceReserved="false">
+
+    <PreferenceCategory
+        android:key="category_collection_unique"
+        android:title="@string/prefs_behavior_naming_category"
+        app:allowDividerAbove="false"
+        app:iconSpaceReserved="false">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_setting_male_blank"
+            android:key="@string/key_pref_naming_blank_male"
+            android:title="@string/prefs_behavior_allow_blank_male" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_setting_cross_order"
+            android:key="@string/key_pref_naming_cross_order"
+            android:summary=""
+            android:title="@string/prefs_behavior_scan_male_first" />
+        <Preference
+            android:icon="@drawable/ic_setting_pattern_create"
+            android:key="@string/key_pref_naming_create_pattern"
+            android:title="@string/prefs_behavior_create_cross_id_pattern_title"
+            android:summary="@string/prefs_behavior_create_cross_id_pattern_summary"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="category_collection_unique"
+        android:title="@string/prefs_behavior_workflow_category"
+        app:allowDividerAbove="false"
+        app:iconSpaceReserved="false">
         <SwitchPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_setting_additional_info"

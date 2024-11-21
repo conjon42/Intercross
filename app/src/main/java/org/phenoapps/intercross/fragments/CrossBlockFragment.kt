@@ -232,7 +232,7 @@ class CrossBlockFragment : IntercrossBaseFragment<FragmentCrossBlockBinding>(R.l
                 }
                 R.id.action_nav_settings -> {
 
-                    findNavController().navigate(CrossBlockFragmentDirections.globalActionToSettingsFragment())
+                    findNavController().navigate(CrossBlockFragmentDirections.globalActionToPreferencesFragment())
                 }
                 R.id.action_nav_parents -> {
 

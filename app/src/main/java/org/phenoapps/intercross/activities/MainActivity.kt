@@ -50,7 +50,6 @@ import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.ActivityMainBinding
 import org.phenoapps.intercross.fragments.EventsFragmentDirections
-import org.phenoapps.intercross.fragments.PatternFragment
 import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.FileUtil
@@ -595,7 +594,7 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         mNavController.navigate(
             when (result.key) {
                 in mKeyUtil.profileKeySet -> R.id.profile_preference_fragment
-                in mKeyUtil.namingWorkflowKeySet -> R.id.naming_workflow_preference_fragment
+                in mKeyUtil.behaviorRoot -> R.id.behavior_preferences_fragment
                 in mKeyUtil.printKeySet -> R.id.printing_preference_fragment
                 in mKeyUtil.dbKeySet -> R.id.database_preference_fragment
                 in mKeyUtil.aboutKeySet -> R.id.about_preference_fragment

@@ -29,10 +29,7 @@ class KeyUtil(private val ctx: Context?) {
     //region root preference screen keys
     val root by key(R.string.root_preferences)
     val profileRoot by key(R.string.root_profile)
-    val namingRoot by key(R.string.root_naming)
-    val workflowRoot by key(R.string.root_workflow)
-    val namingWorkflowRoot by key(R.string.root_naming_workflow)
-    val namingWorkflowKeySet = setOf(namingRoot, namingWorkflowRoot)
+    val behaviorRoot by key(R.string.root_behavior)
     val printingRoot by key(R.string.root_printing)
     val databaseRoot by key(R.string.root_database)
     val aboutRoot by key(R.string.root_about)
@@ -50,7 +47,6 @@ class KeyUtil(private val ctx: Context?) {
     val nameCrossOrderKey by key(R.string.key_pref_naming_cross_order)
     val nameCreatePatternKey by key(R.string.key_pref_naming_create_pattern)
     //endregion
-    val nameKeySet = setOf(namingRoot, nameBlankMaleKey, nameCrossOrderKey, nameCreatePatternKey)
 
     //region workflow preference keys
     val workCollectKey by key(R.string.key_pref_work_collect)
@@ -60,8 +56,6 @@ class KeyUtil(private val ctx: Context?) {
     val workOpenCrossKey by key(R.string.key_pref_work_open_cross)
     val workCommutativeKey by key(R.string.key_pref_work_commutative)
     //endregion
-    val workKeySet = setOf(workflowRoot, workCollectKey, workMetaKey, workMetaDefaultsKey,
-        workAudioKey, workOpenCrossKey, workCommutativeKey)
 
     //region printing preference keys
     val printSetupKey by key(R.string.key_pref_print_setup)

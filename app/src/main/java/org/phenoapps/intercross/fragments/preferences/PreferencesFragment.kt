@@ -1,4 +1,4 @@
-package org.phenoapps.intercross.fragments
+package org.phenoapps.intercross.fragments.preferences
 
 import android.content.Context.MODE_PRIVATE
 import android.content.Intent
@@ -11,7 +11,6 @@ import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import org.phenoapps.intercross.GeneralKeys
 
-import org.phenoapps.intercross.fragments.preferences.ToolbarPreferenceFragment
 import org.phenoapps.intercross.util.KeyUtil
 import org.phenoapps.intercross.R
 import androidx.appcompat.app.AppCompatActivity
@@ -26,7 +25,7 @@ import org.phenoapps.intercross.activities.MainActivity
  * Root preferences fragment that populates the setting categories.
  * Each category can be clicked to navigate to their corresponding fragment.
  */
-class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.root_preferences) {
+class PreferencesFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.root_preferences) {
 
     private val mKeyUtil by lazy {
         KeyUtil(context)
@@ -36,8 +35,8 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.r
         super.onCreate(savedInstanceState)
         arguments?.let { args ->
             if (args.getBoolean(mKeyUtil.argProfAskPerson))
-                findNavController().navigate(SettingsFragmentDirections
-                    .actionFromSettingsToProfileFragment())
+                findNavController().navigate(PreferencesFragmentDirections
+                    .actionFromPreferencesFragmentToProfileFragment())
         }
     }
 
@@ -55,40 +54,33 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.r
         with(searchPreference?.searchConfiguration) {
             this?.setActivity(activity as AppCompatActivity)
             arrayOf(
-                R.xml.about_preferences, R.xml.database_preferences, R.xml.naming_preferences,
+                R.xml.about_preferences, R.xml.database_preferences, R.xml.behavior_preferences,
                 R.xml.preferences, R.xml.printing_preferences, R.xml.profile_preferences,
-                R.xml.workflow_preferences
             ).forEach {
                 this?.index(it)
             }
         }
-        addSummaryToPreference(R.string.root_profile, R.string.profile_summary)
-        addSummaryToPreference(R.string.root_naming_workflow, R.string.naming_workflow_summary)
-        addSummaryToPreference(R.string.root_printing, R.string.printing_summary)
-        addSummaryToPreference(R.string.root_database, R.string.database_summary)
-        addSummaryToPreference(R.string.root_brapi, R.string.brapi_summary)
-        addSummaryToPreference(R.string.root_about, R.string.about_summary)
 
         with(findPreference<PreferenceScreen>(getString(R.string.root_profile))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     findNavController().navigate(
-                        SettingsFragmentDirections
-                            .actionFromSettingsToProfileFragment()
+                        PreferencesFragmentDirections
+                            .actionFromPreferencesFragmentToProfileFragment()
                     )
                     true
                 }
             }
         }
 
-        with(findPreference<PreferenceScreen>(getString(R.string.root_naming_workflow))) {
+        with(findPreference<PreferenceScreen>(getString(R.string.root_behavior))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
-                    Log.d("SettingsFragment", "Naming and Workflow preference clicked")
+                    Log.d("SettingsFragment", "Behavior preference clicked")
                     try {
-                        findNavController().navigate(R.id.action_from_settings_to_naming_workflow_fragment)
+                        findNavController().navigate(PreferencesFragmentDirections.actionFromPreferencesFragmentToBehaviorPreferencesFragment())
                     } catch (e: Exception) {
-                        Log.e("SettingsFragment", "Error navigating to Naming and Workflow: ${e.message}", e)
+                        Log.e("SettingsFragment", "Error navigating to Behavior: ${e.message}", e)
                     }
                     true
                 }
@@ -99,8 +91,8 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.r
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     findNavController().navigate(
-                        SettingsFragmentDirections
-                            .actionFromSettingsToPrintingFragment()
+                        PreferencesFragmentDirections
+                            .actionFromPreferencesFragmentToPrintingFragment()
                     )
                     true
                 }
@@ -155,7 +147,7 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.r
         with(findPreference<PreferenceScreen>(getString(R.string.root_about))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
-                    findNavController().navigate(SettingsFragmentDirections.actionToAbout())
+                    findNavController().navigate(PreferencesFragmentDirections.actionToAbout())
 
                     true
                 }
@@ -168,17 +160,12 @@ class SettingsFragment : ToolbarPreferenceFragment(R.xml.preferences, R.string.r
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     findNavController().navigate(
-                        SettingsFragmentDirections
-                            .actionFromSettingsToDatabaseFragment()
+                        PreferencesFragmentDirections
+                            .actionFromPreferencesFragmentToDatabaseFragment()
                     )
                     true
                 }
             }
-        }
-    }
-    private fun addSummaryToPreference(preferenceKey: Int, summaryKey: Int) {
-        findPreference<PreferenceScreen>(getString(preferenceKey))?.apply {
-            summary = getString(summaryKey)
         }
     }
 }

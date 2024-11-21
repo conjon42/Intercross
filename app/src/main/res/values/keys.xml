@@ -13,8 +13,7 @@
     <!-- Preference Root Screen Keys -->
     <string name="root_preferences">&package;ROOT_PREFERENCES</string>
     <string name="root_profile">&package;PROFILE_SCREEN</string>
-    <string name="root_naming">&package;NAMING_SCREEN</string>
-    <string name="root_workflow">&package;WORKFLOW_SCREEN</string>
+    <string name="root_behavior">&package;BEHAVIOR_SCREEN</string>
     <string name="root_printing">&package;PRINTING_SCREEN</string>
     <string name="root_database">&package;DATABASE_SCREEN</string>
     <string name="root_brapi">&package;BRAPI_SCREEN</string>

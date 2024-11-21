@@ -63,7 +63,7 @@
             app:popUpTo="@id/events_fragment"/>
         <action
             android:id="@+id/action_from_settings_to_naming_workflow_fragment"
-            app:destination="@id/naming_workflow_preference_fragment"
+            app:destination="@id/behavior_preferences_fragment"
             app:popUpTo="@id/events_fragment" />
     </fragment>
 
@@ -130,7 +130,7 @@
 
     <fragment
         android:id="@+id/about_fragment"
-        android:name="org.phenoapps.intercross.fragments.AboutFragment"
+        android:name="org.phenoapps.intercross.fragments.preferences.AboutFragment"
         android:label="@string/about_title"/>
 
     <fragment
@@ -338,7 +338,7 @@
     </fragment>
 
     <!-- Global Actions used by Navigation Drawer -->
-    <action android:id="@+id/global_action_to_settings_fragment"
+    <action android:id="@+id/global_action_to_preferences_fragment"
         app:destination="@id/preferences"
         app:launchSingleTop="true"/>
 
@@ -374,14 +374,14 @@
         app:popUpTo="@id/events_fragment"/>
 
     <fragment
-        android:id="@+id/naming_workflow_preference_fragment"
-        android:name="org.phenoapps.intercross.fragments.preferences.NamingWorkflowFragment"
-        android:label="Naming and Workflow">
+        android:id="@+id/behavior_preferences_fragment"
+        android:name="org.phenoapps.intercross.fragments.preferences.BehaviorPreferencesFragment"
+        android:label="@string/prefs_behavior_title">
         <action
-            android:id="@+id/action_namingWorkflowFragment_to_patternFragment"
+            android:id="@+id/action_behavior_preferences_fragment_to_pattern_fragment"
             app:destination="@id/pattern_fragment" />
         <action
-            android:id="@+id/action_namingWorkflowFragment_to_metadataList"
+            android:id="@+id/action_behavior_preferences_fragment_to_metadataList"
             app:destination="@id/metadata_list_fragment" />
     </fragment>
 

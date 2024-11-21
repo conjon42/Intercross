@@ -489,7 +489,7 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
                 R.id.action_nav_settings -> {
 
-                    findNavController().navigate(CrossCountFragmentDirections.globalActionToSettingsFragment())
+                    findNavController().navigate(CrossCountFragmentDirections.globalActionToPreferencesFragment())
                 }
                 R.id.action_nav_parents -> {
 

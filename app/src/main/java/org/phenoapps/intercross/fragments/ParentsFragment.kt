@@ -4,8 +4,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.GestureDetector
-import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
@@ -13,8 +11,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.ActionMenuView
 import androidx.core.view.GestureDetectorCompat
 import androidx.fragment.app.viewModels
 import androidx.navigation.Navigation
@@ -470,7 +466,7 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
                 R.id.action_nav_settings -> {
 
-                    findNavController().navigate(R.id.global_action_to_settings_fragment)
+                    findNavController().navigate(R.id.global_action_to_preferences_fragment)
                 }
 
                 R.id.action_nav_export -> {

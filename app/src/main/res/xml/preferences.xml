@@ -7,27 +7,32 @@
         android:key="@string/key_pref_search" />
 
     <PreferenceScreen android:key="@string/root_profile"
-        android:title="Profile"
+        android:title="@string/prefs_profile_title"
         android:icon="@drawable/ic_account_circle_black_24dp"
         app:iconSpaceReserved="false"/>
-    <PreferenceScreen android:key="@string/root_naming_workflow"
-        android:title="Naming and Workflow"
+
+    <PreferenceScreen android:key="@string/root_behavior"
+        android:title="@string/prefs_behavior_title"
         android:icon="@drawable/ic_setting_pattern_create"
         app:iconSpaceReserved="false"/>
+
     <PreferenceScreen android:key="@string/root_printing"
-        android:title="Printing"
+        android:title="@string/prefs_printing_title"
         android:icon="@drawable/ic_setting_print_connect"
         app:iconSpaceReserved="false"/>
+
     <PreferenceScreen android:key="@string/root_database"
-        android:title="Database"
+        android:title="@string/prefs_database_title"
         android:icon="@drawable/ic_database"
         app:iconSpaceReserved="false"/>
+
     <PreferenceScreen android:key="@string/root_brapi"
-        android:title="BrAPI"
+        android:title="@string/prefs_brapi_title"
         android:icon="@drawable/ic_brapi"
         app:iconSpaceReserved="false"/>
+
     <PreferenceScreen android:key="@string/root_about"
-        android:title="@string/about_title"
+        android:title="@string/prefs_about_title"
         android:icon="@drawable/ic_about_info"
         app:iconSpaceReserved="false"/>
 </PreferenceScreen>
