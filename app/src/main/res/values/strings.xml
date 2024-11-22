@@ -440,16 +440,38 @@
 
     <!-- Behavior Preferences: Naming and Workflow preferences -->
     <string name="prefs_behavior_naming_category">Naming</string>
-    <string name="prefs_behavior_allow_blank_male">Allow blank male ID</string>
-    <string name="prefs_behavior_scan_male_first">Scan male first</string>
+    <string name="prefs_behavior_allow_blank_male_title">Allow blank male ID</string>
+    <string name="prefs_behavior_allow_blank_male_summary">Keep Male ID as optional while creating a cross.</string>
+    <string name="prefs_behavior_scan_male_first_title">Scan male first</string>
+    <string name="prefs_behavior_scan_male_first_summary">Enter Male ID first while creating a cross.</string>
     <string name="prefs_behavior_create_cross_id_pattern_title">Create cross ID pattern</string>
     <string name="prefs_behavior_create_cross_id_pattern_summary">UUID</string>
 
     <string name="prefs_behavior_workflow_category">Workflow</string>
-    <string name="prefs_behavior_collect_additional_info">Collect additional information</string>
-    <string name="prefs_behavior_audio_notifications">Audio notifications</string>
-    <string name="prefs_behavior_open_cross">Open Cross After Creating</string>
-    <string name="prefs_behavior_commutative_crossing">"Commutative Crossing</string>
+    <string name="prefs_behavior_collect_additional_info_title">Collect additional information</string>
+    <string name="prefs_behavior_collect_additional_info_summary">Create and manage additional metadata.</string>
+    <string name="prefs_behavior_create_metadata_title">Create Metadata</string>
+    <string name="prefs_behavior_create_metadata_summary">Create a metadata property.</string>
+    <string name="prefs_behavior_manage_metadata_title">Manage Metadata</string>
+    <string name="prefs_behavior_manage_metadata_summary">Manage existing metadata properties.</string>
+    <string name="prefs_behavior_sound_notifications_title">Sound notifications</string>
+    <string name="prefs_behavior_sound_notifications_summary">Notification sound when a cross is made.</string>
+    <string name="prefs_behavior_open_cross_title">Open Cross After Creating</string>
+    <string name="prefs_behavior_open_cross_summary">Opens the cross immediately after creating.</string>
+    <string name="prefs_behavior_commutative_crossing_title">"Commutative Crossing</string>
+    <string name="prefs_behavior_commutative_crossing_summary">"Commutative Crossing Summary.</string>
+
+    <!-- Printing preferences -->
+    <string name="prefs_zebra_print_connect_title">Zebra Print Connect</string>
+    <string name="prefs_zebra_print_connect_summary">Connect a Zebra printer.</string>
+    <string name="prefs_zebra_import_title">ZPL Import</string>
+    <string name="prefs_zebra_import_summary">ZPL Import Summary.</string>
+
+    <!-- Database preferences -->
+    <string name="prefs_database_import_title">Import Database</string>
+    <string name="prefs_database_import_summary">Import a new database file that has been saved previously.</string>
+    <string name="prefs_database_export_title">Export Database</string>
+    <string name="prefs_database_export_summary">This will prompt the user to export the local database.</string>
 
     <string name="enter_person_and_experiment">Enter Person and Experiment</string>
     <string name="enter_person_name">Enter person name</string>

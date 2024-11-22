@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
     android:key="@string/root_database"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto" >
-    <PreferenceCategory app:iconSpaceReserved="false">
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
         <Preference
             android:icon="@drawable/ic_database_import"
             android:key="@string/key_pref_db_import"
-            android:title="Import Database" />
+            android:title="@string/prefs_database_import_title"
+            android:summary="@string/prefs_database_import_summary"/>
         <Preference
             android:icon="@drawable/ic_database_export"
             android:key="@string/key_pref_db_export"
-            android:title="Export Database">
+            android:title="@string/prefs_database_export_title"
+            android:summary="@string/prefs_database_export_summary">
         </Preference>
-    </PreferenceCategory>
 </PreferenceScreen>

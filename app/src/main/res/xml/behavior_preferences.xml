@@ -13,13 +13,14 @@
             android:defaultValue="false"
             android:icon="@drawable/ic_setting_male_blank"
             android:key="@string/key_pref_naming_blank_male"
-            android:title="@string/prefs_behavior_allow_blank_male" />
+            android:title="@string/prefs_behavior_allow_blank_male_title"
+            android:summary="@string/prefs_behavior_allow_blank_male_summary" />
         <SwitchPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_setting_cross_order"
             android:key="@string/key_pref_naming_cross_order"
-            android:summary=""
-            android:title="@string/prefs_behavior_scan_male_first" />
+            android:title="@string/prefs_behavior_scan_male_first_title"
+            android:summary="@string/prefs_behavior_scan_male_first_summary" />
         <Preference
             android:icon="@drawable/ic_setting_pattern_create"
             android:key="@string/key_pref_naming_create_pattern"
@@ -36,29 +37,35 @@
             android:defaultValue="false"
             android:icon="@drawable/ic_setting_additional_info"
             android:key="@string/key_pref_work_collect"
-            android:title="Collect additional information"/>
+            android:title="@string/prefs_behavior_collect_additional_info_title"
+            android:summary="@string/prefs_behavior_collect_additional_info_summary" />
         <Preference
             android:icon="@drawable/ic_note_add_black_24dp"
             android:key="@string/key_pref_work_meta"
-            android:title="Create Metadata"/>
+            android:title="@string/prefs_behavior_create_metadata_title"
+            android:summary="@string/prefs_behavior_create_metadata_summary" />
         <Preference
             android:icon="@drawable/ic_update_black_24dp"
             android:key="@string/key_pref_work_meta_defaults"
-            android:title="Metadata Manager"/>
+            android:title="@string/prefs_behavior_manage_metadata_title"
+            android:summary="@string/prefs_behavior_manage_metadata_summary" />
         <SwitchPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_setting_sound"
             android:key="@string/key_pref_work_audio"
-            android:title="Audio notifications"/>
+            android:title="@string/prefs_behavior_sound_notifications_title"
+            android:summary="@string/prefs_behavior_sound_notifications_summary" />
         <SwitchPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_book_open"
             android:key="@string/key_pref_work_open_cross"
-            android:title="Open Cross After Creating"/>
+            android:title="@string/prefs_behavior_open_cross_title"
+            android:summary="@string/prefs_behavior_open_cross_summary" />
         <SwitchPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_receipt_long_black_24dp"
             android:key="@string/key_pref_work_commutative"
-            android:title="Commutative Crossing"/>
+            android:title="@string/prefs_behavior_commutative_crossing_title"
+            android:summary="@string/prefs_behavior_commutative_crossing_summary" />
     </PreferenceCategory>
 </PreferenceScreen>
