@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.data.SettingsRepository
 import org.phenoapps.intercross.data.models.Settings
 import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
@@ -43,13 +44,10 @@ class PatternFragment : IntercrossBaseFragment<FragmentPatternBinding>(R.layout.
     }
 
     private fun setupToolbar() {
-        val toolbar = mBinding.patternToolbar
-        (activity as AppCompatActivity).setSupportActionBar(toolbar)
-        (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        (activity as AppCompatActivity).supportActionBar?.setDisplayShowHomeEnabled(true)
-
-        toolbar.setNavigationOnClickListener {
-            onBackButtonPressed()
+        (activity as MainActivity).setBackButtonToolbar()
+        (activity as MainActivity).supportActionBar?.apply {
+            title = getString(R.string.patterns_label)
+            show()
         }
     }
 
