@@ -28,7 +28,7 @@
 <!--            app:launchSingleTop="true"/>-->
 
         <action android:id="@+id/action_from_preferences_fragment_to_about_fragment"
-            app:destination="@+id/about_preference_fragment"
+            app:destination="@+id/about_fragment"
             app:launchSingleTop="true"/>
 
         <action android:id="@+id/action_to_about"

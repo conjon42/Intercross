@@ -370,7 +370,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
                     findNavController().navigate(WishlistFragmentDirections.globalActionToEvents())
                 }
-                R.id.action_nav_settings -> {
+                R.id.action_nav_preferences -> {
 
                     findNavController().navigate(WishlistFragmentDirections.globalActionToPreferencesFragment())
                 }

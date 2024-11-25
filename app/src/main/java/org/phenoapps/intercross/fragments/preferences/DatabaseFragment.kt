@@ -8,7 +8,7 @@ import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.util.KeyUtil
 
-class DatabaseFragment : ToolbarPreferenceFragment(R.xml.database_preferences, R.string.root_database) {
+class DatabaseFragment : BasePreferenceFragment(R.xml.database_preferences, R.string.root_database) {
 
     private val mKeyUtil by lazy {
         KeyUtil(context)
@@ -16,8 +16,7 @@ class DatabaseFragment : ToolbarPreferenceFragment(R.xml.database_preferences, R
 
     override fun onResume() {
         super.onResume()
-        (activity as MainActivity).setBackButtonToolbar()
-        (activity as AppCompatActivity).supportActionBar?.show()
+        setToolbar(getString(R.string.prefs_database_title))
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -174,7 +174,7 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
 
                     findNavController().navigate(SummaryFragmentDirections.globalActionToEvents())
                 }
-                R.id.action_nav_settings -> {
+                R.id.action_nav_preferences -> {
 
                     findNavController().navigate(SummaryFragmentDirections.globalActionToPreferencesFragment())
                 }

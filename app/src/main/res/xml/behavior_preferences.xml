@@ -5,7 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto" >
 
     <PreferenceCategory
-        android:key="category_collection_unique"
+        android:key="behavior_naming_category"
         android:title="@string/prefs_behavior_naming_category"
         app:allowDividerAbove="false"
         app:iconSpaceReserved="false">
@@ -29,7 +29,7 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:key="category_collection_unique"
+        android:key="behavior_workflow_category"
         android:title="@string/prefs_behavior_workflow_category"
         app:allowDividerAbove="false"
         app:iconSpaceReserved="false">

@@ -15,6 +15,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
+import com.bytehamster.lib.preferencesearch.SearchPreferenceFragment
 import com.bytehamster.lib.preferencesearch.SearchPreferenceResult
 import com.bytehamster.lib.preferencesearch.SearchPreferenceResultListener
 import kotlinx.coroutines.CoroutineScope
@@ -50,6 +51,7 @@ import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.ActivityMainBinding
 import org.phenoapps.intercross.fragments.EventsFragmentDirections
+import org.phenoapps.intercross.fragments.preferences.PreferencesFragment
 import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.FileUtil
@@ -264,6 +266,11 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     private lateinit var mNavController: NavController
 
+    private var preferencesFragment: PreferencesFragment? = null
+
+    fun setPreferencesFragment(fragment: PreferencesFragment?) {
+        preferencesFragment = fragment
+    }
 
     private fun writeStream(file: File, resourceId: Int) {
 
@@ -352,10 +359,23 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
                     supportActionBar?.setDisplayHomeAsUpEnabled(true)
                     supportActionBar?.title = destination.label
                 }
+                R.id.preferences_fragment -> {
+                    setToolbar()
+                }
                 else -> {
                     supportActionBar?.setDisplayHomeAsUpEnabled(true)
                     supportActionBar?.title = destination.label
                 }
+            }
+        }
+
+        // toolbar for search screen
+        supportFragmentManager.addOnBackStackChangedListener {
+            val currentFragment = supportFragmentManager.findFragmentById(android.R.id.list_container)
+            if (currentFragment is SearchPreferenceFragment) {
+                setBackButtonToolbar()
+                supportActionBar?.title = getString(R.string.settings_label)
+                supportActionBar?.show()
             }
         }
 
@@ -392,6 +412,15 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.hide()
+    }
+
+    fun setToolbar() {
+        setSupportActionBar(mBinding.mainTb)
+
+        supportActionBar?.title = null
+        supportActionBar?.setDisplayHomeAsUpEnabled(false)
+        supportActionBar?.setDisplayShowHomeEnabled(false)
+        supportActionBar?.show()
     }
 
     private fun startObservers() {
@@ -586,21 +615,10 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     }
 
-
     override fun onSearchResultClicked(result: SearchPreferenceResult) {
-
-        result.closeSearchPage(this)
-
-        mNavController.navigate(
-            when (result.key) {
-                in mKeyUtil.profileKeySet -> R.id.profile_preference_fragment
-                in mKeyUtil.behaviorRoot -> R.id.behavior_preferences_fragment
-                in mKeyUtil.printKeySet -> R.id.printing_preference_fragment
-                in mKeyUtil.dbKeySet -> R.id.database_preference_fragment
-                in mKeyUtil.aboutKeySet -> R.id.about_preference_fragment
-                else -> throw RuntimeException() //todo R.id.brapi_preference_fragment
-            }
-        )
+        Handler().post { // handle in preferencesFragment
+            preferencesFragment?.onSearchResultClicked(result)
+        }
     }
 
     private fun savePersonAndExperiment(person: String, experiment: String) {

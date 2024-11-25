@@ -29,7 +29,22 @@ class KeyUtil(private val ctx: Context?) {
     //region root preference screen keys
     val root by key(R.string.root_preferences)
     val profileRoot by key(R.string.root_profile)
+
     val behaviorRoot by key(R.string.root_behavior)
+    val allowBankMaleKey by key(R.string.key_pref_naming_blank_male)
+    val scanMaleFirstKey by key(R.string.key_pref_naming_cross_order)
+    val createCrossInPatternKey by key(R.string.key_pref_naming_create_pattern)
+    val collectAdditionalInfoKey by key(R.string.key_pref_work_collect)
+    val createMetadataKey by key(R.string.key_pref_work_meta)
+    val manageMetadataKey by key(R.string.key_pref_work_meta_defaults)
+    val soundNotificationKey by key(R.string.key_pref_work_audio)
+    val openCrossAfterCreateKey by key(R.string.key_pref_work_open_cross)
+    val commutativeCrossingKey by key(R.string.key_pref_work_commutative)
+    val behaviorKeySet = setOf(
+        behaviorRoot, allowBankMaleKey, scanMaleFirstKey, createCrossInPatternKey, collectAdditionalInfoKey,
+        createMetadataKey, manageMetadataKey, soundNotificationKey, openCrossAfterCreateKey, commutativeCrossingKey
+    )
+
     val printingRoot by key(R.string.root_printing)
     val databaseRoot by key(R.string.root_database)
     val aboutRoot by key(R.string.root_about)
@@ -74,4 +89,6 @@ class KeyUtil(private val ctx: Context?) {
     val aboutKey by key(R.string.key_pref_about)
     val aboutKeySet = setOf(aboutRoot, aboutKey)
     //endregion
+
+    val prefsRootKeys = setOf(profileRoot, behaviorRoot, databaseRoot, printingRoot, aboutRoot)
 }

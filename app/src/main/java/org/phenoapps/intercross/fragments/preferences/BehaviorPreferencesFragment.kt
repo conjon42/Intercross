@@ -38,7 +38,7 @@ import org.phenoapps.intercross.interfaces.MetadataManager
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.KeyUtil
 
-class BehaviorPreferencesFragment : ToolbarPreferenceFragment(R.xml.behavior_preferences, R.string.root_behavior), MetadataManager, CoroutineScope by MainScope() {
+class BehaviorPreferencesFragment : BasePreferenceFragment(R.xml.behavior_preferences, R.string.root_behavior), MetadataManager, CoroutineScope by MainScope() {
 
     private val TAG = "BehaviorPreferences"
 
@@ -195,7 +195,6 @@ class BehaviorPreferencesFragment : ToolbarPreferenceFragment(R.xml.behavior_pre
 
     override fun onResume() {
         super.onResume()
-        (activity as MainActivity).setBackButtonToolbar()
-        (activity as AppCompatActivity).supportActionBar?.show()
+        setToolbar(getString(R.string.prefs_behavior_title))
     }
 }

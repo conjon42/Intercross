@@ -487,7 +487,7 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
             when (item.itemId) {
 
-                R.id.action_nav_settings -> {
+                R.id.action_nav_preferences -> {
 
                     findNavController().navigate(CrossCountFragmentDirections.globalActionToPreferencesFragment())
                 }

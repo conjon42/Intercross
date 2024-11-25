@@ -230,7 +230,7 @@ class CrossBlockFragment : IntercrossBaseFragment<FragmentCrossBlockBinding>(R.l
 
                     findNavController().navigate(CrossBlockFragmentDirections.globalActionToEvents())
                 }
-                R.id.action_nav_settings -> {
+                R.id.action_nav_preferences -> {
 
                     findNavController().navigate(CrossBlockFragmentDirections.globalActionToPreferencesFragment())
                 }
