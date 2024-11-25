@@ -6,9 +6,13 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 
 import com.danielstone.materialaboutlibrary.ConvenienceBuilder
 import com.danielstone.materialaboutlibrary.MaterialAboutFragment
@@ -17,6 +21,7 @@ import com.danielstone.materialaboutlibrary.items.MaterialAboutItemOnClickAction
 import com.danielstone.materialaboutlibrary.items.MaterialAboutTitleItem
 import com.danielstone.materialaboutlibrary.model.MaterialAboutCard
 import com.danielstone.materialaboutlibrary.model.MaterialAboutList
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.mikepenz.aboutlibraries.LibsBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,11 +29,14 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.activities.MainActivity
 import java.net.HttpURLConnection
 import java.net.URL
 
 class AboutFragment : MaterialAboutFragment() {
 
+
+    private var mBottomNavBar: BottomNavigationView? = null
     private lateinit var updateCheckItem: MaterialAboutActionItem
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,9 +44,88 @@ class AboutFragment : MaterialAboutFragment() {
         requireContext().setTheme(R.style.AppTheme)
     }
 
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        // to add bottom navigation
+        // take the original view, add it to wrapper
+        // create a bottom nav view and add it to the wrapper
+
+        // original view from MaterialAboutFragment
+        val originalView = super.onCreateView(inflater, container, savedInstanceState)
+
+        // Create a wrapper layout
+        val wrapper = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        }
+
+        // add the originalView to wrapper with weight
+        originalView?.let {
+            wrapper.addView(it, LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                0,
+                1f // take up all space except for bottom nav
+            ))
+        }
+
+        mBottomNavBar = BottomNavigationView(requireContext()).apply {
+            id = R.id.preferences_bottom_nav_bar
+            inflateMenu(R.menu.menu_bot_nav)
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+        }
+        wrapper.addView(mBottomNavBar)
+
+        (activity as MainActivity).setBackButtonToolbar()
+        (activity as MainActivity).supportActionBar?.apply {
+            title = getString(R.string.preferences_about_title)
+            show()
+        }
+
+        return wrapper
+    }
+
+    private fun setupBottomNavBar() {
+        mBottomNavBar?.selectedItemId = R.id.action_nav_preferences
+
+        mBottomNavBar?.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.action_nav_home -> {
+                    findNavController().navigate(R.id.global_action_to_events)
+                }
+                R.id.action_nav_parents -> {
+                    findNavController().navigate(R.id.global_action_to_parents)
+                }
+                R.id.action_nav_export -> {
+                    (activity as MainActivity).showExportDialog {
+                        mBottomNavBar?.selectedItemId = R.id.action_nav_preferences
+                    }
+                }
+                R.id.action_nav_cross_count -> {
+                    findNavController().navigate(R.id.global_action_to_cross_count)
+                }
+            }
+            true
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupBottomNavBar()
         checkForUpdate()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        mBottomNavBar?.selectedItemId = R.id.action_nav_preferences
     }
 
     override fun getMaterialAboutList(c: Context): MaterialAboutList {
