@@ -15,12 +15,12 @@
 
     <!-- About dialog -->
     <string name="about_version_title">Version</string>
-    <string name="about_title_other_apps">Other PhenoApps</string>
+    <string name="about_title_other_apps">PhenoApps</string>
     <string name="about_project_lead_title">Project Lead</string>
     <string name="about_developer_title">Developer</string>
     <string name="about_developer_trife" translatable="false">Trevor Rife</string>
-    <string name="about_developer_trife_location" translatable="false">Kansas State University</string>
-    <string name="about_developer_trife_email" translatable="false">trife@ksu.edu</string>
+    <string name="about_developer_trife_location" translatable="false">Clemson University</string>
+    <string name="about_developer_trife_email" translatable="false">twrife@clemson.edu</string>
     <string name="about_email_title">Email</string>
     <string name="about_developer_trife_website" translatable="false">https://github.com/PhenoApps/Field-Book</string>
     <string name="about_contributors_title">Contributors</string>
@@ -429,8 +429,18 @@
     <string name="error_no_bluetooth_permission">Bluetooth permission is required to print.</string>
     <string name="search_fragment_label">Search</string>
 
+    <!-- Profile -->
+    <string name="collect_dialog_verify_collector">Is this still</string>
+    <string name="collect_dialog_verify_no_button">No</string>
+    <string name="collect_dialog_verify_yes_button">Yes</string>
+    <string name="collect_dialog_neutral_button">Modify settings</string>
+    <string name="collect_dialog_new_collector">Do you want to save the name of the person collecting data?</string>
+
     <!-- PREFERENCES -->
+
+    <!-- Profile Preferences-->
     <string name="prefs_profile_title">Profile</string>
+
     <string name="prefs_behavior_title">Behavior</string>
     <string name="prefs_printing_title">Printing</string>
     <string name="prefs_database_title">Database</string>
@@ -504,17 +514,7 @@
     <string name="dialog_no">No</string>
     <string name="profile_person_not_set">Not set</string>
 
-    <string-array name="profile_require_interval_entries">
-        <item>Every time app opens</item>
-        <item>Every 12 hours</item>
-        <item>Every 24 hours</item>
-        <item>Never</item>
-    </string-array>
+    <string name="profile_name_first">First name</string>
+    <string name="profile_name_last">Last name</string>
 
-    <string-array name="profile_require_interval_values">
-        <item>0</item>
-        <item>12</item>
-        <item>24</item>
-        <item>-1</item>
-    </string-array>
 </resources>

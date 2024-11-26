@@ -13,7 +13,12 @@
 
         <action android:id="@+id/action_from_preferences_fragment_to_profile_fragment"
             app:destination="@+id/profile_preference_fragment"
-            app:launchSingleTop="true"/>
+            app:launchSingleTop="true">
+            <argument
+                android:name="PERSON_UPDATE"
+                app:argType="boolean"
+                android:defaultValue="false" />
+        </action>
 
         <action android:id="@+id/action_from_preferences_fragment_to_printing_fragment"
             app:destination="@+id/printing_preference_fragment"

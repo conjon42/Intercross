@@ -17,6 +17,7 @@ import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.MetaValuesViewModel
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
 import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
+import org.phenoapps.intercross.fragments.preferences.GeneralKeys
 import java.util.UUID
 
 class CrossUtil(val context: Context) {
@@ -74,7 +75,14 @@ class CrossUtil(val context: Context) {
 
         val experiment = mPref.getString(mKeyUtil.profExpKey, "")
 
-        val person = mPref.getString(mKeyUtil.profPersonKey, "")
+        val firstName = mPref.getString(GeneralKeys.FIRST_NAME,"")
+        val lastName = mPref.getString(GeneralKeys.LAST_NAME,"")
+        val person = if (!firstName.isNullOrEmpty() || !lastName.isNullOrEmpty()) {
+            "$firstName $lastName"
+        } else {
+            ""
+        }
+//            val person = mPref.getString(mKeyUtil.profPersonKey, "")
 
         val date = DateUtil().getTime()
 
@@ -83,7 +91,7 @@ class CrossUtil(val context: Context) {
                 male,
                 "",
                 date,
-         person ?: "?",
+                person,
       experiment ?: "?")
 
         /** Insert mom/dad cross ids only if they don't exist in the DB already **/

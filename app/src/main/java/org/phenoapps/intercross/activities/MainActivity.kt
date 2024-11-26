@@ -1,6 +1,5 @@
 package org.phenoapps.intercross.activities
 
-//import org.phenoapps.intercross.BuildConfig
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -18,6 +17,7 @@ import androidx.preference.PreferenceManager
 import com.bytehamster.lib.preferencesearch.SearchPreferenceFragment
 import com.bytehamster.lib.preferencesearch.SearchPreferenceResult
 import com.bytehamster.lib.preferencesearch.SearchPreferenceResultListener
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -57,13 +57,19 @@ import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.util.KeyUtil
 import org.phenoapps.intercross.util.SnackbarQueue
+import org.phenoapps.intercross.util.VerifyPersonHelper
 import java.io.File
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
 //    private val mFirebaseAnalytics by lazy {
 //        FirebaseAnalytics.getInstance(this)
 //    }
+
+    @Inject
+    lateinit var verifyPersonHelper: VerifyPersonHelper
 
     private var doubleBackToExitPressedOnce = false
 
@@ -330,6 +336,8 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
+
+        verifyPersonHelper.updateAskedSinceOpened()
 
         setupDirs()
 
@@ -621,16 +629,16 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         }
     }
 
-    private fun savePersonAndExperiment(person: String, experiment: String) {
-        val editor = mPref.edit()
-        editor.putString(mKeyUtil.profPersonKey, person)
-        editor.putString(mKeyUtil.profExpKey, experiment)
-        editor.apply()
-    }
-
-    private fun loadPersonAndExperiment(): Pair<String, String> {
-        val person = mPref.getString(mKeyUtil.profPersonKey, "") ?: ""
-        val experiment = mPref.getString(mKeyUtil.profExpKey, "") ?: ""
-        return Pair(person, experiment)
-    }
+   // private fun savePersonAndExperiment(person: String, experiment: String) {
+   //     val editor = mPref.edit()
+   //     editor.putString(mKeyUtil.profPersonKey, person)
+   //     editor.putString(mKeyUtil.profExpKey, experiment)
+   //     editor.apply()
+   // }
+   //
+   // private fun loadPersonAndExperiment(): Pair<String, String> {
+   //     val person = mPref.getString(mKeyUtil.profPersonKey, "") ?: ""
+   //     val experiment = mPref.getString(mKeyUtil.profExpKey, "") ?: ""
+   //     return Pair(person, experiment)
+   // }
 }

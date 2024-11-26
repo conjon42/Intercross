@@ -23,6 +23,9 @@
     <string name="key_pref_profile_person">&package;PERSON</string>
     <string name="key_pref_profile_experiment">&package;EXPERIMENT</string>
     <string name="arg_profile_ask_person">&package;ASK_PERSON</string>
+    <string name="key_pref_last_time_opened">&package;LAST_TIME_OPENED</string>
+    <string name="key_pref_asked_since_open">&package;ASKED_SINCE_OPENED</string>
+    <string name="key_pref_require_user_to_collect">&package;REQUIRE_USER_TO_COLLECT</string>
 
     <!-- Naming preference keys -->
     <string name="key_pref_naming_blank_male">&package;BLANK_MALE_ID</string>

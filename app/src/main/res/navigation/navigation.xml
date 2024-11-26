@@ -53,9 +53,14 @@
         <action android:id="@+id/action_from_events_to_preferences"
             app:destination="@+id/preferences"
             app:popUpTo="@id/events_fragment">
-            <argument android:name="org.phenoapps.intercross.ASK_PERSON"
-                android:defaultValue="true"
-                app:argType="boolean"/>
+            <argument
+                android:name="PERSON_UPDATE"
+                app:argType="boolean"
+                android:defaultValue="false" />
+            <argument
+                android:name="MODIFY_PROFILE_SETTINGS"
+                app:argType="boolean"
+                android:defaultValue="false" />
         </action>
         <action
             android:id="@+id/action_to_brapi_export"

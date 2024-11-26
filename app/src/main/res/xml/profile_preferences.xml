@@ -7,30 +7,30 @@
     <Preference
         android:key="pref_profile_person"
         android:title="@string/profile_person"
-        android:icon="@drawable/ic_setting_person" />
+        android:icon="@drawable/ic_prefs_profile_person" />
 
     <Preference
         android:key="pref_profile_reset"
         android:title="@string/profile_reset"
-        android:icon="@drawable/ic_setting_reset" />
+        android:icon="@drawable/ic_prefs_profile_delete" />
 
     <PreferenceCategory
         android:title="@string/profile_settings"
         app:iconSpaceReserved="false">
 
         <CheckBoxPreference
-            android:key="pref_require_user_to_collect"
+            android:key="org.phenoapps.intercross.REQUIRE_USER_TO_COLLECT"
             android:title="@string/profile_require_user"
             android:defaultValue="true"
-            android:icon="@drawable/ic_verify" />
+            android:icon="@drawable/ic_prefs_profile_verify" />
 
         <ListPreference
-            android:key="pref_require_user_interval"
+            android:key="org.phenoapps.intercross.REQUIRE_USER_INTERVAL"
             android:title="@string/profile_require_interval"
             android:entries="@array/profile_require_interval_entries"
             android:entryValues="@array/profile_require_interval_values"
             android:defaultValue="1"
-            android:icon="@drawable/ic_setting_time" />
+            android:icon="@drawable/ic_hours_24" />
 
     </PreferenceCategory>
 </PreferenceScreen>

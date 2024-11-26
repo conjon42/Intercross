@@ -1,10 +1,8 @@
 package org.phenoapps.intercross.fragments
 
 import android.app.Activity
-import android.widget.Toast
 import android.content.Context
 import android.os.Handler
-import android.widget.EditText
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.TypedValue
@@ -21,6 +19,7 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.activities.MainActivity
@@ -35,12 +34,18 @@ import org.phenoapps.intercross.data.models.WishlistView
 import org.phenoapps.intercross.data.viewmodels.*
 import org.phenoapps.intercross.data.viewmodels.factory.*
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
+import org.phenoapps.intercross.fragments.preferences.GeneralKeys
 import org.phenoapps.intercross.util.*
 import java.util.*
+import javax.inject.Inject
 import kotlin.math.roundToInt
 
+@AndroidEntryPoint
 class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fragment_events),
     CoroutineScope by MainScope() {
+
+    @Inject
+    lateinit var verifyPersonHelper: VerifyPersonHelper
 
     private val viewModel: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
@@ -536,10 +541,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             if (hasFocus) mFocused = v
 
-            if (hasFocus && (mPref.getString(mKeyUtil.profPersonKey, "") ?: "").isBlank() ||
-                (mPref.getString(mKeyUtil.profExpKey, "") ?: "").isBlank()) {
-                askUserForPersonAndExperiment()
-            }
+           if (hasFocus) {
+               verifyPersonHelper.checkLastOpened(null)
+           }
 
         }
 
@@ -643,26 +647,33 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         button.setOnClickListener {
 
-            if (mPref.getString(mKeyUtil.profPersonKey, "").isNullOrBlank() ||
-                mPref.getString(mKeyUtil.profExpKey, "").isNullOrBlank()) {
-                askUserForPersonAndExperiment()
-            } else {
-
+            verifyPersonHelper.checkLastOpened {
                 findNavController().navigate(EventsFragmentDirections.actionToBarcodeScanFragment())
-
             }
+            // if (mPref.getString(mKeyUtil.profPersonKey, "").isNullOrBlank() ||
+            //     mPref.getString(mKeyUtil.profExpKey, "").isNullOrBlank()) {
+            //     askUserForPersonAndExperiment()
+            // } else {
+            //
+            //     findNavController().navigate(EventsFragmentDirections.actionToBarcodeScanFragment())
+            //
+            // }
         }
 
         button.setOnLongClickListener {
 
-            if (mPref.getString(mKeyUtil.profPersonKey, "").isNullOrBlank() ||
-                mPref.getString(mKeyUtil.profExpKey, "").isNullOrBlank()) {
-                askUserForPersonAndExperiment()
-            } else {
-
+            verifyPersonHelper.checkLastOpened {
                 findNavController().navigate(EventsFragmentDirections.actionToBarcodeScanFragment(2))
-
             }
+
+            // if (mPref.getString(mKeyUtil.profPersonKey, "").isNullOrBlank() ||
+            //     mPref.getString(mKeyUtil.profExpKey, "").isNullOrBlank()) {
+            //     askUserForPersonAndExperiment()
+            // } else {
+            //
+            //     findNavController().navigate(EventsFragmentDirections.actionToBarcodeScanFragment(2))
+            //
+            // }
 
             true
         }
@@ -684,7 +695,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             secondText.setText("")
 
-            val person = mPref.getString(mKeyUtil.profPersonKey, "") ?: ""
+            val person = mPref.getString(GeneralKeys.FIRST_NAME, "") ?: ""
 
             if (person.isNotBlank()) firstText.requestFocus()
         }
@@ -831,28 +842,4 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         }
     }
-
-    private fun askUserForPersonAndExperiment() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_person_experiment, null)
-        val personEditText = dialogView.findViewById<EditText>(R.id.personEditText)
-        val experimentEditText = dialogView.findViewById<EditText>(R.id.experimentEditText)
-
-        AlertDialog.Builder(requireContext())
-            .setTitle(R.string.enter_person_and_experiment)
-            .setView(dialogView)
-            .setPositiveButton(R.string.ok) { _, _ ->
-                val person = personEditText.text.toString()
-                val experiment = experimentEditText.text.toString()
-                if (person.isNotBlank() && experiment.isNotBlank()) {
-                    mPref.edit().putString(mKeyUtil.profPersonKey, person).apply()
-                    mPref.edit().putString(mKeyUtil.profExpKey, experiment).apply()
-                    Toast.makeText(context, R.string.person_and_experiment_saved, Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(context, R.string.person_and_experiment_required, Toast.LENGTH_SHORT).show()
-                }
-            }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
-    }
-
 }

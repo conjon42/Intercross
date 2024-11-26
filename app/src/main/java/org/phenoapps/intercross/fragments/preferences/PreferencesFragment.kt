@@ -15,7 +15,6 @@ import androidx.preference.PreferenceScreen
 import com.bytehamster.lib.preferencesearch.SearchConfiguration
 import com.bytehamster.lib.preferencesearch.SearchPreference
 import com.bytehamster.lib.preferencesearch.SearchPreferenceResult
-import org.phenoapps.intercross.GeneralKeys
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.util.KeyUtil
@@ -38,11 +37,12 @@ class PreferencesFragment : BasePreferenceFragment(R.xml.preferences, R.string.r
         (activity as? MainActivity)?.setPreferencesFragment(this)
 
         arguments?.let { args ->
-            if (args.getBoolean(mKeyUtil.argProfAskPerson))
-                findNavController().navigate(
-                    PreferencesFragmentDirections
-                        .actionFromPreferencesFragmentToProfileFragment()
-                )
+            if (args.getBoolean(GeneralKeys.MODIFY_PROFILE_SETTINGS)) {
+                    findNavController().navigate(PreferencesFragmentDirections.actionFromPreferencesFragmentToProfileFragment())
+            }
+            if (args.getBoolean(GeneralKeys.PERSON_UPDATE)) {
+                findNavController().navigate(PreferencesFragmentDirections.actionFromPreferencesFragmentToProfileFragment(PERSONUPDATE = true))
+            }
         }
     }
 
