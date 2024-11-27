@@ -50,7 +50,6 @@ class PrintingFragment : BasePreferenceFragment(R.xml.printing_preferences, R.st
 
     override fun onResume() {
         super.onResume()
-        (activity as MainActivity).setBackButtonToolbar()
-        (activity as AppCompatActivity).supportActionBar?.show()
+        setToolbar(getString(R.string.prefs_printing_title))
     }
 }
