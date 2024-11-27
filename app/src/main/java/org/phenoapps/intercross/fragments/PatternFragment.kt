@@ -34,7 +34,14 @@ class PatternFragment : IntercrossBaseFragment<FragmentPatternBinding>(R.layout.
         SettingsViewModelFactory(SettingsRepository.getInstance(db.settingsDao()))
     }
 
+    override fun onPause() {
+        super.onPause()
+
+        settingsModel.insert(buildSettings())
+    }
+
     private var mLastUsed: String = "0"
+
     private var mLastUUID: String = UUID.randomUUID().toString()
 
     override fun FragmentPatternBinding.afterCreateView() {
@@ -72,8 +79,17 @@ class PatternFragment : IntercrossBaseFragment<FragmentPatternBinding>(R.layout.
                         suffixEditText.setText(suffix)
                         numberEditText.setText(number.toString())
                         padEditText.setText(pad.toString())
-                        startFromRadioButton.isChecked = startFrom
-                        autoRadioButton.isChecked = isAutoIncrement
+
+                        when {
+                            startFrom -> {
+                                startFromRadioButton.isChecked = true
+                                autoRadioButton.isChecked = false
+                            }
+                            isAutoIncrement -> {
+                                startFromRadioButton.isChecked = false
+                                autoRadioButton.isChecked = true
+                            }
+                        }
                     }
                 }
                 else -> mBinding.codeTextView.text = ""
@@ -144,17 +160,10 @@ class PatternFragment : IntercrossBaseFragment<FragmentPatternBinding>(R.layout.
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-        settingsModel.insert(buildSettings())
-    }
-
     private fun buildSettings() = Settings().apply {
         id = 0
-        var n = mBinding.numberEditText.text.toString()
-        var p = mBinding.padEditText.text.toString()
-        if (n.isEmpty()) n = "0"
-        if (p.isEmpty()) p = "0"
+        var n = mBinding.numberEditText.text.toString().ifEmpty { "0" }
+        var p = mBinding.padEditText.text.toString().ifEmpty { "0" }
         isAutoIncrement = mBinding.autoRadioButton.isChecked
         isPattern = mBinding.patternButton.isChecked
         isUUID = mBinding.uuidButton.isChecked
@@ -182,7 +191,7 @@ class PatternFragment : IntercrossBaseFragment<FragmentPatternBinding>(R.layout.
         )
     }
 
-    private fun onBackButtonPressed() {
+    fun onBackButtonPressed() {
         settingsModel.insert(buildSettings())
         findNavController().popBackStack()
     }
