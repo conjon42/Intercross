@@ -51,6 +51,7 @@ import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.ActivityMainBinding
 import org.phenoapps.intercross.fragments.EventsFragmentDirections
+import org.phenoapps.intercross.fragments.PatternFragment
 import org.phenoapps.intercross.fragments.preferences.PreferencesFragment
 import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.Dialogs
@@ -345,37 +346,18 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
             R.layout.activity_main
         )
 
-        setSupportActionBar(mBinding.mainTb)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setDisplayShowHomeEnabled(true)
-        supportActionBar?.setDisplayShowTitleEnabled(false)
-
-        mNavController = Navigation.findNavController(this@MainActivity, R.id.nav_fragment)
-
-        // Set up a listener for destination changes
-        mNavController.addOnDestinationChangedListener { _, destination, _ ->
-            when (destination.id) {
-                R.id.events_fragment -> {
-                    supportActionBar?.setDisplayHomeAsUpEnabled(false)
-                    supportActionBar?.title = ""
-                }
-                R.id.search_fragment -> {
-                    supportActionBar?.setDisplayHomeAsUpEnabled(true)
-                    supportActionBar?.title = "Search"
-                }
-                R.id.cross_count_fragment, R.id.wishlist_fragment, R.id.parents_fragment, R.id.crossblock_fragment -> {
-                    supportActionBar?.setDisplayHomeAsUpEnabled(true)
-                    supportActionBar?.title = destination.label
-                }
-                R.id.preferences_fragment -> {
-                    setToolbar()
-                }
-                else -> {
-                    supportActionBar?.setDisplayHomeAsUpEnabled(true)
-                    supportActionBar?.title = destination.label
-                }
+        supportActionBar.apply {
+            title = ""
+            this?.let {
+                it.themedContext
+                setDisplayHomeAsUpEnabled(true)
+                setHomeButtonEnabled(true)
             }
         }
+
+        mSnackbar = SnackbarQueue()
+
+        mNavController = Navigation.findNavController(this@MainActivity, R.id.nav_fragment)
 
         // toolbar for search screen
         supportFragmentManager.addOnBackStackChangedListener {
@@ -386,8 +368,6 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
                 supportActionBar?.show()
             }
         }
-
-
 
         mDatabase = IntercrossDatabase.getInstance(this)
 
@@ -597,14 +577,30 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     override fun onBackPressed() {
         mNavController.currentDestination?.let { it ->
+
             when (it.id) {
+
+                R.id.pattern_fragment -> {
+
+                    supportFragmentManager.primaryNavigationFragment?.let {
+                        (it.childFragmentManager.fragments[0] as PatternFragment).onBackButtonPressed()
+                        //(supportFragmentManager.primaryNavigationFragment as PatternFragment).onBackButtonPressed()
+                    }
+                }
+                //go back to the last fragment instead of opening the navigation drawer
                 R.id.events_fragment -> {
+
                     if (doubleBackToExitPressedOnce) {
+
                         super.onBackPressed()
+
                         return
                     }
+
                     this.doubleBackToExitPressedOnce = true
+
                     Toast.makeText(this, "Press back again to exit", Toast.LENGTH_SHORT).show()
+
                     Handler().postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
                 }
                 else -> super.onBackPressed()
@@ -613,14 +609,12 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
+        when (item.itemId) {
             android.R.id.home -> {
                 onBackPressed()
-                true
             }
-            else -> super.onOptionsItemSelected(item)
         }
-
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onSearchResultClicked(result: SearchPreferenceResult) {
