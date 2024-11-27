@@ -39,9 +39,8 @@ class KeyUtil(private val ctx: Context?) {
     //endregion
 
     //region profile preference keys
-    val argProfAskPerson by key(R.string.arg_profile_ask_person)
     //endregion
-    val profileKeySet = setOf(profileRoot, argProfAskPerson)
+    val profileKeySet = setOf(profileRoot)
 
     //region naming preference keys
     //endregion
@@ -57,10 +56,8 @@ class KeyUtil(private val ctx: Context?) {
     val printKeySet = setOf(printingRoot, printSetupKey, printZplImportKey)
 
     //region database preference keys
-    val dbImportKey by key(R.string.key_pref_db_import)
-    val dbExportKey by key(R.string.key_pref_db_export)
     //endregion
-    val dbKeySet = setOf(databaseRoot, dbImportKey, dbExportKey)
+    val dbKeySet = setOf(databaseRoot)
 
     //region about preference keys
     val aboutKey by key(R.string.key_pref_about)

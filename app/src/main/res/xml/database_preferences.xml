@@ -5,12 +5,12 @@
 
         <Preference
             android:icon="@drawable/ic_database_import"
-            android:key="@string/key_pref_db_import"
+            android:key="org.phenoapps.intercross.DATABASE_IMPORT"
             android:title="@string/prefs_database_import_title"
             android:summary="@string/prefs_database_import_summary"/>
         <Preference
             android:icon="@drawable/ic_database_export"
-            android:key="@string/key_pref_db_export"
+            android:key="org.phenoapps.intercross.DATABASE_EXPORT"
             android:title="@string/prefs_database_export_title"
             android:summary="@string/prefs_database_export_summary">
         </Preference>
