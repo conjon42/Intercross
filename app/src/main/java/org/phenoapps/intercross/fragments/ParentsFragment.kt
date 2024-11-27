@@ -469,15 +469,6 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
                     findNavController().navigate(R.id.global_action_to_preferences_fragment)
                 }
 
-                R.id.action_nav_export -> {
-
-                    (activity as MainActivity).showExportDialog {
-
-                        bottomNavBar.selectedItemId = R.id.action_nav_parents
-                    }
-
-                }
-
                 R.id.action_nav_home -> {
 
                     findNavController().navigate(ParentsFragmentDirections.globalActionToEvents())

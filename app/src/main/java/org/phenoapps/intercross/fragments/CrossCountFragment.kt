@@ -496,13 +496,6 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
                     findNavController().navigate(CrossCountFragmentDirections.globalActionToParents())
 
                 }
-                R.id.action_nav_export -> {
-
-                    (activity as MainActivity).showExportDialog {
-
-                        bottomNavBar.selectedItemId = R.id.action_nav_cross_count
-                    }
-                }
                 R.id.action_nav_home -> {
 
                     findNavController().navigate(CrossCountFragmentDirections.globalActionToEvents())

@@ -183,14 +183,6 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
                     findNavController().navigate(SummaryFragmentDirections.globalActionToParents())
 
                 }
-                R.id.action_nav_export -> {
-
-                    (activity as MainActivity).showExportDialog {
-
-                        findNavController().navigate(R.id.summary_fragment)
-                    }
-
-                }
                 R.id.action_nav_cross_count -> {
 
                     findNavController().navigate(SummaryFragmentDirections.globalActionToCrossCount())

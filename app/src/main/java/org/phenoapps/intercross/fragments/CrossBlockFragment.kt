@@ -239,14 +239,6 @@ class CrossBlockFragment : IntercrossBaseFragment<FragmentCrossBlockBinding>(R.l
                     findNavController().navigate(CrossBlockFragmentDirections.globalActionToParents())
 
                 }
-                R.id.action_nav_export -> {
-
-                    (activity as MainActivity).showExportDialog {
-
-                        findNavController().navigate(R.id.crossblock_fragment)
-                    }
-
-                }
                 R.id.action_nav_cross_count -> {
 
                     findNavController().navigate(CrossBlockFragmentDirections.globalActionToCrossCount())

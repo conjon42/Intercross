@@ -227,8 +227,14 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
-                    R.id.setExperiment -> {
+                    R.id.action_set_experiment -> {
                         showPersonDialog()
+                        true
+                    }
+                    R.id.action_export -> {
+                        (activity as MainActivity).showExportDialog {
+                            
+                        }
                         true
                     }
                     else -> false
@@ -463,14 +469,6 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
                     findNavController().navigate(EventsFragmentDirections.globalActionToParents())
 
-                }
-                R.id.action_nav_export -> {
-
-                    (activity as MainActivity).showExportDialog {
-
-                        bottomNavBar.selectedItemId = R.id.action_nav_home
-
-                    }
                 }
                 R.id.action_nav_cross_count -> {
 
