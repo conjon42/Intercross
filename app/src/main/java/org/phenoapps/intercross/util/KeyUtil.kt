@@ -31,19 +31,7 @@ class KeyUtil(private val ctx: Context?) {
     val profileRoot by key(R.string.root_profile)
 
     val behaviorRoot by key(R.string.root_behavior)
-    val allowBankMaleKey by key(R.string.key_pref_naming_blank_male)
-    val scanMaleFirstKey by key(R.string.key_pref_naming_cross_order)
-    val createCrossInPatternKey by key(R.string.key_pref_naming_create_pattern)
-    val collectAdditionalInfoKey by key(R.string.key_pref_work_collect)
-    val createMetadataKey by key(R.string.key_pref_work_meta)
-    val manageMetadataKey by key(R.string.key_pref_work_meta_defaults)
-    val soundNotificationKey by key(R.string.key_pref_work_audio)
-    val openCrossAfterCreateKey by key(R.string.key_pref_work_open_cross)
-    val commutativeCrossingKey by key(R.string.key_pref_work_commutative)
-    val behaviorKeySet = setOf(
-        behaviorRoot, allowBankMaleKey, scanMaleFirstKey, createCrossInPatternKey, collectAdditionalInfoKey,
-        createMetadataKey, manageMetadataKey, soundNotificationKey, openCrossAfterCreateKey, commutativeCrossingKey
-    )
+    val behaviorKeySet = setOf(behaviorRoot)
 
     val printingRoot by key(R.string.root_printing)
     val databaseRoot by key(R.string.root_database)
@@ -56,18 +44,9 @@ class KeyUtil(private val ctx: Context?) {
     val profileKeySet = setOf(profileRoot, argProfAskPerson)
 
     //region naming preference keys
-    val nameBlankMaleKey by key(R.string.key_pref_naming_blank_male)
-    val nameCrossOrderKey by key(R.string.key_pref_naming_cross_order)
-    val nameCreatePatternKey by key(R.string.key_pref_naming_create_pattern)
     //endregion
 
     //region workflow preference keys
-    val workCollectKey by key(R.string.key_pref_work_collect)
-    val workMetaKey by key(R.string.key_pref_work_meta)
-    val workMetaDefaultsKey by key(R.string.key_pref_work_meta_defaults)
-    val workAudioKey by key(R.string.key_pref_work_audio)
-    val workOpenCrossKey by key(R.string.key_pref_work_open_cross)
-    val workCommutativeKey by key(R.string.key_pref_work_commutative)
     //endregion
 
     //region printing preference keys

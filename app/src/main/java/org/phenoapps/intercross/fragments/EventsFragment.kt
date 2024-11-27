@@ -111,14 +111,14 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun getFirstOrder(context: Context): String {
 
-        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+        val maleFirst = mPref.getBoolean(GeneralKeys.CROSS_ORDER, false)
 
         return if (maleFirst) context.getString(R.string.MaleID) else context.getString(R.string.FemaleID)
     }
 
     private fun getSecondOrder(context: Context): String {
 
-        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+        val maleFirst = mPref.getBoolean(GeneralKeys.CROSS_ORDER, false)
 
         return if (maleFirst) context.getString(R.string.FemaleID) else context.getString(R.string.MaleID)
 
@@ -161,7 +161,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         }
 
         //if this was called from crosscount/crossblock or wishlist fragment then populate the male/female tv
-        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+        val maleFirst = mPref.getBoolean(GeneralKeys.CROSS_ORDER, false)
 
         argFemale?.let { female ->
             if (maleFirst) mBinding.secondText.setText(female)
@@ -247,7 +247,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         val error = getString(R.string.ErrorCodeExists)
 
-        val isCommutative = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
+        val isCommutative = mPref.getBoolean(GeneralKeys.COMMUTATIVE_CROSSING, false)
 
         metadataViewModel.metadata.observe(viewLifecycleOwner) {
             mMetadata = it
@@ -369,9 +369,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                             val second = mBinding.secondText.text.toString()
                             //val third = editTextCross.text.toString()
 
-                            val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+                            val maleFirst = mPref.getBoolean(GeneralKeys.CROSS_ORDER, false)
 
-                            val blank = mPref.getBoolean(mKeyUtil.nameBlankMaleKey, false)
+                            val blank = mPref.getBoolean(GeneralKeys.BLANK_MALE_ID, false)
 
                             //first check first text, if male first and allow blank males then skip to second text
                             if (first.isBlank() && !(maleFirst && blank)) {
@@ -394,9 +394,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun afterFirstText(value: String) {
 
-        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+        val maleFirst = mPref.getBoolean(GeneralKeys.CROSS_ORDER, false)
 
-        val blank = mPref.getBoolean(mKeyUtil.nameBlankMaleKey, false)
+        val blank = mPref.getBoolean(GeneralKeys.BLANK_MALE_ID, false)
 
         mBinding.firstText.setText(value)
 
@@ -409,9 +409,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun afterSecondText(value: String) {
 
-        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+        val maleFirst = mPref.getBoolean(GeneralKeys.CROSS_ORDER, false)
 
-        val blank = mPref.getBoolean(mKeyUtil.nameBlankMaleKey, false)
+        val blank = mPref.getBoolean(GeneralKeys.BLANK_MALE_ID, false)
 
         mBinding.secondText.setText(value)
 
@@ -732,9 +732,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun FragmentEventsBinding.isInputValid(): Boolean {
 
-        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+        val maleFirst = mPref.getBoolean(GeneralKeys.CROSS_ORDER, false)
 
-        val blank = mPref.getBoolean(mKeyUtil.nameBlankMaleKey, false)
+        val blank = mPref.getBoolean(GeneralKeys.BLANK_MALE_ID, false)
 
         val male: String
         val female: String
@@ -771,9 +771,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         val value = mBinding.editTextCross.text.toString()
 
-        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+        val maleFirst = mPref.getBoolean(GeneralKeys.CROSS_ORDER, false)
 
-        val blank = mPref.getBoolean(mKeyUtil.nameBlankMaleKey, false)
+        val blank = mPref.getBoolean(GeneralKeys.BLANK_MALE_ID, false)
 
         lateinit var male: String
         lateinit var female: String

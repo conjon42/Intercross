@@ -29,6 +29,7 @@ import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentCrossCountBinding
+import org.phenoapps.intercross.fragments.preferences.GeneralKeys
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.KeyUtil
 import java.lang.IndexOutOfBoundsException
@@ -131,7 +132,7 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
      */
     private fun loadCounts() {
 
-        val isCommutativeCrossing = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
+        val isCommutativeCrossing = mPref.getBoolean(GeneralKeys.COMMUTATIVE_CROSSING, false)
 
         if (isCommutativeCrossing) loadCommutativeCrossCounts()
         else loadNonCommutativeCrossCounts()
@@ -139,7 +140,7 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
     private fun showChildren(male: String, female: String) {
 
-        val isCommutativeCrossing = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
+        val isCommutativeCrossing = mPref.getBoolean(GeneralKeys.COMMUTATIVE_CROSSING, false)
 
         if (isCommutativeCrossing) showCommutativeChildren(male, female)
         else showNonCommutativeChildren(male, female)

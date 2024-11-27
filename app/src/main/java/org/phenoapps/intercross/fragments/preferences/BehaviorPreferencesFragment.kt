@@ -83,7 +83,7 @@ class BehaviorPreferencesFragment : BasePreferenceFragment(R.xml.behavior_prefer
     private fun setupNamingPreferences() {
         settingsModel.settings.observeForever { settings ->
             settings?.let {
-                findPreference<Preference>(mKeyUtil.nameCreatePatternKey)?.apply {
+                findPreference<Preference>(GeneralKeys.CREATE_PATTERN)?.apply {
                     summary = when {
                         settings.isPattern -> "Pattern"
                         !settings.isUUID && !settings.isPattern -> "None"
@@ -93,7 +93,7 @@ class BehaviorPreferencesFragment : BasePreferenceFragment(R.xml.behavior_prefer
             }
         }
 
-        findPreference<Preference>(mKeyUtil.nameCreatePatternKey)?.setOnPreferenceClickListener {
+        findPreference<Preference>(GeneralKeys.CREATE_PATTERN)?.setOnPreferenceClickListener {
             findNavController().navigate(BehaviorPreferencesFragmentDirections.actionBehaviorPreferencesFragmentToPatternFragment())
             true
         }
@@ -109,14 +109,14 @@ class BehaviorPreferencesFragment : BasePreferenceFragment(R.xml.behavior_prefer
 
     private fun setupMetadataPreferences() {
         try {
-            val metadataPref = findPreference<Preference>(mKeyUtil.workMetaKey)
-            val defaultsPref = findPreference<Preference>(mKeyUtil.workMetaDefaultsKey)
-            val isCollect = mPref.getBoolean(mKeyUtil.workCollectKey, false)
+            val metadataPref = findPreference<Preference>(GeneralKeys.META_DATA)
+            val defaultsPref = findPreference<Preference>(GeneralKeys.META_DATA_DEFAULTS)
+            val isCollect = mPref.getBoolean(GeneralKeys.COLLECT_INFO, false)
 
             defaultsPref?.isVisible = isCollect
             metadataPref?.isVisible = isCollect
 
-            findPreference<SwitchPreference>(mKeyUtil.workCollectKey)?.setOnPreferenceChangeListener { _, newValue ->
+            findPreference<SwitchPreference>(GeneralKeys.COLLECT_INFO)?.setOnPreferenceChangeListener { _, newValue ->
                 val isCollectEnabled = newValue as? Boolean ?: false
                 metadataPref?.isVisible = isCollectEnabled
                 defaultsPref?.isVisible = isCollectEnabled

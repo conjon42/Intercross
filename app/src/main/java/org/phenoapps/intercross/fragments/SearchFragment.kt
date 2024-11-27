@@ -22,6 +22,7 @@ import org.phenoapps.intercross.data.fts.viewmodels.CrossesViewModel
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentSearchBinding
+import org.phenoapps.intercross.fragments.preferences.GeneralKeys
 import org.phenoapps.intercross.interfaces.OnSimpleItemClicked
 import org.phenoapps.intercross.util.KeyUtil
 import org.phenoapps.intercross.util.observeOnce
@@ -137,7 +138,7 @@ class SearchFragment : IntercrossBaseFragment<FragmentSearchBinding>(R.layout.fr
 
     override fun FragmentSearchBinding.afterCreateView() {
 
-        val isCommutativeCrossing = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
+        val isCommutativeCrossing = mPref.getBoolean(GeneralKeys.COMMUTATIVE_CROSSING, false)
 
         //initialize databases and populate fts tables with all cross data
         context?.let { ctx ->

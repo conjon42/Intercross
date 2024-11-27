@@ -71,7 +71,7 @@ class CrossUtil(val context: Context) {
 
         }
 
-        val isCommutative = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
+        val isCommutative = mPref.getBoolean(GeneralKeys.COMMUTATIVE_CROSSING, false)
 
         val experiment = mPref.getString(GeneralKeys.EXPERIMENT_NAME, "")
 
@@ -185,7 +185,7 @@ class CrossUtil(val context: Context) {
      */
     fun checkPrefToOpenCrossEvent(controller: NavController, direction: NavDirections) {
 
-        val openCross = mPref.getBoolean(mKeyUtil.workOpenCrossKey, false)
+        val openCross = mPref.getBoolean(GeneralKeys.OPEN_CROSS_IMMEDIATELY, false)
 
         if (openCross) {
             controller.navigate(

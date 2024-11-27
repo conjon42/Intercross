@@ -39,6 +39,7 @@ import org.phenoapps.intercross.data.viewmodels.factory.MetaValuesViewModelFacto
 import org.phenoapps.intercross.data.viewmodels.factory.MetadataViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentEventDetailBinding
+import org.phenoapps.intercross.fragments.preferences.GeneralKeys
 import org.phenoapps.intercross.interfaces.MetadataManager
 import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.Dialogs
@@ -103,7 +104,7 @@ class EventDetailFragment:
     private fun getMetaDataVisibility(context: Context): Int {
 
         //determine if meta data collection is enabled
-        val collect: Boolean = mPref.getBoolean(mKeyUtil.workCollectKey, false)
+        val collect: Boolean = mPref.getBoolean(GeneralKeys.COLLECT_INFO, false)
 
         return if (collect) View.VISIBLE else View.GONE
 
