@@ -38,7 +38,7 @@ import org.phenoapps.intercross.interfaces.MetadataManager
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.KeyUtil
 
-class BehaviorPreferencesFragment : BasePreferenceFragment(R.xml.behavior_preferences, R.string.root_behavior), MetadataManager, CoroutineScope by MainScope() {
+class BehaviorPreferencesFragment : BasePreferenceFragment(R.xml.behavior_preferences), MetadataManager, CoroutineScope by MainScope() {
 
     private val TAG = "BehaviorPreferences"
 

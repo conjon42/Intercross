@@ -11,7 +11,7 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceManager
 import org.phenoapps.intercross.R
 
-class ProfileFragment : BasePreferenceFragment(R.xml.profile_preferences, R.string.root_profile) {
+class ProfileFragment : BasePreferenceFragment(R.xml.profile_preferences) {
 
     private val mPrefs by lazy {
         context?.let { PreferenceManager.getDefaultSharedPreferences(it) }

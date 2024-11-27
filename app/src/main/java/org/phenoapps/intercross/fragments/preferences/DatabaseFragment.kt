@@ -8,7 +8,7 @@ import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.util.KeyUtil
 
-class DatabaseFragment : BasePreferenceFragment(R.xml.database_preferences, R.string.root_database) {
+class DatabaseFragment : BasePreferenceFragment(R.xml.database_preferences) {
 
     private val mKeyUtil by lazy {
         KeyUtil(context)

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
-    android:key="@string/root_printing"
+    android:key="pref_key_printing_settings"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
         <Preference

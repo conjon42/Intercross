@@ -22,44 +22,4 @@ class KeyUtil(private val ctx: Context?) {
     //non preference keys
     //boolean value to determine if brapi has been imported previously
     val brapiHasBeenImported by key(R.string.key_brapi_has_been_imported)
-
-    //search preference
-    val searchPrefKey by key(R.string.key_pref_search)
-
-    //region root preference screen keys
-    val root by key(R.string.root_preferences)
-    val profileRoot by key(R.string.root_profile)
-
-    val behaviorRoot by key(R.string.root_behavior)
-    val behaviorKeySet = setOf(behaviorRoot)
-
-    val printingRoot by key(R.string.root_printing)
-    val databaseRoot by key(R.string.root_database)
-    val aboutRoot by key(R.string.root_about)
-    //endregion
-
-    //region profile preference keys
-    //endregion
-    val profileKeySet = setOf(profileRoot)
-
-    //region naming preference keys
-    //endregion
-
-    //region workflow preference keys
-    //endregion
-
-    //region printing preference keys
-    //endregion
-    val printKeySet = setOf(printingRoot)
-
-    //region database preference keys
-    //endregion
-    val dbKeySet = setOf(databaseRoot)
-
-    //region about preference keys
-    val aboutKey by key(R.string.key_pref_about)
-    val aboutKeySet = setOf(aboutRoot, aboutKey)
-    //endregion
-
-    val prefsRootKeys = setOf(profileRoot, behaviorRoot, databaseRoot, printingRoot, aboutRoot)
 }

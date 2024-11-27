@@ -11,7 +11,7 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.util.KeyUtil
 
-class PrintingFragment : BasePreferenceFragment(R.xml.printing_preferences, R.string.root_printing) {
+class PrintingFragment : BasePreferenceFragment(R.xml.printing_preferences) {
 
     private val mKeyUtil by lazy {
         KeyUtil(context)

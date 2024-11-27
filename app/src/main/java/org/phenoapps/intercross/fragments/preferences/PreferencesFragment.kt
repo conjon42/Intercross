@@ -23,7 +23,7 @@ import org.phenoapps.intercross.util.KeyUtil
  * Root preferences fragment that populates the setting categories.
  * Each category can be clicked to navigate to their corresponding fragment.
  */
-class PreferencesFragment : BasePreferenceFragment(R.xml.preferences, R.string.root_preferences) {
+class PreferencesFragment : BasePreferenceFragment(R.xml.preferences) {
 
     private val mKeyUtil by lazy {
         KeyUtil(context)
@@ -59,7 +59,7 @@ class PreferencesFragment : BasePreferenceFragment(R.xml.preferences, R.string.r
     }
 
     fun setSearchConfiguration() {
-        searchPreference = findPreference(mKeyUtil.searchPrefKey) as SearchPreference?
+        searchPreference = findPreference("searchPreference") as SearchPreference?
         if (searchPreference != null) {
             val searchConfiguration = searchPreference?.searchConfiguration
             searchConfiguration.apply {
@@ -82,7 +82,7 @@ class PreferencesFragment : BasePreferenceFragment(R.xml.preferences, R.string.r
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(findPreference<PreferenceScreen>(getString(R.string.root_profile))) {
+        with(findPreference<PreferenceScreen>("pref_key_profile_settings")) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     findNavController().navigate(
@@ -94,7 +94,7 @@ class PreferencesFragment : BasePreferenceFragment(R.xml.preferences, R.string.r
             }
         }
 
-        with(findPreference<PreferenceScreen>(getString(R.string.root_behavior))) {
+        with(findPreference<PreferenceScreen>("pref_key_behavioral_settings")) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     try {
@@ -107,7 +107,7 @@ class PreferencesFragment : BasePreferenceFragment(R.xml.preferences, R.string.r
             }
         }
 
-        with(findPreference<PreferenceScreen>(getString(R.string.root_printing))) {
+        with(findPreference<PreferenceScreen>("pref_key_printing_settings")) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     findNavController().navigate(
@@ -131,28 +131,7 @@ class PreferencesFragment : BasePreferenceFragment(R.xml.preferences, R.string.r
             }
         }
 
-        val printSetup =
-            findPreference<Preference>("org.phenoapps.intercross.PRINTER_SETUP")
-        printSetup?.setOnPreferenceClickListener {
-            val intent = activity?.packageManager
-                ?.getLaunchIntentForPackage("com.zebra.printersetup")
-            when (intent) {
-                null -> {
-                    val i = Intent(Intent.ACTION_VIEW)
-                    i.data = Uri.parse(
-                        "https://play.google.com/store/apps/details?id=com.zebra.printersetup"
-                    )
-                    startActivity(i)
-                }
-
-                else -> {
-                    startActivity(intent)
-                }
-            }
-            true
-        }
-
-        with(findPreference<PreferenceScreen>(getString(R.string.root_brapi))) {
+        with(findPreference<PreferenceScreen>("pref_key_brapi_settings")) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     //TODO
@@ -164,7 +143,7 @@ class PreferencesFragment : BasePreferenceFragment(R.xml.preferences, R.string.r
             }
         }
 
-        with(findPreference<PreferenceScreen>(getString(R.string.root_about))) {
+        with(findPreference<PreferenceScreen>("pref_key_about_settings")) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     findNavController().navigate(PreferencesFragmentDirections.actionToAbout())
@@ -176,7 +155,7 @@ class PreferencesFragment : BasePreferenceFragment(R.xml.preferences, R.string.r
             true
         }
 
-        with(findPreference<PreferenceScreen>(getString(R.string.root_database))) {
+        with(findPreference<PreferenceScreen>("pref_key_database_settings")) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     findNavController().navigate(
@@ -193,18 +172,17 @@ class PreferencesFragment : BasePreferenceFragment(R.xml.preferences, R.string.r
         result.closeSearchPage(activity as MainActivity)
         if (result.resourceFile == R.xml.preferences) {
             // Handle preferences.xml case
-            findPreference<SearchPreference>(mKeyUtil.searchPrefKey)?.isVisible = false
+            findPreference<SearchPreference>("searchPreference")?.isVisible = false
             scrollToPreference(result.key)
             result.highlight(this)
         } else {
             // Navigate to appropriate fragment using NavController
             findNavController().navigate(
-                when (result.key) {
-                    in mKeyUtil.profileKeySet -> R.id.profile_preference_fragment
-                    in mKeyUtil.behaviorKeySet -> R.id.behavior_preferences_fragment
-                    in mKeyUtil.printKeySet -> R.id.printing_preference_fragment
-                    in mKeyUtil.dbKeySet -> R.id.database_preference_fragment
-                    in mKeyUtil.aboutKeySet -> R.id.about_fragment
+                when (result.resourceFile) {
+                    R.xml.profile_preferences -> R.id.profile_preference_fragment
+                    R.xml.behavior_preferences -> R.id.behavior_preferences_fragment
+                    R.xml.printing_preferences -> R.id.printing_preference_fragment
+                    R.xml.database_preferences -> R.id.database_preference_fragment
                     else -> throw RuntimeException()
                 }
             )

@@ -1,27 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen android:key="@string/root_preferences"
+<PreferenceScreen android:key="pref_key_settings"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto" >
 
     <com.bytehamster.lib.preferencesearch.SearchPreference
-        android:key="@string/key_pref_search" />
+        android:key="searchPreference" />
 
-    <PreferenceScreen android:key="@string/root_profile"
+    <PreferenceScreen
+        android:key="pref_key_profile_settings"
         android:title="@string/prefs_profile_title"
         android:icon="@drawable/ic_account_circle_black_24dp"
         app:iconSpaceReserved="false"/>
 
-    <PreferenceScreen android:key="@string/root_behavior"
+    <PreferenceScreen
+        android:key="pref_key_behavioral_settings"
         android:title="@string/prefs_behavior_title"
         android:icon="@drawable/ic_setting_pattern_create"
         app:iconSpaceReserved="false"/>
 
-    <PreferenceScreen android:key="@string/root_printing"
+    <PreferenceScreen
+        android:key="pref_key_printing_settings"
         android:title="@string/prefs_printing_title"
         android:icon="@drawable/ic_setting_print_connect"
         app:iconSpaceReserved="false"/>
 
-    <PreferenceScreen android:key="@string/root_database"
+    <PreferenceScreen
+        android:key="pref_key_database_settings"
         android:title="@string/prefs_database_title"
         android:icon="@drawable/ic_database"
         app:iconSpaceReserved="false"/>
@@ -31,7 +35,8 @@
 <!--        android:icon="@drawable/ic_brapi"-->
 <!--        app:iconSpaceReserved="false"/>-->
 
-    <PreferenceScreen android:key="@string/root_about"
+    <PreferenceScreen
+        android:key="pref_key_about_settings"
         android:title="@string/prefs_about_title"
         android:icon="@drawable/ic_about_info"
         app:iconSpaceReserved="false"/>

@@ -16,7 +16,7 @@ import org.phenoapps.intercross.util.KeyUtil
  * The base class takes the xml file and root key to populate the preference list.
  * This class mainly handles bottom nav bar navigation directions and toolbar.
  */
-open class BasePreferenceFragment(private val xml: Int, private val key: Int) : PreferenceFragmentCompat() {
+open class BasePreferenceFragment(private val xml: Int) : PreferenceFragmentCompat() {
 
     private var mBottomNavBar: BottomNavigationView? = null
 
@@ -53,7 +53,7 @@ open class BasePreferenceFragment(private val xml: Int, private val key: Int) : 
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        setPreferencesFromResource(xml, getString(key))
+        setPreferencesFromResource(xml, rootKey)
     }
 
     private fun setupBottomNavBar() {
