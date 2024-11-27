@@ -17,6 +17,9 @@ class GeneralKeys {
 
         val EXPERIMENT_NAME = INTERCROSS_PREFIX + "EXPERIMENT_NAME"
 
+        // PRINTING PREFERENCES
+        val ZPL_CODE = INTERCROSS_PREFIX + "ZPL_CODE"
+
         // BEHAVIOR PREFERENCES
         // Naming
         val BLANK_MALE_ID = INTERCROSS_PREFIX + "BLANK_MALE_ID"

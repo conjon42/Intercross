@@ -5,12 +5,12 @@
 
         <Preference
             android:icon="@drawable/ic_setting_print_connect"
-            android:key="@string/key_pref_print_setup"
+            android:key="org.phenoapps.intercross.ZEBRA_PRINT_CONNECT"
             android:title="@string/prefs_zebra_print_connect_title"
             android:summary="@string/prefs_zebra_print_connect_summary"/>
         <Preference
             android:icon="@drawable/ic_setting_import_zpl"
-            android:key="@string/key_pref_print_zpl_import"
+            android:key="org.phenoapps.intercross.ZPL_IMPORT"
             android:title="@string/prefs_zebra_import_title"
             android:summary="@string/prefs_zebra_import_summary" />
 

@@ -9,6 +9,7 @@ import android.widget.RadioGroup
 import androidx.appcompat.app.AlertDialog
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
+import org.phenoapps.intercross.fragments.preferences.GeneralKeys
 
 
 //Bluetooth Utility class for printing ZPL code and choosing bluetooth devices to print from.
@@ -148,11 +149,10 @@ class BluetoothUtil {
     fun print(ctx: Context, events: Array<Event>) {
 
         val pref = androidx.preference.PreferenceManager.getDefaultSharedPreferences(ctx)
-        val keyUtil = KeyUtil(ctx)
 
         choose(ctx) {
 
-            val importedZpl = pref.getString(keyUtil.argPrintZplCode, "") ?: ""
+            val importedZpl = pref.getString(GeneralKeys.ZPL_CODE, "") ?: ""
 
             if (importedZpl.isNotBlank()) {
 
@@ -169,11 +169,10 @@ class BluetoothUtil {
     fun print(ctx: Context, parents: Array<Parent>) {
 
         val pref = androidx.preference.PreferenceManager.getDefaultSharedPreferences(ctx)
-        val keyUtil = KeyUtil(ctx)
 
         choose(ctx) {
 
-            val importedZpl = pref.getString(keyUtil.argPrintZplCode, "") ?: ""
+            val importedZpl = pref.getString(GeneralKeys.ZPL_CODE, "") ?: ""
 
             if (importedZpl.isNotBlank()) {
 

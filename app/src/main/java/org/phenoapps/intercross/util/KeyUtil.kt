@@ -49,11 +49,8 @@ class KeyUtil(private val ctx: Context?) {
     //endregion
 
     //region printing preference keys
-    val printSetupKey by key(R.string.key_pref_print_setup)
-    val printZplImportKey by key(R.string.key_pref_print_zpl_import)
-    val argPrintZplCode by key(R.string.arg_print_zpl_code)
     //endregion
-    val printKeySet = setOf(printingRoot, printSetupKey, printZplImportKey)
+    val printKeySet = setOf(printingRoot)
 
     //region database preference keys
     //endregion
