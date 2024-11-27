@@ -73,6 +73,20 @@ class BehaviorPreferencesFragment : BasePreferenceFragment(R.xml.behavior_prefer
     private var mEvents: List<Event> = ArrayList()
     private lateinit var mMetaValuesList: List<MetadataValues>
     private lateinit var mMetaList: List<Meta>
+    private var metadataPref: Preference? = null
+    private var defaultsPref: Preference? = null
+
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        super.onCreatePreferences(savedInstanceState, rootKey)
+
+        val collectInfoEnabled = mPref.getBoolean(GeneralKeys.COLLECT_INFO, false)
+        metadataPref = findPreference(GeneralKeys.META_DATA)
+        defaultsPref = findPreference(GeneralKeys.META_DATA_DEFAULTS)
+
+        metadataPref?.isVisible = collectInfoEnabled
+        defaultsPref?.isVisible = collectInfoEnabled
+
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -109,13 +123,6 @@ class BehaviorPreferencesFragment : BasePreferenceFragment(R.xml.behavior_prefer
 
     private fun setupMetadataPreferences() {
         try {
-            val metadataPref = findPreference<Preference>(GeneralKeys.META_DATA)
-            val defaultsPref = findPreference<Preference>(GeneralKeys.META_DATA_DEFAULTS)
-            val isCollect = mPref.getBoolean(GeneralKeys.COLLECT_INFO, false)
-
-            defaultsPref?.isVisible = isCollect
-            metadataPref?.isVisible = isCollect
-
             findPreference<SwitchPreference>(GeneralKeys.COLLECT_INFO)?.setOnPreferenceChangeListener { _, newValue ->
                 val isCollectEnabled = newValue as? Boolean ?: false
                 metadataPref?.isVisible = isCollectEnabled
