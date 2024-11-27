@@ -54,14 +54,6 @@ open class BasePreferenceFragment(private val xml: Int, private val key: Int) : 
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(xml, getString(key))
-
-        val askPerson = (arguments ?: Bundle())
-            .getString(mKeyUtil.argProfAskPerson, "false")
-
-        if (askPerson == "true") {
-            //TODO
-            //preferenceManager.showDialog(findPreference<EditTextPreference>(mKeyUtil.profPersonKey))
-        }
     }
 
     private fun setupBottomNavBar() {
