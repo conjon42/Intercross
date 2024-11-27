@@ -51,10 +51,9 @@ class KeyUtil(private val ctx: Context?) {
     //endregion
 
     //region profile preference keys
-    val profExpKey by key(R.string.key_pref_profile_experiment)
     val argProfAskPerson by key(R.string.arg_profile_ask_person)
     //endregion
-    val profileKeySet = setOf(profileRoot, profExpKey, argProfAskPerson)
+    val profileKeySet = setOf(profileRoot, argProfAskPerson)
 
     //region naming preference keys
     val nameBlankMaleKey by key(R.string.key_pref_naming_blank_male)

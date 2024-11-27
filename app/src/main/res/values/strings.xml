@@ -429,6 +429,10 @@
     <string name="error_no_bluetooth_permission">Bluetooth permission is required to print.</string>
     <string name="search_fragment_label">Search</string>
 
+    <!-- Experiment -->
+    <string name="dialog_experiment_title">Set Experiment</string>
+    <string name="dialog_experiment_hint">Experiment name</string>
+
     <!-- Profile -->
     <string name="collect_dialog_verify_collector">Is this still</string>
     <string name="collect_dialog_verify_no_button">No</string>
@@ -483,10 +487,6 @@
     <string name="prefs_database_export_title">Export Database</string>
     <string name="prefs_database_export_summary">This will prompt the user to export the local database.</string>
 
-    <string name="enter_person_and_experiment">Enter Person and Experiment</string>
-    <string name="enter_person_name">Enter person name</string>
-    <string name="enter_experiment_name">Enter experiment name</string>
-    <string name="person_and_experiment_required">Both person and experiment are required</string>
 
     <string name="ok">OK</string>
     <string name="person_and_experiment_saved">Person and experiment names saved</string>

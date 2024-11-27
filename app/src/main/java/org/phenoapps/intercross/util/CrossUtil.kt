@@ -73,7 +73,7 @@ class CrossUtil(val context: Context) {
 
         val isCommutative = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
 
-        val experiment = mPref.getString(mKeyUtil.profExpKey, "")
+        val experiment = mPref.getString(GeneralKeys.EXPERIMENT_NAME, "")
 
         val firstName = mPref.getString(GeneralKeys.FIRST_NAME,"")
         val lastName = mPref.getString(GeneralKeys.LAST_NAME,"")

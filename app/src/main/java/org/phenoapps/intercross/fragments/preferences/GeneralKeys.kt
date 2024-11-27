@@ -15,6 +15,8 @@ class GeneralKeys {
         val MODIFY_PROFILE_SETTINGS = "MODIFY_PROFILE_SETTINGS"
         val PERSON_UPDATE = "PERSON_UPDATE"
 
+        val EXPERIMENT_NAME = INTERCROSS_PREFIX + "EXPERIMENT_NAME"
+
 
         // BRAPI PREFERENCES
         const val BRAPI_BASE_URL = "org.phenoapps.intercross.BRAPI_BASE_URL"

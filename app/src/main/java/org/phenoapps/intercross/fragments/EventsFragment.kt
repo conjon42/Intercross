@@ -2,15 +2,19 @@ package org.phenoapps.intercross.fragments
 
 import android.app.Activity
 import android.content.Context
+import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.TypedValue
 import android.view.*
 import android.view.inputmethod.EditorInfo
+import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.core.view.MenuProvider
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -120,6 +124,12 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        setMenuItems()
+    }
+
     override fun FragmentEventsBinding.afterCreateView() {
 
         activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
@@ -202,8 +212,29 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
     override fun onResume() {
         super.onResume()
 
+        (activity as MainActivity).setToolbar()
+        (activity as MainActivity).supportActionBar?.title = mPref.getString(GeneralKeys.EXPERIMENT_NAME, "")
+
         mBinding.bottomNavBar.selectedItemId = R.id.action_nav_home
 
+    }
+
+    private fun setMenuItems() {
+        activity?.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_entry_fragment, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.setExperiment -> {
+                        showPersonDialog()
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner)
     }
 
     private fun startObservers() {
@@ -841,5 +872,42 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             FileUtil(requireContext()).ringNotification(false)
 
         }
+    }
+
+    private fun showPersonDialog() {
+        val inflater = this.layoutInflater
+        val layout: View = inflater.inflate(R.layout.dialog_set_experiment, null)
+        val experimentName = layout.findViewById<EditText>(R.id.experimentName)
+
+        experimentName.setText(mPref?.getString(GeneralKeys.EXPERIMENT_NAME, ""))
+
+        experimentName.setSelectAllOnFocus(true)
+
+        val builder = android.app.AlertDialog.Builder(context)
+            .setTitle(R.string.dialog_experiment_title)
+            .setCancelable(true)
+            .setView(layout)
+            .setNegativeButton(getString(R.string.dialog_cancel)) { dialog, _ -> dialog.dismiss() }
+            .setNeutralButton(R.string.Clear) { _, _ ->
+                val e = mPref?.edit()
+                e?.putString(GeneralKeys.EXPERIMENT_NAME, "")
+                (activity as MainActivity).supportActionBar?.title = null
+
+                e?.apply()
+            }
+            .setPositiveButton(getString(R.string.dialog_save)) { _, _ ->
+                val e = mPref?.edit()
+                e?.putString(GeneralKeys.EXPERIMENT_NAME, experimentName.text.toString())
+                (activity as MainActivity).supportActionBar?.title = experimentName.text
+
+                e?.apply()
+            }
+
+        val experimentDialog = builder.create()
+        experimentDialog?.show()
+
+        val langParams = experimentDialog?.window?.attributes
+        langParams?.width = LinearLayout.LayoutParams.MATCH_PARENT
+        experimentDialog?.window?.attributes = langParams
     }
 }
