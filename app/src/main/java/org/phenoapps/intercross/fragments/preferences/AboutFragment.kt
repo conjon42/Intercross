@@ -10,10 +10,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.danielstone.materialaboutlibrary.ConvenienceBuilder
 import com.danielstone.materialaboutlibrary.MaterialAboutFragment
 import com.danielstone.materialaboutlibrary.items.MaterialAboutActionItem
@@ -22,6 +23,8 @@ import com.danielstone.materialaboutlibrary.items.MaterialAboutTitleItem
 import com.danielstone.materialaboutlibrary.model.MaterialAboutCard
 import com.danielstone.materialaboutlibrary.model.MaterialAboutList
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.michaelflisar.changelog.ChangelogBuilder
+import com.michaelflisar.changelog.classes.ImportanceChangelogSorter
 import com.mikepenz.aboutlibraries.LibsBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,15 +36,20 @@ import org.phenoapps.intercross.activities.MainActivity
 import java.net.HttpURLConnection
 import java.net.URL
 
-class AboutFragment : MaterialAboutFragment() {
 
+class AboutFragment : MaterialAboutFragment() {
 
     private var mBottomNavBar: BottomNavigationView? = null
     private lateinit var updateCheckItem: MaterialAboutActionItem
+    private lateinit var  circularProgressDrawable: CircularProgressDrawable
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requireContext().setTheme(R.style.AppTheme)
+
+        circularProgressDrawable = CircularProgressDrawable(requireContext())
+        circularProgressDrawable.setStyle(CircularProgressDrawable.DEFAULT)
+        circularProgressDrawable.start()
     }
 
     override fun onCreateView(
@@ -137,15 +145,23 @@ class AboutFragment : MaterialAboutFragment() {
 
         updateCheckItem = MaterialAboutActionItem.Builder()
                 .text(getString(R.string.check_updates_title))
-                .icon(R.drawable.ic_about_changelog)
+                .icon(circularProgressDrawable)
+                .setOnClickAction(null) // Set initially to null, will be updated later
                 .build()
+
         appCardBuilder.addItem(updateCheckItem)
 
-        appCardBuilder.addItem(ConvenienceBuilder.createWebsiteActionItem(c,
-                ContextCompat.getDrawable(requireContext(), R.drawable.ic_about_website),
-                getString(R.string.about_manual_title),
-                false,
-                Uri.parse("https://docs.fieldbook.phenoapps.org/en/latest/intercross.html")))
+        appCardBuilder.addItem(MaterialAboutActionItem.Builder()
+            .text(getString(R.string.changelog_title))
+            .icon(R.drawable.ic_about_changelog)
+            .setOnClickAction { showChangelog(managedShow = false, rateButton = false) }
+            .build())
+
+        // appCardBuilder.addItem(ConvenienceBuilder.createWebsiteActionItem(c,
+        //         ContextCompat.getDrawable(requireContext(), R.drawable.ic_about_website),
+        //         getString(R.string.about_manual_title),
+        //         false,
+        //         Uri.parse("https://docs.fieldbook.phenoapps.org/en/latest/intercross.html")))
 
         appCardBuilder.addItem(ConvenienceBuilder.createRateActionItem(c,
                 ContextCompat.getDrawable(requireContext(), R.drawable.ic_about_rate),
@@ -175,7 +191,7 @@ class AboutFragment : MaterialAboutFragment() {
                 ContextCompat.getDrawable(requireContext(), R.drawable.ic_about_contributors),
                 getString(R.string.about_contributors_title),
                 false,
-                Uri.parse("https://github.com/PhenoApps/Intercross#-contributors")))
+                Uri.parse("https://github.com/PhenoApps/Intercross#contributors")))
 
         contributorsCardBuilder.addItem(ConvenienceBuilder.createWebsiteActionItem(c,
                 ContextCompat.getDrawable(requireContext(), R.drawable.ic_about_funding),
@@ -197,10 +213,10 @@ class AboutFragment : MaterialAboutFragment() {
                 .icon(R.drawable.ic_about_libraries)
                 .setOnClickAction {
                     LibsBuilder()
-                            .withActivityTitle(getString(R.string.about_libraries_title))
-                            .withAboutIconShown(true)
-                            .withAboutVersionShown(true)
-                            .withAboutAppName(getString(R.string.app_name))
+                            .withAutoDetect(true)
+                            .withActivityTitle(getString(R.string.libraries_title))
+                            .withLicenseShown(true)
+                            .withVersionShown(true)
                             .start(requireContext())
                 }
                 .build())
@@ -230,8 +246,8 @@ class AboutFragment : MaterialAboutFragment() {
                 appCardBuilder.build(),
                 authorCardBuilder.build(),
                 contributorsCardBuilder.build(),
-                technicalCardBuilder.build(),
-                otherAppsCardBuilder.build()
+                otherAppsCardBuilder.build(),
+                technicalCardBuilder.build()
         )
     }
 
@@ -257,7 +273,7 @@ class AboutFragment : MaterialAboutFragment() {
 
                 result?.let {
                     val json = JSONObject(it)
-                    val latestVersion = json.getString("tag_name")
+                    val latestVersion = json.getString("tag_name").removePrefix("v")
                     val downloadUrl = json.getJSONArray("assets").getJSONObject(0).getString("browser_download_url")
 
                     val isNewVersionAvailable = isNewerVersion(currentVersion, latestVersion)
@@ -270,10 +286,11 @@ class AboutFragment : MaterialAboutFragment() {
     }
 
     private fun showVersionStatus(isNewVersionAvailable: Boolean, latestVersion: String?, downloadUrl: String?) {
+        circularProgressDrawable.stop()
         if (isNewVersionAvailable) {
             updateCheckItem.text = getString(R.string.found_updates_title)
             updateCheckItem.subText = latestVersion
-            updateCheckItem.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_about_changelog)
+            updateCheckItem.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_about_get_update)
             updateCheckItem.setOnClickAction {
                 downloadUrl?.let {
                     val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(it))
@@ -282,7 +299,7 @@ class AboutFragment : MaterialAboutFragment() {
             }
         } else {
             updateCheckItem.text = getString(R.string.no_updates_title)
-            updateCheckItem.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_about_changelog)
+            updateCheckItem.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_about_up_to_date)
             updateCheckItem.setOnClickAction(null)
         }
         refreshMaterialAboutList()
@@ -316,5 +333,17 @@ class AboutFragment : MaterialAboutFragment() {
         } catch (e: PackageManager.NameNotFoundException) {
             ConvenienceBuilder.createWebsiteOnClickAction(c, Uri.parse("https://play.google.com/store/apps/details?id=$packageName"))
         }
+    }
+
+    private fun showChangelog(managedShow: Boolean, rateButton: Boolean) {
+        ChangelogBuilder()
+            .withUseBulletList(true) // show bullets for each changelog row
+            .withManagedShowOnStart(managedShow) // show dialog only if the changelog has new infos and will only show this new info
+            .withRateButton(rateButton) // enable this to show a "rate app" button in the dialog => clicking it will open the play store; the parent activity or target fragment can also implement IChangelogRateHandler to handle the button click
+            .withSummary(false,true) // enable this to show a summary and a "show more" button, the second parameter describes if releases without summary items should be shown expanded or not
+            .withTitle(getString(R.string.changelog_title)) // provide a custom title if desired, default one is "Changelog <VERSION>"
+            .withOkButtonLabel("OK") // provide a custom ok button text if desired, default one is "OK"
+            .withSorter(ImportanceChangelogSorter())
+            .buildAndShowDialog(activity as AppCompatActivity?, false) // second parameter defines, if the dialog has a dark or light theme
     }
 }
