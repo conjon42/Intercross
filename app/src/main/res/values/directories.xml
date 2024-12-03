@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Intercross directory structure names -->
+    <string name="dir_wishlist_import" translatable="false">wishlist_import</string>
+
+</resources>
