@@ -7,6 +7,7 @@ import android.view.GestureDetector
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
+import android.view.WindowManager
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -82,36 +83,36 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
     //simple gesture listener to detect left and right swipes,
     //on a detected swipe the viewed gender will change
-    private val gestureListener = object : GestureDetector.SimpleOnGestureListener() {
-
-        override fun onFling(
-            e1: MotionEvent?,
-            e2: MotionEvent,
-            velocityX: Float,
-            velocityY: Float
-        ): Boolean {
-
-            e1?.let {
-
-                val dx = e1.x - e2.x
-                val x = abs(dx)
-
-                if (x in 100.0..1000.0) {
-                    if (dx > 0) {
-                        //swipe to left
-                        mBinding.swipeLeft()
-                    } else {
-                        //swipe right
-                        mBinding.swipeRight()
-                    }
-                }
-
-                return true
-
-            }
-            return false
-        }
-    }
+   // private val gestureListener = object : GestureDetector.SimpleOnGestureListener() {
+   //
+   //     override fun onFling(
+   //         e1: MotionEvent?,
+   //         e2: MotionEvent,
+   //         velocityX: Float,
+   //         velocityY: Float
+   //     ): Boolean {
+   //
+   //         e1?.let {
+   //
+   //             val dx = e1.x - e2.x
+   //             val x = abs(dx)
+   //
+   //             if (x in 100.0..1000.0) {
+   //                 if (dx > 0) {
+   //                     //swipe to left
+   //                     mBinding.swipeLeft()
+   //                 } else {
+   //                     //swipe right
+   //                     mBinding.swipeRight()
+   //                 }
+   //             }
+   //
+   //             return true
+   //
+   //         }
+   //         return false
+   //     }
+   // }
 
     override fun FragmentParentsBinding.afterCreateView() {
 
@@ -241,15 +242,15 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
         }
 
-        val gdc = GestureDetectorCompat(requireContext(), gestureListener)
-
-        maleRecycler.setOnTouchListener { _, motionEvent ->
-            gdc.onTouchEvent(motionEvent)
-        }
-
-        femaleRecycler.setOnTouchListener { _, motionEvent ->
-            gdc.onTouchEvent(motionEvent)
-        }
+       // val gdc = GestureDetectorCompat(requireContext(), gestureListener)
+       //
+       // maleRecycler.setOnTouchListener { _, motionEvent ->
+       //     gdc.onTouchEvent(motionEvent)
+       // }
+       //
+       // femaleRecycler.setOnTouchListener { _, motionEvent ->
+       //     gdc.onTouchEvent(motionEvent)
+       // }
 
         bottomNavBar.selectedItemId = R.id.action_nav_parents
 
