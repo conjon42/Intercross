@@ -55,6 +55,12 @@
             </intent-filter>
         </activity>
 
+
+        <!-- used to define SAF storage directory, required at start of app -->
+        <activity
+            android:name=".activities.DefineStorageActivity"
+            android:theme="@style/AppTheme" />
+
 <!--        <activity android:name="org.phenoapps.activities.BrapiAuthActivity">-->
 <!--            <intent-filter>-->
 <!--                <action android:name="android.intent.action.VIEW"/>-->

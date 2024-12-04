@@ -1,5 +1,7 @@
 package org.phenoapps.intercross.activities
 
+import android.app.Activity
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -59,6 +61,7 @@ import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.util.KeyUtil
 import org.phenoapps.intercross.util.SnackbarQueue
 import org.phenoapps.intercross.util.VerifyPersonHelper
+import org.phenoapps.utils.BaseDocumentTreeUtil
 import java.io.File
 import javax.inject.Inject
 
@@ -334,11 +337,31 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         }
     }
 
+    private val storageDefinerLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        when (result.resultCode) {
+            Activity.RESULT_CANCELED -> {
+                finish()
+            }
+        }
+    }
+
+    private fun checkStorageAccess() {
+        if (!BaseDocumentTreeUtil.isEnabled(this)) {
+            val storageDefinerActivity = Intent(this, DefineStorageActivity::class.java)
+            storageDefinerLauncher.launch(storageDefinerActivity)
+        }
+
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
 
         verifyPersonHelper.updateAskedSinceOpened()
+
+        checkStorageAccess()
 
         setupDirs()
 
