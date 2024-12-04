@@ -297,6 +297,7 @@
     <string name="wishlist_complete_content_description">Wishlist complete</string>
     <string name="frag_parents_parents_not_deleted_reason">Some parents could not be deleted because they are parents to a cross.</string>
     <string name="frag_parents_new_parent_btn">Button to add a new parent.</string>
+    <string name="frag_parents_new_parent_title">New Parent</string>
     <string name="frag_parents_selected_text">%s parents are selected</string>
     <string name="menu_parents_delete_title">Delete selected parents.</string>
     <string name="menu_parents_print_title">Print selected parents.</string>
