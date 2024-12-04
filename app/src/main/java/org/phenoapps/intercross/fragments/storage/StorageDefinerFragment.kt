@@ -25,7 +25,8 @@ class StorageDefinerFragment : PhenoLibStorageDefinerFragment() {
 
     // define sample data and where to transfer
     override val samples = mapOf(
-        AssetSample("wishlist_import", "wishlist_sample.csv") to R.string.dir_wishlist_import
+        AssetSample("wishlist_import", "wishlist_sample.csv") to R.string.dir_wishlist_import,
+        AssetSample("parents_import", "parents_sample.csv") to R.string.dir_parents_import
     )
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -34,7 +35,9 @@ class StorageDefinerFragment : PhenoLibStorageDefinerFragment() {
         // define directories that should be created in root storage
         context?.let { ctx ->
             val wishlistImport = ctx.getString(R.string.dir_wishlist_import)
-            directories = arrayOf(wishlistImport)
+            val parentsImport = ctx.getString(R.string.dir_parents_import)
+            val crossesExport = ctx.getString(R.string.dir_crosses_export)
+            directories = arrayOf(wishlistImport, parentsImport, crossesExport)
         }
     }
 
