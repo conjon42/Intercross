@@ -182,7 +182,7 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     private val checkPermissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted -> }
 
-    private fun importFromUri(uri: Uri) {
+    fun importFromUri(uri: Uri) {
 
         val tables = FileUtil(this).parseInputFile(uri)
 

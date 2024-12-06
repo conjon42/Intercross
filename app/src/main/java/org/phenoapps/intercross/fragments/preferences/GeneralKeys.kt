@@ -37,9 +37,11 @@ class GeneralKeys {
         // val COMMUTATIVE_CROSSING = INTERCROSS_PREFIX + "BLANK_MALE_ID"
 
         // BRAPI PREFERENCES
+        const val BRAPI_ENABLED = "org.phenoapps.intercross.BRAPI_ENABLED"
         const val BRAPI_BASE_URL = "org.phenoapps.intercross.BRAPI_BASE_URL"
         const val BRAPI_PAGE_SIZE = "1000"
         const val BRAPI_TOKEN = "org.phenoapps.intercross.BRAPI_TOKEN"
         const val BRAPI_VERSION = "2"
+        const val BRAPI_DISPLAY_NAME = "org.phenoapps.intercross.BRAPI_DISPLAY_NAME"
     }
 }

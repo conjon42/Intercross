@@ -523,4 +523,15 @@
     <string name="storage_definer_title">Storage Location</string>
     <string name="storage_definer_summary">Please select or create a folder that Intercross can use to store app data.</string>
     <string name="define_button_text">Choose Folder</string>
+
+
+    <string name="brapi_edit_display_name_default">BrAPI Test Server</string>
+    <string name="activity_file_explorer_up_directory_name">Up</string>
+
+    <!-- Permissions  -->
+    <string name="permission_rationale_storage_import">Importing files requires access to the device\'s files.</string>
+
+
+    <!-- Import  -->
+    <string name="dialog_import_parents_title">Import Parents</string>
 </resources>
