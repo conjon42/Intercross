@@ -1,11 +1,9 @@
 package org.phenoapps.intercross.fragments
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
@@ -23,7 +21,7 @@ import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.activities.FileExploreDialogFragment
+import org.phenoapps.intercross.dialogs.FileExploreDialogFragment
 import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.adapters.ParentsAdapter
 import org.phenoapps.intercross.data.EventsRepository

@@ -1,20 +1,16 @@
-package org.phenoapps.intercross.activities
+package org.phenoapps.intercross.dialogs
 
+import org.phenoapps.intercross.adapters.FileAdapter
 import android.app.AlertDialog
 import android.app.Dialog
 import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.ProgressBar
-import android.widget.TextView
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.intercross.R
 import kotlinx.coroutines.CoroutineScope
@@ -45,7 +41,7 @@ class FileExploreDialogFragment : DialogFragment(), CoroutineScope by MainScope(
     private var include: Array<String>? = null
 
     // Wrapper class to hold file data
-    private class Item(var file: String, var isDir: Boolean, var icon: Int) {
+    class Item(var file: String, var isDir: Boolean, var icon: Int) {
         override fun toString(): String {
             return file
         }
@@ -204,45 +200,4 @@ class FileExploreDialogFragment : DialogFragment(), CoroutineScope by MainScope(
     fun setOnFileSelectedListener(listener: (Uri) -> Unit) {
         onFileSelectedListener = listener
     }
-
-    private inner class FileAdapter(private val onItemClick: (Item) -> Unit) :
-        ListAdapter<Item, FileAdapter.ViewHolder>(DiffCallback()) {
-
-        inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-            private val textView: TextView = view.findViewById(android.R.id.text1)
-
-            fun bind(item: Item) {
-                textView.text = item.file
-                textView.setCompoundDrawablesWithIntrinsicBounds(item.icon, 0, 0, 0)
-
-                // add margin between image and text (support various screen
-                // densities)
-                val dp5 = (5 * itemView.resources.displayMetrics.density + 0.5f).toInt()
-                textView.compoundDrawablePadding = dp5
-
-                itemView.setOnClickListener { onItemClick(item) }
-            }
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.custom_dialog_item_select, parent, false)
-            return ViewHolder(view)
-        }
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.bind(getItem(position))
-        }
-
-    }
-
-    private class DiffCallback : DiffUtil.ItemCallback<Item>() {
-        override fun areItemsTheSame(oldItem: Item, newItem: Item) = oldItem == newItem
-
-        override fun areContentsTheSame(oldItem: Item, newItem: Item) =
-            oldItem.file == newItem.file &&
-                    oldItem.isDir == newItem.isDir &&
-                    oldItem.icon == newItem.icon
-    }
-
 }
