@@ -2,6 +2,7 @@ package org.phenoapps.intercross.fragments
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
@@ -28,6 +29,7 @@ import kotlinx.coroutines.*
 import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.activities.AppIntroActivity
 import org.phenoapps.intercross.adapters.EventsAdapter
 import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.data.models.Event
@@ -138,26 +140,6 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             mPref.edit().putString("org.phenoapps.intercross.PERSON", "Developer").apply()
 
-        }
-
-        if (mPref.getBoolean("first_load", true)) {
-
-            settingsModel.insert(mSettings
-                    .apply {
-                        isUUID = true
-                    })
-
-            launch {
-                withContext(Dispatchers.IO) {
-                    for (property in arrayOf("fruits", "flowers", "seeds")) {
-                        metadataViewModel.insert(
-                            Meta(property, 0)
-                        )
-                    }
-                }
-            }
-
-            mPref.edit().putBoolean("first_load", false).apply()
         }
 
         //if this was called from crosscount/crossblock or wishlist fragment then populate the male/female tv

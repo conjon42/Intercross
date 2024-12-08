@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -13,6 +14,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
@@ -23,6 +25,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.EventsRepository
@@ -31,6 +34,7 @@ import org.phenoapps.intercross.data.MetaValuesRepository
 import org.phenoapps.intercross.data.MetadataRepository
 import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.PollenGroupRepository
+import org.phenoapps.intercross.data.SettingsRepository
 import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.models.CrossType
 import org.phenoapps.intercross.data.models.Event
@@ -38,22 +42,26 @@ import org.phenoapps.intercross.data.models.Meta
 import org.phenoapps.intercross.data.models.MetadataValues
 import org.phenoapps.intercross.data.models.Parent
 import org.phenoapps.intercross.data.models.PollenGroup
+import org.phenoapps.intercross.data.models.Settings
 import org.phenoapps.intercross.data.models.Wishlist
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.MetaValuesViewModel
 import org.phenoapps.intercross.data.viewmodels.MetadataViewModel
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
 import org.phenoapps.intercross.data.viewmodels.PollenGroupListViewModel
+import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
 import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.MetaValuesViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.MetadataViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.ActivityMainBinding
 import org.phenoapps.intercross.fragments.EventsFragmentDirections
 import org.phenoapps.intercross.fragments.PatternFragment
+import org.phenoapps.intercross.fragments.preferences.GeneralKeys
 import org.phenoapps.intercross.fragments.preferences.PreferencesFragment
 import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.Dialogs
@@ -95,6 +103,10 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     private val metaValuesViewModel: MetaValuesViewModel by viewModels {
         MetaValuesViewModelFactory(MetaValuesRepository.getInstance(mDatabase.metaValuesDao()))
+    }
+
+    private val settingsModel: SettingsViewModel by viewModels {
+        SettingsViewModelFactory(SettingsRepository.getInstance(mDatabase.settingsDao()))
     }
 
     private val metadataViewModel: MetadataViewModel by viewModels {
@@ -337,6 +349,46 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         }
     }
 
+    // Add launcher for AppIntroActivity
+    val appIntroLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        when (result.resultCode) {
+            Activity.RESULT_OK -> {
+                settingsModel.insert(
+                    Settings().apply {
+                        isUUID = true
+                    }
+                )
+
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+                        for (property in arrayOf("fruits", "flowers", "seeds")) {
+                            metadataViewModel.insert(
+                                Meta(property, 0)
+                            )
+                        }
+                    }
+                }
+
+                mPref.edit().putBoolean(GeneralKeys.FIRST_RUN, false).apply()
+            }
+            else -> {
+                finish()
+            }
+        }
+    }
+
+    private fun firstRunSetup() {
+        if (mPref.getBoolean(GeneralKeys.FIRST_RUN, true)) {
+
+            val introIntent = Intent(this, AppIntroActivity::class.java)
+            appIntroLauncher.launch(introIntent)
+
+
+        }
+    }
+
     private val storageDefinerLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -348,7 +400,8 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
     }
 
     private fun checkStorageAccess() {
-        if (!BaseDocumentTreeUtil.isEnabled(this)) {
+        // when cannot access storage directory and firstRunSetup was already completed
+        if (!BaseDocumentTreeUtil.isEnabled(this) && mPref.getBoolean(GeneralKeys.FIRST_RUN, false)) {
             val storageDefinerActivity = Intent(this, DefineStorageActivity::class.java)
             storageDefinerLauncher.launch(storageDefinerActivity)
         }
@@ -360,6 +413,8 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         super.onCreate(savedInstanceState)
 
         verifyPersonHelper.updateAskedSinceOpened()
+
+        firstRunSetup()
 
         checkStorageAccess()
 

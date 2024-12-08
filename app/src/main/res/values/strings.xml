@@ -534,4 +534,28 @@
 
     <!-- Import  -->
     <string name="dialog_import_parents_title">Import Parents</string>
+
+    <!-- AppIntroActivity -->
+    <string name="app_intro_activity_label">App Intro</string>
+    <string name="app_intro_intro_title_slide1">Welcome to Intercross!</string>
+    <string name="app_intro_intro_summary_slide1">Intercross is a data collection app that organizes sample names into grids that are based on predefined templates. Templates are highly customizable and can include custom fields for metadata, alphabetical or numeric row and column naming, and specific or randomly excluded cells.</string>
+    <string name="app_intro_intro_title_slide2">Features</string>
+    <string name="app_intro_intro_summary_slide2">Feature description goes here.\n\n Description 2.</string>
+    <string name="app_intro_required_setup_title">Required Setup</string>
+    <string name="app_intro_required_setup_summary">To get started using Intercross, grant the necessary permissions for the app and then define a folder where your data will be stored.</string>
+    <string name="app_intro_permissions_title">Permissions</string>
+    <string name="app_intro_permissions_summary">Please grant the necessary permissions</string>
+    <string name="app_intro_storage_title">Define Storage</string>
+    <string name="app_intro_storage_summary">Define a folder where your data will be stored.</string>
+    <string name="app_intro_permissions_warning">Permissions not granted</string>
+    <string name="app_intro_storage_warning">Storage directory not set</string>
+    <string name="app_intro_optional_setup_title">Optional Setup</string>
+    <string name="app_intro_optional_setup_summary">Optional settings customize how Intercross is set up for data collection.</string>
+    <string name="app_intro_load_sample_data_title">Load Sample Data</string>
+    <string name="app_intro_load_sample_data_summary">Import sample data.</string>
+    <string name="app_intro_load_sample_parents_title">Parents</string>
+    <string name="app_intro_load_sample_parents_summary">Import a sample data for Parents.</string>
+    <string name="app_intro_load_sample_wishlist_title">Wishlist</string>
+    <string name="app_intro_load_sample_wishlist_summary">Import a sample data for Wishlist.</string>
+
 </resources>
