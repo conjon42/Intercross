@@ -68,6 +68,8 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
     //variable to avoid 'Inconsistency detected' TableView exception that is caused if sorting is spammed.
     private var mIsSorting = false
 
+    private var systemMenu: Menu? = null
+
     /**
      * Polymorphism setup to allow adapter to work with two different types of objects.
      * Wishlists and Summary data are the same but they have to be rendered differently.
@@ -124,6 +126,7 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
         wishModel.wishlist.observe(viewLifecycleOwner) { wishes ->
 
             mWishlistEmpty = wishes.none { it.wishType == "cross" }
+            updateToolbarWishlistIcon()
         }
     }
 
@@ -381,21 +384,7 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
         summaryTabLayout.addOnTabSelectedListener(tabSelected { tab ->
 
             when (tab?.position) {
-                2 -> {
-
-                    if (!mWishlistEmpty) {
-
-                        Navigation.findNavController(mBinding.root)
-                            .navigate(CrossCountFragmentDirections.actionToCrossblock())
-                    } else {
-
-                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
-                        summaryTabLayout.getTabAt(0)?.select()
-
-                    }
-                }
-
-                3 ->
+                2 ->
                     Navigation.findNavController(mBinding.root)
                         .navigate(CrossCountFragmentDirections.actionToSummary())
 
@@ -410,6 +399,8 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
         super.onResume()
 
         (activity as? AppCompatActivity)?.setSupportActionBar(mBinding.fragCrossCountTb)
+
+        updateToolbarWishlistIcon()
 
         mBinding.bottomNavBar.selectedItemId = R.id.action_nav_cross_count
 
@@ -426,7 +417,13 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
         inflater.inflate(R.menu.cross_count_toolbar, menu)
 
+        systemMenu = menu
+
         super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    private fun updateToolbarWishlistIcon() {
+        systemMenu?.findItem(R.id.action_to_crossblock)?.isVisible = !mWishlistEmpty
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -439,7 +436,9 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
                 findNavController().navigate(R.id.cross_count_fragment)
             }
-
+            R.id.action_to_crossblock -> {
+                findNavController().navigate(CrossCountFragmentDirections.actionToCrossblock())
+            }
             R.id.action_cross_count_delete_all -> {
                 context?.let { ctx ->
                     Dialogs.onOk(AlertDialog.Builder(ctx),

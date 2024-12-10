@@ -79,6 +79,8 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
     private var mMetaList: List<Meta> = ArrayList()
     private var mEvents: List<Event> = ArrayList()
 
+    private var systemMenu: Menu? = null
+
     data class WishlistData(override var m: String,
                             override var f: String,
                             var progress: String,
@@ -193,6 +195,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
 
                 wishModel.deleteAll()
+                updateToolbarWishlistIcon()
 
                 findNavController().navigate(WishlistFragmentDirections.globalActionToCrossCount())
             }
@@ -254,6 +257,8 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
                 wishlistEmpty = crosses.isEmpty()
 
+                updateToolbarWishlistIcon()
+
                 setupTable(data)
 
             }
@@ -307,6 +312,8 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
                 wishlistEmpty = crosses.isEmpty()
 
+                updateToolbarWishlistIcon()
+
                 setupTable(data)
             }
         }
@@ -326,7 +333,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
         summaryTabLayout.addOnTabSelectedListener(tabSelected { tab ->
 
             when (tab?.position) {
-                3 -> {
+                2 -> {
 
                     if (mEvents.isNotEmpty()) {
 
@@ -343,20 +350,6 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
                 0 ->
                     Navigation.findNavController(mBinding.root)
                         .navigate(WishlistFragmentDirections.actionToCrossCount())
-
-                2 -> {
-
-                    if (!wishlistEmpty) {
-
-                        Navigation.findNavController(mBinding.root)
-                            .navigate(WishlistFragmentDirections.actionToCrossblock())
-                    } else {
-
-                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
-                        summaryTabLayout.getTabAt(1)?.select()
-
-                    }
-                }
             }
         })
     }
@@ -403,6 +396,8 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
         (activity as? AppCompatActivity)?.setSupportActionBar(mBinding.fragWishlistTb)
 
+        updateToolbarWishlistIcon()
+
         mBinding.summaryTabLayout.getTabAt(1)?.select()
 
         mBinding.bottomNavBar.menu.findItem(R.id.action_nav_cross_count).isEnabled = false
@@ -417,7 +412,13 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
         inflater.inflate(R.menu.wishlist_toolbar, menu)
 
+        systemMenu = menu
+
         super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    private fun updateToolbarWishlistIcon() {
+        systemMenu?.findItem(R.id.action_to_crossblock)?.isVisible = !wishlistEmpty
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -432,7 +433,9 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
                 findNavController().navigate(WishlistFragmentDirections
                     .actionFromWishlistToWishFactory())
             }
-
+            R.id.action_to_crossblock -> {
+                findNavController().navigate(WishlistFragmentDirections.actionToCrossblock())
+            }
             R.id.action_import -> {
 
                 (activity as MainActivity).launchImport()

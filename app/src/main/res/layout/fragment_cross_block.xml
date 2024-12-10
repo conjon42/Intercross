@@ -7,52 +7,6 @@
         android:layout_height="match_parent"
         android:layout_width="match_parent">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/frag_cross_block_tb"
-            android:layout_height="?attr/actionBarSize"
-            android:layout_width="match_parent"
-            android:background="?attr/colorPrimary"
-            android:gravity="center_vertical|start"
-            app:menu="@menu/crossblock_toolbar"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
-
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/summary_tab_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/frag_cross_block_tb"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
-
-            <com.google.android.material.tabs.TabItem
-                android:layout="@null"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:icon="@drawable/ic_tag_black_24dp"/>
-
-            <com.google.android.material.tabs.TabItem
-                android:layout="@null"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:icon="@drawable/ic_checklist_black_24dp"/>
-
-            <com.google.android.material.tabs.TabItem
-                android:layout="@null"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:icon="@drawable/ic_crossblock" />
-
-            <com.google.android.material.tabs.TabItem
-                android:layout="@null"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:icon="@drawable/ic_summarize_graph"/>
-        </com.google.android.material.tabs.TabLayout>
-
         <com.evrencoskun.tableview.TableView
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -61,7 +15,7 @@
             app:allow_click_inside_cell="true"
             app:allow_click_inside_column_header="true"
             app:allow_click_inside_row_header="true"
-            app:layout_constraintTop_toBottomOf="@id/summary_tab_layout"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@id/legend_blank"/>

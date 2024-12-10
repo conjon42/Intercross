@@ -1,9 +1,15 @@
 package org.phenoapps.intercross.fragments
 
 import android.graphics.Color
+import android.os.Bundle
+import android.util.Log
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.children
 import androidx.fragment.app.viewModels
 import androidx.navigation.Navigation
@@ -67,6 +73,8 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
         WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
     }
 
+    private var systemMenu: Menu? = null
+
     private val MAX_LABEL_LENGTH = 16
 
     private lateinit var mEvents: List<Event>
@@ -83,9 +91,13 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
         override fun onTabReselected(tab: TabLayout.Tab?) {}
     }
 
-    override fun FragmentDataSummaryBinding.afterCreateView() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-        setHasOptionsMenu(false)
+        setHasOptionsMenu(true)
+    }
+
+    override fun FragmentDataSummaryBinding.afterCreateView() {
 
         //initialize pie chart parameters, this is mostly taken from the github examples
         setupPieChart(sexSummaryPieChart)
@@ -101,17 +113,43 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
 
         setupBottomNavBar()
 
-        summaryTabLayout.getTabAt(3)?.select()
+        summaryTabLayout.getTabAt(2)?.select()
 
         setupTabLayout()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+
+        inflater.inflate(R.menu.summary_toolbar, menu)
+
+        systemMenu = menu
+
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    private fun updateToolbarWishlistIcon() {
+        systemMenu?.findItem(R.id.action_to_crossblock)?.isVisible = ::mWishlist.isInitialized && mWishlist.isNotEmpty()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        when(item.itemId) {
+            R.id.action_to_crossblock -> {
+                findNavController().navigate(SummaryFragmentDirections.actionToCrossblock())
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+
     override fun onResume() {
         super.onResume()
 
-        (activity as MainActivity).supportActionBar?.show()
+        (activity as? AppCompatActivity)?.setSupportActionBar(mBinding.fragSummaryTb)
 
-        mBinding.summaryTabLayout.getTabAt(3)?.select()
+        updateToolbarWishlistIcon()
+
+        mBinding.summaryTabLayout.getTabAt(2)?.select()
 
         mBinding.bottomNavBar.menu.findItem(R.id.action_nav_cross_count).isEnabled = false
 
@@ -126,20 +164,6 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
         summaryTabLayout.addOnTabSelectedListener(tabSelected { tab ->
 
             when (tab?.position) {
-                2 -> {
-
-                    if (::mWishlist.isInitialized && mWishlist.isNotEmpty()) {
-
-                        Navigation.findNavController(mBinding.root)
-                            .navigate(SummaryFragmentDirections.actionToCrossblock())
-                    } else {
-
-                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.wishlist_is_empty))
-                        summaryTabLayout.getTabAt(3)?.select()
-
-                    }
-                }
-
                 0 ->
                     Navigation.findNavController(mBinding.root)
                         .navigate(SummaryFragmentDirections.actionToCrossCount())
@@ -208,9 +232,10 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
             setData(typeSummaryPieChart, setTypeData(), ChartType.TYPE)
         }
 
-        wishModel.wishlist.observeOnce(viewLifecycleOwner) { wishes ->
+        wishModel.wishlist.observe(viewLifecycleOwner) { wishes ->
 
             mWishlist = wishes.filter { it.wishType == "cross" }
+            updateToolbarWishlistIcon()
         }
     }
 

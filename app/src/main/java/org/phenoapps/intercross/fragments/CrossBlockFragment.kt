@@ -59,6 +59,12 @@ class CrossBlockFragment : IntercrossBaseFragment<FragmentCrossBlockBinding>(R.l
 
     override fun FragmentCrossBlockBinding.afterCreateView() {
 
+        (activity as MainActivity).setBackButtonToolbar()
+        (activity as MainActivity).supportActionBar?.apply {
+            title = getString(R.string.crossblock)
+            show()
+        }
+
         setHasOptionsMenu(true)
 
         bottomNavBar.selectedItemId = R.id.action_nav_cross_count
@@ -100,10 +106,6 @@ class CrossBlockFragment : IntercrossBaseFragment<FragmentCrossBlockBinding>(R.l
                 }
             }
         }
-
-        summaryTabLayout.getTabAt(2)?.select()
-
-        setupTabLayout()
     }
 
     /**
@@ -171,10 +173,6 @@ class CrossBlockFragment : IntercrossBaseFragment<FragmentCrossBlockBinding>(R.l
     override fun onResume() {
         super.onResume()
 
-        (activity as? AppCompatActivity)?.setSupportActionBar(mBinding.fragCrossBlockTb)
-
-        mBinding.summaryTabLayout.getTabAt(2)?.select()
-
         mBinding.bottomNavBar.menu.findItem(R.id.action_nav_cross_count).isEnabled = false
 
         mBinding.bottomNavBar.selectedItemId = R.id.action_nav_cross_count
@@ -190,35 +188,6 @@ class CrossBlockFragment : IntercrossBaseFragment<FragmentCrossBlockBinding>(R.l
         }
         override fun onTabUnselected(tab: TabLayout.Tab?) {}
         override fun onTabReselected(tab: TabLayout.Tab?) {}
-    }
-
-    private fun FragmentCrossBlockBinding.setupTabLayout() {
-
-        summaryTabLayout.addOnTabSelectedListener(tabSelected { tab ->
-
-            when (tab?.position) {
-                3 -> {
-
-                    if (mEvents.isNotEmpty()) {
-
-                        Navigation.findNavController(mBinding.root)
-                            .navigate(CrossBlockFragmentDirections.actionToSummary())
-                    } else {
-
-                        Dialogs.notify(AlertDialog.Builder(requireContext()), getString(R.string.crosses_empty))
-                        summaryTabLayout.getTabAt(2)?.select()
-
-                    }
-                }
-
-                0 ->
-                    Navigation.findNavController(mBinding.root)
-                        .navigate(CrossBlockFragmentDirections.actionToCrossCount())
-                1 ->
-                    Navigation.findNavController(mBinding.root)
-                        .navigate(CrossBlockFragmentDirections.actionToWishlist())
-            }
-        })
     }
 
     private fun FragmentCrossBlockBinding.setupBottomNavBar() {
