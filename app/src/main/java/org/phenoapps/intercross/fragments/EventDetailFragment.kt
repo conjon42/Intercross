@@ -294,16 +294,20 @@ class EventDetailFragment:
             when (item.itemId) {
                 R.id.action_metadata_collect -> {
                     val currentValue = mPref.getBoolean(GeneralKeys.COLLECT_INFO, false)
-                    mPref.edit().putBoolean(GeneralKeys.COLLECT_INFO, !currentValue).apply()
+                    val metadataCollectEnabled = !currentValue
+                    mPref.edit().putBoolean(GeneralKeys.COLLECT_INFO, metadataCollectEnabled).apply()
 
                     // update menu icon
                     item.setIcon(
-                        if (!currentValue) R.drawable.ic_metadata_collect
+                        if (metadataCollectEnabled) R.drawable.ic_metadata_collect
                         else R.drawable.ic_metadata_collect_disabled
                     )
 
-                    val toastMsg = getString(if (!currentValue) R.string.collect_metadata_toast_enabled else R.string.collect_metadata_toast_disabled)
-                    Toast.makeText(context?.applicationContext, toastMsg, Toast.LENGTH_LONG).show()
+                    if (!metadataCollectEnabled) hideKeyboard()
+
+
+                    val toastMsg = getString(if (metadataCollectEnabled) R.string.collect_metadata_toast_enabled else R.string.collect_metadata_toast_disabled)
+                    Toast.makeText(context?.applicationContext, toastMsg, Toast.LENGTH_SHORT).show()
 
                     // update visibility of metadata section
                     mBinding.metaDataVisibility = getMetaDataVisibility(requireContext())
@@ -360,6 +364,13 @@ class EventDetailFragment:
         }
 
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun hideKeyboard() {
+        val inputMethodManager = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        activity?.currentFocus?.let { view ->
+            inputMethodManager?.hideSoftInputFromWindow(view.windowToken, 0)
+        }
     }
 
     // updates a single row value for the current event
