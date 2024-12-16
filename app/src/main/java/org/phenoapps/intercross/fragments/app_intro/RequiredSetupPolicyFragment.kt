@@ -160,7 +160,15 @@ class RequiredSetupPolicyFragment : Fragment(), SlidePolicy {
     }
 
     private fun requestPermissions() {
-        ActivityCompat.requestPermissions(activity as AppIntroActivity, Constants.permissions, REQUEST_PERMISSIONS_CODE)
+        var perms = Constants.permissions
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            perms += arrayOf(
+                Manifest.permission.BLUETOOTH_SCAN,
+                Manifest.permission.BLUETOOTH_CONNECT
+            )
+        }
+
+        ActivityCompat.requestPermissions(activity as AppIntroActivity, perms, REQUEST_PERMISSIONS_CODE)
     }
 
     private fun requestStorageDefiner() {
@@ -196,7 +204,7 @@ class RequiredSetupPolicyFragment : Fragment(), SlidePolicy {
     }
 
     override val isPolicyRespected: Boolean
-        get() = true?: validateItems()
+        get() = validateItems()
 
     override fun onUserIllegallyRequestedNextPage() {
         if (!validatePermissions()) {

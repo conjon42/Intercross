@@ -451,22 +451,6 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
         startObservers()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            checkPermissions.launch(arrayOf(
-                android.Manifest.permission.BLUETOOTH_CONNECT,
-                android.Manifest.permission.BLUETOOTH_SCAN,
-                android.Manifest.permission.BLUETOOTH_ADMIN,
-                android.Manifest.permission.BLUETOOTH,
-                android.Manifest.permission.INTERNET
-            ))
-        } else {
-            checkPermissions.launch(arrayOf(
-                android.Manifest.permission.BLUETOOTH_ADMIN,
-                android.Manifest.permission.BLUETOOTH,
-                android.Manifest.permission.INTERNET
-            ))
-        }
-
         mBinding.mainTb.setNavigationOnClickListener {
             onBackPressed()
         }
