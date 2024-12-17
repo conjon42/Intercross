@@ -310,6 +310,10 @@
     <string name="frag_metadata_confirm_delete_message">This will delete all metadata values for this property.</string>
     <string name="make_cross_option">Make Cross</string>
 
+    <string name="collect_metadata_label">Collect Metadata</string>
+    <string name="collect_metadata_toast_enabled">Metadata collection enabled</string>
+    <string name="collect_metadata_toast_disabled">Metadata collection disabled</string>
+
     <!-- Brapi strings -->
     <string name="preferences_brapi" translatable="false">BrAPI</string>
     <string name="brapi_base_url">BrAPI Base URL</string>
