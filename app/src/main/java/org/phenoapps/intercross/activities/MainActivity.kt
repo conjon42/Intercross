@@ -59,7 +59,9 @@ import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.ActivityMainBinding
+import org.phenoapps.intercross.dialogs.FileExploreDialogFragment
 import org.phenoapps.intercross.fragments.EventsFragmentDirections
+import org.phenoapps.intercross.fragments.ImportSampleDialogFragment
 import org.phenoapps.intercross.fragments.PatternFragment
 import org.phenoapps.intercross.fragments.preferences.GeneralKeys
 import org.phenoapps.intercross.fragments.preferences.PreferencesFragment
@@ -280,7 +282,9 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     private var mMetaValues: List<MetadataValues> = ArrayList()
 
-    private lateinit var mDatabase: IntercrossDatabase
+    private val mDatabase by lazy {
+        IntercrossDatabase.getInstance(this)
+    }
 
     private lateinit var mSnackbar: SnackbarQueue
 
@@ -349,28 +353,19 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         }
     }
 
-    // Add launcher for AppIntroActivity
-    val appIntroLauncher = registerForActivityResult(
+    // add launcher for AppIntroActivity
+    private val appIntroLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         when (result.resultCode) {
             Activity.RESULT_OK -> {
-                settingsModel.insert(
-                    Settings().apply {
-                        isUUID = true
-                    }
-                )
 
-                lifecycleScope.launch {
-                    withContext(Dispatchers.IO) {
-                        for (property in arrayOf("fruits", "flowers", "seeds")) {
-                            metadataViewModel.insert(
-                                Meta(property, 0)
-                            )
-                        }
-                    }
+                val loadSampleWishlist = mPref.getBoolean(GeneralKeys.LOAD_SAMPLE_WISHLIST, false)
+                val loadSampleParents = mPref.getBoolean(GeneralKeys.LOAD_SAMPLE_PARENTS, false)
+
+                if (loadSampleParents || loadSampleWishlist) {
+                    ImportSampleDialogFragment().show(supportFragmentManager, "ImportSampleDialogFragment")
                 }
-
                 mPref.edit().putBoolean(GeneralKeys.FIRST_RUN, false).apply()
             }
             else -> {
@@ -385,7 +380,21 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
             val introIntent = Intent(this, AppIntroActivity::class.java)
             appIntroLauncher.launch(introIntent)
 
+            settingsModel.insert(
+                Settings().apply {
+                    isUUID = true
+                }
+            )
 
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    for (property in arrayOf("fruits", "flowers", "seeds")) {
+                        metadataViewModel.insert(
+                            Meta(property, 0)
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -446,8 +455,6 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
                 supportActionBar?.show()
             }
         }
-
-        mDatabase = IntercrossDatabase.getInstance(this)
 
         startObservers()
 
