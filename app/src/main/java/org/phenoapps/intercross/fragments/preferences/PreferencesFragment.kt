@@ -1,18 +1,11 @@
 package org.phenoapps.intercross.fragments.preferences
 
-
-import android.content.Context.MODE_PRIVATE
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentManager
 import androidx.navigation.fragment.findNavController
-import androidx.preference.EditTextPreference
-import androidx.preference.Preference
 import androidx.preference.PreferenceScreen
-import com.bytehamster.lib.preferencesearch.SearchConfiguration
 import com.bytehamster.lib.preferencesearch.SearchPreference
 import com.bytehamster.lib.preferencesearch.SearchPreferenceResult
 import org.phenoapps.intercross.R
@@ -37,11 +30,11 @@ class PreferencesFragment : BasePreferenceFragment(R.xml.preferences) {
         (activity as? MainActivity)?.setPreferencesFragment(this)
 
         arguments?.let { args ->
-            if (args.getBoolean(GeneralKeys.MODIFY_PROFILE_SETTINGS)) {
+            if (args.getBoolean(mKeyUtil.modifyProfileKey)) {
                     findNavController().navigate(PreferencesFragmentDirections.actionFromPreferencesFragmentToProfileFragment())
             }
-            if (args.getBoolean(GeneralKeys.PERSON_UPDATE)) {
-                findNavController().navigate(PreferencesFragmentDirections.actionFromPreferencesFragmentToProfileFragment(PERSONUPDATE = true))
+            if (args.getBoolean(mKeyUtil.personUpdateKey)) {
+                findNavController().navigate(PreferencesFragmentDirections.actionFromPreferencesFragmentToProfileFragment(true))
             }
         }
     }
@@ -58,8 +51,8 @@ class PreferencesFragment : BasePreferenceFragment(R.xml.preferences) {
         (activity as MainActivity).setToolbar()
     }
 
-    fun setSearchConfiguration() {
-        searchPreference = findPreference("searchPreference") as SearchPreference?
+    private fun setSearchConfiguration() {
+        searchPreference = findPreference(getString(R.string.key_pref_search)) as SearchPreference?
         if (searchPreference != null) {
             val searchConfiguration = searchPreference?.searchConfiguration
             searchConfiguration.apply {
@@ -82,7 +75,7 @@ class PreferencesFragment : BasePreferenceFragment(R.xml.preferences) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(findPreference<PreferenceScreen>("pref_key_profile_settings")) {
+        with(findPreference<PreferenceScreen>(getString(R.string.root_profile))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     findNavController().navigate(
@@ -94,7 +87,7 @@ class PreferencesFragment : BasePreferenceFragment(R.xml.preferences) {
             }
         }
 
-        with(findPreference<PreferenceScreen>("pref_key_behavioral_settings")) {
+        with(findPreference<PreferenceScreen>(getString(R.string.root_behavior))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     try {
@@ -107,7 +100,7 @@ class PreferencesFragment : BasePreferenceFragment(R.xml.preferences) {
             }
         }
 
-        with(findPreference<PreferenceScreen>("pref_key_printing_settings")) {
+        with(findPreference<PreferenceScreen>(getString(R.string.root_printing))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     findNavController().navigate(
@@ -119,19 +112,19 @@ class PreferencesFragment : BasePreferenceFragment(R.xml.preferences) {
             }
         }
 
-        with(findPreference<EditTextPreference>(GeneralKeys.BRAPI_BASE_URL)) {
-            this?.let {
-                setOnPreferenceChangeListener { _, newValue ->
-                    context.getSharedPreferences("Settings", MODE_PRIVATE)
-                        .edit()
-                        .putString(GeneralKeys.BRAPI_BASE_URL, newValue.toString())
-                        .apply()
-                    true
-                }
-            }
-        }
+        // with(findPreference<EditTextPreference>(GeneralKeys.BRAPI_BASE_URL)) {
+        //     this?.let {
+        //         setOnPreferenceChangeListener { _, newValue ->
+        //             context.getSharedPreferences("Settings", MODE_PRIVATE)
+        //                 .edit()
+        //                 .putString(GeneralKeys.BRAPI_BASE_URL, newValue.toString())
+        //                 .apply()
+        //             true
+        //         }
+        //     }
+        // }
 
-        with(findPreference<PreferenceScreen>("pref_key_brapi_settings")) {
+        with(findPreference<PreferenceScreen>(getString(R.string.root_brapi))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     //TODO
@@ -143,7 +136,7 @@ class PreferencesFragment : BasePreferenceFragment(R.xml.preferences) {
             }
         }
 
-        with(findPreference<PreferenceScreen>("pref_key_about_settings")) {
+        with(findPreference<PreferenceScreen>(getString(R.string.root_about))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     findNavController().navigate(PreferencesFragmentDirections.actionToAbout())
@@ -155,7 +148,7 @@ class PreferencesFragment : BasePreferenceFragment(R.xml.preferences) {
             true
         }
 
-        with(findPreference<PreferenceScreen>("pref_key_database_settings")) {
+        with(findPreference<PreferenceScreen>(getString(R.string.root_database))) {
             this?.let { it ->
                 it.setOnPreferenceClickListener {
                     findNavController().navigate(

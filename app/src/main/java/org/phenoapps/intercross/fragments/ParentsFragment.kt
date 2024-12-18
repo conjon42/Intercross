@@ -39,9 +39,9 @@ import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFact
 import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentParentsBinding
 import org.phenoapps.intercross.dialogs.ListAddDialog
-import org.phenoapps.intercross.fragments.preferences.GeneralKeys
 import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.Dialogs
+import org.phenoapps.intercross.util.KeyUtil
 import org.phenoapps.utils.BaseDocumentTreeUtil.Companion.getDirectory
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
@@ -78,6 +78,10 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
     private val mPref by lazy {
         PreferenceManager.getDefaultSharedPreferences(requireContext())
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
     }
 
     private var mCrosses: List<Event> = ArrayList()
@@ -577,9 +581,9 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
             // getString(R.string.import_source_cloud),
         )
 
-        if (mPref.getBoolean(GeneralKeys.BRAPI_ENABLED, false)) {
+        if (mPref.getBoolean(mKeyUtil.brapiEnabled, false)) {
             val displayName = mPref.getString(
-                GeneralKeys.BRAPI_DISPLAY_NAME,
+                mKeyUtil.brapiDisplayName,
                 getString(R.string.brapi_edit_display_name_default)
             ) ?: getString(R.string.brapi_edit_display_name_default)
 

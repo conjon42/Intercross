@@ -20,7 +20,7 @@ class PrintingFragment : BasePreferenceFragment(R.xml.printing_preferences) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(findPreference<Preference>("org.phenoapps.intercross.ZPL_IMPORT")) {
+        with(findPreference<Preference>(getString(R.string.key_pref_print_zpl_import))) {
             this?.let {
                 setOnPreferenceClickListener {
                     findNavController().navigate(PrintingFragmentDirections.actionToImportZplFragment())
@@ -29,7 +29,7 @@ class PrintingFragment : BasePreferenceFragment(R.xml.printing_preferences) {
             }
         }
 
-        val printSetup = findPreference<Preference>("org.phenoapps.intercross.ZEBRA_PRINT_CONNECT")
+        val printSetup = findPreference<Preference>(getString(R.string.key_pref_print_connect))
         printSetup?.setOnPreferenceClickListener {
             val intent = activity?.packageManager
                 ?.getLaunchIntentForPackage("com.zebra.printersetup")
