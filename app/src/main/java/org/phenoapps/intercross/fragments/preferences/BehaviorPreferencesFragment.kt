@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.preference.Preference
@@ -16,7 +15,6 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.MetaValuesRepository
@@ -79,9 +77,9 @@ class BehaviorPreferencesFragment : BasePreferenceFragment(R.xml.behavior_prefer
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         super.onCreatePreferences(savedInstanceState, rootKey)
 
-        val collectInfoEnabled = mPref.getBoolean(GeneralKeys.COLLECT_INFO, false)
-        metadataPref = findPreference(GeneralKeys.META_DATA)
-        defaultsPref = findPreference(GeneralKeys.META_DATA_DEFAULTS)
+        val collectInfoEnabled = mPref.getBoolean(mKeyUtil.collectAdditionalInfoKey, false)
+        metadataPref = findPreference(mKeyUtil.createMetadataKey)
+        defaultsPref = findPreference(mKeyUtil.manageMetadataKey)
 
         metadataPref?.isVisible = collectInfoEnabled
         defaultsPref?.isVisible = collectInfoEnabled
@@ -97,7 +95,7 @@ class BehaviorPreferencesFragment : BasePreferenceFragment(R.xml.behavior_prefer
     private fun setupNamingPreferences() {
         settingsModel.settings.observeForever { settings ->
             settings?.let {
-                findPreference<Preference>(GeneralKeys.CREATE_PATTERN)?.apply {
+                findPreference<Preference>(mKeyUtil.crossPatternKey)?.apply {
                     summary = when {
                         settings.isPattern -> "Pattern"
                         !settings.isUUID && !settings.isPattern -> "None"
@@ -107,7 +105,7 @@ class BehaviorPreferencesFragment : BasePreferenceFragment(R.xml.behavior_prefer
             }
         }
 
-        findPreference<Preference>(GeneralKeys.CREATE_PATTERN)?.setOnPreferenceClickListener {
+        findPreference<Preference>(mKeyUtil.crossPatternKey)?.setOnPreferenceClickListener {
             findNavController().navigate(BehaviorPreferencesFragmentDirections.actionBehaviorPreferencesFragmentToPatternFragment())
             true
         }
@@ -123,7 +121,7 @@ class BehaviorPreferencesFragment : BasePreferenceFragment(R.xml.behavior_prefer
 
     private fun setupMetadataPreferences() {
         try {
-            findPreference<SwitchPreference>(GeneralKeys.COLLECT_INFO)?.setOnPreferenceChangeListener { _, newValue ->
+            findPreference<SwitchPreference>(mKeyUtil.collectAdditionalInfoKey)?.setOnPreferenceChangeListener { _, newValue ->
                 val isCollectEnabled = newValue as? Boolean ?: false
                 metadataPref?.isVisible = isCollectEnabled
                 defaultsPref?.isVisible = isCollectEnabled

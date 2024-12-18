@@ -2,14 +2,13 @@ package org.phenoapps.intercross.fragments.preferences
 
 import android.app.AlertDialog
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
-import androidx.preference.CheckBoxPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceManager
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.util.KeyUtil
 
 class ProfileFragment : BasePreferenceFragment(R.xml.profile_preferences) {
 
@@ -17,9 +16,12 @@ class ProfileFragment : BasePreferenceFragment(R.xml.profile_preferences) {
         context?.let { PreferenceManager.getDefaultSharedPreferences(it) }
     }
 
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
+
     private var profilePerson: Preference? = null
     private var profileReset: Preference? = null
-    private var requirePersonPref: Preference? = null
 
     private var personDialog: AlertDialog? = null
 
@@ -31,22 +33,19 @@ class ProfileFragment : BasePreferenceFragment(R.xml.profile_preferences) {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         super.onCreatePreferences(savedInstanceState, rootKey)
 
-        mPrefs?.edit()?.putLong(GeneralKeys.LAST_TIME_ASKED, System.nanoTime())?.apply()
+        mPrefs?.edit()?.putLong(mKeyUtil.lastTimeAskedKey, System.nanoTime())?.apply()
 
-        profilePerson = findPreference("pref_profile_person")
-        profileReset = findPreference("pref_profile_reset")
-        requirePersonPref = findPreference<CheckBoxPreference>(GeneralKeys.REQUIRE_USER_TO_COLLECT)
+        profilePerson = findPreference(mKeyUtil.profilePersonKey)
+        profileReset = findPreference(mKeyUtil.profileResetKey)
 
         updatePersonSummary()
 
         setPreferenceClickListeners()
 
-        setupPersonTimeIntervalPreference(null)
-
         val arguments = arguments
 
         if (arguments != null) {
-            val updatePerson = arguments.getBoolean(GeneralKeys.PERSON_UPDATE, false)
+            val updatePerson = arguments.getBoolean(mKeyUtil.personUpdateKey, false)
 
             if (updatePerson) {
                 showPersonDialog()
@@ -64,12 +63,6 @@ class ProfileFragment : BasePreferenceFragment(R.xml.profile_preferences) {
             showClearSettingsDialog()
             true
         }
-
-        requirePersonPref?.setOnPreferenceChangeListener { _, newValue ->
-            Log.d("TAG", "setPreferenceClickListeners: $newValue")
-            setupPersonTimeIntervalPreference(newValue as Boolean)
-            true
-        }
     }
 
     private fun showPersonDialog() {
@@ -78,8 +71,8 @@ class ProfileFragment : BasePreferenceFragment(R.xml.profile_preferences) {
         val firstName = layout.findViewById<EditText>(R.id.firstName)
         val lastName = layout.findViewById<EditText>(R.id.lastName)
 
-        firstName.setText(mPrefs?.getString(GeneralKeys.FIRST_NAME, ""))
-        lastName.setText(mPrefs?.getString(GeneralKeys.LAST_NAME, ""))
+        firstName.setText(mPrefs?.getString(mKeyUtil.personFirstNameKey, ""))
+        lastName.setText(mPrefs?.getString(mKeyUtil.personLastNameKey, ""))
 
         firstName.setSelectAllOnFocus(true)
         lastName.setSelectAllOnFocus(true)
@@ -91,8 +84,8 @@ class ProfileFragment : BasePreferenceFragment(R.xml.profile_preferences) {
             .setNegativeButton(getString(R.string.dialog_cancel)) { dialog, _ -> dialog.dismiss() }
             .setPositiveButton(getString(R.string.dialog_save)) { _, _ ->
                 val e = mPrefs?.edit()
-                e?.putString(GeneralKeys.FIRST_NAME, firstName.text.toString())
-                e?.putString(GeneralKeys.LAST_NAME, lastName.text.toString())
+                e?.putString(mKeyUtil.personFirstNameKey, firstName.text.toString())
+                e?.putString(mKeyUtil.personLastNameKey, lastName.text.toString())
 
                 e?.apply()
                 updatePersonSummary()
@@ -114,8 +107,8 @@ class ProfileFragment : BasePreferenceFragment(R.xml.profile_preferences) {
             .setPositiveButton(getString(R.string.dialog_yes)) { dialog, _ ->
                 dialog.dismiss()
                 val ed = mPrefs!!.edit()
-                ed.putString(GeneralKeys.FIRST_NAME, "")
-                ed.putString(GeneralKeys.LAST_NAME, "")
+                ed.putString(mKeyUtil.personFirstNameKey, "")
+                ed.putString(mKeyUtil.personLastNameKey, "")
                 ed.apply()
                 updatePersonSummary()
             }
@@ -130,27 +123,12 @@ class ProfileFragment : BasePreferenceFragment(R.xml.profile_preferences) {
     private fun personSummary(): String {
         var tagName = ""
 
-        val firstNameLength = mPrefs?.getString(GeneralKeys.FIRST_NAME, "")?.length ?: 0
-        val lastNameLength = mPrefs?.getString(GeneralKeys.LAST_NAME, "")?.length ?: 0
+        val firstNameLength = mPrefs?.getString(mKeyUtil.personFirstNameKey, "")?.length ?: 0
+        val lastNameLength = mPrefs?.getString(mKeyUtil.personLastNameKey, "")?.length ?: 0
 
         if ((firstNameLength > 0) or (lastNameLength > 0)) {
-            tagName += mPrefs?.getString(GeneralKeys.FIRST_NAME, "") + " " + mPrefs?.getString(GeneralKeys.LAST_NAME, "")
+            tagName += mPrefs?.getString(mKeyUtil.personFirstNameKey, "") + " " + mPrefs?.getString(mKeyUtil.personLastNameKey, "")
         }
         return tagName
-    }
-
-    private fun setupPersonTimeIntervalPreference(explicitUpdate: Boolean?) {
-        var updateFlag = explicitUpdate
-
-        //set visibility of update choices only if enabled
-        if (explicitUpdate == null) {
-            updateFlag = mPrefs?.getBoolean(GeneralKeys.REQUIRE_USER_TO_COLLECT, false)
-        }
-
-        val updateInterval = findPreference<Preference>(GeneralKeys.REQUIRE_USER_INTERVAL)
-
-        if (updateInterval != null) {
-            updateInterval.isVisible = updateFlag ?: false
-        }
     }
 }

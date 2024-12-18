@@ -28,7 +28,6 @@ import org.phenoapps.intercross.data.models.WishlistView
 import org.phenoapps.intercross.data.viewmodels.*
 import org.phenoapps.intercross.data.viewmodels.factory.*
 import org.phenoapps.intercross.databinding.FragmentBarcodeScanBinding
-import org.phenoapps.intercross.fragments.preferences.GeneralKeys
 import org.phenoapps.intercross.util.CrossUtil
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.FileUtil
@@ -175,7 +174,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                         CONTINUOUS -> {
                             zxingBarcodeScanner.setStatusText(getString(R.string.zxing_scan_mode_continuous))
 
-                            val maleFirst = mPrefs.getBoolean(GeneralKeys.CROSS_ORDER, false)
+                            val maleFirst = mPrefs.getBoolean(mKeyUtil.crossOrderKey, false)
 
                             when (maleFirst) {
 
@@ -306,7 +305,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
     private fun startObservers() {
 
-        val isCommutative = mPrefs.getBoolean(GeneralKeys.COMMUTATIVE_CROSSING, false)
+        val isCommutative = mPrefs.getBoolean(mKeyUtil.commutativeCrossingKey, false)
 
         if (isCommutative) {
 

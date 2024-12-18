@@ -39,7 +39,6 @@ import org.phenoapps.intercross.data.models.WishlistView
 import org.phenoapps.intercross.data.viewmodels.*
 import org.phenoapps.intercross.data.viewmodels.factory.*
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
-import org.phenoapps.intercross.fragments.preferences.GeneralKeys
 import org.phenoapps.intercross.util.*
 import java.util.*
 import javax.inject.Inject
@@ -112,14 +111,14 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun getFirstOrder(context: Context): String {
 
-        val maleFirst = mPref.getBoolean(GeneralKeys.CROSS_ORDER, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.crossOrderKey, false)
 
         return if (maleFirst) context.getString(R.string.MaleID) else context.getString(R.string.FemaleID)
     }
 
     private fun getSecondOrder(context: Context): String {
 
-        val maleFirst = mPref.getBoolean(GeneralKeys.CROSS_ORDER, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.crossOrderKey, false)
 
         return if (maleFirst) context.getString(R.string.FemaleID) else context.getString(R.string.MaleID)
 
@@ -142,7 +141,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         }
 
         //if this was called from crosscount/crossblock or wishlist fragment then populate the male/female tv
-        val maleFirst = mPref.getBoolean(GeneralKeys.CROSS_ORDER, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.crossOrderKey, false)
 
         argFemale?.let { female ->
             if (maleFirst) mBinding.secondText.setText(female)
@@ -194,7 +193,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         super.onResume()
 
         (activity as MainActivity).setToolbar()
-        (activity as MainActivity).supportActionBar?.title = mPref.getString(GeneralKeys.EXPERIMENT_NAME, "")
+        (activity as MainActivity).supportActionBar?.title = mPref.getString(mKeyUtil.experimentNameKey, "")
 
         mBinding.bottomNavBar.selectedItemId = R.id.action_nav_home
 
@@ -209,7 +208,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
                     R.id.action_set_experiment -> {
-                        showPersonDialog()
+                        showExperimentDialog()
                         true
                     }
                     R.id.action_export -> {
@@ -228,7 +227,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         val error = getString(R.string.ErrorCodeExists)
 
-        val isCommutative = mPref.getBoolean(GeneralKeys.COMMUTATIVE_CROSSING, false)
+        val isCommutative = mPref.getBoolean(mKeyUtil.commutativeCrossingKey, false)
 
         metadataViewModel.metadata.observe(viewLifecycleOwner) {
             mMetadata = it
@@ -350,9 +349,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                             val second = mBinding.secondText.text.toString()
                             //val third = editTextCross.text.toString()
 
-                            val maleFirst = mPref.getBoolean(GeneralKeys.CROSS_ORDER, false)
+                            val maleFirst = mPref.getBoolean(mKeyUtil.crossOrderKey, false)
 
-                            val blank = mPref.getBoolean(GeneralKeys.BLANK_MALE_ID, false)
+                            val blank = mPref.getBoolean(mKeyUtil.blankMaleKey, false)
 
                             //first check first text, if male first and allow blank males then skip to second text
                             if (first.isBlank() && !(maleFirst && blank)) {
@@ -375,9 +374,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun afterFirstText(value: String) {
 
-        val maleFirst = mPref.getBoolean(GeneralKeys.CROSS_ORDER, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.crossOrderKey, false)
 
-        val blank = mPref.getBoolean(GeneralKeys.BLANK_MALE_ID, false)
+        val blank = mPref.getBoolean(mKeyUtil.blankMaleKey, false)
 
         mBinding.firstText.setText(value)
 
@@ -390,9 +389,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun afterSecondText(value: String) {
 
-        val maleFirst = mPref.getBoolean(GeneralKeys.CROSS_ORDER, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.crossOrderKey, false)
 
-        val blank = mPref.getBoolean(GeneralKeys.BLANK_MALE_ID, false)
+        val blank = mPref.getBoolean(mKeyUtil.blankMaleKey, false)
 
         mBinding.secondText.setText(value)
 
@@ -705,7 +704,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             secondText.setText("")
 
-            val person = mPref.getString(GeneralKeys.FIRST_NAME, "") ?: ""
+            val person = mPref.getString(mKeyUtil.personFirstNameKey, "") ?: ""
 
             if (person.isNotBlank()) firstText.requestFocus()
         }
@@ -713,9 +712,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun FragmentEventsBinding.isInputValid(): Boolean {
 
-        val maleFirst = mPref.getBoolean(GeneralKeys.CROSS_ORDER, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.crossOrderKey, false)
 
-        val blank = mPref.getBoolean(GeneralKeys.BLANK_MALE_ID, false)
+        val blank = mPref.getBoolean(mKeyUtil.blankMaleKey, false)
 
         val male: String
         val female: String
@@ -752,9 +751,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         val value = mBinding.editTextCross.text.toString()
 
-        val maleFirst = mPref.getBoolean(GeneralKeys.CROSS_ORDER, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.crossOrderKey, false)
 
-        val blank = mPref.getBoolean(GeneralKeys.BLANK_MALE_ID, false)
+        val blank = mPref.getBoolean(mKeyUtil.blankMaleKey, false)
 
         lateinit var male: String
         lateinit var female: String
@@ -853,12 +852,12 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         }
     }
 
-    private fun showPersonDialog() {
+    private fun showExperimentDialog() {
         val inflater = this.layoutInflater
         val layout: View = inflater.inflate(R.layout.dialog_set_experiment, null)
         val experimentName = layout.findViewById<EditText>(R.id.experimentName)
 
-        experimentName.setText(mPref?.getString(GeneralKeys.EXPERIMENT_NAME, ""))
+        experimentName.setText(mPref?.getString(mKeyUtil.experimentNameKey, ""))
 
         experimentName.setSelectAllOnFocus(true)
 
@@ -869,14 +868,14 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             .setNegativeButton(getString(R.string.dialog_cancel)) { dialog, _ -> dialog.dismiss() }
             .setNeutralButton(R.string.Clear) { _, _ ->
                 val e = mPref?.edit()
-                e?.putString(GeneralKeys.EXPERIMENT_NAME, "")
+                e?.putString(mKeyUtil.experimentNameKey, "")
                 (activity as MainActivity).supportActionBar?.title = null
 
                 e?.apply()
             }
             .setPositiveButton(getString(R.string.dialog_save)) { _, _ ->
                 val e = mPref?.edit()
-                e?.putString(GeneralKeys.EXPERIMENT_NAME, experimentName.text.toString())
+                e?.putString(mKeyUtil.experimentNameKey, experimentName.text.toString())
                 (activity as MainActivity).supportActionBar?.title = experimentName.text
 
                 e?.apply()

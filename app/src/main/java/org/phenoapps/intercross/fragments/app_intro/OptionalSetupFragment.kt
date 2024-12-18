@@ -9,7 +9,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import org.phenoapps.intercross.R
-import org.phenoapps.intercross.fragments.preferences.GeneralKeys
+import org.phenoapps.intercross.util.KeyUtil
 import org.phenoapps.intercross.views.OptionalSetupItem
 
 class OptionalSetupFragment : Fragment(){
@@ -21,6 +21,10 @@ class OptionalSetupFragment : Fragment(){
     private var loadSampleWishlist: OptionalSetupItem? = null
 
     private var prefs: SharedPreferences? = null
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,7 +57,7 @@ class OptionalSetupFragment : Fragment(){
             setTitle(getString(R.string.app_intro_load_sample_parents_title))
             setSummary(getString(R.string.app_intro_load_sample_parents_summary))
             setOnClickListener {
-                loadSampleToggle(this, GeneralKeys.LOAD_SAMPLE_PARENTS)
+                loadSampleToggle(this, mKeyUtil.loadSampleParents)
             }
             setTitleTextSize(24f)
         }
@@ -62,7 +66,7 @@ class OptionalSetupFragment : Fragment(){
             setTitle(getString(R.string.app_intro_load_sample_wishlist_title))
             setSummary(getString(R.string.app_intro_load_sample_wishlist_summary))
             setOnClickListener {
-                loadSampleToggle(this, GeneralKeys.LOAD_SAMPLE_WISHLIST)
+                loadSampleToggle(this, mKeyUtil.loadSampleWishlist)
             }
             setTitleTextSize(24f)
         }

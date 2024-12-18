@@ -3,10 +3,8 @@ package org.phenoapps.intercross.activities
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
-import android.util.Log
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -59,11 +57,9 @@ import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.ActivityMainBinding
-import org.phenoapps.intercross.dialogs.FileExploreDialogFragment
 import org.phenoapps.intercross.fragments.EventsFragmentDirections
 import org.phenoapps.intercross.fragments.ImportSampleDialogFragment
 import org.phenoapps.intercross.fragments.PatternFragment
-import org.phenoapps.intercross.fragments.preferences.GeneralKeys
 import org.phenoapps.intercross.fragments.preferences.PreferencesFragment
 import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.Dialogs
@@ -360,13 +356,13 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         when (result.resultCode) {
             Activity.RESULT_OK -> {
 
-                val loadSampleWishlist = mPref.getBoolean(GeneralKeys.LOAD_SAMPLE_WISHLIST, false)
-                val loadSampleParents = mPref.getBoolean(GeneralKeys.LOAD_SAMPLE_PARENTS, false)
+                val loadSampleWishlist = mPref.getBoolean(mKeyUtil.loadSampleWishlist, false)
+                val loadSampleParents = mPref.getBoolean(mKeyUtil.loadSampleParents, false)
 
                 if (loadSampleParents || loadSampleWishlist) {
                     ImportSampleDialogFragment().show(supportFragmentManager, "ImportSampleDialogFragment")
                 }
-                mPref.edit().putBoolean(GeneralKeys.FIRST_RUN, false).apply()
+                mPref.edit().putBoolean(mKeyUtil.firstRunKey, false).apply()
             }
             else -> {
                 finish()
@@ -375,7 +371,7 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
     }
 
     private fun firstRunSetup() {
-        if (mPref.getBoolean(GeneralKeys.FIRST_RUN, true)) {
+        if (mPref.getBoolean(mKeyUtil.firstRunKey, true)) {
 
             val introIntent = Intent(this, AppIntroActivity::class.java)
             appIntroLauncher.launch(introIntent)
@@ -410,7 +406,7 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     private fun checkStorageAccess() {
         // when cannot access storage directory and firstRunSetup was already completed
-        if (!BaseDocumentTreeUtil.isEnabled(this) && mPref.getBoolean(GeneralKeys.FIRST_RUN, false)) {
+        if (!BaseDocumentTreeUtil.isEnabled(this) && mPref.getBoolean(mKeyUtil.firstRunKey, false)) {
             val storageDefinerActivity = Intent(this, DefineStorageActivity::class.java)
             storageDefinerLauncher.launch(storageDefinerActivity)
         }

@@ -13,10 +13,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.activities.MainActivity
-import org.phenoapps.intercross.fragments.preferences.GeneralKeys
+import org.phenoapps.intercross.util.KeyUtil
 import org.phenoapps.utils.BaseDocumentTreeUtil
 
 class ImportSampleDialogFragment : DialogFragment() {
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = activity?.layoutInflater
@@ -35,8 +39,8 @@ class ImportSampleDialogFragment : DialogFragment() {
 
     private fun startImportSample() {
         val mPref = context?.let { PreferenceManager.getDefaultSharedPreferences(it) }
-        val loadSampleWishlist = mPref?.getBoolean(GeneralKeys.LOAD_SAMPLE_WISHLIST, false)
-        val loadSampleParents = mPref?.getBoolean(GeneralKeys.LOAD_SAMPLE_PARENTS, false)
+        val loadSampleWishlist = mPref?.getBoolean(mKeyUtil.loadSampleWishlist, false)
+        val loadSampleParents = mPref?.getBoolean(mKeyUtil.loadSampleParents, false)
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
