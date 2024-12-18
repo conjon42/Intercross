@@ -22,7 +22,7 @@ class DatabaseFragment : BasePreferenceFragment(R.xml.database_preferences) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with (findPreference<Preference>("org.phenoapps.intercross.DATABASE_IMPORT")) {
+        with (findPreference<Preference>(getString(R.string.key_pref_db_import))) {
             this?.let {
                 setOnPreferenceClickListener {
                     activity?.let { act ->
@@ -33,7 +33,7 @@ class DatabaseFragment : BasePreferenceFragment(R.xml.database_preferences) {
                 }
             }
         }
-        with (findPreference<Preference>("org.phenoapps.intercross.DATABASE_EXPORT")) {
+        with (findPreference<Preference>(getString(R.string.key_pref_db_export))) {
             this?.let {
                 setOnPreferenceClickListener {
                     activity?.let { act ->

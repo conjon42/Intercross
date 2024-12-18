@@ -17,7 +17,6 @@ import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.MetaValuesViewModel
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
 import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
-import org.phenoapps.intercross.fragments.preferences.GeneralKeys
 import java.util.UUID
 
 class CrossUtil(val context: Context) {
@@ -71,12 +70,12 @@ class CrossUtil(val context: Context) {
 
         }
 
-        val isCommutative = mPref.getBoolean(GeneralKeys.COMMUTATIVE_CROSSING, false)
+        val isCommutative = mPref.getBoolean(mKeyUtil.commutativeCrossingKey, false)
 
-        val experiment = mPref.getString(GeneralKeys.EXPERIMENT_NAME, "")
+        val experiment = mPref.getString(mKeyUtil.experimentNameKey, "")
 
-        val firstName = mPref.getString(GeneralKeys.FIRST_NAME,"")
-        val lastName = mPref.getString(GeneralKeys.LAST_NAME,"")
+        val firstName = mPref.getString(mKeyUtil.personFirstNameKey,"")
+        val lastName = mPref.getString(mKeyUtil.personLastNameKey,"")
         val person = if (!firstName.isNullOrEmpty() || !lastName.isNullOrEmpty()) {
             "$firstName $lastName"
         } else {
@@ -185,7 +184,7 @@ class CrossUtil(val context: Context) {
      */
     fun checkPrefToOpenCrossEvent(controller: NavController, direction: NavDirections) {
 
-        val openCross = mPref.getBoolean(GeneralKeys.OPEN_CROSS_IMMEDIATELY, false)
+        val openCross = mPref.getBoolean(mKeyUtil.openCrossAfterCreateKey, false)
 
         if (openCross) {
             controller.navigate(

@@ -19,7 +19,6 @@ import androidx.preference.PreferenceManager
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.IntercrossDatabase
 import org.phenoapps.intercross.data.models.*
-import org.phenoapps.intercross.fragments.preferences.GeneralKeys
 import java.io.*
 import java.util.*
 import java.util.zip.ZipEntry
@@ -95,6 +94,10 @@ class FileUtil(private val ctx: Context) {
 
     private val mPref by lazy {
         PreferenceManager.getDefaultSharedPreferences(ctx)
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(ctx)
     }
 
     /***
@@ -436,7 +439,7 @@ class FileUtil(private val ctx: Context) {
 
     fun ringNotification(success: Boolean) {
 
-        if (mPref.getBoolean(GeneralKeys.SOUND_NOTIFICATIONS, false)) {
+        if (mPref.getBoolean(mKeyUtil.soundNotificationKey, false)) {
             try {
                 when (success) {
                     true -> {

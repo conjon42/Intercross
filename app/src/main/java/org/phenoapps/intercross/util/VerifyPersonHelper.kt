@@ -11,7 +11,6 @@ import dagger.hilt.android.qualifiers.ActivityContext
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.fragments.EventsFragmentDirections
-import org.phenoapps.intercross.fragments.preferences.GeneralKeys
 import javax.inject.Inject
 
 class VerifyPersonHelper @Inject constructor(@ActivityContext private val context: Context) {
@@ -23,6 +22,10 @@ class VerifyPersonHelper @Inject constructor(@ActivityContext private val contex
         PreferenceManager.getDefaultSharedPreferences(context)
     }
 
+    private val mKetUtil by lazy {
+        KeyUtil(context)
+    }
+
     /**
      * Simple function that checks if the dialog asked last time was opened >24hrs ago.
      * If the condition is met, it asks the user to reenter the collector id.
@@ -30,12 +33,12 @@ class VerifyPersonHelper @Inject constructor(@ActivityContext private val contex
      * If the conditions were not met, we simply execute action to be performed after the checks (actionAfterDialog)
      */
     fun checkLastOpened(actionAfterDialog: (() -> Unit)?) {
-        val lastOpen: Long = mPrefs.getLong(GeneralKeys.LAST_TIME_ASKED, 0L)
-        val alreadyAsked: Boolean = mPrefs.getBoolean(GeneralKeys.ASKED_SINCE_OPENED, false)
+        val lastOpen: Long = mPrefs.getLong(mKetUtil.lastTimeAskedKey, 0L)
+        val alreadyAsked: Boolean = mPrefs.getBoolean(mKetUtil.askedSinceOpenedKey, false)
         val systemTime = System.nanoTime()
 
         //number of hours to wait before asking for user, pref found in profile
-        val interval = when (mPrefs.getString(GeneralKeys.REQUIRE_USER_INTERVAL, "1")) {
+        val interval = when (mPrefs.getString(mKetUtil.requireUserIntervalKey, "1")) {
             "1" -> 0
             "2" -> 12
             else -> 24
@@ -46,11 +49,10 @@ class VerifyPersonHelper @Inject constructor(@ActivityContext private val contex
         if (!alreadyAsked) { // skip if already asked
             if ((interval == 0) // ask on every open
                 || (lastOpen != 0L && (systemTime - lastOpen > nanosToWait))) { // ask after interval and interval has elapsed
-                val verify: Boolean = mPrefs.getBoolean(GeneralKeys.REQUIRE_USER_TO_COLLECT, true)
-                Log.d("TAG", "verify: $verify")
+                val verify: Boolean = mPrefs.getBoolean(mKetUtil.requireUserToCollect, true)
                 if (verify) {
-                    val firstName: String = mPrefs.getString(GeneralKeys.FIRST_NAME, "") ?: ""
-                    val lastName: String = mPrefs.getString(GeneralKeys.LAST_NAME, "") ?: ""
+                    val firstName: String = mPrefs.getString(mKetUtil.personFirstNameKey, "") ?: ""
+                    val lastName: String = mPrefs.getString(mKetUtil.personLastNameKey, "") ?: ""
                     if (firstName.isNotEmpty() || lastName.isNotEmpty()) {
                         //person presumably has been set
                         if (actionAfterDialog != null) {
@@ -77,8 +79,8 @@ class VerifyPersonHelper @Inject constructor(@ActivityContext private val contex
                 }
                 // if any kind of prompt was shown to user
                 // update the LAST_TIME_ASKED and ASKED_SINCE_OPENED
-                mPrefs.edit().putLong(GeneralKeys.LAST_TIME_ASKED, System.nanoTime()).apply()
-                mPrefs.edit().putBoolean(GeneralKeys.ASKED_SINCE_OPENED, true).apply()
+                mPrefs.edit().putLong(mKetUtil.lastTimeAskedKey, System.nanoTime()).apply()
+                mPrefs.edit().putBoolean(mKetUtil.askedSinceOpenedKey, true).apply()
             } else if (actionAfterDialog != null) {
                 actionAfterDialog()
             }
@@ -120,7 +122,7 @@ class VerifyPersonHelper @Inject constructor(@ActivityContext private val contex
     }
 
     fun updateAskedSinceOpened() {
-        mPrefs.edit().putBoolean(GeneralKeys.ASKED_SINCE_OPENED, false).apply()
+        mPrefs.edit().putBoolean(mKetUtil.askedSinceOpenedKey, false).apply()
     }
 }
 
