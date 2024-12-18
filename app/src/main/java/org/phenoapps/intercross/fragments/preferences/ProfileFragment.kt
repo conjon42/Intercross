@@ -2,7 +2,6 @@ package org.phenoapps.intercross.fragments.preferences
 
 import android.app.AlertDialog
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -38,8 +37,8 @@ class ProfileFragment : BasePreferenceFragment(R.xml.profile_preferences) {
 
         mPrefs?.edit()?.putLong(mKeyUtil.lastTimeAskedKey, System.nanoTime())?.apply()
 
-        profilePerson = findPreference("pref_profile_person")
-        profileReset = findPreference("pref_profile_reset")
+        profilePerson = findPreference(mKeyUtil.profilePersonKey)
+        profileReset = findPreference(mKeyUtil.profileResetKey)
         requirePersonPref = findPreference<CheckBoxPreference>(mKeyUtil.requireUserToCollect)
 
         updatePersonSummary()

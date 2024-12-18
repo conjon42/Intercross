@@ -5,12 +5,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <Preference
-        android:key="pref_profile_person"
+        android:key="@string/key_pref_profile_person"
         android:title="@string/profile_person"
         android:icon="@drawable/ic_prefs_profile_person" />
 
     <Preference
-        android:key="pref_profile_reset"
+        android:key="@string/key_pref_profile_reset"
         android:title="@string/profile_reset"
         android:icon="@drawable/ic_prefs_profile_delete" />
 

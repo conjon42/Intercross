@@ -34,7 +34,7 @@ class PreferencesFragment : BasePreferenceFragment(R.xml.preferences) {
                     findNavController().navigate(PreferencesFragmentDirections.actionFromPreferencesFragmentToProfileFragment())
             }
             if (args.getBoolean(mKeyUtil.personUpdateKey)) {
-                findNavController().navigate(PreferencesFragmentDirections.actionFromPreferencesFragmentToProfileFragment(PERSONUPDATE = true))
+                findNavController().navigate(PreferencesFragmentDirections.actionFromPreferencesFragmentToProfileFragment(true))
             }
         }
     }

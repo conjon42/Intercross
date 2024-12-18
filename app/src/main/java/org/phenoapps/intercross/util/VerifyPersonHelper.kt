@@ -55,32 +55,28 @@ class VerifyPersonHelper @Inject constructor(@ActivityContext private val contex
                     val lastName: String = mPrefs.getString(mKetUtil.personLastNameKey, "") ?: ""
                     if (firstName.isNotEmpty() || lastName.isNotEmpty()) {
                         //person presumably has been set
-                        if (actionAfterDialog != null) {
-                            showAskCollectorDialog(
-                                context.getString(R.string.collect_dialog_verify_collector) + " " + firstName + " " + lastName + "?",
-                                context.getString(R.string.collect_dialog_verify_yes_button),
-                                context.getString(R.string.collect_dialog_neutral_button),
-                                context.getString(R.string.collect_dialog_verify_no_button),
-                                actionAfterDialog
-                            )
-                        }
+                        showAskCollectorDialog(
+                            context.getString(R.string.collect_dialog_verify_collector) + " " + firstName + " " + lastName + "?",
+                            context.getString(R.string.collect_dialog_verify_yes_button),
+                            context.getString(R.string.collect_dialog_neutral_button),
+                            context.getString(R.string.collect_dialog_verify_no_button),
+                            actionAfterDialog
+                        )
                     } else {
                         //person presumably hasn't been set
-                        if (actionAfterDialog != null) {
-                            showAskCollectorDialog(
-                                context.getString(R.string.collect_dialog_new_collector),
-                                context.getString(R.string.collect_dialog_verify_no_button),
-                                context.getString(R.string.collect_dialog_neutral_button),
-                                context.getString(R.string.collect_dialog_verify_yes_button),
-                                actionAfterDialog
-                            )
-                        }
+                        showAskCollectorDialog(
+                            context.getString(R.string.collect_dialog_new_collector),
+                            context.getString(R.string.collect_dialog_verify_no_button),
+                            context.getString(R.string.collect_dialog_neutral_button),
+                            context.getString(R.string.collect_dialog_verify_yes_button),
+                            actionAfterDialog
+                        )
                     }
+                    // if any kind of prompt was shown to user
+                    // update the LAST_TIME_ASKED and ASKED_SINCE_OPENED
+                    mPrefs.edit().putLong(mKetUtil.lastTimeAskedKey, System.nanoTime()).apply()
+                    mPrefs.edit().putBoolean(mKetUtil.askedSinceOpenedKey, true).apply()
                 }
-                // if any kind of prompt was shown to user
-                // update the LAST_TIME_ASKED and ASKED_SINCE_OPENED
-                mPrefs.edit().putLong(mKetUtil.lastTimeAskedKey, System.nanoTime()).apply()
-                mPrefs.edit().putBoolean(mKetUtil.askedSinceOpenedKey, true).apply()
             } else if (actionAfterDialog != null) {
                 actionAfterDialog()
             }
@@ -97,26 +93,26 @@ class VerifyPersonHelper @Inject constructor(@ActivityContext private val contex
         positive: String,
         neutral: String,
         negative: String,
-        actionAfterDialog: () -> Unit
+        actionAfterDialog: (() -> Unit)?
     ) {
         AlertDialog.Builder(context)
             .setTitle(message) //yes button
             .setPositiveButton(positive) { dialog: DialogInterface, _:
                 // yes, don't ask again button
                 Int -> dialog.dismiss()
-                actionAfterDialog()
+                actionAfterDialog?.invoke()
             }
             .setNeutralButton(neutral) { dialog: DialogInterface, _: Int ->
                 // modify settings (navigates to profile preferences)
                 dialog.dismiss()
                 (context as? MainActivity)?.findNavController(R.id.nav_fragment)
-                    ?.navigate(EventsFragmentDirections.actionFromEventsToPreferences(PERSONUPDATE = false, MODIFYPROFILESETTINGS = true))
+                    ?.navigate(EventsFragmentDirections.actionFromEventsToPreferences(PERSONUPDATE = false, MODIFYPROFILE = true))
             }
             .setNegativeButton(negative) { dialog: DialogInterface, _: Int ->
                 // no (navigates to the person preference)
                 dialog.dismiss()
                 (context as? MainActivity)?.findNavController(R.id.nav_fragment)
-                    ?.navigate(EventsFragmentDirections.actionFromEventsToPreferences(PERSONUPDATE = true, MODIFYPROFILESETTINGS = false))
+                    ?.navigate(EventsFragmentDirections.actionFromEventsToPreferences(PERSONUPDATE = true, MODIFYPROFILE = false))
             }
             .show()
     }

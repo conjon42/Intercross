@@ -37,6 +37,8 @@
     <string name="root_about">&package;ABOUT_SCREEN</string>
 
     <!-- Profile preference keys -->
+    <string name="key_pref_profile_person">&package;PROFILE_PERSON</string>
+    <string name="key_pref_profile_reset">&package;PROFILE_RESET</string>
     <string name="key_pref_person_first_name">&package;FIRST_NAME</string>
     <string name="key_pref_person_last_name">&package;LAST_NAME</string>
     <string name="key_pref_experiment_name">&package;EXPERIMENT_NAME</string>
@@ -44,8 +46,8 @@
     <string name="key_pref_require_user_interval">&package;REQUIRE_USER_INTERVAL</string>
     <string name="key_pref_asked_since_opened">&package;ASKED_SINCE_OPENED</string>
     <string name="key_pref_last_time_asked">&package;LAST_TIME_ASKED</string>
-    <string name="key_pref_modify_profile_settings">&package;MODIFY_PROFILE_SETTINGS</string>
-    <string name="key_pref_person_update">&package;PERSON_UPDATE</string>
+    <string name="key_pref_modify_profile_settings">MODIFY_PROFILE</string>
+    <string name="key_pref_person_update">PERSON_UPDATE</string>
 
     <!-- Behavior preference keys -->
     <!-- Naming -->

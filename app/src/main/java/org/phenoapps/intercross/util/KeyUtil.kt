@@ -37,6 +37,8 @@ class KeyUtil(private val ctx: Context?) {
 
     // person and experiment preferences
     val profileRootKey by key(R.string.root_profile)
+    val profilePersonKey by key(R.string.key_pref_profile_person)
+    val profileResetKey by key(R.string.key_pref_profile_reset)
     val personFirstNameKey by key(R.string.key_pref_person_first_name)
     val personLastNameKey by key(R.string.key_pref_person_last_name)
     val experimentNameKey by key(R.string.key_pref_experiment_name)
