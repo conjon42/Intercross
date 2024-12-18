@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.navigation.findNavController
 import androidx.preference.PreferenceManager
 import dagger.hilt.android.qualifiers.ActivityContext
@@ -38,45 +37,43 @@ class VerifyPersonHelper @Inject constructor(@ActivityContext private val contex
         val systemTime = System.nanoTime()
 
         //number of hours to wait before asking for user, pref found in profile
-        val interval = when (mPrefs.getString(mKetUtil.requireUserIntervalKey, "1")) {
-            "1" -> 0
-            "2" -> 12
-            else -> 24
+        val interval = when (mPrefs.getString(mKetUtil.personVerificationIntervalKey, "0")) {
+            "0" -> 0
+            "1" -> 12
+            "2" -> 24
+            else -> -1
         }
 
        val nanosToWait = 1e9.toLong() * 3600 * interval
 
         if (!alreadyAsked) { // skip if already asked
             if ((interval == 0) // ask on every open
-                || (lastOpen != 0L && (systemTime - lastOpen > nanosToWait))) { // ask after interval and interval has elapsed
-                val verify: Boolean = mPrefs.getBoolean(mKetUtil.requireUserToCollect, true)
-                if (verify) {
-                    val firstName: String = mPrefs.getString(mKetUtil.personFirstNameKey, "") ?: ""
-                    val lastName: String = mPrefs.getString(mKetUtil.personLastNameKey, "") ?: ""
-                    if (firstName.isNotEmpty() || lastName.isNotEmpty()) {
-                        //person presumably has been set
-                        showAskCollectorDialog(
-                            context.getString(R.string.collect_dialog_verify_collector) + " " + firstName + " " + lastName + "?",
-                            context.getString(R.string.collect_dialog_verify_yes_button),
-                            context.getString(R.string.collect_dialog_neutral_button),
-                            context.getString(R.string.collect_dialog_verify_no_button),
-                            actionAfterDialog
-                        )
-                    } else {
-                        //person presumably hasn't been set
-                        showAskCollectorDialog(
-                            context.getString(R.string.collect_dialog_new_collector),
-                            context.getString(R.string.collect_dialog_verify_no_button),
-                            context.getString(R.string.collect_dialog_neutral_button),
-                            context.getString(R.string.collect_dialog_verify_yes_button),
-                            actionAfterDialog
-                        )
-                    }
-                    // if any kind of prompt was shown to user
-                    // update the LAST_TIME_ASKED and ASKED_SINCE_OPENED
-                    mPrefs.edit().putLong(mKetUtil.lastTimeAskedKey, System.nanoTime()).apply()
-                    mPrefs.edit().putBoolean(mKetUtil.askedSinceOpenedKey, true).apply()
+                || (interval > 0 && lastOpen != 0L && (systemTime - lastOpen > nanosToWait))) { // ask after interval and interval has elapsed
+                val firstName: String = mPrefs.getString(mKetUtil.personFirstNameKey, "") ?: ""
+                val lastName: String = mPrefs.getString(mKetUtil.personLastNameKey, "") ?: ""
+                if (firstName.isNotEmpty() || lastName.isNotEmpty()) {
+                    //person presumably has been set
+                    showAskCollectorDialog(
+                        context.getString(R.string.collect_dialog_verify_collector) + " " + firstName + " " + lastName + "?",
+                        context.getString(R.string.collect_dialog_verify_yes_button),
+                        context.getString(R.string.collect_dialog_neutral_button),
+                        context.getString(R.string.collect_dialog_verify_no_button),
+                        actionAfterDialog
+                    )
+                } else {
+                    //person presumably hasn't been set
+                    showAskCollectorDialog(
+                        context.getString(R.string.collect_dialog_new_collector),
+                        context.getString(R.string.collect_dialog_verify_no_button),
+                        context.getString(R.string.collect_dialog_neutral_button),
+                        context.getString(R.string.collect_dialog_verify_yes_button),
+                        actionAfterDialog
+                    )
                 }
+                // if any kind of prompt was shown to user
+                // update the lastTimeAskedKey and askedSinceOpenedKey
+                mPrefs.edit().putLong(mKetUtil.lastTimeAskedKey, System.nanoTime()).apply()
+                mPrefs.edit().putBoolean(mKetUtil.askedSinceOpenedKey, true).apply()
             } else if (actionAfterDialog != null) {
                 actionAfterDialog()
             }

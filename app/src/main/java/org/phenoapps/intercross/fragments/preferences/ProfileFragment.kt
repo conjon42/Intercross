@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
-import androidx.preference.CheckBoxPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceManager
 import org.phenoapps.intercross.R
@@ -23,7 +22,6 @@ class ProfileFragment : BasePreferenceFragment(R.xml.profile_preferences) {
 
     private var profilePerson: Preference? = null
     private var profileReset: Preference? = null
-    private var requirePersonPref: Preference? = null
 
     private var personDialog: AlertDialog? = null
 
@@ -39,13 +37,10 @@ class ProfileFragment : BasePreferenceFragment(R.xml.profile_preferences) {
 
         profilePerson = findPreference(mKeyUtil.profilePersonKey)
         profileReset = findPreference(mKeyUtil.profileResetKey)
-        requirePersonPref = findPreference<CheckBoxPreference>(mKeyUtil.requireUserToCollect)
 
         updatePersonSummary()
 
         setPreferenceClickListeners()
-
-        setupPersonTimeIntervalPreference(null)
 
         val arguments = arguments
 
@@ -66,11 +61,6 @@ class ProfileFragment : BasePreferenceFragment(R.xml.profile_preferences) {
 
         profileReset?.setOnPreferenceClickListener {
             showClearSettingsDialog()
-            true
-        }
-
-        requirePersonPref?.setOnPreferenceChangeListener { _, newValue ->
-            setupPersonTimeIntervalPreference(newValue as Boolean)
             true
         }
     }
@@ -140,20 +130,5 @@ class ProfileFragment : BasePreferenceFragment(R.xml.profile_preferences) {
             tagName += mPrefs?.getString(mKeyUtil.personFirstNameKey, "") + " " + mPrefs?.getString(mKeyUtil.personLastNameKey, "")
         }
         return tagName
-    }
-
-    private fun setupPersonTimeIntervalPreference(explicitUpdate: Boolean?) {
-        var updateFlag = explicitUpdate
-
-        //set visibility of update choices only if enabled
-        if (explicitUpdate == null) {
-            updateFlag = mPrefs?.getBoolean(mKeyUtil.requireUserToCollect, false)
-        }
-
-        val updateInterval = findPreference<Preference>(mKeyUtil.requireUserIntervalKey)
-
-        if (updateInterval != null) {
-            updateInterval.isVisible = updateFlag ?: false
-        }
     }
 }

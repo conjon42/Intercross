@@ -14,23 +14,12 @@
         android:title="@string/profile_reset"
         android:icon="@drawable/ic_prefs_profile_delete" />
 
-    <PreferenceCategory
-        android:title="@string/profile_settings"
-        app:iconSpaceReserved="false">
+    <ListPreference
+        android:key="@string/key_pref_person_verification_interval"
+        android:title="@string/profile_verification_interval"
+        android:entries="@array/preferences_profile_verification_interval_entries"
+        android:entryValues="@array/preferences_profile_verification_interval_values"
+        android:defaultValue="0"
+        android:icon="@drawable/ic_hours_24" />
 
-        <CheckBoxPreference
-            android:key="@string/key_pref_require_user_to_collect"
-            android:title="@string/profile_require_user"
-            android:defaultValue="true"
-            android:icon="@drawable/ic_prefs_profile_verify" />
-
-        <ListPreference
-            android:key="@string/key_pref_require_user_interval"
-            android:title="@string/profile_require_interval"
-            android:entries="@array/profile_require_interval_entries"
-            android:entryValues="@array/profile_require_interval_values"
-            android:defaultValue="1"
-            android:icon="@drawable/ic_hours_24" />
-
-    </PreferenceCategory>
 </PreferenceScreen>
