@@ -24,6 +24,53 @@
     <string name="key_cat_brapi_community_servers">&package;BRAPI_COMMUNITY_SERVERS</string>
     <string name="key_pref_brapi_add_account">&package;BRAPI_ADD_ANDROID_ACCOUNT</string>
 
+    <!-- Preferences search key -->
+    <string name="key_pref_search">&package;PREF_SEARCH</string>
+
+    <!-- Preference Root Screen Keys -->
+    <string name="root_preferences">&package;ROOT_PREFERENCES</string>
+    <string name="root_profile">&package;PROFILE_SCREEN</string>
+    <string name="root_behavior">&package;BEHAVIOR_SCREEN</string>
+    <string name="root_printing">&package;PRINTING_SCREEN</string>
+    <string name="root_database">&package;DATABASE_SCREEN</string>
+    <string name="root_brapi">&package;BRAPI_SCREEN</string>
+    <string name="root_about">&package;ABOUT_SCREEN</string>
+
+    <!-- Profile preference keys -->
+    <string name="key_pref_profile_person">&package;PROFILE_PERSON</string>
+    <string name="key_pref_profile_reset">&package;PROFILE_RESET</string>
+    <string name="key_pref_person_first_name">&package;FIRST_NAME</string>
+    <string name="key_pref_person_last_name">&package;LAST_NAME</string>
+    <string name="key_pref_experiment_name">&package;EXPERIMENT_NAME</string>
+    <string name="key_pref_person_verification_interval">&package;PERSON_VERIFICATION_INTERVAL</string>
+    <string name="key_pref_asked_since_opened">&package;ASKED_SINCE_OPENED</string>
+    <string name="key_pref_last_time_asked">&package;LAST_TIME_ASKED</string>
+    <string name="key_pref_modify_profile_settings">MODIFY_PROFILE</string>
+    <string name="key_pref_person_update">PERSON_UPDATE</string>
+
+    <!-- Behavior preference keys -->
+    <!-- Naming -->
+    <string name="key_pref_behavior_blank_male">&package;BLANK_MALE_ID</string>
+    <string name="key_pref_behavior_cross_order">&package;CROSS_ORDER</string>
+    <string name="key_pref_behavior_cross_pattern">&package;CREATE_PATTERN</string>
+    <!-- Workflow -->
+    <string name="key_pref_behavior_collect_additional_info">&package;COLLECT_ADDITIONAL_INFO</string>
+    <string name="key_pref_behavior_meta_data">&package;META_DATA</string>
+    <string name="key_pref_behavior_meta_data_defaults">&package;META_DATA_DEFAULTS</string>
+    <string name="key_pref_behavior_sound_notifications">&package;SOUND_NOTIFICATIONS</string>
+    <string name="key_pref_behavior_open_cross_immediately">&package;OPEN_CROSS_IMMEDIATELY</string>
+    <string name="key_pref_behavior_commutative_crossing">&package;COMMUTATIVE_CROSSING</string>
+
+    <!-- Printing preference keys -->
+    <string name="key_pref_print_connect">&package;PRINTER_CONNECT</string>
+    <string name="key_pref_print_zpl_import">&package;ZPL_IMPORT</string>
+    <string name="key_pref_print_zpl_code">&package;ZPL_CODE</string>
+
+    <!-- Database preference keys -->
+    <string name="key_pref_storage_definer">&package;STORAGE_DEFINER</string>
+    <string name="key_pref_db_import">&package;DATABASE_IMPORT</string>
+    <string name="key_pref_db_export">&package;DATABASE_EXPORT</string>
+
     <!-- About preference keys -->
     <string name="key_pref_about">&package;ABOUT</string>
 </resources>

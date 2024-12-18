@@ -40,7 +40,6 @@ import org.phenoapps.intercross.data.viewmodels.factory.MetaValuesViewModelFacto
 import org.phenoapps.intercross.data.viewmodels.factory.MetadataViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentEventDetailBinding
-import org.phenoapps.intercross.fragments.preferences.GeneralKeys
 import org.phenoapps.intercross.interfaces.MetadataManager
 import org.phenoapps.intercross.util.BluetoothUtil
 import org.phenoapps.intercross.util.Dialogs
@@ -103,9 +102,7 @@ class EventDetailFragment:
     }
 
     private fun getMetaDataVisibility(context: Context): Int {
-
-        // determine if meta data collection is enabled
-        val collect: Boolean = mPref.getBoolean(GeneralKeys.COLLECT_INFO, false)
+        val collect: Boolean = mPref.getBoolean(mKeyUtil.collectAdditionalInfoKey, false)
 
         return if (collect) View.VISIBLE else View.GONE
 
@@ -276,7 +273,7 @@ class EventDetailFragment:
 
         menu.findItem(R.id.action_metadata_collect)?.let { menuItem ->
             // set icon based on preference
-            val metadataCollectEnabled = mPref.getBoolean(GeneralKeys.COLLECT_INFO, false)
+            val metadataCollectEnabled = mPref.getBoolean(mKeyUtil.collectAdditionalInfoKey, false)
             menuItem.setIcon(
                 if (metadataCollectEnabled) R.drawable.ic_metadata_collect
                 else R.drawable.ic_metadata_collect_disabled
@@ -293,9 +290,9 @@ class EventDetailFragment:
 
             when (item.itemId) {
                 R.id.action_metadata_collect -> {
-                    val currentValue = mPref.getBoolean(GeneralKeys.COLLECT_INFO, false)
+                    val currentValue = mPref.getBoolean(mKeyUtil.collectAdditionalInfoKey, false)
                     val metadataCollectEnabled = !currentValue
-                    mPref.edit().putBoolean(GeneralKeys.COLLECT_INFO, metadataCollectEnabled).apply()
+                    mPref.edit().putBoolean(mKeyUtil.collectAdditionalInfoKey, metadataCollectEnabled).apply()
 
                     // update menu icon
                     item.setIcon(
