@@ -227,7 +227,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
                     R.id.action_set_experiment -> {
-                        showPersonDialog()
+                        showExperimentDialog()
                         true
                     }
                     R.id.action_export -> {
@@ -871,7 +871,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         }
     }
 
-    private fun showPersonDialog() {
+    private fun showExperimentDialog() {
         val inflater = this.layoutInflater
         val layout: View = inflater.inflate(R.layout.dialog_set_experiment, null)
         val experimentName = layout.findViewById<EditText>(R.id.experimentName)
