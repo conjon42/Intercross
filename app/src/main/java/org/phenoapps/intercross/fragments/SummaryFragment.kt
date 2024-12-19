@@ -113,7 +113,7 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
 
         setupBottomNavBar()
 
-        summaryTabLayout.getTabAt(2)?.select()
+        summaryTabLayout.getTabAt(1)?.select()
 
         setupTabLayout()
     }
@@ -166,10 +166,7 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
             when (tab?.position) {
                 0 ->
                     Navigation.findNavController(mBinding.root)
-                        .navigate(SummaryFragmentDirections.actionToCrossCount())
-                1 ->
-                    Navigation.findNavController(mBinding.root)
-                        .navigate(SummaryFragmentDirections.actionToWishlist())
+                        .navigate(SummaryFragmentDirections.actionToCrossTracker())
             }
         })
     }
@@ -198,7 +195,7 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
                 }
                 R.id.action_nav_cross_count -> {
 
-                    findNavController().navigate(SummaryFragmentDirections.globalActionToCrossCount())
+                    findNavController().navigate(SummaryFragmentDirections.globalActionToCrossTracker())
 
                 }
             }

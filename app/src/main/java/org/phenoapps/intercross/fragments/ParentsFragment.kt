@@ -492,7 +492,7 @@ class ParentsFragment: IntercrossBaseFragment<FragmentParentsBinding>(R.layout.f
 
                 R.id.action_nav_cross_count -> {
 
-                    findNavController().navigate(ParentsFragmentDirections.globalActionToCrossCount())
+                    findNavController().navigate(ParentsFragmentDirections.globalActionToCrossTracker())
                 }
             }
 

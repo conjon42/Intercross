@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.databinding.ListItemWishlistRowBinding
-import org.phenoapps.intercross.fragments.CrossCountFragment
+import org.phenoapps.intercross.fragments.CrossTrackerFragment
 
 
 /**
@@ -22,18 +22,18 @@ import org.phenoapps.intercross.fragments.CrossCountFragment
  *
  */
 class WishlistAdapter(val context: Context) :
-        ListAdapter<CrossCountFragment.ListEntry, WishlistAdapter.ViewHolder>(SummaryDiffCallback()) {
+        ListAdapter<CrossTrackerFragment.ListEntry, WishlistAdapter.ViewHolder>(SummaryDiffCallback()) {
 
-    private class SummaryDiffCallback : DiffUtil.ItemCallback<CrossCountFragment.ListEntry>() {
+    private class SummaryDiffCallback : DiffUtil.ItemCallback<CrossTrackerFragment.ListEntry>() {
 
-        override fun areItemsTheSame(oldItem: CrossCountFragment.ListEntry,
-                                     newItem: CrossCountFragment.ListEntry): Boolean {
+        override fun areItemsTheSame(oldItem: CrossTrackerFragment.ListEntry,
+                                     newItem: CrossTrackerFragment.ListEntry): Boolean {
 
             return (oldItem.f == newItem.f) && (oldItem.m == newItem.m)
         }
 
-        override fun areContentsTheSame(oldItem: CrossCountFragment.ListEntry,
-                                        newItem: CrossCountFragment.ListEntry): Boolean {
+        override fun areContentsTheSame(oldItem: CrossTrackerFragment.ListEntry,
+                                        newItem: CrossTrackerFragment.ListEntry): Boolean {
 
             return (oldItem.f == newItem.f) && (oldItem.m == newItem.m)
         }
@@ -69,7 +69,7 @@ class WishlistAdapter(val context: Context) :
     inner class ViewHolder(
             private val binding: ListItemWishlistRowBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(data: CrossCountFragment.ListEntry) {
+        fun bind(data: CrossTrackerFragment.ListEntry) {
 
             with(binding) {
 

@@ -4,9 +4,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.viewModels
-import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
@@ -211,7 +209,7 @@ class CrossBlockFragment : IntercrossBaseFragment<FragmentCrossBlockBinding>(R.l
                 }
                 R.id.action_nav_cross_count -> {
 
-                    findNavController().navigate(CrossBlockFragmentDirections.globalActionToCrossCount())
+                    findNavController().navigate(CrossBlockFragmentDirections.globalActionToCrossTracker())
 
                 }
             }
