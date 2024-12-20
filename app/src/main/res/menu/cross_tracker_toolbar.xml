@@ -10,8 +10,7 @@
         android:id="@+id/action_to_crossblock"
         android:icon="@drawable/ic_crossblock"
         android:title="@string/crossblock"
-        app:showAsAction="always"
-        android:visible="false"/>
+        app:showAsAction="always"/>
     <item
         android:id="@+id/action_cross_count_delete_all"
         android:icon="@android:drawable/ic_menu_delete"
