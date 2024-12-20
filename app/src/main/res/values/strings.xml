@@ -547,6 +547,7 @@
 
     <!-- Import  -->
     <string name="dialog_import_parents_title">Import Parents</string>
+    <string name="dialog_import_wishlist_title">Import Wishlist</string>
     <string name="dialog_import_loading_sample">Importing Sample Data…</string>
     <string name="load_sample_success_toast">Sample data was imported</string>
     <string name="load_sample_failed_toast">Sample data could not be imported</string>

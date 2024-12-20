@@ -14,7 +14,6 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.evrencoskun.tableview.sort.ISortableModel
 import com.google.android.material.tabs.TabLayout
-import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.CrossTrackerAdapter
 import org.phenoapps.intercross.data.EventsRepository
@@ -28,6 +27,7 @@ import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFacto
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentCrossTrackerBinding
 import org.phenoapps.intercross.util.Dialogs
+import org.phenoapps.intercross.util.ImportUtil
 import org.phenoapps.intercross.util.KeyUtil
 import kotlin.collections.ArrayList
 
@@ -476,8 +476,10 @@ class CrossTrackerFragment :
         when(item.itemId) {
 
             R.id.action_import -> {
-
-                (activity as MainActivity).launchImport()
+                context?.let {
+                    ImportUtil(it, R.string.dir_wishlist_import, getString(R.string.dialog_import_wishlist_title))
+                        .showImportDialog(this)
+                }
 
                 findNavController().navigate(R.id.cross_tracker_fragment)
             }
