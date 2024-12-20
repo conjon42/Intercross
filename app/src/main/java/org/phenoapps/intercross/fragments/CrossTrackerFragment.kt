@@ -7,7 +7,6 @@ import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat.invalidateOptionsMenu
 import androidx.fragment.app.viewModels
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
@@ -19,21 +18,13 @@ import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.CrossTrackerAdapter
 import org.phenoapps.intercross.data.EventsRepository
-import org.phenoapps.intercross.data.MetaValuesRepository
-import org.phenoapps.intercross.data.MetadataRepository
 import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.dao.EventsDao
 import org.phenoapps.intercross.data.models.Event
-import org.phenoapps.intercross.data.models.Meta
-import org.phenoapps.intercross.data.models.MetadataValues
 import org.phenoapps.intercross.data.models.WishlistView
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
-import org.phenoapps.intercross.data.viewmodels.MetaValuesViewModel
-import org.phenoapps.intercross.data.viewmodels.MetadataViewModel
 import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.MetaValuesViewModelFactory
-import org.phenoapps.intercross.data.viewmodels.factory.MetadataViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentCrossTrackerBinding
 import org.phenoapps.intercross.fragments.preferences.GeneralKeys
@@ -41,7 +32,7 @@ import org.phenoapps.intercross.util.Dialogs
 import kotlin.collections.ArrayList
 
 /**
- * Summary Fragment is a recycler list of currenty crosses.
+ * Summary Fragment is a recycler list of current crosses.
  * Users can navigate to and from cross block and wishlist fragments.
  */
 class CrossTrackerFragment :
@@ -59,17 +50,7 @@ class CrossTrackerFragment :
         WishlistViewModelFactory(WishlistRepository.getInstance(db.wishlistDao()))
     }
 
-    private val metaValuesViewModel: MetaValuesViewModel by viewModels {
-        MetaValuesViewModelFactory(MetaValuesRepository.getInstance(db.metaValuesDao()))
-    }
-
-    private val metadataViewModel: MetadataViewModel by viewModels {
-        MetadataViewModelFactory(MetadataRepository.getInstance(db.metadataDao()))
-    }
-
     private var mWishlistEmpty = true
-    private var mMetaValuesList: List<MetadataValues> = ArrayList()
-    private var mMetaList: List<Meta> = ArrayList()
     private var mEvents: List<Event> = ArrayList()
 
     private val mPref by lazy {
@@ -89,7 +70,8 @@ class CrossTrackerFragment :
     open class ListEntry(
         open var male: String, open var female: String,
         open var count: String, open var person: String = "",
-        open var date: String = ""
+        open var date: String = "",
+        open var maleId: String = "", open var femaleId: String = ""
     ) {
         companion object {
             const val TYPE_UNPLANNED = 0
@@ -136,10 +118,12 @@ class CrossTrackerFragment :
         override var count: String,
         override var person: String = "",
         override var date: String = "",
+        override var maleId: String = "",
+        override var femaleId: String = "",
         val wishMin: String,
         val wishMax: String,
         val progress: String
-    ) : ListEntry(male, female, count, person, date) {
+    ) : ListEntry(male, female, count, person, date, maleId, femaleId) {
         override fun getType(): Int = TYPE_PLANNED
     }
 
@@ -266,7 +250,7 @@ class CrossTrackerFragment :
 
         eventsModel.parents.observe(viewLifecycleOwner) {
 
-            it?.let { crosses ->
+            it?.let {
 
                 eventsModel.events.observe(viewLifecycleOwner) { data ->
 
@@ -286,7 +270,7 @@ class CrossTrackerFragment :
 
         eventsModel.parents.observe(viewLifecycleOwner) {
 
-            it?.let { crosses ->
+            it?.let {
 
                 eventsModel.events.observe(viewLifecycleOwner) { data ->
 
@@ -357,11 +341,13 @@ class CrossTrackerFragment :
                 )
             } else { // parents are in the wishlist
                 PlannedCrossData(
-                    parentRow.dad,
-                    parentRow.mom,
+                    wish.dadName,
+                    wish.momName,
                     parentRow.count.toString(),
                     parentRow.person,
                     parentRow.date,
+                    wish.dadId,
+                    wish.momId,
                     wish.wishMin.toString(),
                     wish.wishMax.toString(),
                     wish.wishProgress.toString()
@@ -393,6 +379,8 @@ class CrossTrackerFragment :
                 "0",
                 "",
                 "",
+                wish.dadId,
+                wish.momId,
                 wish.wishMin.toString(),
                 wish.wishMax.toString(),
                 wish.wishProgress.toString()
@@ -419,7 +407,7 @@ class CrossTrackerFragment :
             }.map { entry ->
                 if (entry.value.size == 1) entry.value[0]
                 else {
-                    val totalCount = entry.value.sumBy { it.count.toInt() }.toString()
+                    val totalCount = entry.value.sumOf { it.count.toInt() }.toString()
                     when (val firstCross = entry.value[0]) {
                         is UnplannedCrossData -> firstCross.copy(totalCount)
                         is PlannedCrossData -> firstCross.copy(totalCount)

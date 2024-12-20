@@ -40,7 +40,14 @@ class CrossTrackerAdapter(
                 val position = layoutPosition
                 if (position != RecyclerView.NO_POSITION) {
                     val item = currentList[position]
-                    onCrossClicked(item.male, item.female)
+                    when (item) {
+                        is CrossTrackerFragment.PlannedCrossData -> {
+                            onCrossClicked(item.maleId, item.femaleId)
+                        }
+                        else -> {
+                            onCrossClicked(item.male, item.female)
+                        }
+                    }
                 }
             }
         }
