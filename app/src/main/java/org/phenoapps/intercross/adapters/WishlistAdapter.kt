@@ -29,13 +29,13 @@ class WishlistAdapter(val context: Context) :
         override fun areItemsTheSame(oldItem: CrossTrackerFragment.ListEntry,
                                      newItem: CrossTrackerFragment.ListEntry): Boolean {
 
-            return (oldItem.f == newItem.f) && (oldItem.m == newItem.m)
+            return (oldItem.female == newItem.female) && (oldItem.male == newItem.male)
         }
 
         override fun areContentsTheSame(oldItem: CrossTrackerFragment.ListEntry,
                                         newItem: CrossTrackerFragment.ListEntry): Boolean {
 
-            return (oldItem.f == newItem.f) && (oldItem.m == newItem.m)
+            return (oldItem.female == newItem.female) && (oldItem.male == newItem.male)
         }
     }
 
@@ -75,9 +75,9 @@ class WishlistAdapter(val context: Context) :
 
                 binding.numCrosses.isSelected = true
 
-                maleParent = data.m
+                maleParent = data.male
 
-                femaleParent = data.f
+                femaleParent = data.female
 
                 count = data.count
 

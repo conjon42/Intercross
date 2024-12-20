@@ -19,7 +19,7 @@ import org.phenoapps.intercross.util.DateUtil
 
 class CrossTrackerAdapter(
     private val onCrossClicked: (male: String, female: String) -> Unit
-) : ListAdapter<CrossTrackerFragment.CrossData, CrossTrackerAdapter.ViewHolder>(
+) : ListAdapter<CrossTrackerFragment.ListEntry, CrossTrackerAdapter.ViewHolder>(
         DiffCallback()
     ) {
 
@@ -40,7 +40,7 @@ class CrossTrackerAdapter(
                 val position = layoutPosition
                 if (position != RecyclerView.NO_POSITION) {
                     val item = currentList[position]
-                    onCrossClicked(item.m, item.f)
+                    onCrossClicked(item.male, item.female)
                 }
             }
         }
@@ -61,55 +61,57 @@ class CrossTrackerAdapter(
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
         with(currentList[position]) {
-            viewHolder.crossCount.text = count
-            viewHolder.femaleParent.text = f
-            viewHolder.maleParent.text = m
-            if (person.isEmpty()) {
-                viewHolder.personChip.visibility = View.GONE
-            } else {
-                viewHolder.personChip.visibility = View.VISIBLE
-                viewHolder.personChip.text = person
+            viewHolder.apply {
+                crossCount.text = count
+                femaleParent.text = female
+                maleParent.text = male
+
+                personChip.text = person
+                personChip.visibility = if (person.isNotEmpty()) View.VISIBLE else View.GONE
+
+                dateChip.text = if (count != "0") DateUtil().getFormattedDate(date) else ""
+                dateChip.visibility = if (count != "0") View.VISIBLE else View.GONE
             }
 
-            if (count != "0"){
-                viewHolder.dateChip.visibility = View.VISIBLE
-                viewHolder.dateChip.text = DateUtil().getFormattedDate(date)
-            } else {
-                viewHolder.dateChip.visibility = View.GONE
+            when (this) {
+                is CrossTrackerFragment.UnplannedCrossData -> hideProgressBar(viewHolder)
+                is CrossTrackerFragment.PlannedCrossData -> setProgressBar(viewHolder, this)
             }
-
-            setProgress(viewHolder, this)
         }
     }
 
-    private fun setProgress(viewHolder: ViewHolder, crossData: CrossTrackerFragment.CrossData) {
-        val currentProgress = crossData.progress.toIntOrNull() ?: 0
-        val targetProgress = crossData.wishMin.toIntOrNull() ?: 0
+    private fun hideProgressBar(viewHolder: ViewHolder) {
+        viewHolder.apply {
+            wishlistProgressChip.visibility = View.GONE
+            progressSection.visibility = View.GONE
+        }
+    }
 
-        if (targetProgress == 0) {
-            viewHolder.wishlistProgressChip.visibility = View.GONE
-            viewHolder.progressSection.visibility = View.GONE
-        } else {
-            viewHolder.wishlistProgressChip.visibility = View.VISIBLE
-            viewHolder.progressSection.visibility = View.VISIBLE
-            val percentage = (currentProgress.toFloat() / targetProgress.toFloat()) * 100
+    private fun setProgressBar(viewHolder: ViewHolder, plannedCrossData: CrossTrackerFragment.PlannedCrossData) {
+        val currentProgress = plannedCrossData.progress.toIntOrNull() ?: 0
+        val targetProgress = plannedCrossData.wishMin.toIntOrNull() ?: 0
 
-            val color = when {
-                percentage > 100 -> Color.parseColor("#2E7D32")  // dark green
-                percentage == 100f -> Color.parseColor("#8BC34A") // light green
-                percentage >= 66 -> Color.parseColor("#FFEB3B")   // yellow
-                percentage >= 33 -> Color.parseColor("#FF9800")   // orange
-                else -> Color.parseColor("#F44336")              // red
-            }
+        val percentage = (currentProgress.toFloat() / targetProgress.toFloat()) * 100
 
-            viewHolder.progressStatusIcon.setImageDrawable(
+        val color = when {
+            percentage > 100 -> Color.parseColor("#2E7D32")  // dark green
+            percentage == 100f -> Color.parseColor("#8BC34A") // light green
+            percentage >= 66 -> Color.parseColor("#FFEB3B")   // yellow
+            percentage >= 33 -> Color.parseColor("#FF9800")   // orange
+            else -> Color.parseColor("#F44336")              // red
+        }
+
+        viewHolder.apply {
+            wishlistProgressChip.visibility = View.VISIBLE
+            progressSection.visibility = View.VISIBLE
+            progressStatusIcon.setImageDrawable(
                 ContextCompat.getDrawable(
                     viewHolder.itemView.context,
                     if (currentProgress >= targetProgress) R.drawable.ic_wishes_complete else R.drawable.ic_wishes_incomplete
                 )
             )
-            viewHolder.wishlistProgressChip.text = "${crossData.progress}/${crossData.wishMin}"
-            viewHolder.progressBar.apply {
+            wishlistProgressChip.text = "${plannedCrossData.progress}/${plannedCrossData.wishMin}"
+            progressBar.apply {
                 max = targetProgress
                 progress = currentProgress
                 setIndicatorColor(color)
@@ -118,10 +120,10 @@ class CrossTrackerAdapter(
         }
     }
 
-    class DiffCallback : DiffUtil.ItemCallback<CrossTrackerFragment.CrossData>() {
+    class DiffCallback : DiffUtil.ItemCallback<CrossTrackerFragment.ListEntry>() {
 
-        override fun areItemsTheSame(oldItem: CrossTrackerFragment.CrossData, newItem: CrossTrackerFragment.CrossData) = oldItem == newItem
+        override fun areItemsTheSame(oldItem: CrossTrackerFragment.ListEntry, newItem: CrossTrackerFragment.ListEntry) = oldItem == newItem
 
-        override fun areContentsTheSame(oldItem: CrossTrackerFragment.CrossData, newItem: CrossTrackerFragment.CrossData) = oldItem == newItem
+        override fun areContentsTheSame(oldItem: CrossTrackerFragment.ListEntry, newItem: CrossTrackerFragment.ListEntry) = oldItem == newItem
     }
 }

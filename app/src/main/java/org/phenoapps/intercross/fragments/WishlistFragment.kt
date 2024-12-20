@@ -81,13 +81,13 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
     private var systemMenu: Menu? = null
 
-    data class WishlistData(override var m: String,
-                            override var f: String,
+    data class WishlistData(override var male: String,
+                            override var female: String,
                             var progress: String,
                             var minimum: String,
                             var maximum: String,
                             var mid: String,
-                            var fid: String): CrossTrackerFragment.ListEntry(m, f, progress)
+                            var fid: String): CrossTrackerFragment.ListEntry(male, female, progress)
 
     override fun FragmentWishlistBinding.afterCreateView() {
 
@@ -148,8 +148,8 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
                 CrossTrackerFragment.CellData("",
                     complete = (it.progress.toIntOrNull() ?: 0) >= (it.minimum.toIntOrNull() ?: 0)
                 ),
-                CrossTrackerFragment.CellData(it.m, it.mid),
-                CrossTrackerFragment.CellData(it.f, it.fid),
+                CrossTrackerFragment.CellData(it.male, it.mid),
+                CrossTrackerFragment.CellData(it.female, it.fid),
                 CrossTrackerFragment.CellData(it.progress),
                 CrossTrackerFragment.CellData(it.minimum),
                 CrossTrackerFragment.CellData(it.maximum)
