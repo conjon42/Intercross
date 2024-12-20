@@ -147,7 +147,7 @@
             app:popUpTo="@id/events_fragment"/>
         <action android:id="@+id/action_to_crossblock"
             app:destination="@id/crossblock_fragment"
-            app:popUpTo="@id/events_fragment"/>
+            app:popUpTo="@id/summary_fragment"/>
         <action android:id="@+id/action_to_wishlist"
             app:destination="@id/wishlist_fragment"
             app:popUpTo="@id/events_fragment"/>
@@ -303,12 +303,15 @@
             app:popUpTo="@id/events_fragment"/>
         <action android:id="@+id/action_to_crossblock"
             app:destination="@id/crossblock_fragment"
-            app:popUpTo="@id/events_fragment"/>
+            app:popUpTo="@id/cross_tracker_fragment"/>
         <action android:id="@+id/action_to_event_detail"
             app:destination="@id/event_fragment"/>
         <action android:id="@+id/action_to_summary"
             app:destination="@+id/summary_fragment"
             app:popUpTo="@id/events_fragment"/>
+        <action android:id="@+id/action_from_cross_tracker_to_wish_factory"
+            app:destination="@id/wish_factory"
+            app:popUpTo="@id/cross_tracker_fragment"/>
     </fragment>
 
     <fragment

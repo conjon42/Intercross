@@ -483,6 +483,9 @@ class CrossTrackerFragment :
 
                 findNavController().navigate(R.id.cross_tracker_fragment)
             }
+            R.id.action_parents_toolbar_initiate_wf -> {
+                findNavController().navigate(CrossTrackerFragmentDirections.actionFromCrossTrackerToWishFactory())
+            }
             R.id.action_to_crossblock -> {
                 findNavController().navigate(CrossTrackerFragmentDirections.actionToCrossblock())
             }

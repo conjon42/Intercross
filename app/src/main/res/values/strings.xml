@@ -278,6 +278,7 @@
     <string name="wf_must_choose_at_least_one_parent">You must choose at least one parent.</string>
     <string name="wf_no_male_chosen_assuming_self_cross">No male chosen, assuming self cross.</string>
     <string name="literal_cross">cross</string>
+    <string name="frag_wf_toolbar_title">New Wishlist Item</string>
     <string name="frag_wf_male_choice_summary">Please choose a male to pair with %s</string>
     <string name="frag_wf_choose_type_summary">Please choose a wish type for %s and %s pair.</string>
     <string name="frag_wf_values_summary">Please choose a minimum and maximum number of %s for %s and %s pair.</string>
