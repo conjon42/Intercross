@@ -36,7 +36,6 @@ import org.phenoapps.intercross.data.viewmodels.factory.MetaValuesViewModelFacto
 import org.phenoapps.intercross.data.viewmodels.factory.MetadataViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentWishlistBinding
-import org.phenoapps.intercross.fragments.preferences.GeneralKeys
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.KeyUtil
 import java.lang.IndexOutOfBoundsException
@@ -123,7 +122,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
      */
     private fun load() {
 
-        val isCommutativeCrossing = mPref.getBoolean(GeneralKeys.COMMUTATIVE_CROSSING, false)
+        val isCommutativeCrossing = mPref.getBoolean(mKeyUtil.commutativeCrossingKey, false)
 
         if (isCommutativeCrossing) loadCommutativeWishlist()
         else loadWishlist()
@@ -449,7 +448,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
     private fun showChildren(male: String, female: String) {
 
-        val isCommutativeCrossing = mPref.getBoolean(GeneralKeys.COMMUTATIVE_CROSSING, false)
+        val isCommutativeCrossing = mPref.getBoolean(mKeyUtil.commutativeCrossingKey, false)
 
         val children = if (isCommutativeCrossing) getChildrenCommutative(female, male)
         else getChildren(female, male)

@@ -5,32 +5,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <Preference
-        android:key="pref_profile_person"
+        android:key="@string/key_pref_profile_person"
         android:title="@string/profile_person"
         android:icon="@drawable/ic_prefs_profile_person" />
 
     <Preference
-        android:key="pref_profile_reset"
+        android:key="@string/key_pref_profile_reset"
         android:title="@string/profile_reset"
         android:icon="@drawable/ic_prefs_profile_delete" />
 
-    <PreferenceCategory
-        android:title="@string/profile_settings"
-        app:iconSpaceReserved="false">
+    <ListPreference
+        android:key="@string/key_pref_person_verification_interval"
+        android:title="@string/profile_verification_interval"
+        android:entries="@array/preferences_profile_verification_interval_entries"
+        android:entryValues="@array/preferences_profile_verification_interval_values"
+        android:defaultValue="0"
+        android:icon="@drawable/ic_hours_24" />
 
-        <CheckBoxPreference
-            android:key="org.phenoapps.intercross.REQUIRE_USER_TO_COLLECT"
-            android:title="@string/profile_require_user"
-            android:defaultValue="true"
-            android:icon="@drawable/ic_prefs_profile_verify" />
-
-        <ListPreference
-            android:key="org.phenoapps.intercross.REQUIRE_USER_INTERVAL"
-            android:title="@string/profile_require_interval"
-            android:entries="@array/profile_require_interval_entries"
-            android:entryValues="@array/profile_require_interval_values"
-            android:defaultValue="1"
-            android:icon="@drawable/ic_hours_24" />
-
-    </PreferenceCategory>
 </PreferenceScreen>

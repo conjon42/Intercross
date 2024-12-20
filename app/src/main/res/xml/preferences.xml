@@ -4,28 +4,28 @@
     xmlns:app="http://schemas.android.com/apk/res-auto" >
 
     <com.bytehamster.lib.preferencesearch.SearchPreference
-        android:key="searchPreference" />
+        android:key="@string/key_pref_search" />
 
     <PreferenceScreen
-        android:key="pref_key_profile_settings"
+        android:key="@string/root_profile"
         android:title="@string/prefs_profile_title"
         android:icon="@drawable/ic_account_circle_black_24dp"
         app:iconSpaceReserved="false"/>
 
     <PreferenceScreen
-        android:key="pref_key_behavioral_settings"
+        android:key="@string/root_behavior"
         android:title="@string/prefs_behavior_title"
         android:icon="@drawable/ic_setting_pattern_create"
         app:iconSpaceReserved="false"/>
 
     <PreferenceScreen
-        android:key="pref_key_printing_settings"
+        android:key="@string/root_printing"
         android:title="@string/prefs_printing_title"
         android:icon="@drawable/ic_setting_print_connect"
         app:iconSpaceReserved="false"/>
 
     <PreferenceScreen
-        android:key="pref_key_database_settings"
+        android:key="@string/root_database"
         android:title="@string/prefs_database_title"
         android:icon="@drawable/ic_database"
         app:iconSpaceReserved="false"/>
@@ -36,7 +36,7 @@
 <!--        app:iconSpaceReserved="false"/>-->
 
     <PreferenceScreen
-        android:key="pref_key_about_settings"
+        android:key="@string/root_about"
         android:title="@string/prefs_about_title"
         android:icon="@drawable/ic_about_info"
         app:iconSpaceReserved="false"/>

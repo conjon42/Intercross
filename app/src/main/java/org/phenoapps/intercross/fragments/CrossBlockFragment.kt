@@ -22,7 +22,6 @@ import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentCrossBlockBinding
-import org.phenoapps.intercross.fragments.preferences.GeneralKeys
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.KeyUtil
 
@@ -71,7 +70,7 @@ class CrossBlockFragment : IntercrossBaseFragment<FragmentCrossBlockBinding>(R.l
 
         mPref.edit().putString("last_visited_summary", "crossblock").apply()
 
-        val isCommutative = mPref.getBoolean(GeneralKeys.COMMUTATIVE_CROSSING, false)
+        val isCommutative = mPref.getBoolean(mKeyUtil.commutativeCrossingKey, false)
 
         /**
          * list for events model, disable options menu for summary if the list is empty

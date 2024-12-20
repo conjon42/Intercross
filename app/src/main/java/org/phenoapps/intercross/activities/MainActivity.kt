@@ -3,10 +3,8 @@ package org.phenoapps.intercross.activities
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
-import android.util.Log
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -60,8 +58,8 @@ import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.ActivityMainBinding
 import org.phenoapps.intercross.fragments.EventsFragmentDirections
+import org.phenoapps.intercross.fragments.ImportSampleDialogFragment
 import org.phenoapps.intercross.fragments.PatternFragment
-import org.phenoapps.intercross.fragments.preferences.GeneralKeys
 import org.phenoapps.intercross.fragments.preferences.PreferencesFragment
 import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.Dialogs
@@ -280,7 +278,9 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     private var mMetaValues: List<MetadataValues> = ArrayList()
 
-    private lateinit var mDatabase: IntercrossDatabase
+    private val mDatabase by lazy {
+        IntercrossDatabase.getInstance(this)
+    }
 
     private lateinit var mSnackbar: SnackbarQueue
 
@@ -349,29 +349,20 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         }
     }
 
-    // Add launcher for AppIntroActivity
-    val appIntroLauncher = registerForActivityResult(
+    // add launcher for AppIntroActivity
+    private val appIntroLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         when (result.resultCode) {
             Activity.RESULT_OK -> {
-                settingsModel.insert(
-                    Settings().apply {
-                        isUUID = true
-                    }
-                )
 
-                lifecycleScope.launch {
-                    withContext(Dispatchers.IO) {
-                        for (property in arrayOf("fruits", "flowers", "seeds")) {
-                            metadataViewModel.insert(
-                                Meta(property, 0)
-                            )
-                        }
-                    }
+                val loadSampleWishlist = mPref.getBoolean(mKeyUtil.loadSampleWishlist, false)
+                val loadSampleParents = mPref.getBoolean(mKeyUtil.loadSampleParents, false)
+
+                if (loadSampleParents || loadSampleWishlist) {
+                    ImportSampleDialogFragment().show(supportFragmentManager, "ImportSampleDialogFragment")
                 }
-
-                mPref.edit().putBoolean(GeneralKeys.FIRST_RUN, false).apply()
+                mPref.edit().putBoolean(mKeyUtil.firstRunKey, false).apply()
             }
             else -> {
                 finish()
@@ -380,12 +371,26 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
     }
 
     private fun firstRunSetup() {
-        if (mPref.getBoolean(GeneralKeys.FIRST_RUN, true)) {
+        if (mPref.getBoolean(mKeyUtil.firstRunKey, true)) {
 
             val introIntent = Intent(this, AppIntroActivity::class.java)
             appIntroLauncher.launch(introIntent)
 
+            settingsModel.insert(
+                Settings().apply {
+                    isUUID = true
+                }
+            )
 
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    for (property in arrayOf("fruits", "flowers", "seeds")) {
+                        metadataViewModel.insert(
+                            Meta(property, 0)
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -401,7 +406,7 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     private fun checkStorageAccess() {
         // when cannot access storage directory and firstRunSetup was already completed
-        if (!BaseDocumentTreeUtil.isEnabled(this) && mPref.getBoolean(GeneralKeys.FIRST_RUN, false)) {
+        if (!BaseDocumentTreeUtil.isEnabled(this) && mPref.getBoolean(mKeyUtil.firstRunKey, false)) {
             val storageDefinerActivity = Intent(this, DefineStorageActivity::class.java)
             storageDefinerLauncher.launch(storageDefinerActivity)
         }
@@ -447,25 +452,7 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
             }
         }
 
-        mDatabase = IntercrossDatabase.getInstance(this)
-
         startObservers()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            checkPermissions.launch(arrayOf(
-                android.Manifest.permission.BLUETOOTH_CONNECT,
-                android.Manifest.permission.BLUETOOTH_SCAN,
-                android.Manifest.permission.BLUETOOTH_ADMIN,
-                android.Manifest.permission.BLUETOOTH,
-                android.Manifest.permission.INTERNET
-            ))
-        } else {
-            checkPermissions.launch(arrayOf(
-                android.Manifest.permission.BLUETOOTH_ADMIN,
-                android.Manifest.permission.BLUETOOTH,
-                android.Manifest.permission.INTERNET
-            ))
-        }
 
         mBinding.mainTb.setNavigationOnClickListener {
             onBackPressed()

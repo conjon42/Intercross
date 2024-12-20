@@ -27,8 +27,8 @@ import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentCrossTrackerBinding
-import org.phenoapps.intercross.fragments.preferences.GeneralKeys
 import org.phenoapps.intercross.util.Dialogs
+import org.phenoapps.intercross.util.KeyUtil
 import kotlin.collections.ArrayList
 
 /**
@@ -55,6 +55,10 @@ class CrossTrackerFragment :
 
     private val mPref by lazy {
         PreferenceManager.getDefaultSharedPreferences(requireContext())
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
     }
 
     private var systemMenu: Menu? = null
@@ -179,7 +183,7 @@ class CrossTrackerFragment :
         }
 
         filterChipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
-            val commutativeCrossingEnabled = mPref.getBoolean(GeneralKeys.COMMUTATIVE_CROSSING, false)
+            val commutativeCrossingEnabled = mPref.getBoolean(mKeyUtil.commutativeCrossingKey, false)
             when (checkedIds.firstOrNull()) {
                 R.id.filter_all -> currentFilter = CrossFilter.ALL
                 R.id.filter_planned -> currentFilter = CrossFilter.PLANNED
@@ -210,7 +214,7 @@ class CrossTrackerFragment :
 
     private fun showChildren(male: String, female: String) {
 
-        val isCommutativeCrossing = mPref.getBoolean(GeneralKeys.COMMUTATIVE_CROSSING, false)
+        val isCommutativeCrossing = mPref.getBoolean(mKeyUtil.commutativeCrossingKey, false)
 
         if (isCommutativeCrossing) showCommutativeChildren(male, female)
         else showNonCommutativeChildren(male, female)
@@ -287,7 +291,7 @@ class CrossTrackerFragment :
     }
 
     private fun loadData() {
-        val commutativeCrossingEnabled = mPref.getBoolean(GeneralKeys.COMMUTATIVE_CROSSING, false)
+        val commutativeCrossingEnabled = mPref.getBoolean(mKeyUtil.commutativeCrossingKey, false)
         eventsModel.parents.observe(viewLifecycleOwner) { parentsCount ->
             parentsCount?.let { crosses ->
                 wishModel.wishes.observe(viewLifecycleOwner) { wishes ->

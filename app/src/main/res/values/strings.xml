@@ -316,6 +316,10 @@
     <string name="frag_metadata_confirm_delete_message">This will delete all metadata values for this property.</string>
     <string name="make_cross_option">Make Cross</string>
 
+    <string name="collect_metadata_label">Collect Metadata</string>
+    <string name="collect_metadata_toast_enabled">Metadata collection enabled</string>
+    <string name="collect_metadata_toast_disabled">Metadata collection disabled</string>
+
     <!-- Brapi strings -->
     <string name="preferences_brapi" translatable="false">BrAPI</string>
     <string name="brapi_base_url">BrAPI Base URL</string>
@@ -450,6 +454,10 @@
 
     <!-- Profile Preferences-->
     <string name="prefs_profile_title">Profile</string>
+    <string name="verification_interval_every_open">Every time app opens</string>
+    <string name="verification_interval_every_12">Every 12 hours</string>
+    <string name="verification_interval_every_24">Every 24 hours</string>
+    <string name="verification_interval_never">Never</string>
 
     <string name="prefs_behavior_title">Behavior</string>
     <string name="prefs_printing_title">Printing</string>
@@ -478,14 +486,14 @@
     <string name="prefs_behavior_sound_notifications_summary">Notification sound when a cross is made.</string>
     <string name="prefs_behavior_open_cross_title">Open Cross After Creating</string>
     <string name="prefs_behavior_open_cross_summary">Opens the cross immediately after creating.</string>
-    <string name="prefs_behavior_commutative_crossing_title">"Commutative Crossing</string>
-    <string name="prefs_behavior_commutative_crossing_summary">"Commutative Crossing Summary.</string>
+    <string name="prefs_behavior_commutative_crossing_title">Commutative Crossing</string>
+    <string name="prefs_behavior_commutative_crossing_summary">When enabled, cross AxB and cross BxA are considered the same.</string>
 
     <!-- Printing preferences -->
     <string name="prefs_zebra_print_connect_title">Zebra Print Connect</string>
     <string name="prefs_zebra_print_connect_summary">Connect a Zebra printer.</string>
     <string name="prefs_zebra_import_title">ZPL Import</string>
-    <string name="prefs_zebra_import_summary">ZPL Import Summary.</string>
+    <string name="prefs_zebra_import_summary">Import a ZPL file.</string>
 
     <!-- Database preferences -->
     <string name="prefs_database_import_title">Import Database</string>
@@ -512,7 +520,7 @@
     <string name="profile_reset">Reset Profile</string>
     <string name="profile_settings">Profile Settings</string>
     <string name="profile_require_user">Require User to Collect</string>
-    <string name="profile_require_interval">Time Between Verification</string>
+    <string name="profile_verification_interval">Verification Interval</string>
     <string name="profile_person_title">Set Person</string>
     <string name="dialog_save">Save</string>
     <string name="dialog_cancel">Cancel</string>
@@ -539,11 +547,14 @@
 
     <!-- Import  -->
     <string name="dialog_import_parents_title">Import Parents</string>
+    <string name="dialog_import_loading_sample">Importing Sample Data…</string>
+    <string name="load_sample_success_toast">Sample data was imported</string>
+    <string name="load_sample_failed_toast">Sample data could not be imported</string>
 
     <!-- AppIntroActivity -->
     <string name="app_intro_activity_label">App Intro</string>
     <string name="app_intro_intro_title_slide1">Welcome to Intercross!</string>
-    <string name="app_intro_intro_summary_slide1">Intercross is a data collection app that organizes sample names into grids that are based on predefined templates. Templates are highly customizable and can include custom fields for metadata, alphabetical or numeric row and column naming, and specific or randomly excluded cells.</string>
+    <string name="app_intro_intro_summary_slide1">Intercross tracks parental and cross IDs as crosses are made, who makes each cross, and where each cross is made. Cross labels can be printed to Zebra label printers and lists of crosses can be exported to local files. Intercross is part of the broader PhenoApps initiative, an effort to modernize plant breeding and genetics data collection and organization via by developing new strategies and tools for data capture.</string>
     <string name="app_intro_intro_title_slide2">Features</string>
     <string name="app_intro_intro_summary_slide2">Feature description goes here.\n\n Description 2.</string>
     <string name="app_intro_required_setup_title">Required Setup</string>
@@ -559,9 +570,9 @@
     <string name="app_intro_load_sample_data_title">Load Sample Data</string>
     <string name="app_intro_load_sample_data_summary">Import sample data.</string>
     <string name="app_intro_load_sample_parents_title">Parents</string>
-    <string name="app_intro_load_sample_parents_summary">Import a sample data for Parents.</string>
+    <string name="app_intro_load_sample_parents_summary">Import a sample parents data.</string>
     <string name="app_intro_load_sample_wishlist_title">Wishlist</string>
-    <string name="app_intro_load_sample_wishlist_summary">Import a sample data for Wishlist.</string>
+    <string name="app_intro_load_sample_wishlist_summary">Import a sample wishlist data including parents.</string>
 
     <!-- CrossesTrackerFragment -->
     <string name="crosses_all_filter">All</string>

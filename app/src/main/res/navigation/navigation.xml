@@ -58,7 +58,7 @@
                 app:argType="boolean"
                 android:defaultValue="false" />
             <argument
-                android:name="MODIFY_PROFILE_SETTINGS"
+                android:name="MODIFY_PROFILE"
                 app:argType="boolean"
                 android:defaultValue="false" />
         </action>
