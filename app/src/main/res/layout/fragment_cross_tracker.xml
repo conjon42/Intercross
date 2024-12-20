@@ -63,7 +63,7 @@
                 android:id="@+id/filter_all"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="All"
+                android:text="@string/crosses_all_filter"
                 android:checked="true"
                 style="@style/Widget.MaterialComponents.Chip.Choice"/>
 
@@ -71,17 +71,30 @@
                 android:id="@+id/filter_planned"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Planned"
+                android:text="@string/crosses_planned_filter"
                 style="@style/Widget.MaterialComponents.Chip.Choice"/>
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/filter_unplanned"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Unplanned"
+                android:text="@string/crosses_unplanned_filter"
                 style="@style/Widget.MaterialComponents.Chip.Choice"/>
 
         </com.google.android.material.chip.ChipGroup>
+
+        <TextView
+            android:id="@+id/no_data_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/no_crosses_text"
+            android:textSize="16sp"
+            android:visibility="gone"
+            android:textColor="?android:attr/textColorSecondary"
+            app:layout_constraintTop_toBottomOf="@id/filter_chip_group"
+            app:layout_constraintBottom_toTopOf="@id/bottom_nav_bar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/crosses_recycler_view"

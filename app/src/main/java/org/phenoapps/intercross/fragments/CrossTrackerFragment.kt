@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat.invalidateOptionsMenu
 import androidx.fragment.app.viewModels
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
@@ -201,6 +203,7 @@ class CrossTrackerFragment :
             }
             val filteredData = filterResults()
             val groupedData = groupCrosses(filteredData, commutativeCrossingEnabled)
+            updateNoDataTextVisibility(groupedData)
             crossAdapter.submitList(groupedData) {
                 mBinding.crossesRecyclerView.scrollToPosition(0)
             }
@@ -315,6 +318,8 @@ class CrossTrackerFragment :
 
                     // If commutative, group the data
                     val groupedData = groupCrosses(filteredData, commutativeCrossingEnabled)
+
+                    updateNoDataTextVisibility(groupedData)
 
                     crossAdapter.submitList(groupedData)
                 }
@@ -470,6 +475,10 @@ class CrossTrackerFragment :
         systemMenu?.findItem(R.id.action_to_crossblock)?.isVisible = !mWishlistEmpty
     }
 
+    private fun updateNoDataTextVisibility(data: List<ListEntry>) {
+        mBinding.noDataText.visibility = if (data.isEmpty()) View.VISIBLE else View.GONE
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
         when(item.itemId) {
@@ -497,7 +506,12 @@ class CrossTrackerFragment :
                             getString(android.R.string.ok),
                             getString(R.string.dialog_cross_count_delete_all_message_2)) {
 
-                            eventsModel.deleteAll()
+                            if (currentFilter == CrossFilter.ALL || currentFilter == CrossFilter.UNPLANNED) {
+                                eventsModel.deleteAll()
+                            }
+                            if (currentFilter == CrossFilter.ALL || currentFilter == CrossFilter.PLANNED) {
+                                wishModel.deleteAll()
+                            }
 
                             findNavController().popBackStack()
                         }

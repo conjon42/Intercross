@@ -13,7 +13,7 @@
         app:showAsAction="always"/>
     <item
         android:id="@+id/action_cross_count_delete_all"
-        android:icon="@android:drawable/ic_menu_delete"
+        android:icon="@drawable/ic_menu_delete"
         android:title="@string/menu_cross_count_delete_all_title"
         app:showAsAction="always"/>
 </menu>

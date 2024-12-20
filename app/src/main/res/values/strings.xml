@@ -563,4 +563,16 @@
     <string name="app_intro_load_sample_wishlist_title">Wishlist</string>
     <string name="app_intro_load_sample_wishlist_summary">Import a sample data for Wishlist.</string>
 
+    <!-- CrossesTrackerFragment -->
+    <string name="crosses_all_filter">All</string>
+    <string name="crosses_unplanned_filter">Unplanned</string>
+    <string name="crosses_planned_filter">Planned</string>
+    <string name="no_crosses_text">No data available.</string>
+    <string name="cross_tracker_item_count">123</string>
+    <string name="cross_tracker_item_female">female parent</string>
+    <string name="cross_tracker_item_male">male parent</string>
+    <string name="cross_tracker_item_person">Person</string>
+    <string name="cross_tracker_item_date">2024-12-20</string>
+    <string name="cross_tracker_item_progress">5/5</string>
+
 </resources>

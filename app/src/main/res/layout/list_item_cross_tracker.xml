@@ -35,7 +35,7 @@
                 android:minWidth="40dp"
                 android:minHeight="40dp"
                 android:paddingHorizontal="4dp"
-                tools:text="123"/>
+                tools:text="@string/cross_tracker_item_count"/>
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -48,13 +48,13 @@
                     android:id="@+id/female_parent"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    tools:text="female1"/>
+                    tools:text="@string/cross_tracker_item_female"/>
 
                 <TextView
                     android:id="@+id/male_parent"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    tools:text="male1"/>
+                    tools:text="@string/cross_tracker_item_male"/>
 
             </LinearLayout>
         </LinearLayout>
@@ -84,7 +84,7 @@
             android:focusable="false"
             android:clickable="false"
             android:duplicateParentState="false"
-            tools:text="Trevor"/>
+            tools:text="@string/cross_tracker_item_person"/>
 
         <com.google.android.material.chip.Chip
             android:id="@+id/date_chip"
@@ -94,7 +94,7 @@
             app:chipIconSize="24dp"
             android:focusable="false"
             android:clickable="false"
-            tools:text="2024-10-03"/>
+            tools:text="@string/cross_tracker_item_date"/>
 
         <com.google.android.material.chip.Chip
             android:id="@+id/wish_progress_chip"
@@ -104,7 +104,7 @@
             app:chipIconSize="24dp"
             android:focusable="false"
             android:clickable="false"
-            tools:text="5/5"/>
+            tools:text="@string/cross_tracker_item_progress"/>
 
         <LinearLayout
             android:id="@+id/wish_progress_section"
