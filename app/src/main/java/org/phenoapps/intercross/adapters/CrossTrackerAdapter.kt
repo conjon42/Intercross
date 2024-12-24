@@ -2,11 +2,13 @@ package org.phenoapps.intercross.adapters
 
 import android.graphics.Color
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -36,18 +38,31 @@ class CrossTrackerAdapter(
         val progressBar: LinearProgressIndicator = view.findViewById(R.id.wish_progress_bar)
 
         init {
-            view.setOnClickListener {
-                val position = layoutPosition
-                if (position != RecyclerView.NO_POSITION) {
-                    val item = currentList[position]
-                    when (item) {
-                        is CrossTrackerFragment.PlannedCrossData -> {
-                            onCrossClicked(item.maleId, item.femaleId)
-                        }
-                        else -> {
-                            onCrossClicked(item.male, item.female)
-                        }
+            val crossCardView: CardView = view.findViewById(R.id.cross_card)
+            var isLongPress = false
+
+            // intercept touch events to prevent person, date and wishlist progress chip ripple
+            crossCardView.setOnTouchListener{ _, event ->
+                if (event.action == MotionEvent.ACTION_UP) {
+                    if (!isLongPress) {
+                        view.performClick()
+                        handleClick(layoutPosition)
                     }
+                    isLongPress = false
+                }
+                true
+            }
+        }
+    }
+
+    private fun handleClick(position: Int) {
+        if (position != RecyclerView.NO_POSITION) {
+            when (val item = currentList[position]) {
+                is CrossTrackerFragment.PlannedCrossData -> {
+                    onCrossClicked(item.maleId, item.femaleId)
+                }
+                else -> {
+                    onCrossClicked(item.male, item.female)
                 }
             }
         }
