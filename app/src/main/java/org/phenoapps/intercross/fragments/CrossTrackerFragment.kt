@@ -67,14 +67,26 @@ class CrossTrackerFragment :
         showChildren(male, female)
     }
 
+    data class PersonCount(
+        val name: String,
+        val count: Int
+    )
+
+    data class DateCount(
+        val date: String,
+        val count: Int
+    )
+
     /**
      * Polymorphism setup to allow adapter to work with two different types of objects.
      * Wishlists and Summary data are the same but they have to be rendered differently.
      */
     open class ListEntry(
-        open var male: String, open var female: String,
-        open var count: String, open var person: String = "",
-        open var date: String = "",
+        open var male: String,
+        open var female: String,
+        open var count: String,
+        open var persons: List<PersonCount> = emptyList(),
+        open var dates: List<DateCount> = emptyList(),
         open var maleId: String = "", open var femaleId: String = ""
     ) {
         companion object {
@@ -92,16 +104,16 @@ class CrossTrackerFragment :
             return male == other.male &&
                     female == other.female &&
                     count == other.count &&
-                    person == other.person &&
-                    date == other.date
+                    persons == other.persons &&
+                    dates == other.dates
         }
 
         override fun hashCode(): Int {
             var result = male.hashCode()
             result = 31 * result + female.hashCode()
             result = 31 * result + count.hashCode()
-            result = 31 * result + person.hashCode()
-            result = 31 * result + date.hashCode()
+            result = 31 * result + persons.hashCode()
+            result = 31 * result + dates.hashCode()
             return result
         }
     }
@@ -111,23 +123,23 @@ class CrossTrackerFragment :
         override var male: String,
         override var female: String,
         override var count: String,
-        override var person: String = "",
-        override var date: String = ""
-    ) : ListEntry(male, female, count, person, date)
+        override var persons: List<PersonCount> = emptyList(),
+        override var dates: List<DateCount> = emptyList()
+    ) : ListEntry(male, female, count, persons, dates)
 
     // for wishlist crosses
     data class PlannedCrossData(
         override var male: String,
         override var female: String,
         override var count: String,
-        override var person: String = "",
-        override var date: String = "",
+        override var persons: List<PersonCount> = emptyList(),
+        override var dates: List<DateCount> = emptyList(),
         override var maleId: String = "",
         override var femaleId: String = "",
         val wishMin: String,
         val wishMax: String,
         val progress: String
-    ) : ListEntry(male, female, count, person, date, maleId, femaleId) {
+    ) : ListEntry(male, female, count, persons, dates, maleId, femaleId) {
         override fun getType(): Int = TYPE_PLANNED
     }
 
@@ -292,7 +304,7 @@ class CrossTrackerFragment :
 
     private fun loadData() {
         val commutativeCrossingEnabled = mPref.getBoolean(mKeyUtil.commutativeCrossingKey, false)
-        eventsModel.parents.observe(viewLifecycleOwner) { parentsCount ->
+        eventsModel.allParents.observe(viewLifecycleOwner) { parentsCount ->
             parentsCount?.let { crosses ->
                 wishModel.wishes.observe(viewLifecycleOwner) { wishes ->
                     val crossData = getCrosses(crosses, wishes, commutativeCrossingEnabled)
@@ -324,6 +336,16 @@ class CrossTrackerFragment :
         commutativeCrossingEnabled: Boolean
     ): List<ListEntry> {
         return crosses.map { parentRow ->
+            // each cross will have a person and date with count initialized to 1 if they exist
+            // these counts will then be aggregated in groupCrosses method
+            val personCount = if (parentRow.person.isNotEmpty()) {
+                listOf(PersonCount(parentRow.person, 1))
+            } else emptyList()
+
+            val dateCount = if (parentRow.date.isNotEmpty()) {
+                listOf(DateCount(parentRow.date, 1))
+            } else emptyList()
+
             val wish = if (commutativeCrossingEnabled) {
                 wishes?.find { w ->
                     (w.dadId == parentRow.dad && w.momId == parentRow.mom) ||
@@ -340,16 +362,16 @@ class CrossTrackerFragment :
                     parentRow.dad,
                     parentRow.mom,
                     parentRow.count.toString(),
-                    parentRow.person,
-                    parentRow.date
+                    personCount,
+                    dateCount
                 )
             } else { // parents are in the wishlist
                 PlannedCrossData(
                     wish.dadName,
                     wish.momName,
                     parentRow.count.toString(),
-                    parentRow.person,
-                    parentRow.date,
+                    personCount,
+                    dateCount,
                     wish.dadId,
                     wish.momId,
                     wish.wishMin.toString(),
@@ -381,8 +403,8 @@ class CrossTrackerFragment :
                 wish.dadName,
                 wish.momName,
                 "0",
-                "",
-                "",
+                emptyList(),
+                emptyList(),
                 wish.dadId,
                 wish.momId,
                 wish.wishMin.toString(),
@@ -404,23 +426,41 @@ class CrossTrackerFragment :
         filteredData: List<ListEntry>,
         commutativeCrossingEnabled: Boolean
     ): List<ListEntry> {
-        return if (commutativeCrossingEnabled) {
-            filteredData.groupBy { cross ->
+        return filteredData.groupBy { cross ->
+            if (commutativeCrossingEnabled) {
                 if (cross.male < cross.female) "${cross.male}${cross.female}".hashCode()
                 else "${cross.female}${cross.male}".hashCode()
-            }.map { entry ->
-                if (entry.value.size == 1) entry.value[0]
-                else {
-                    val totalCount = entry.value.sumOf { it.count.toInt() }.toString()
-                    when (val firstCross = entry.value[0]) {
-                        is UnplannedCrossData -> firstCross.copy(totalCount)
-                        is PlannedCrossData -> firstCross.copy(totalCount)
-                        else -> firstCross // this will never be executed
+            } else "${cross.male}${cross.female}".hashCode() // non-commutative
+
+        }.map { entry ->
+            if (entry.value.size == 1) entry.value[0]
+            else {
+                val totalCount = entry.value.sumOf { it.count.toInt() }.toString()
+                val persons = entry.value.flatMap { it.persons }
+                    .groupBy { it.name }
+                    .map { (name, counts) ->
+                        PersonCount(name, counts.sumOf { it.count })
                     }
+                val dates = entry.value.flatMap { it.dates }
+                    .groupBy { it.date }
+                    .map { (date, counts) ->
+                        DateCount(date, counts.sumOf { it.count })
+                    }
+
+                when (val firstCross = entry.value[0]) {
+                    is UnplannedCrossData -> firstCross.copy(
+                        count = totalCount,
+                        persons = persons,
+                        dates = dates
+                    )
+                    is PlannedCrossData -> firstCross.copy(
+                        count = totalCount,
+                        persons = persons,
+                        dates = dates
+                    )
+                    else -> firstCross // this will never be executed
                 }
             }
-        } else {
-            filteredData
         }
     }
 

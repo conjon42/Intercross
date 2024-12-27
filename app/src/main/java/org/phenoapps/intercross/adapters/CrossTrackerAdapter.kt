@@ -1,5 +1,7 @@
 package org.phenoapps.intercross.adapters
 
+import android.app.AlertDialog
+import android.content.Context
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -88,11 +90,33 @@ class CrossTrackerAdapter(
                 femaleParent.text = female
                 maleParent.text = male
 
-                personChip.text = person
-                personChip.visibility = if (person.isNotEmpty()) View.VISIBLE else View.GONE
+                personChip.apply {
+                    text = if (persons.isNotEmpty()) { // show only the first person if it exists
+                        if (persons.size == 1 ) persons.first().name else ""
+                    } else ""
+                    setChipIconResource(
+                        if (persons.size > 1) R.drawable.ic_person_multiple
+                        else R.drawable.ic_person
+                    )
+                    visibility = if (persons.isNotEmpty()) View.VISIBLE else View.GONE
+                    setOnClickListener {
+                        showPersonDialog(context, persons)
+                    }
+                }
 
-                dateChip.text = if (count != "0") DateUtil().getFormattedDate(date) else ""
-                dateChip.visibility = if (count != "0") View.VISIBLE else View.GONE
+                dateChip.apply { // show only the first date if it exists
+                    text = if (dates.isNotEmpty()) {
+                        if (dates.size == 1) DateUtil().getFormattedDate(dates.first().date) else ""
+                    } else ""
+                    setChipIconResource(
+                        if (dates.size > 1) R.drawable.ic_calendar_multiple
+                        else R.drawable.ic_calendar
+                    )
+                    visibility = if (dates.isNotEmpty()) View.VISIBLE else View.GONE
+                    setOnClickListener {
+                        showDateDialog(context, dates)
+                    }
+                }
             }
 
             when (this) {
@@ -140,6 +164,30 @@ class CrossTrackerAdapter(
                 visibility = View.VISIBLE
             }
         }
+    }
+
+    private fun showPersonDialog(context: Context, persons: List<CrossTrackerFragment.PersonCount>) {
+        var message = ""
+        persons.forEach {
+            message += "${it.name.trim()}: ${it.count}\n"
+        }
+        AlertDialog.Builder(context)
+            .setTitle(context.getString(R.string.dialog_crosses_by_persons))
+            .setMessage(message)
+            .setPositiveButton(context.getString(R.string.dialog_ok)) { d, _ -> d.dismiss() }
+            .show()
+    }
+
+    private fun showDateDialog(context: Context, dates: List<CrossTrackerFragment.DateCount>) {
+        var message = ""
+        dates.forEach {
+            message += "${DateUtil().getFormattedDate(it.date)}: ${it.count}\n"
+        }
+        AlertDialog.Builder(context)
+            .setTitle(context.getString(R.string.dialog_crosses_by_dates))
+            .setMessage(message)
+            .setPositiveButton(context.getString(R.string.dialog_ok)) { d, _ -> d.dismiss() }
+            .show()
     }
 
     class DiffCallback : DiffUtil.ItemCallback<CrossTrackerFragment.ListEntry>() {

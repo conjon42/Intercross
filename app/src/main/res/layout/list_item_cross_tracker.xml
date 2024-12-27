@@ -82,9 +82,6 @@
             android:layout_height="wrap_content"
             app:chipIcon="@drawable/ic_setting_person"
             app:chipIconSize="24dp"
-            android:focusable="false"
-            android:clickable="false"
-            android:duplicateParentState="false"
             tools:text="@string/cross_tracker_item_person"/>
 
         <com.google.android.material.chip.Chip
@@ -93,8 +90,6 @@
             android:layout_height="wrap_content"
             app:chipIcon="@drawable/ic_calendar"
             app:chipIconSize="24dp"
-            android:focusable="false"
-            android:clickable="false"
             tools:text="@string/cross_tracker_item_date"/>
 
         <com.google.android.material.chip.Chip
