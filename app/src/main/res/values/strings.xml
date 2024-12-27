@@ -589,6 +589,7 @@
     <string name="cross_tracker_item_date">2024-12-20</string>
     <string name="cross_tracker_item_progress">5/5</string>
     <string name="dialog_crosses_by_persons">Crosses by Persons</string>
+    <string name="dialog_crosses_by_person_known_message">%d crosses collected by unknown persons</string>
     <string name="dialog_crosses_by_dates">Crosses by Dates</string>
 
 </resources>

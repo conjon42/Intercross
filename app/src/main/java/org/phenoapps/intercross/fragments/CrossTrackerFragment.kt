@@ -594,10 +594,16 @@ class CrossTrackerFragment :
         showChildren(male, female)
     }
 
-    override fun onPersonChipClicked(persons: List<PersonCount>) {
+    override fun onPersonChipClicked(persons: List<PersonCount>, crossCount: Int) {
         var message = ""
+        var totalCollectorCount = 0
         persons.forEach {
+            totalCollectorCount += it.count
             message += "${it.name.trim()}: ${it.count}\n"
+        }
+        if (totalCollectorCount < crossCount) {
+            val remaining = crossCount - totalCollectorCount
+            message += String.format(getString(R.string.dialog_crosses_by_person_known_message), remaining)
         }
         context?.let {
             AlertDialog.Builder(it)

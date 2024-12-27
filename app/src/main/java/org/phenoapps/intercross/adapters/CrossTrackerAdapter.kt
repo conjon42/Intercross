@@ -99,7 +99,7 @@ class CrossTrackerAdapter(
                     )
                     visibility = if (persons.isNotEmpty()) View.VISIBLE else View.GONE
                     setOnClickListener {
-                        crossController.onPersonChipClicked(persons)
+                        crossController.onPersonChipClicked(persons, (crossCount.text as String).toInt())
                     }
                 }
 
