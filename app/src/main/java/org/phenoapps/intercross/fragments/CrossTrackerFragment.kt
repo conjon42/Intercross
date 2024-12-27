@@ -632,4 +632,15 @@ class CrossTrackerFragment :
                 .show()
         }
     }
+
+    override fun onWishlistProgressChipClicked(plannedCrossData: PlannedCrossData) {
+        val message = String.format(getString(R.string.dialog_wish_progress_message), plannedCrossData.wishMin, plannedCrossData.wishMax, plannedCrossData.progress)
+        context?.let {
+            AlertDialog.Builder(it)
+                .setTitle(getString(R.string.dialog_wish_progress_title))
+                .setMessage(message)
+                .setPositiveButton(getString(R.string.dialog_ok)) { d, _ -> d.dismiss() }
+                .show()
+        }
+    }
 }

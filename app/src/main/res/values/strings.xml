@@ -596,5 +596,7 @@
     <string name="dialog_crosses_by_persons">Crosses by Persons</string>
     <string name="dialog_crosses_by_person_known_message">%d crosses collected by unknown persons</string>
     <string name="dialog_crosses_by_dates">Crosses by Dates</string>
+    <string name="dialog_wish_progress_title">Wish Progress</string>
+    <string name="dialog_wish_progress_message">Minimum: %s\nMaximum: %s\nProgress: %s</string>
 
 </resources>

@@ -98,8 +98,6 @@
             android:layout_height="wrap_content"
             app:chipIcon="@drawable/ic_wishlist_add"
             app:chipIconSize="24dp"
-            android:focusable="false"
-            android:clickable="false"
             tools:text="@string/cross_tracker_item_progress"/>
 
         <LinearLayout

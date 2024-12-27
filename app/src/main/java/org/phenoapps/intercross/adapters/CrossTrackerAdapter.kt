@@ -149,7 +149,12 @@ class CrossTrackerAdapter(
                     if (wishProgress >= minTarget) R.drawable.ic_wishes_complete else R.drawable.ic_wishes_incomplete
                 )
             )
-            wishlistProgressChip.text = "${plannedCrossData.progress}/${plannedCrossData.wishMin}"
+            wishlistProgressChip.apply {
+                text = "${plannedCrossData.progress}/${plannedCrossData.wishMin}"
+                setOnClickListener {
+                    crossController.onWishlistProgressChipClicked(plannedCrossData)
+                }
+            }
             progressBar.apply {
                 max = minTarget
                 progress = wishProgress
