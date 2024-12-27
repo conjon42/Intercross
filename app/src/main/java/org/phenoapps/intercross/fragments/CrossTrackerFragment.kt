@@ -444,10 +444,11 @@ class CrossTrackerFragment :
                     .map { (name, counts) ->
                         PersonCount(name, counts.sumOf { it.count })
                     }
+                // group dates by the format we want to show in - yyyy-MM-dd
                 val dates = entry.value.flatMap { it.dates }
-                    .groupBy { it.date }
-                    .map { (date, counts) ->
-                        DateCount(date, counts.sumOf { it.count })
+                    .groupBy { DateUtil().getFormattedDate(it.date) }
+                    .map { (_, dateCounts) ->
+                        DateCount(dateCounts.first().date, dateCounts.sumOf { it.count })
                     }
 
                 when (val firstCross = entry.value[0]) {
