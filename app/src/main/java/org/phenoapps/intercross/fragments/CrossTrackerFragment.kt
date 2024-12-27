@@ -26,6 +26,8 @@ import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentCrossTrackerBinding
+import org.phenoapps.intercross.interfaces.CrossController
+import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.ImportUtil
 import org.phenoapps.intercross.util.KeyUtil
@@ -36,7 +38,8 @@ import kotlin.collections.ArrayList
  * Users can navigate to and from cross block and wishlist fragments.
  */
 class CrossTrackerFragment :
-    IntercrossBaseFragment<FragmentCrossTrackerBinding>(R.layout.fragment_cross_tracker) {
+    IntercrossBaseFragment<FragmentCrossTrackerBinding>(R.layout.fragment_cross_tracker),
+    CrossController {
 
     companion object {
         const val SORT_DELAY_MS = 500L
@@ -63,8 +66,8 @@ class CrossTrackerFragment :
 
     private var systemMenu: Menu? = null
 
-    private val crossAdapter = CrossTrackerAdapter { male, female ->
-        showChildren(male, female)
+    private val crossAdapter by lazy {
+        CrossTrackerAdapter(this)
     }
 
     data class PersonCount(
@@ -583,6 +586,38 @@ class CrossTrackerFragment :
             }
 
             true
+        }
+    }
+
+    override fun onCrossClicked(male: String, female: String) {
+        showChildren(male, female)
+    }
+
+    override fun onPersonChipClicked(persons: List<PersonCount>) {
+        var message = ""
+        persons.forEach {
+            message += "${it.name.trim()}: ${it.count}\n"
+        }
+        context?.let {
+            AlertDialog.Builder(it)
+                .setTitle(getString(R.string.dialog_crosses_by_persons))
+                .setMessage(message)
+                .setPositiveButton(getString(R.string.dialog_ok)) { d, _ -> d.dismiss() }
+                .show()
+        }
+    }
+
+    override fun onDateChipClicked(dates: List<DateCount>) {
+        var message = ""
+        dates.forEach {
+            message += "${DateUtil().getFormattedDate(it.date)}: ${it.count}\n"
+        }
+        context?.let {
+            AlertDialog.Builder(it)
+                .setTitle(getString(R.string.dialog_crosses_by_dates))
+                .setMessage(message)
+                .setPositiveButton(getString(R.string.dialog_ok)) { d, _ -> d.dismiss() }
+                .show()
         }
     }
 }
