@@ -24,6 +24,7 @@ import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.FragmentCrossBlockBinding
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.KeyUtil
+import org.phenoapps.intercross.util.WishProgressColorUtil
 
 
 class CrossBlockFragment : IntercrossBaseFragment<FragmentCrossBlockBinding>(R.layout.fragment_cross_block),
@@ -123,11 +124,10 @@ class CrossBlockFragment : IntercrossBaseFragment<FragmentCrossBlockBinding>(R.l
                 if (wish == null) {
                     row.add(CellData())
                 } else {
-                    val color = if (wish.wishProgress == 0) Color.GRAY
-                                else if (wish.wishProgress < wish.wishMin) Color.RED
-                                else if (wish.wishProgress >= wish.wishMin && wish.wishProgress < wish.wishMax) Color.YELLOW
-                                else Color.GREEN
-                    row.add(CellData(fid = wish.momId, mid = wish.dadId, progressColor = color))
+                    context?.let {
+                        val color = WishProgressColorUtil().getProgressColor(it, wish.wishProgress, wish.wishMin, wish.wishMax)
+                        row.add(CellData(fid = wish.momId, mid = wish.dadId, progressColor = color))
+                    }
                 }
             }
             data.add(row)

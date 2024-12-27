@@ -190,7 +190,9 @@
     <string name="summary_label">Summary</string>
     <string name="cross_block_label">Cross Block</string>
     <string name="no_crosses_made">None</string>
-    <string name="wishlist_min_legend_label">Less than minimum</string>
+    <string name="wishlist_less_than_one_third">&lt;=33%</string>
+    <string name="wishlist_less_than_two_third">&lt;=66%</string>
+    <string name="wishlist_more_than_two_third">&gt;=66%</string>
     <string name="wishlist_achieved_legend_label">Minimum</string>
     <string name="wishlist_maximum_met_legend_label">Maximum</string>
     <string name="delete_all_wishlist_title">Delete entire wishlist?</string>

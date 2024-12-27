@@ -19,6 +19,7 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.fragments.CrossTrackerFragment
 import org.phenoapps.intercross.interfaces.CrossController
 import org.phenoapps.intercross.util.DateUtil
+import org.phenoapps.intercross.util.WishProgressColorUtil
 
 class CrossTrackerAdapter(
     private val crossController: CrossController
@@ -137,15 +138,7 @@ class CrossTrackerAdapter(
         val minTarget = plannedCrossData.wishMin.toInt()
         val maxTarget = plannedCrossData.wishMax.toInt()
 
-        val percentage = (wishProgress.toFloat() / minTarget.toFloat()) * 100
-
-        val color = when {
-            wishProgress >= maxTarget -> Color.parseColor("#2E7D32")  // dark green
-            percentage >= 100f -> Color.parseColor("#8BC34A") // light green
-            percentage >= 66 -> Color.parseColor("#FFEB3B")   // yellow
-            percentage >= 33 -> Color.parseColor("#FF9800")   // orange
-            else -> Color.parseColor("#F44336")              // red
-        }
+        val color = WishProgressColorUtil().getProgressColor(viewHolder.itemView.context, wishProgress, minTarget, maxTarget)
 
         viewHolder.apply {
             wishlistProgressChip.visibility = View.VISIBLE
