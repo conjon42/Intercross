@@ -133,14 +133,15 @@ class CrossTrackerAdapter(
     }
 
     private fun setProgressBar(viewHolder: ViewHolder, plannedCrossData: CrossTrackerFragment.PlannedCrossData) {
-        val currentProgress = plannedCrossData.progress.toIntOrNull() ?: 0
-        val targetProgress = plannedCrossData.wishMin.toIntOrNull() ?: 0
+        val wishProgress = plannedCrossData.progress.toIntOrNull() ?: 0
+        val minTarget = plannedCrossData.wishMin.toInt()
+        val maxTarget = plannedCrossData.wishMax.toInt()
 
-        val percentage = (currentProgress.toFloat() / targetProgress.toFloat()) * 100
+        val percentage = (wishProgress.toFloat() / minTarget.toFloat()) * 100
 
         val color = when {
-            percentage > 100 -> Color.parseColor("#2E7D32")  // dark green
-            percentage == 100f -> Color.parseColor("#8BC34A") // light green
+            wishProgress >= maxTarget -> Color.parseColor("#2E7D32")  // dark green
+            percentage >= 100f -> Color.parseColor("#8BC34A") // light green
             percentage >= 66 -> Color.parseColor("#FFEB3B")   // yellow
             percentage >= 33 -> Color.parseColor("#FF9800")   // orange
             else -> Color.parseColor("#F44336")              // red
@@ -152,13 +153,13 @@ class CrossTrackerAdapter(
             progressStatusIcon.setImageDrawable(
                 ContextCompat.getDrawable(
                     viewHolder.itemView.context,
-                    if (currentProgress >= targetProgress) R.drawable.ic_wishes_complete else R.drawable.ic_wishes_incomplete
+                    if (wishProgress >= minTarget) R.drawable.ic_wishes_complete else R.drawable.ic_wishes_incomplete
                 )
             )
             wishlistProgressChip.text = "${plannedCrossData.progress}/${plannedCrossData.wishMin}"
             progressBar.apply {
-                max = targetProgress
-                progress = currentProgress
+                max = minTarget
+                progress = wishProgress
                 setIndicatorColor(color)
                 visibility = View.VISIBLE
             }
