@@ -534,12 +534,17 @@ class CrossTrackerFragment :
                 findNavController().navigate(CrossTrackerFragmentDirections.actionToCrossblock())
             }
             R.id.action_cross_count_delete_all -> {
+                val deleteFilter = when (currentFilter) {
+                    CrossFilter.ALL -> getString(R.string.dialog_cross_count_delete_both)
+                    CrossFilter.PLANNED -> getString(R.string.dialog_cross_count_delete_planned)
+                    else -> getString(R.string.dialog_cross_count_delete_unplanned)
+                }
                 context?.let { ctx ->
                     Dialogs.onOk(AlertDialog.Builder(ctx),
                         getString(R.string.menu_cross_count_delete_all_title),
                         getString(android.R.string.cancel),
                         getString(android.R.string.ok),
-                        getString(R.string.dialog_cross_count_delete_all_message)) {
+                        String.format(getString(R.string.dialog_cross_count_delete_all_message), deleteFilter)) {
 
                         Dialogs.onOk(AlertDialog.Builder(ctx),
                             getString(R.string.menu_cross_count_delete_all_title),
