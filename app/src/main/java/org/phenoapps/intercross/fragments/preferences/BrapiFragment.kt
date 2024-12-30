@@ -37,14 +37,6 @@ package org.phenoapps.intercross.fragments.preferences
 //
 //                    findNavController().navigate(R.id.global_action_to_parents)
 //                }
-//                R.id.action_nav_export -> {
-//
-//                    (activity as MainActivity).showExportDialog {
-//
-//                        mBottomNavBar?.selectedItemId = R.id.action_nav_settings
-//
-//                    }
-//                }
 //                R.id.action_nav_cross_count -> {
 //
 //                    findNavController().navigate(R.id.global_action_to_cross_count)

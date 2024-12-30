@@ -1,5 +1,8 @@
 package org.phenoapps.intercross.fragments
 
+import org.phenoapps.intercross.R
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
@@ -11,7 +14,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
-import org.phenoapps.intercross.R
 import org.phenoapps.intercross.adapters.SimpleListAdapter
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.fts.CrossesDatabase
@@ -135,7 +137,7 @@ class SearchFragment : IntercrossBaseFragment<FragmentSearchBinding>(R.layout.fr
 
     override fun FragmentSearchBinding.afterCreateView() {
 
-        val isCommutativeCrossing = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
+        val isCommutativeCrossing = mPref.getBoolean(mKeyUtil.commutativeCrossingKey, false)
 
         //initialize databases and populate fts tables with all cross data
         context?.let { ctx ->
@@ -167,6 +169,14 @@ class SearchFragment : IntercrossBaseFragment<FragmentSearchBinding>(R.layout.fr
         }
 
         startSearchViews()
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        (activity as? AppCompatActivity)?.supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            title = "Search"
+        }
     }
 
     override fun onItemClicked(pair: Pair<String, String>) {

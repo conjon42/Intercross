@@ -13,11 +13,7 @@
         android:icon="@drawable/ic_nv_parents"
         android:title="@string/parents" />
     <item
-        android:id="@+id/action_nav_export"
-        android:icon="@drawable/ic_nv_export"
-        android:title="@string/export" />
-    <item
-        android:id="@+id/action_nav_settings"
+        android:id="@+id/action_nav_preferences"
         android:icon="@drawable/ic_nv_settings"
         android:title="@string/settings" />
 </menu>

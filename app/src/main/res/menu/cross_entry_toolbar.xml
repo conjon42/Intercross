@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/action_metadata_collect"
+        android:icon="@drawable/ic_metadata_collect"
+        android:title="@string/collect_metadata_label"
+        app:showAsAction="ifRoom"/>
+    <item
         android:id="@+id/action_print"
         android:icon="@drawable/ic_cross_print"
         android:title="@string/print"

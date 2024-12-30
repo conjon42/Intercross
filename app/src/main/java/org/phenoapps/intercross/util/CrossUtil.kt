@@ -70,11 +70,18 @@ class CrossUtil(val context: Context) {
 
         }
 
-        val isCommutative = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
+        val isCommutative = mPref.getBoolean(mKeyUtil.commutativeCrossingKey, false)
 
-        val experiment = mPref.getString(mKeyUtil.profExpKey, "")
+        val experiment = mPref.getString(mKeyUtil.experimentNameKey, "")
 
-        val person = mPref.getString(mKeyUtil.profPersonKey, "")
+        val firstName = mPref.getString(mKeyUtil.personFirstNameKey,"")
+        val lastName = mPref.getString(mKeyUtil.personLastNameKey,"")
+        val person = if (!firstName.isNullOrEmpty() || !lastName.isNullOrEmpty()) {
+            "$firstName $lastName"
+        } else {
+            ""
+        }
+//            val person = mPref.getString(mKeyUtil.profPersonKey, "")
 
         val date = DateUtil().getTime()
 
@@ -83,7 +90,7 @@ class CrossUtil(val context: Context) {
                 male,
                 "",
                 date,
-         person ?: "?",
+                person,
       experiment ?: "?")
 
         /** Insert mom/dad cross ids only if they don't exist in the DB already **/
@@ -177,7 +184,7 @@ class CrossUtil(val context: Context) {
      */
     fun checkPrefToOpenCrossEvent(controller: NavController, direction: NavDirections) {
 
-        val openCross = mPref.getBoolean(mKeyUtil.workOpenCrossKey, false)
+        val openCross = mPref.getBoolean(mKeyUtil.openCrossAfterCreateKey, false)
 
         if (openCross) {
             controller.navigate(

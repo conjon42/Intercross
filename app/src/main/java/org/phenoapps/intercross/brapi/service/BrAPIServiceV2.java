@@ -57,7 +57,6 @@ import org.brapi.v2.model.pheno.response.BrAPIImageSingleResponse;
 import org.brapi.v2.model.pheno.response.BrAPIObservationListResponse;
 import org.brapi.v2.model.pheno.response.BrAPIObservationUnitListResponse;
 import org.brapi.v2.model.pheno.response.BrAPIObservationVariableListResponse;
-import org.phenoapps.intercross.GeneralKeys;
 import org.phenoapps.intercross.brapi.model.BrapiProgram;
 import org.phenoapps.intercross.brapi.model.BrapiStudyDetails;
 import org.phenoapps.intercross.brapi.model.BrapiTrial;

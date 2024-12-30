@@ -7,15 +7,21 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <FrameLayout
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            android:orientation="vertical"
             app:layout_constraintBottom_toTopOf="@id/preferences_bottom_nav_bar"
-            android:id="@android:id/list_container"
-            tools:ignore="NewApi" />
+            app:layout_constraintTop_toTopOf="parent">
+
+            <FrameLayout
+                android:id="@android:id/list_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:ignore="NewApi" />
+
+        </LinearLayout>
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/preferences_bottom_nav_bar"

@@ -5,6 +5,7 @@ apply plugin: "androidx.navigation.safeargs.kotlin"
 apply plugin: 'com.mikepenz.aboutlibraries.plugin'
 apply plugin: 'com.google.gms.google-services' // Google Services Gradle plugin
 apply plugin: 'com.google.firebase.crashlytics' // Apply the Crashlytics Gradle plugin
+apply plugin: 'com.google.dagger.hilt.android'
 
 android {
 
@@ -28,6 +29,7 @@ android {
     buildFeatures {
         dataBinding = true
         buildConfig = true
+        viewBinding = true
     }
 
     defaultConfig {
@@ -249,4 +251,17 @@ dependencies {
 
     implementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava' //google messed up some packages, this package is temporary until the issue is fixed (Feb 2021)
 
+    // hilt
+    implementation "com.google.dagger:hilt-android:2.51.1"
+    kapt "com.google.dagger:hilt-compiler:2.51.1"
+
+    implementation 'pub.devrel:easypermissions:3.0.0'
+
+    //AppIntro
+    implementation 'com.github.AppIntro:AppIntro:6.3.1'
+}
+
+kapt {
+    //used in hilt documentation says 'Allow references to generated code"
+    correctErrorTypes true
 }

@@ -8,6 +8,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.adapters.ParentsAdapter
 import org.phenoapps.intercross.data.EventsRepository
 import org.phenoapps.intercross.data.ParentsRepository
@@ -60,6 +61,12 @@ class PollenManagerFragment : IntercrossBaseFragment<FragmentPollenManagerBindin
     }
 
     override fun FragmentPollenManagerBinding.afterCreateView() {
+
+        (activity as MainActivity).setBackButtonToolbar()
+        (activity as MainActivity).supportActionBar?.apply {
+            title = getString(R.string.frag_parents_new_parent_title)
+            show()
+        }
 
         parentList.updateSelection(0)
 

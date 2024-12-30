@@ -5,6 +5,8 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import org.phenoapps.intercross.data.dao.*
 import org.phenoapps.intercross.data.migrations.MigrationV2MetaData
 import org.phenoapps.intercross.data.models.*
@@ -40,7 +42,6 @@ abstract class IntercrossDatabase : RoomDatabase() {
         }
 
         private fun buildDatabase(ctx: Context): IntercrossDatabase {
-
             return Room.databaseBuilder(ctx, IntercrossDatabase::class.java, DATABASE_NAME)
                 .addMigrations(MigrationV2MetaData()) //v1 -> v2 migration added JSON based metadata
                 .setJournalMode(JournalMode.TRUNCATE) //truncate mode makes it easier to export/import database w/o having to manage WAL files.

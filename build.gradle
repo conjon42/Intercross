@@ -34,7 +34,14 @@ buildscript {
         // Add the Crashlytics Gradle plugin.
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.5.2'
 
+
+        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.51.1'
+
     }
+}
+
+plugins {
+    id 'com.google.dagger.hilt.android' version '2.51.1' apply false
 }
 
 allprojects {
