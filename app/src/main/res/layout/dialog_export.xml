@@ -13,7 +13,7 @@
         android:id="@+id/file_name"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/dialog_file_name_hint"
+        android:hint="File name"
         android:inputType="textCapSentences"
         android:maxLength="200"
         android:paddingLeft="5dp"
