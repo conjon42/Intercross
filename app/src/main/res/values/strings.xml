@@ -531,6 +531,7 @@
     <string name="dialog_ok">Ok</string>
     <string name="dialog_save">Save</string>
     <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_export">Export</string>
     <string name="dialog_confirm">Are you sure you want to reset your profile?</string>
     <string name="dialog_yes">Yes</string>
     <string name="dialog_no">No</string>
