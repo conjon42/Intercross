@@ -11,7 +11,7 @@ import org.phenoapps.intercross.R
 import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.util.KeyUtil
 
-class PrintingFragment : ToolbarPreferenceFragment(R.xml.printing_preferences, R.string.root_printing) {
+class PrintingFragment : BasePreferenceFragment(R.xml.printing_preferences) {
 
     private val mKeyUtil by lazy {
         KeyUtil(context)
@@ -20,7 +20,7 @@ class PrintingFragment : ToolbarPreferenceFragment(R.xml.printing_preferences, R
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(findPreference<Preference>(mKeyUtil.printZplImportKey)) {
+        with(findPreference<Preference>(getString(R.string.key_pref_print_zpl_import))) {
             this?.let {
                 setOnPreferenceClickListener {
                     findNavController().navigate(PrintingFragmentDirections.actionToImportZplFragment())
@@ -29,7 +29,7 @@ class PrintingFragment : ToolbarPreferenceFragment(R.xml.printing_preferences, R
             }
         }
 
-        val printSetup = findPreference<Preference>(mKeyUtil.printSetupKey)
+        val printSetup = findPreference<Preference>(getString(R.string.key_pref_print_connect))
         printSetup?.setOnPreferenceClickListener {
             val intent = activity?.packageManager
                 ?.getLaunchIntentForPackage("com.zebra.printersetup")
@@ -50,7 +50,6 @@ class PrintingFragment : ToolbarPreferenceFragment(R.xml.printing_preferences, R
 
     override fun onResume() {
         super.onResume()
-        (activity as MainActivity).setBackButtonToolbar()
-        (activity as AppCompatActivity).supportActionBar?.show()
+        setToolbar(getString(R.string.prefs_printing_title))
     }
 }

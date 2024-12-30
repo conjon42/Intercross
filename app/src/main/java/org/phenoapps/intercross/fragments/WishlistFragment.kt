@@ -120,7 +120,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
      */
     private fun load() {
 
-        val isCommutativeCrossing = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
+        val isCommutativeCrossing = mPref.getBoolean(mKeyUtil.commutativeCrossingKey, false)
 
         if (isCommutativeCrossing) loadCommutativeWishlist()
         else loadWishlist()
@@ -370,21 +370,13 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
                     findNavController().navigate(WishlistFragmentDirections.globalActionToEvents())
                 }
-                R.id.action_nav_settings -> {
+                R.id.action_nav_preferences -> {
 
-                    findNavController().navigate(WishlistFragmentDirections.globalActionToSettingsFragment())
+                    findNavController().navigate(WishlistFragmentDirections.globalActionToPreferencesFragment())
                 }
                 R.id.action_nav_parents -> {
 
                     findNavController().navigate(WishlistFragmentDirections.globalActionToParents())
-
-                }
-                R.id.action_nav_export -> {
-
-                    (activity as MainActivity).showExportDialog {
-
-                        findNavController().navigate(R.id.wishlist_fragment)
-                    }
 
                 }
                 R.id.action_nav_cross_count -> {
@@ -453,7 +445,7 @@ class WishlistFragment : IntercrossBaseFragment<FragmentWishlistBinding>(R.layou
 
     private fun showChildren(male: String, female: String) {
 
-        val isCommutativeCrossing = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
+        val isCommutativeCrossing = mPref.getBoolean(mKeyUtil.commutativeCrossingKey, false)
 
         val children = if (isCommutativeCrossing) getChildrenCommutative(female, male)
         else getChildren(female, male)

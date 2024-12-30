@@ -14,7 +14,7 @@
     <uses-feature android:name="android.hardware.bluetooth" android:required="false"/>
 
     <application
-        android:name="androidx.multidex.MultiDexApplication"
+        android:name=".application.Intercross"
         android:allowBackup="true"
         android:fullBackupContent="false"
         android:hardwareAccelerated="true"

@@ -103,7 +103,7 @@ class EventDetailFragment:
     private fun getMetaDataVisibility(context: Context): Int {
 
         //determine if meta data collection is enabled
-        val collect: Boolean = mPref.getBoolean(mKeyUtil.workCollectKey, false)
+        val collect: Boolean = mPref.getBoolean(mKeyUtil.collectAdditionalInfoKey, false)
 
         return if (collect) View.VISIBLE else View.GONE
 

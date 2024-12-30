@@ -3,6 +3,7 @@ package org.phenoapps.intercross.fragments
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.preference.PreferenceManager
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.databinding.FragmentImportZplBinding
 import org.phenoapps.intercross.util.KeyUtil
 import java.io.InputStreamReader
@@ -27,12 +28,18 @@ class ImportZPLFragment : IntercrossBaseFragment<FragmentImportZplBinding>(R.lay
 
             mBinding.codeTextView.text = text
 
-            mPref.edit().putString("ZPL_CODE", text.toString()).apply()
+            mPref.edit().putString(mKeyUtil.zplCodeKey, text).apply()
 
         }
     }
 
     override fun FragmentImportZplBinding.afterCreateView() {
+
+        (activity as MainActivity).setBackButtonToolbar()
+        (activity as MainActivity).supportActionBar?.apply{
+            title = null
+            show()
+        }
 
         //import a file when button is pressed
         importButton.setOnClickListener {
@@ -42,7 +49,7 @@ class ImportZPLFragment : IntercrossBaseFragment<FragmentImportZplBinding>(R.lay
         }
 
         //set preview text to imported zpl code
-        val code = mPref.getString(mKeyUtil.argPrintZplCode, "") ?: ""
+        val code = mPref.getString(mKeyUtil.zplCodeKey, "") ?: ""
 
         if (code.isNotBlank()) codeTextView.text = code
     }

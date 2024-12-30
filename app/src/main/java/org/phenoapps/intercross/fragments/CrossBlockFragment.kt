@@ -66,7 +66,7 @@ class CrossBlockFragment : IntercrossBaseFragment<FragmentCrossBlockBinding>(R.l
 
         mPref.edit().putString("last_visited_summary", "crossblock").apply()
 
-        val isCommutative = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
+        val isCommutative = mPref.getBoolean(mKeyUtil.commutativeCrossingKey, false)
 
         /**
          * list for events model, disable options menu for summary if the list is empty
@@ -230,21 +230,13 @@ class CrossBlockFragment : IntercrossBaseFragment<FragmentCrossBlockBinding>(R.l
 
                     findNavController().navigate(CrossBlockFragmentDirections.globalActionToEvents())
                 }
-                R.id.action_nav_settings -> {
+                R.id.action_nav_preferences -> {
 
-                    findNavController().navigate(CrossBlockFragmentDirections.globalActionToSettingsFragment())
+                    findNavController().navigate(CrossBlockFragmentDirections.globalActionToPreferencesFragment())
                 }
                 R.id.action_nav_parents -> {
 
                     findNavController().navigate(CrossBlockFragmentDirections.globalActionToParents())
-
-                }
-                R.id.action_nav_export -> {
-
-                    (activity as MainActivity).showExportDialog {
-
-                        findNavController().navigate(R.id.crossblock_fragment)
-                    }
 
                 }
                 R.id.action_nav_cross_count -> {

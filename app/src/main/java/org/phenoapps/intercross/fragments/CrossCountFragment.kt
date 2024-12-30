@@ -131,7 +131,7 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
      */
     private fun loadCounts() {
 
-        val isCommutativeCrossing = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
+        val isCommutativeCrossing = mPref.getBoolean(mKeyUtil.commutativeCrossingKey, false)
 
         if (isCommutativeCrossing) loadCommutativeCrossCounts()
         else loadNonCommutativeCrossCounts()
@@ -139,7 +139,7 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
     private fun showChildren(male: String, female: String) {
 
-        val isCommutativeCrossing = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
+        val isCommutativeCrossing = mPref.getBoolean(mKeyUtil.commutativeCrossingKey, false)
 
         if (isCommutativeCrossing) showCommutativeChildren(male, female)
         else showNonCommutativeChildren(male, female)
@@ -487,21 +487,14 @@ class CrossCountFragment : IntercrossBaseFragment<FragmentCrossCountBinding>(R.l
 
             when (item.itemId) {
 
-                R.id.action_nav_settings -> {
+                R.id.action_nav_preferences -> {
 
-                    findNavController().navigate(CrossCountFragmentDirections.globalActionToSettingsFragment())
+                    findNavController().navigate(CrossCountFragmentDirections.globalActionToPreferencesFragment())
                 }
                 R.id.action_nav_parents -> {
 
                     findNavController().navigate(CrossCountFragmentDirections.globalActionToParents())
 
-                }
-                R.id.action_nav_export -> {
-
-                    (activity as MainActivity).showExportDialog {
-
-                        bottomNavBar.selectedItemId = R.id.action_nav_cross_count
-                    }
                 }
                 R.id.action_nav_home -> {
 

@@ -1,6 +1,5 @@
 package org.phenoapps.intercross.activities
 
-//import org.phenoapps.intercross.BuildConfig
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -15,8 +14,10 @@ import androidx.databinding.DataBindingUtil
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
+import com.bytehamster.lib.preferencesearch.SearchPreferenceFragment
 import com.bytehamster.lib.preferencesearch.SearchPreferenceResult
 import com.bytehamster.lib.preferencesearch.SearchPreferenceResultListener
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -51,18 +52,25 @@ import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.ActivityMainBinding
 import org.phenoapps.intercross.fragments.EventsFragmentDirections
 import org.phenoapps.intercross.fragments.PatternFragment
+import org.phenoapps.intercross.fragments.preferences.PreferencesFragment
 import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.util.KeyUtil
 import org.phenoapps.intercross.util.SnackbarQueue
+import org.phenoapps.intercross.util.VerifyPersonHelper
 import java.io.File
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
 //    private val mFirebaseAnalytics by lazy {
 //        FirebaseAnalytics.getInstance(this)
 //    }
+
+    @Inject
+    lateinit var verifyPersonHelper: VerifyPersonHelper
 
     private var doubleBackToExitPressedOnce = false
 
@@ -265,6 +273,12 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     private lateinit var mNavController: NavController
 
+    private var preferencesFragment: PreferencesFragment? = null
+
+    fun setPreferencesFragment(fragment: PreferencesFragment?) {
+        preferencesFragment = fragment
+    }
+
     private fun writeStream(file: File, resourceId: Int) {
 
         if (!file.isFile) {
@@ -324,6 +338,8 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
         super.onCreate(savedInstanceState)
 
+        verifyPersonHelper.updateAskedSinceOpened()
+
         setupDirs()
 
         mBinding = DataBindingUtil.setContentView(this@MainActivity,
@@ -342,6 +358,16 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         mSnackbar = SnackbarQueue()
 
         mNavController = Navigation.findNavController(this@MainActivity, R.id.nav_fragment)
+
+        // toolbar for search screen
+        supportFragmentManager.addOnBackStackChangedListener {
+            val currentFragment = supportFragmentManager.findFragmentById(android.R.id.list_container)
+            if (currentFragment is SearchPreferenceFragment) {
+                setBackButtonToolbar()
+                supportActionBar?.title = getString(R.string.settings_label)
+                supportActionBar?.show()
+            }
+        }
 
         mDatabase = IntercrossDatabase.getInstance(this)
 
@@ -374,6 +400,15 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.hide()
+    }
+
+    fun setToolbar() {
+        setSupportActionBar(mBinding.mainTb)
+
+        supportActionBar?.title = null
+        supportActionBar?.setDisplayHomeAsUpEnabled(false)
+        supportActionBar?.setDisplayShowHomeEnabled(false)
+        supportActionBar?.show()
     }
 
     private fun startObservers() {
@@ -541,7 +576,6 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
     }
 
     override fun onBackPressed() {
-
         mNavController.currentDestination?.let { it ->
 
             when (it.id) {
@@ -583,21 +617,22 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         return super.onOptionsItemSelected(item)
     }
 
-
     override fun onSearchResultClicked(result: SearchPreferenceResult) {
-
-        result.closeSearchPage(this)
-
-        mNavController.navigate(
-            when (result.key) {
-                in mKeyUtil.profileKeySet -> R.id.profile_preference_fragment
-                in mKeyUtil.nameKeySet -> R.id.naming_preference_fragment
-                in mKeyUtil.workKeySet -> R.id.workflow_preference_fragment
-                in mKeyUtil.printKeySet -> R.id.printing_preference_fragment
-                in mKeyUtil.dbKeySet -> R.id.database_preference_fragment
-                in mKeyUtil.aboutKeySet -> R.id.about_preference_fragment
-                else -> throw RuntimeException() //todo R.id.brapi_preference_fragment
-            }
-        )
+        Handler().post { // handle in preferencesFragment
+            preferencesFragment?.onSearchResultClicked(result)
+        }
     }
+
+   // private fun savePersonAndExperiment(person: String, experiment: String) {
+   //     val editor = mPref.edit()
+   //     editor.putString(mKeyUtil.profPersonKey, person)
+   //     editor.putString(mKeyUtil.profExpKey, experiment)
+   //     editor.apply()
+   // }
+   //
+   // private fun loadPersonAndExperiment(): Pair<String, String> {
+   //     val person = mPref.getString(mKeyUtil.profPersonKey, "") ?: ""
+   //     val experiment = mPref.getString(mKeyUtil.profExpKey, "") ?: ""
+   //     return Pair(person, experiment)
+   // }
 }

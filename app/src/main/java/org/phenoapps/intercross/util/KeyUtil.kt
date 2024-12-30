@@ -4,6 +4,7 @@ import android.content.Context
 import org.phenoapps.intercross.R
 import kotlin.properties.ReadOnlyProperty
 
+
 /**
  * Utility class for easily accessing preference keys.
  * Converts keys.xml into string fields to be accessed within a context.
@@ -22,59 +23,39 @@ class KeyUtil(private val ctx: Context?) {
     //boolean value to determine if brapi has been imported previously
     val brapiHasBeenImported by key(R.string.key_brapi_has_been_imported)
 
-    //search preference
-    val searchPrefKey by key(R.string.key_pref_search)
+    // behavior preferences
+    val behaviorRoot by key(R.string.root_behavior)
+    val blankMaleKey by key(R.string.key_pref_behavior_blank_male)
+    val crossOrderKey by key(R.string.key_pref_behavior_cross_order)
+    val crossPatternKey by key(R.string.key_pref_behavior_cross_pattern)
+    val collectAdditionalInfoKey by key(R.string.key_pref_behavior_collect_additional_info)
+    val createMetadataKey by key(R.string.key_pref_behavior_meta_data)
+    val manageMetadataKey by key(R.string.key_pref_behavior_meta_data_defaults)
+    val soundNotificationKey by key(R.string.key_pref_behavior_sound_notifications)
+    val openCrossAfterCreateKey by key(R.string.key_pref_behavior_open_cross_immediately)
+    val commutativeCrossingKey by key(R.string.key_pref_behavior_commutative_crossing)
 
-    //region root preference screen keys
-    val root by key(R.string.root_preferences)
-    val profileRoot by key(R.string.root_profile)
-    val namingRoot by key(R.string.root_naming)
-    val workflowRoot by key(R.string.root_workflow)
+    // person and experiment preferences
+    val profileRootKey by key(R.string.root_profile)
+    val profilePersonKey by key(R.string.key_pref_profile_person)
+    val profileResetKey by key(R.string.key_pref_profile_reset)
+    val personFirstNameKey by key(R.string.key_pref_person_first_name)
+    val personLastNameKey by key(R.string.key_pref_person_last_name)
+    val experimentNameKey by key(R.string.key_pref_experiment_name)
+    val personVerificationIntervalKey by key(R.string.key_pref_person_verification_interval)
+    val askedSinceOpenedKey by key(R.string.key_pref_asked_since_opened)
+    val lastTimeAskedKey by key(R.string.key_pref_last_time_asked)
+    val modifyProfileKey by key(R.string.key_pref_modify_profile_settings)
+    val personUpdateKey by key(R.string.key_pref_person_update)
+
     val printingRoot by key(R.string.root_printing)
+    val printerConnectKey by key(R.string.key_pref_print_connect)
+    val zplImportKey by key(R.string.key_pref_print_zpl_import)
+    val zplCodeKey by key(R.string.key_pref_print_zpl_code)
+
     val databaseRoot by key(R.string.root_database)
-    val aboutRoot by key(R.string.root_about)
-    //endregion
-
-    //region profile preference keys
-    val profPersonKey by key(R.string.key_pref_profile_person)
-    val profExpKey by key(R.string.key_pref_profile_experiment)
-    val argProfAskPerson by key(R.string.arg_profile_ask_person)
-    //endregion
-    val profileKeySet = setOf(profileRoot, profPersonKey, profExpKey, argProfAskPerson)
-
-    //region naming preference keys
-    val nameBlankMaleKey by key(R.string.key_pref_naming_blank_male)
-    val nameCrossOrderKey by key(R.string.key_pref_naming_cross_order)
-    val nameCreatePatternKey by key(R.string.key_pref_naming_create_pattern)
-    //endregion
-    val nameKeySet = setOf(namingRoot, nameBlankMaleKey, nameCrossOrderKey, nameCreatePatternKey)
-
-    //region workflow preference keys
-    val workCollectKey by key(R.string.key_pref_work_collect)
-    val workMetaKey by key(R.string.key_pref_work_meta)
-    val workMetaDefaultsKey by key(R.string.key_pref_work_meta_defaults)
-    val workAudioKey by key(R.string.key_pref_work_audio)
-    val workOpenCrossKey by key(R.string.key_pref_work_open_cross)
-    val workCommutativeKey by key(R.string.key_pref_work_commutative)
-    //endregion
-    val workKeySet = setOf(workflowRoot, workCollectKey, workMetaKey, workMetaDefaultsKey,
-        workAudioKey, workOpenCrossKey, workCommutativeKey)
-
-    //region printing preference keys
-    val printSetupKey by key(R.string.key_pref_print_setup)
-    val printZplImportKey by key(R.string.key_pref_print_zpl_import)
-    val argPrintZplCode by key(R.string.arg_print_zpl_code)
-    //endregion
-    val printKeySet = setOf(printingRoot, printSetupKey, printZplImportKey)
-
-    //region database preference keys
     val dbImportKey by key(R.string.key_pref_db_import)
     val dbExportKey by key(R.string.key_pref_db_export)
-    //endregion
-    val dbKeySet = setOf(databaseRoot, dbImportKey, dbExportKey)
 
-    //region about preference keys
-    val aboutKey by key(R.string.key_pref_about)
-    val aboutKeySet = setOf(aboutRoot, aboutKey)
-    //endregion
+    val aboutRoot by key(R.string.root_about)
 }
