@@ -23,6 +23,10 @@ class KeyUtil(private val ctx: Context?) {
     //boolean value to determine if brapi has been imported previously
     val brapiHasBeenImported by key(R.string.key_brapi_has_been_imported)
 
+    // brapi preferences
+    val brapiEnabled by key(R.string.key_pref_brapi_enabled)
+    val brapiDisplayName by key(R.string.key_pref_brapi_display_name)
+
     // behavior preferences
     val behaviorRoot by key(R.string.root_behavior)
     val blankMaleKey by key(R.string.key_pref_behavior_blank_male)
