@@ -310,6 +310,10 @@
     <string name="frag_metadata_confirm_delete_message">This will delete all metadata values for this property.</string>
     <string name="make_cross_option">Make Cross</string>
 
+    <string name="collect_metadata_label">Collect Metadata</string>
+    <string name="collect_metadata_toast_enabled">Metadata collection enabled</string>
+    <string name="collect_metadata_toast_disabled">Metadata collection disabled</string>
+
     <!-- Brapi strings -->
     <string name="preferences_brapi" translatable="false">BrAPI</string>
     <string name="brapi_base_url">BrAPI Base URL</string>
@@ -490,6 +494,7 @@
     <string name="prefs_database_import_summary">Import a new database file that has been saved previously.</string>
     <string name="prefs_database_export_title">Export Database</string>
     <string name="prefs_database_export_summary">This will prompt the user to export the local database.</string>
+    <string name="pref_database_title">Database</string>
 
 
     <string name="ok">OK</string>
@@ -521,4 +526,8 @@
     <string name="profile_name_first">First name</string>
     <string name="profile_name_last">Last name</string>
 
+    <!-- Storage Definer -->
+    <string name="storage_definer_title">Storage Location</string>
+    <string name="storage_definer_summary">Please select or create a folder that Intercross can use to store app data.</string>
+    <string name="define_button_text">Choose Folder</string>
 </resources>

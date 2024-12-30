@@ -17,6 +17,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.adapters.MetadataAdapter
 import org.phenoapps.intercross.adapters.models.MetadataModel
 import org.phenoapps.intercross.data.EventsRepository
@@ -101,8 +102,6 @@ class EventDetailFragment:
     }
 
     private fun getMetaDataVisibility(context: Context): Int {
-
-        //determine if meta data collection is enabled
         val collect: Boolean = mPref.getBoolean(mKeyUtil.collectAdditionalInfoKey, false)
 
         return if (collect) View.VISIBLE else View.GONE
@@ -110,6 +109,8 @@ class EventDetailFragment:
     }
 
     override fun FragmentEventDetailBinding.afterCreateView() {
+
+        (activity as MainActivity).setToolbar()
 
         arguments?.getLong("eid")?.let { rowid ->
 
@@ -136,8 +137,8 @@ class EventDetailFragment:
         }
     }
 
-    //loads the metadata into the ui
-    //this doesn't listen forever to avoid circular recursive updates
+    // loads the metadata into the ui
+    // this doesn't listen forever to avoid circular recursive updates
     private fun refreshMetadata() {
 
         val eid = mEvent.id?.toInt() ?: -1
@@ -145,7 +146,7 @@ class EventDetailFragment:
 
             eventDetailViewModel.metadata.observeOnce(viewLifecycleOwner) { values ->
 
-                //merge the metadata properties with either the default values or saved values
+                // merge the metadata properties with either the default values or saved values
                 val actualMeta = arrayListOf<EventsDao.CrossMetadata>()
                 for (data in metadata) {
                     if (values.any { it.eid == eid && data.property == it.property }) {
@@ -270,6 +271,16 @@ class EventDetailFragment:
 
         inflater.inflate(R.menu.cross_entry_toolbar, menu)
 
+        menu.findItem(R.id.action_metadata_collect)?.let { menuItem ->
+            // set icon based on preference
+            val metadataCollectEnabled = mPref.getBoolean(mKeyUtil.collectAdditionalInfoKey, false)
+            menuItem.setIcon(
+                if (metadataCollectEnabled) R.drawable.ic_metadata_collect
+                else R.drawable.ic_metadata_collect_disabled
+            )
+        }
+
+
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -278,7 +289,26 @@ class EventDetailFragment:
         if (::mEvent.isInitialized) {
 
             when (item.itemId) {
+                R.id.action_metadata_collect -> {
+                    val currentValue = mPref.getBoolean(mKeyUtil.collectAdditionalInfoKey, false)
+                    val metadataCollectEnabled = !currentValue
+                    mPref.edit().putBoolean(mKeyUtil.collectAdditionalInfoKey, metadataCollectEnabled).apply()
 
+                    // update menu icon
+                    item.setIcon(
+                        if (metadataCollectEnabled) R.drawable.ic_metadata_collect
+                        else R.drawable.ic_metadata_collect_disabled
+                    )
+
+                    if (!metadataCollectEnabled) hideKeyboard()
+
+
+                    val toastMsg = getString(if (metadataCollectEnabled) R.string.collect_metadata_toast_enabled else R.string.collect_metadata_toast_disabled)
+                    Toast.makeText(context?.applicationContext, toastMsg, Toast.LENGTH_SHORT).show()
+
+                    // update visibility of metadata section
+                    mBinding.metaDataVisibility = getMetaDataVisibility(requireContext())
+                }
                 R.id.action_print -> {
 
                     context?.let { ctx ->
@@ -333,8 +363,15 @@ class EventDetailFragment:
         return super.onOptionsItemSelected(item)
     }
 
-    //updates a single row value for the current event
-    //or inserts a new metadata value row if this value has not been saved previously
+    private fun hideKeyboard() {
+        val inputMethodManager = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        activity?.currentFocus?.let { view ->
+            inputMethodManager?.hideSoftInputFromWindow(view.windowToken, 0)
+        }
+    }
+
+    // updates a single row value for the current event
+    // or inserts a new metadata value row if this value has not been saved previously
     override fun onMetadataUpdated(property: String, value: Int?) {
 
         val eid = mEvent.id?.toInt() ?: -1
@@ -342,12 +379,12 @@ class EventDetailFragment:
         mMetaList.find { it.property == property }?.id?.toInt()?.let { metaId ->
 
             val values = mMetaValuesList.filter { it.eid == eid && it.metaId == metaId }
-            if (mMetaValuesList.isNotEmpty() && values.isNotEmpty()) { //update the old value
+            if (mMetaValuesList.isNotEmpty() && values.isNotEmpty()) { // update the old value
 
                 metaValuesViewModel.update(MetadataValues(
                     eid, metaId, value, values.first().id))
 
-            } else { //insert a new row
+            } else { // insert a new row
 
                 metaValuesViewModel.insert(
                     MetadataValues(
