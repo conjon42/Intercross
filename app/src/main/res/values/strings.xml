@@ -549,7 +549,7 @@
     <!-- AppIntroActivity -->
     <string name="app_intro_activity_label">App Intro</string>
     <string name="app_intro_intro_title_slide1">Welcome to Intercross!</string>
-    <string name="app_intro_intro_summary_slide1">Intercross tracks parental and cross IDs as crosses are made, who makes each cross, and where each cross is made. Cross labels can be printed to Zebra label printers and lists of crosses can be exported to local files. Intercross is part of the broader PhenoApps initiative, an effort to modernize plant breeding and genetics data collection and organization via by developing new strategies and tools for data capture.</string>
+    <string name="app_intro_intro_summary_slide1">Intercross is used to track crosses in plant breeding and genetics research programs. The app tracks parents, cross IDs, and metadata as crosses are created. Cross labels can be printed to Bluetooth Zebra label printers and lists of crosses can be exported. Intercross is part of the PhenoApps project which aims to modernize plant breeding data collection in plant breeding through optimized data captured tools.</string>
     <string name="app_intro_intro_title_slide2">Features</string>
     <string name="app_intro_intro_summary_slide2">Feature description goes here.\n\n Description 2.</string>
     <string name="app_intro_required_setup_title">Required Setup</string>
