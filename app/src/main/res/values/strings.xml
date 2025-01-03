@@ -297,6 +297,7 @@
     <string name="wishlist_complete_content_description">Wishlist complete</string>
     <string name="frag_parents_parents_not_deleted_reason">Some parents could not be deleted because they are parents to a cross.</string>
     <string name="frag_parents_new_parent_btn">Button to add a new parent.</string>
+    <string name="frag_parents_new_parent_title">New Parent</string>
     <string name="frag_parents_selected_text">%s parents are selected</string>
     <string name="menu_parents_delete_title">Delete selected parents.</string>
     <string name="menu_parents_print_title">Print selected parents.</string>
@@ -309,6 +310,10 @@
     <string name="frag_metadata_list_delete_dialog_title">Delete this metadata?</string>
     <string name="frag_metadata_confirm_delete_message">This will delete all metadata values for this property.</string>
     <string name="make_cross_option">Make Cross</string>
+
+    <string name="collect_metadata_label">Collect Metadata</string>
+    <string name="collect_metadata_toast_enabled">Metadata collection enabled</string>
+    <string name="collect_metadata_toast_disabled">Metadata collection disabled</string>
 
     <!-- Brapi strings -->
     <string name="preferences_brapi" translatable="false">BrAPI</string>
@@ -447,6 +452,10 @@
 
     <!-- Profile Preferences-->
     <string name="prefs_profile_title">Profile</string>
+    <string name="verification_interval_every_open">Every time app opens</string>
+    <string name="verification_interval_every_12">Every 12 hours</string>
+    <string name="verification_interval_every_24">Every 24 hours</string>
+    <string name="verification_interval_never">Never</string>
 
     <string name="prefs_behavior_title">Behavior</string>
     <string name="prefs_printing_title">Printing</string>
@@ -475,14 +484,14 @@
     <string name="prefs_behavior_sound_notifications_summary">Notification sound when a cross is made.</string>
     <string name="prefs_behavior_open_cross_title">Open Cross After Creating</string>
     <string name="prefs_behavior_open_cross_summary">Opens the cross immediately after creating.</string>
-    <string name="prefs_behavior_commutative_crossing_title">"Commutative Crossing</string>
-    <string name="prefs_behavior_commutative_crossing_summary">"Commutative Crossing Summary.</string>
+    <string name="prefs_behavior_commutative_crossing_title">Commutative Crossing</string>
+    <string name="prefs_behavior_commutative_crossing_summary">When enabled, cross AxB and cross BxA are considered the same.</string>
 
     <!-- Printing preferences -->
     <string name="prefs_zebra_print_connect_title">Zebra Print Connect</string>
     <string name="prefs_zebra_print_connect_summary">Connect a Zebra printer.</string>
     <string name="prefs_zebra_import_title">ZPL Import</string>
-    <string name="prefs_zebra_import_summary">ZPL Import Summary.</string>
+    <string name="prefs_zebra_import_summary">Import a ZPL file.</string>
 
     <!-- Database preferences -->
     <string name="prefs_database_import_title">Import Database</string>
@@ -509,7 +518,7 @@
     <string name="profile_reset">Reset Profile</string>
     <string name="profile_settings">Profile Settings</string>
     <string name="profile_require_user">Require User to Collect</string>
-    <string name="profile_require_interval">Time Between Verification</string>
+    <string name="profile_verification_interval">Verification Interval</string>
     <string name="profile_person_title">Set Person</string>
     <string name="dialog_save">Save</string>
     <string name="dialog_cancel">Cancel</string>
@@ -534,4 +543,41 @@
     <string name="export_no_data">No data to export</string>
     <string name="export_dialog_delete_crosses_title">Delete Crosses</string>
     <string name="export_dialog_delete_crosses_message">Do you want to delete all the crosses?</string>
+
+    <string name="brapi_edit_display_name_default">BrAPI Test Server</string>
+    <string name="activity_file_explorer_up_directory_name">Up</string>
+
+    <!-- Permissions  -->
+    <string name="permission_rationale_storage_import">Importing files requires access to the device\'s files.</string>
+
+
+    <!-- Import  -->
+    <string name="dialog_import_parents_title">Import Parents</string>
+    <string name="dialog_import_loading_sample">Importing Sample Data…</string>
+    <string name="load_sample_success_toast">Sample data was imported</string>
+    <string name="load_sample_failed_toast">Sample data could not be imported</string>
+
+    <!-- AppIntroActivity -->
+    <string name="app_intro_activity_label">App Intro</string>
+    <string name="app_intro_intro_title_slide1">Welcome to Intercross!</string>
+    <string name="app_intro_intro_summary_slide1">Intercross is used to track crosses in plant breeding and genetics research programs. The app tracks parents, cross IDs, and metadata as crosses are created. Cross labels can be printed to Bluetooth Zebra label printers and lists of crosses can be exported. Intercross is part of the PhenoApps project which aims to modernize plant breeding data collection in plant breeding through optimized data captured tools.</string>
+    <string name="app_intro_intro_title_slide2">Features</string>
+    <string name="app_intro_intro_summary_slide2">Feature description goes here.\n\n Description 2.</string>
+    <string name="app_intro_required_setup_title">Required Setup</string>
+    <string name="app_intro_required_setup_summary">To get started using Intercross, grant the necessary permissions for the app and then define a folder where your data will be stored.</string>
+    <string name="app_intro_permissions_title">Permissions</string>
+    <string name="app_intro_permissions_summary">Please grant the necessary permissions</string>
+    <string name="app_intro_storage_title">Define Storage</string>
+    <string name="app_intro_storage_summary">Define a folder where your data will be stored.</string>
+    <string name="app_intro_permissions_warning">Permissions not granted</string>
+    <string name="app_intro_storage_warning">Storage directory not set</string>
+    <string name="app_intro_optional_setup_title">Optional Setup</string>
+    <string name="app_intro_optional_setup_summary">Optional settings customize how Intercross is set up for data collection.</string>
+    <string name="app_intro_load_sample_data_title">Load Sample Data</string>
+    <string name="app_intro_load_sample_data_summary">Import sample data.</string>
+    <string name="app_intro_load_sample_parents_title">Parents</string>
+    <string name="app_intro_load_sample_parents_summary">Import a sample parents data.</string>
+    <string name="app_intro_load_sample_wishlist_title">Wishlist</string>
+    <string name="app_intro_load_sample_wishlist_summary">Import a sample wishlist data including parents.</string>
+
 </resources>
