@@ -3,10 +3,15 @@
     <!ENTITY package "org.phenoapps.intercross.">
     ]>
 <resources>
+    <string name="key_first_run">&package;FIRST_RUN</string>
+    <string name="key_load_sample_wishlist">&package;LOAD_SAMPLE_WISHLIST</string>
+    <string name="key_load_sample_parents">&package;LOAD_SAMPLE_PARENTS</string>
 
     <!-- Non-preference keys -->
     <string name="key_brapi_has_been_imported">&package;BRAPI_HAS_BEEN_IMPORTED</string>
     <!-- BrAPI preference keys -->
+    <string name="key_pref_brapi_enabled">&package;BRAPI_ENABLED</string>
+    <string name="key_pref_brapi_display_name">&package;BRAPI_DISPLAY_NAME</string>
     <string name="key_pref_brapi_token">&package;BRAPI_TOKEN</string>
     <string name="key_pref_brapi_url">&package;BRAPI_BASE_URL</string>
     <string name="key_pref_brapi_oidc">&package;BRAPI_OIDC_URL</string>

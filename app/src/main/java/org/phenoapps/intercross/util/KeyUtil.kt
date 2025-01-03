@@ -19,9 +19,17 @@ class KeyUtil(private val ctx: Context?) {
     private fun key(id: Int): ReadOnlyProperty<Any?, String> =
         ReadOnlyProperty { _, _ -> ctx?.getString(id)!! }
 
+    val firstRunKey by key(R.string.key_first_run)
+    val loadSampleParents by key(R.string.key_load_sample_parents)
+    val loadSampleWishlist by key(R.string.key_load_sample_wishlist)
+
     //non preference keys
     //boolean value to determine if brapi has been imported previously
     val brapiHasBeenImported by key(R.string.key_brapi_has_been_imported)
+
+    // brapi preferences
+    val brapiEnabled by key(R.string.key_pref_brapi_enabled)
+    val brapiDisplayName by key(R.string.key_pref_brapi_display_name)
 
     // behavior preferences
     val behaviorRoot by key(R.string.root_behavior)

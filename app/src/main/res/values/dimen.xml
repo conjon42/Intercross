@@ -3,4 +3,6 @@
     <dimen name="summary_spacing">8dp</dimen>
     <dimen name="wishlist_spacing">32dp</dimen>
     <dimen name="zero_spacing">0dp</dimen>
+
+    <dimen name="act_file_explorer_progress_bar_size">64dp</dimen>
 </resources>
