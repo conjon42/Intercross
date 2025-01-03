@@ -96,6 +96,10 @@ class FileUtil(private val ctx: Context) {
         PreferenceManager.getDefaultSharedPreferences(ctx)
     }
 
+    private val mKeyUtil by lazy {
+        KeyUtil(ctx)
+    }
+
     /***
      * Main parse driver. Either a parents or wishlist file can be loaded.
      * Parents files populate a table of barcodeIds with readable names.
@@ -435,7 +439,7 @@ class FileUtil(private val ctx: Context) {
 
     fun ringNotification(success: Boolean) {
 
-        if (mPref.getBoolean(KeyUtil(ctx).workAudioKey, false)) {
+        if (mPref.getBoolean(mKeyUtil.soundNotificationKey, false)) {
             try {
                 when (success) {
                     true -> {

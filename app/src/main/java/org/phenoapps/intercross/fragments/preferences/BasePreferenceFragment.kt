@@ -2,7 +2,8 @@ package org.phenoapps.intercross.fragments.preferences
 
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.widget.Toolbar
+import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -13,9 +14,9 @@ import org.phenoapps.intercross.util.KeyUtil
 /**
  * Generic class for other preference fragments to extend.
  * The base class takes the xml file and root key to populate the preference list.
- * This class mainly handles bottom nav bar navigation directions.
+ * This class mainly handles bottom nav bar navigation directions and toolbar.
  */
-open class ToolbarPreferenceFragment(private val xml: Int, private val key: Int) : PreferenceFragmentCompat() {
+open class BasePreferenceFragment(private val xml: Int) : PreferenceFragmentCompat() {
 
     private var mBottomNavBar: BottomNavigationView? = null
 
@@ -26,33 +27,33 @@ open class ToolbarPreferenceFragment(private val xml: Int, private val key: Int)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setPreferencesFromResource(xml, getString(key))
-
         mBottomNavBar = view.findViewById(R.id.preferences_bottom_nav_bar)
 
-        mBottomNavBar?.selectedItemId = R.id.action_nav_settings
+        mBottomNavBar?.selectedItemId = R.id.action_nav_preferences
 
         setupBottomNavBar()
 
         setHasOptionsMenu(true)
     }
 
+    protected fun setToolbar(toolbarTitle: String?) {
+        setHasOptionsMenu(true)
+        (activity as MainActivity).setBackButtonToolbar()
+        (activity as AppCompatActivity).supportActionBar?.apply {
+            title = toolbarTitle
+            show()
+        }
+    }
+
     override fun onResume() {
         super.onResume()
 
-        mBottomNavBar?.selectedItemId = R.id.action_nav_settings
+        mBottomNavBar?.selectedItemId = R.id.action_nav_preferences
 
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-
-        val askPerson = (arguments ?: Bundle())
-            .getString(mKeyUtil.argProfAskPerson, "false")
-
-        if (askPerson == "true") {
-            //TODO
-            //preferenceManager.showDialog(findPreference<EditTextPreference>(mKeyUtil.profPersonKey))
-        }
+        setPreferencesFromResource(xml, rootKey)
     }
 
     private fun setupBottomNavBar() {
@@ -68,14 +69,6 @@ open class ToolbarPreferenceFragment(private val xml: Int, private val key: Int)
                 R.id.action_nav_parents -> {
 
                     findNavController().navigate(R.id.global_action_to_parents)
-                }
-                R.id.action_nav_export -> {
-
-                    (activity as MainActivity).showExportDialog {
-
-                        mBottomNavBar?.selectedItemId = R.id.action_nav_settings
-
-                    }
                 }
                 R.id.action_nav_cross_count -> {
 

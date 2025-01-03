@@ -174,7 +174,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
                         CONTINUOUS -> {
                             zxingBarcodeScanner.setStatusText(getString(R.string.zxing_scan_mode_continuous))
 
-                            val maleFirst = mPrefs.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+                            val maleFirst = mPrefs.getBoolean(mKeyUtil.crossOrderKey, false)
 
                             when (maleFirst) {
 
@@ -305,7 +305,7 @@ class BarcodeScanFragment: IntercrossBaseFragment<FragmentBarcodeScanBinding>(R.
 
     private fun startObservers() {
 
-        val isCommutative = mPrefs.getBoolean(mKeyUtil.workCommutativeKey, false)
+        val isCommutative = mPrefs.getBoolean(mKeyUtil.commutativeCrossingKey, false)
 
         if (isCommutative) {
 

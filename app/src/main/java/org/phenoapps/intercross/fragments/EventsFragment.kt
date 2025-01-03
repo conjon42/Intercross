@@ -2,15 +2,20 @@ package org.phenoapps.intercross.fragments
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.TypedValue
 import android.view.*
 import android.view.inputmethod.EditorInfo
+import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.core.view.MenuProvider
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -19,6 +24,7 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.activities.MainActivity
@@ -28,6 +34,8 @@ import org.phenoapps.intercross.data.*
 import org.phenoapps.intercross.data.models.Event
 import org.phenoapps.intercross.data.models.Parent
 import org.phenoapps.intercross.data.models.Meta
+import org.phenoapps.intercross.data.models.MetadataValues
+import org.phenoapps.intercross.data.models.PollenGroup
 import org.phenoapps.intercross.data.models.Settings
 import org.phenoapps.intercross.data.models.WishlistView
 import org.phenoapps.intercross.data.viewmodels.*
@@ -35,10 +43,15 @@ import org.phenoapps.intercross.data.viewmodels.factory.*
 import org.phenoapps.intercross.databinding.FragmentEventsBinding
 import org.phenoapps.intercross.util.*
 import java.util.*
+import javax.inject.Inject
 import kotlin.math.roundToInt
 
+@AndroidEntryPoint
 class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fragment_events),
     CoroutineScope by MainScope() {
+
+    @Inject
+    lateinit var verifyPersonHelper: VerifyPersonHelper
 
     private val viewModel: EventListViewModel by viewModels {
         EventsListViewModelFactory(EventsRepository.getInstance(db.eventsDao()))
@@ -100,17 +113,23 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun getFirstOrder(context: Context): String {
 
-        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.crossOrderKey, false)
 
         return if (maleFirst) context.getString(R.string.MaleID) else context.getString(R.string.FemaleID)
     }
 
     private fun getSecondOrder(context: Context): String {
 
-        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.crossOrderKey, false)
 
         return if (maleFirst) context.getString(R.string.FemaleID) else context.getString(R.string.MaleID)
 
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        setMenuItems()
     }
 
     override fun FragmentEventsBinding.afterCreateView() {
@@ -123,28 +142,8 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         }
 
-        if (mPref.getBoolean("first_load", true)) {
-
-            settingsModel.insert(mSettings
-                    .apply {
-                        isUUID = true
-                    })
-
-            launch {
-                withContext(Dispatchers.IO) {
-                    for (property in arrayOf("fruits", "flowers", "seeds")) {
-                        metadataViewModel.insert(
-                            Meta(property, 0)
-                        )
-                    }
-                }
-            }
-
-            mPref.edit().putBoolean("first_load", false).apply()
-        }
-
         //if this was called from crosscount/crossblock or wishlist fragment then populate the male/female tv
-        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.crossOrderKey, false)
 
         argFemale?.let { female ->
             if (maleFirst) mBinding.secondText.setText(female)
@@ -195,15 +194,43 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
     override fun onResume() {
         super.onResume()
 
+        (activity as MainActivity).setToolbar()
+        (activity as MainActivity).supportActionBar?.title = mPref.getString(mKeyUtil.experimentNameKey, "")
+
         mBinding.bottomNavBar.selectedItemId = R.id.action_nav_home
 
+    }
+
+    private fun setMenuItems() {
+        activity?.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_entry_fragment, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.action_set_experiment -> {
+                        showExperimentDialog()
+                        true
+                    }
+                    R.id.action_export -> {
+                        // (activity as MainActivity).showExportDialog {
+                        //
+                        // }
+                        showCrossesExport()
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner)
     }
 
     private fun startObservers() {
 
         val error = getString(R.string.ErrorCodeExists)
 
-        val isCommutative = mPref.getBoolean(mKeyUtil.workCommutativeKey, false)
+        val isCommutative = mPref.getBoolean(mKeyUtil.commutativeCrossingKey, false)
 
         metadataViewModel.metadata.observe(viewLifecycleOwner) {
             mMetadata = it
@@ -325,9 +352,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
                             val second = mBinding.secondText.text.toString()
                             //val third = editTextCross.text.toString()
 
-                            val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+                            val maleFirst = mPref.getBoolean(mKeyUtil.crossOrderKey, false)
 
-                            val blank = mPref.getBoolean(mKeyUtil.nameBlankMaleKey, false)
+                            val blank = mPref.getBoolean(mKeyUtil.blankMaleKey, false)
 
                             //first check first text, if male first and allow blank males then skip to second text
                             if (first.isBlank() && !(maleFirst && blank)) {
@@ -350,9 +377,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun afterFirstText(value: String) {
 
-        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.crossOrderKey, false)
 
-        val blank = mPref.getBoolean(mKeyUtil.nameBlankMaleKey, false)
+        val blank = mPref.getBoolean(mKeyUtil.blankMaleKey, false)
 
         mBinding.firstText.setText(value)
 
@@ -365,9 +392,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun afterSecondText(value: String) {
 
-        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.crossOrderKey, false)
 
-        val blank = mPref.getBoolean(mKeyUtil.nameBlankMaleKey, false)
+        val blank = mPref.getBoolean(mKeyUtil.blankMaleKey, false)
 
         mBinding.secondText.setText(value)
 
@@ -417,22 +444,14 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             when (item.itemId) {
 
-                R.id.action_nav_settings -> {
+                R.id.action_nav_preferences -> {
 
-                    findNavController().navigate(R.id.global_action_to_settings_fragment)
+                    findNavController().navigate(R.id.global_action_to_preferences_fragment)
                 }
                 R.id.action_nav_parents -> {
 
                     findNavController().navigate(EventsFragmentDirections.globalActionToParents())
 
-                }
-                R.id.action_nav_export -> {
-
-                    (activity as MainActivity).showExportDialog {
-
-                        bottomNavBar.selectedItemId = R.id.action_nav_home
-
-                    }
                 }
                 R.id.action_nav_cross_count -> {
 
@@ -534,9 +553,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             if (hasFocus) mFocused = v
 
-            if (hasFocus && (mPref.getString(mKeyUtil.profPersonKey, "") ?: "").isBlank()) {
-                askUserForPerson()
-            }
+           if (hasFocus) {
+               verifyPersonHelper.checkLastOpened(null)
+           }
 
         }
 
@@ -640,24 +659,33 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         button.setOnClickListener {
 
-            if (mPref.getString(mKeyUtil.profPersonKey, "").isNullOrBlank()) {
-                askUserForPerson()
-            } else {
-
+            verifyPersonHelper.checkLastOpened {
                 findNavController().navigate(EventsFragmentDirections.actionToBarcodeScanFragment())
-
             }
+            // if (mPref.getString(mKeyUtil.profPersonKey, "").isNullOrBlank() ||
+            //     mPref.getString(mKeyUtil.profExpKey, "").isNullOrBlank()) {
+            //     askUserForPersonAndExperiment()
+            // } else {
+            //
+            //     findNavController().navigate(EventsFragmentDirections.actionToBarcodeScanFragment())
+            //
+            // }
         }
 
         button.setOnLongClickListener {
 
-            if (mPref.getString(mKeyUtil.profPersonKey, "").isNullOrBlank()) {
-                askUserForPerson()
-            } else {
-
+            verifyPersonHelper.checkLastOpened {
                 findNavController().navigate(EventsFragmentDirections.actionToBarcodeScanFragment(2))
-
             }
+
+            // if (mPref.getString(mKeyUtil.profPersonKey, "").isNullOrBlank() ||
+            //     mPref.getString(mKeyUtil.profExpKey, "").isNullOrBlank()) {
+            //     askUserForPersonAndExperiment()
+            // } else {
+            //
+            //     findNavController().navigate(EventsFragmentDirections.actionToBarcodeScanFragment(2))
+            //
+            // }
 
             true
         }
@@ -679,7 +707,7 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
             secondText.setText("")
 
-            val person = mPref.getString(mKeyUtil.profPersonKey, "") ?: ""
+            val person = mPref.getString(mKeyUtil.personFirstNameKey, "") ?: ""
 
             if (person.isNotBlank()) firstText.requestFocus()
         }
@@ -687,9 +715,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
     private fun FragmentEventsBinding.isInputValid(): Boolean {
 
-        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.crossOrderKey, false)
 
-        val blank = mPref.getBoolean(mKeyUtil.nameBlankMaleKey, false)
+        val blank = mPref.getBoolean(mKeyUtil.blankMaleKey, false)
 
         val male: String
         val female: String
@@ -726,9 +754,9 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
 
         val value = mBinding.editTextCross.text.toString()
 
-        val maleFirst = mPref.getBoolean(mKeyUtil.nameCrossOrderKey, false)
+        val maleFirst = mPref.getBoolean(mKeyUtil.crossOrderKey, false)
 
-        val blank = mPref.getBoolean(mKeyUtil.nameBlankMaleKey, false)
+        val blank = mPref.getBoolean(mKeyUtil.blankMaleKey, false)
 
         lateinit var male: String
         lateinit var female: String
@@ -827,28 +855,60 @@ class EventsFragment : IntercrossBaseFragment<FragmentEventsBinding>(R.layout.fr
         }
     }
 
-    private fun askUserForPerson() {
+    private fun showExperimentDialog() {
+        val inflater = this.layoutInflater
+        val layout: View = inflater.inflate(R.layout.dialog_set_experiment, null)
+        val experimentName = layout.findViewById<EditText>(R.id.experimentName)
 
-        mBinding.constraintLayoutParent.requestFocus()
+        experimentName.setText(mPref?.getString(mKeyUtil.experimentNameKey, ""))
 
-        val cancel = getString(android.R.string.cancel)
-        val personMustBeSet = getString(R.string.person_must_be_set)
-        val setPerson = getString(R.string.set_person)
+        experimentName.setSelectAllOnFocus(true)
 
-        val builder = AlertDialog.Builder(requireContext()).apply {
+        val builder = android.app.AlertDialog.Builder(context)
+            .setTitle(R.string.dialog_experiment_title)
+            .setCancelable(true)
+            .setView(layout)
+            .setNegativeButton(getString(R.string.dialog_cancel)) { dialog, _ -> dialog.dismiss() }
+            .setNeutralButton(R.string.Clear) { _, _ ->
+                val e = mPref?.edit()
+                e?.putString(mKeyUtil.experimentNameKey, "")
+                (activity as MainActivity).supportActionBar?.title = null
 
-            setNegativeButton(cancel) { _, _ ->
-                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, personMustBeSet))
+                e?.apply()
+            }
+            .setPositiveButton(getString(R.string.dialog_save)) { _, _ ->
+                val e = mPref?.edit()
+                e?.putString(mKeyUtil.experimentNameKey, experimentName.text.toString())
+                (activity as MainActivity).supportActionBar?.title = experimentName.text
+
+                e?.apply()
             }
 
-            setPositiveButton(setPerson) { _, _ ->
-                findNavController().navigate(EventsFragmentDirections
-                    .actionFromEventsToPreferences(true))
-            }
-        }
+        val experimentDialog = builder.create()
+        experimentDialog?.show()
 
-        builder.setTitle(personMustBeSet)
-        builder.show()
+        val langParams = experimentDialog?.window?.attributes
+        langParams?.width = LinearLayout.LayoutParams.MATCH_PARENT
+        experimentDialog?.window?.attributes = langParams
     }
 
+    private fun showCrossesExport() {
+        val defaultFileNamePrefix = getString(R.string.default_crosses_export_file_name)
+        val fileName = "${defaultFileNamePrefix}_${DateUtil().getTime()}"
+
+        val inflater = (activity as MainActivity).layoutInflater
+        val layout = inflater.inflate(R.layout.dialog_export, null)
+        val fileNameET = layout.findViewById<EditText>(R.id.file_name)
+
+        fileNameET.setText(fileName)
+
+        val builder = AlertDialog.Builder(activity as MainActivity)
+            .setTitle(R.string.dialog_export_title)
+            .setView(layout)
+            .setNegativeButton(getString(R.string.dialog_cancel)) { d, _ -> d.dismiss() }
+            .setPositiveButton(getString(R.string.dialog_export)) { _, _ ->
+                (activity as MainActivity).startExport(fileNameET.text.toString())
+            }
+        builder.create().show()
+    }
 }

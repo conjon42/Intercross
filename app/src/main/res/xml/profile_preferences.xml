@@ -1,16 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
-    android:key="@string/root_profile"
+    android:key="pref_key_profile_settings"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto" >
-    <PreferenceCategory app:iconSpaceReserved="false">
-        <EditTextPreference
-            android:title="Person"
-            android:icon="@drawable/ic_setting_person"
-            android:key="@string/key_pref_profile_person" />
-        <EditTextPreference
-            android:icon="@drawable/ic_setting_experiment"
-            android:key="@string/key_pref_profile_experiment"
-            android:title="Experiment" />
-    </PreferenceCategory>
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <Preference
+        android:key="@string/key_pref_profile_person"
+        android:title="@string/profile_person"
+        android:icon="@drawable/ic_prefs_profile_person" />
+
+    <Preference
+        android:key="@string/key_pref_profile_reset"
+        android:title="@string/profile_reset"
+        android:icon="@drawable/ic_prefs_profile_delete" />
+
+    <ListPreference
+        android:key="@string/key_pref_person_verification_interval"
+        android:title="@string/profile_verification_interval"
+        android:entries="@array/preferences_profile_verification_interval_entries"
+        android:entryValues="@array/preferences_profile_verification_interval_values"
+        android:defaultValue="0"
+        android:icon="@drawable/ic_hours_24" />
+
 </PreferenceScreen>

@@ -1,14 +1,15 @@
 package org.phenoapps.intercross.fragments.preferences
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.Preference
 import org.phenoapps.intercross.activities.MainActivity
 import org.phenoapps.intercross.R
+import org.phenoapps.intercross.activities.DefineStorageActivity
 import org.phenoapps.intercross.util.KeyUtil
 
-class DatabaseFragment : ToolbarPreferenceFragment(R.xml.database_preferences, R.string.root_database) {
+class DatabaseFragment : BasePreferenceFragment(R.xml.database_preferences) {
 
     private val mKeyUtil by lazy {
         KeyUtil(context)
@@ -16,14 +17,24 @@ class DatabaseFragment : ToolbarPreferenceFragment(R.xml.database_preferences, R
 
     override fun onResume() {
         super.onResume()
-        (activity as MainActivity).setBackButtonToolbar()
-        (activity as AppCompatActivity).supportActionBar?.show()
+        setToolbar(getString(R.string.prefs_database_title))
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with (findPreference<Preference>(mKeyUtil.dbImportKey)) {
+        with ( findPreference<Preference>(getString(R.string.key_pref_storage_definer))) {
+            this?.let {
+                setOnPreferenceClickListener {
+                    activity?.let { _ ->
+                        startActivity(Intent(context, DefineStorageActivity::class.java))
+                    }
+                    true
+                }
+            }
+        }
+
+        with (findPreference<Preference>(getString(R.string.key_pref_db_import))) {
             this?.let {
                 setOnPreferenceClickListener {
                     activity?.let { act ->
@@ -34,7 +45,7 @@ class DatabaseFragment : ToolbarPreferenceFragment(R.xml.database_preferences, R
                 }
             }
         }
-        with (findPreference<Preference>(mKeyUtil.dbExportKey)) {
+        with (findPreference<Preference>(getString(R.string.key_pref_db_export))) {
             this?.let {
                 setOnPreferenceClickListener {
                     activity?.let { act ->

@@ -174,21 +174,13 @@ class SummaryFragment : IntercrossBaseFragment<FragmentDataSummaryBinding>(R.lay
 
                     findNavController().navigate(SummaryFragmentDirections.globalActionToEvents())
                 }
-                R.id.action_nav_settings -> {
+                R.id.action_nav_preferences -> {
 
-                    findNavController().navigate(SummaryFragmentDirections.globalActionToSettingsFragment())
+                    findNavController().navigate(SummaryFragmentDirections.globalActionToPreferencesFragment())
                 }
                 R.id.action_nav_parents -> {
 
                     findNavController().navigate(SummaryFragmentDirections.globalActionToParents())
-
-                }
-                R.id.action_nav_export -> {
-
-                    (activity as MainActivity).showExportDialog {
-
-                        findNavController().navigate(R.id.summary_fragment)
-                    }
 
                 }
                 R.id.action_nav_cross_count -> {

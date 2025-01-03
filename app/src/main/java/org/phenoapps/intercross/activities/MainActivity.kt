@@ -1,8 +1,8 @@
 package org.phenoapps.intercross.activities
 
-//import org.phenoapps.intercross.BuildConfig
+import android.app.Activity
+import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.view.MenuItem
@@ -12,14 +12,18 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
+import com.bytehamster.lib.preferencesearch.SearchPreferenceFragment
 import com.bytehamster.lib.preferencesearch.SearchPreferenceResult
 import com.bytehamster.lib.preferencesearch.SearchPreferenceResultListener
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.EventsRepository
@@ -28,6 +32,7 @@ import org.phenoapps.intercross.data.MetaValuesRepository
 import org.phenoapps.intercross.data.MetadataRepository
 import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.PollenGroupRepository
+import org.phenoapps.intercross.data.SettingsRepository
 import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.models.CrossType
 import org.phenoapps.intercross.data.models.Event
@@ -35,34 +40,50 @@ import org.phenoapps.intercross.data.models.Meta
 import org.phenoapps.intercross.data.models.MetadataValues
 import org.phenoapps.intercross.data.models.Parent
 import org.phenoapps.intercross.data.models.PollenGroup
+import org.phenoapps.intercross.data.models.Settings
 import org.phenoapps.intercross.data.models.Wishlist
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.MetaValuesViewModel
 import org.phenoapps.intercross.data.viewmodels.MetadataViewModel
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
 import org.phenoapps.intercross.data.viewmodels.PollenGroupListViewModel
+import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
 import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.MetaValuesViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.MetadataViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.ActivityMainBinding
 import org.phenoapps.intercross.fragments.EventsFragmentDirections
+import org.phenoapps.intercross.fragments.ImportSampleDialogFragment
 import org.phenoapps.intercross.fragments.PatternFragment
+import org.phenoapps.intercross.fragments.preferences.PreferencesFragment
 import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.intercross.util.Dialogs
+import org.phenoapps.intercross.util.ExportUtil
 import org.phenoapps.intercross.util.FileUtil
 import org.phenoapps.intercross.util.KeyUtil
 import org.phenoapps.intercross.util.SnackbarQueue
+import org.phenoapps.intercross.util.VerifyPersonHelper
+import org.phenoapps.utils.BaseDocumentTreeUtil
 import java.io.File
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
 //    private val mFirebaseAnalytics by lazy {
 //        FirebaseAnalytics.getInstance(this)
 //    }
+
+    @Inject
+    lateinit var verifyPersonHelper: VerifyPersonHelper
+
+    @Inject
+    lateinit var exportUtil: ExportUtil
 
     private var doubleBackToExitPressedOnce = false
 
@@ -84,6 +105,10 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     private val metaValuesViewModel: MetaValuesViewModel by viewModels {
         MetaValuesViewModelFactory(MetaValuesRepository.getInstance(mDatabase.metaValuesDao()))
+    }
+
+    private val settingsModel: SettingsViewModel by viewModels {
+        SettingsViewModelFactory(SettingsRepository.getInstance(mDatabase.settingsDao()))
     }
 
     private val metadataViewModel: MetadataViewModel by viewModels {
@@ -171,7 +196,7 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     private val checkPermissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted -> }
 
-    private fun importFromUri(uri: Uri) {
+    fun importFromUri(uri: Uri) {
 
         val tables = FileUtil(this).parseInputFile(uri)
 
@@ -257,13 +282,21 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     private var mMetaValues: List<MetadataValues> = ArrayList()
 
-    private lateinit var mDatabase: IntercrossDatabase
+    private val mDatabase by lazy {
+        IntercrossDatabase.getInstance(this)
+    }
 
     private lateinit var mSnackbar: SnackbarQueue
 
     private lateinit var mBinding: ActivityMainBinding
 
     private lateinit var mNavController: NavController
+
+    private var preferencesFragment: PreferencesFragment? = null
+
+    fun setPreferencesFragment(fragment: PreferencesFragment?) {
+        preferencesFragment = fragment
+    }
 
     private fun writeStream(file: File, resourceId: Int) {
 
@@ -320,9 +353,79 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         }
     }
 
+    // add launcher for AppIntroActivity
+    private val appIntroLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        when (result.resultCode) {
+            Activity.RESULT_OK -> {
+
+                val loadSampleWishlist = mPref.getBoolean(mKeyUtil.loadSampleWishlist, false)
+                val loadSampleParents = mPref.getBoolean(mKeyUtil.loadSampleParents, false)
+
+                if (loadSampleParents || loadSampleWishlist) {
+                    ImportSampleDialogFragment().show(supportFragmentManager, "ImportSampleDialogFragment")
+                }
+                mPref.edit().putBoolean(mKeyUtil.firstRunKey, false).apply()
+            }
+            else -> {
+                finish()
+            }
+        }
+    }
+
+    private fun firstRunSetup() {
+        if (mPref.getBoolean(mKeyUtil.firstRunKey, true)) {
+
+            val introIntent = Intent(this, AppIntroActivity::class.java)
+            appIntroLauncher.launch(introIntent)
+
+            settingsModel.insert(
+                Settings().apply {
+                    isUUID = true
+                }
+            )
+
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    for (property in arrayOf("fruits", "flowers", "seeds")) {
+                        metadataViewModel.insert(
+                            Meta(property, 0)
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private val storageDefinerLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        when (result.resultCode) {
+            Activity.RESULT_CANCELED -> {
+                finish()
+            }
+        }
+    }
+
+    private fun checkStorageAccess() {
+        // when cannot access storage directory and firstRunSetup was already completed
+        if (!BaseDocumentTreeUtil.isEnabled(this) && mPref.getBoolean(mKeyUtil.firstRunKey, false)) {
+            val storageDefinerActivity = Intent(this, DefineStorageActivity::class.java)
+            storageDefinerLauncher.launch(storageDefinerActivity)
+        }
+
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
+
+        verifyPersonHelper.updateAskedSinceOpened()
+
+        firstRunSetup()
+
+        checkStorageAccess()
 
         setupDirs()
 
@@ -343,25 +446,17 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
         mNavController = Navigation.findNavController(this@MainActivity, R.id.nav_fragment)
 
-        mDatabase = IntercrossDatabase.getInstance(this)
+        // toolbar for search screen
+        supportFragmentManager.addOnBackStackChangedListener {
+            val currentFragment = supportFragmentManager.findFragmentById(android.R.id.list_container)
+            if (currentFragment is SearchPreferenceFragment) {
+                setBackButtonToolbar()
+                supportActionBar?.title = getString(R.string.settings_label)
+                supportActionBar?.show()
+            }
+        }
 
         startObservers()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            checkPermissions.launch(arrayOf(
-                android.Manifest.permission.BLUETOOTH_CONNECT,
-                android.Manifest.permission.BLUETOOTH_SCAN,
-                android.Manifest.permission.BLUETOOTH_ADMIN,
-                android.Manifest.permission.BLUETOOTH,
-                android.Manifest.permission.INTERNET
-            ))
-        } else {
-            checkPermissions.launch(arrayOf(
-                android.Manifest.permission.BLUETOOTH_ADMIN,
-                android.Manifest.permission.BLUETOOTH,
-                android.Manifest.permission.INTERNET
-            ))
-        }
 
         mBinding.mainTb.setNavigationOnClickListener {
             onBackPressed()
@@ -374,6 +469,15 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.hide()
+    }
+
+    fun setToolbar() {
+        setSupportActionBar(mBinding.mainTb)
+
+        supportActionBar?.title = null
+        supportActionBar?.setDisplayHomeAsUpEnabled(false)
+        supportActionBar?.setDisplayShowHomeEnabled(false)
+        supportActionBar?.show()
     }
 
     private fun startObservers() {
@@ -473,6 +577,10 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         //}
     }
 
+    fun startExport(fileName: String) {
+        exportUtil.exportCrosses(eventsModel, mEvents, mParents, mGroups, mMetadata, mMetaValues, fileName)
+    }
+
     fun showExportDialog(onDismiss: () -> Unit) {
 
         //TODO
@@ -541,7 +649,6 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
     }
 
     override fun onBackPressed() {
-
         mNavController.currentDestination?.let { it ->
 
             when (it.id) {
@@ -583,21 +690,22 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         return super.onOptionsItemSelected(item)
     }
 
-
     override fun onSearchResultClicked(result: SearchPreferenceResult) {
-
-        result.closeSearchPage(this)
-
-        mNavController.navigate(
-            when (result.key) {
-                in mKeyUtil.profileKeySet -> R.id.profile_preference_fragment
-                in mKeyUtil.nameKeySet -> R.id.naming_preference_fragment
-                in mKeyUtil.workKeySet -> R.id.workflow_preference_fragment
-                in mKeyUtil.printKeySet -> R.id.printing_preference_fragment
-                in mKeyUtil.dbKeySet -> R.id.database_preference_fragment
-                in mKeyUtil.aboutKeySet -> R.id.about_preference_fragment
-                else -> throw RuntimeException() //todo R.id.brapi_preference_fragment
-            }
-        )
+        Handler().post { // handle in preferencesFragment
+            preferencesFragment?.onSearchResultClicked(result)
+        }
     }
+
+   // private fun savePersonAndExperiment(person: String, experiment: String) {
+   //     val editor = mPref.edit()
+   //     editor.putString(mKeyUtil.profPersonKey, person)
+   //     editor.putString(mKeyUtil.profExpKey, experiment)
+   //     editor.apply()
+   // }
+   //
+   // private fun loadPersonAndExperiment(): Pair<String, String> {
+   //     val person = mPref.getString(mKeyUtil.profPersonKey, "") ?: ""
+   //     val experiment = mPref.getString(mKeyUtil.profExpKey, "") ?: ""
+   //     return Pair(person, experiment)
+   // }
 }

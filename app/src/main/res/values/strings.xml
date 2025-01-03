@@ -15,12 +15,12 @@
 
     <!-- About dialog -->
     <string name="about_version_title">Version</string>
-    <string name="about_title_other_apps">Other PhenoApps</string>
+    <string name="about_title_other_apps">PhenoApps</string>
     <string name="about_project_lead_title">Project Lead</string>
     <string name="about_developer_title">Developer</string>
     <string name="about_developer_trife" translatable="false">Trevor Rife</string>
-    <string name="about_developer_trife_location" translatable="false">Kansas State University</string>
-    <string name="about_developer_trife_email" translatable="false">trife@ksu.edu</string>
+    <string name="about_developer_trife_location" translatable="false">Clemson University</string>
+    <string name="about_developer_trife_email" translatable="false">twrife@clemson.edu</string>
     <string name="about_email_title">Email</string>
     <string name="about_developer_trife_website" translatable="false">https://github.com/PhenoApps/Field-Book</string>
     <string name="about_contributors_title">Contributors</string>
@@ -259,6 +259,7 @@
     <string name="preferences_database_fragment_label">Database</string>
     <string name="preferences_brapi_fragment_label">Brapi</string>
     <string name="preferences_about_fragment_label">About</string>
+    <string name="brapi_pref_add_account_title">Add Android Account</string>
     <string name="brapi_auth_account_created">Account created.</string>
     <string name="brapi_auth_account_created_failed">Account creation failed.</string>
     <string name="dialog_account_creator_username_hint">New user name</string>
@@ -266,7 +267,6 @@
     <string name="dialog_brapi_account_creator_title">Account Creator</string>
     <string name="dialog_account_creator_username_failed">User name must not be blank.</string>
     <string name="dialog_account_creator_summary">To save your account locally, please enter user credentials.</string>
-    <string name="brapi_pref_add_account_title">Add Android Account</string>
     <string name="brapi_auth_fragment_label">BrAPI Authentication</string>
     <string name="frag_wf_choose_female_summary">Please start by choosing a female parent.</string>
     <string name="frag_wf_summary">Summary</string>
@@ -297,6 +297,7 @@
     <string name="wishlist_complete_content_description">Wishlist complete</string>
     <string name="frag_parents_parents_not_deleted_reason">Some parents could not be deleted because they are parents to a cross.</string>
     <string name="frag_parents_new_parent_btn">Button to add a new parent.</string>
+    <string name="frag_parents_new_parent_title">New Parent</string>
     <string name="frag_parents_selected_text">%s parents are selected</string>
     <string name="menu_parents_delete_title">Delete selected parents.</string>
     <string name="menu_parents_print_title">Print selected parents.</string>
@@ -309,6 +310,10 @@
     <string name="frag_metadata_list_delete_dialog_title">Delete this metadata?</string>
     <string name="frag_metadata_confirm_delete_message">This will delete all metadata values for this property.</string>
     <string name="make_cross_option">Make Cross</string>
+
+    <string name="collect_metadata_label">Collect Metadata</string>
+    <string name="collect_metadata_toast_enabled">Metadata collection enabled</string>
+    <string name="collect_metadata_toast_disabled">Metadata collection disabled</string>
 
     <!-- Brapi strings -->
     <string name="preferences_brapi" translatable="false">BrAPI</string>
@@ -428,5 +433,151 @@
     <string name="error_importing_file">There was an error importing the file.</string>
     <string name="error_no_bluetooth_permission">Bluetooth permission is required to print.</string>
     <string name="search_fragment_label">Search</string>
+
+    <!-- Dialogs -->
+    <string name="dialog_file_name_hint">File Name</string>
+
+    <!-- Experiment -->
+    <string name="dialog_experiment_title">Set Experiment</string>
+    <string name="dialog_experiment_hint">Experiment name</string>
+
+    <!-- Profile -->
+    <string name="collect_dialog_verify_collector">Is this still</string>
+    <string name="collect_dialog_verify_no_button">No</string>
+    <string name="collect_dialog_verify_yes_button">Yes</string>
+    <string name="collect_dialog_neutral_button">Modify settings</string>
+    <string name="collect_dialog_new_collector">Do you want to save the name of the person collecting data?</string>
+
+    <!-- PREFERENCES -->
+
+    <!-- Profile Preferences-->
+    <string name="prefs_profile_title">Profile</string>
+    <string name="verification_interval_every_open">Every time app opens</string>
+    <string name="verification_interval_every_12">Every 12 hours</string>
+    <string name="verification_interval_every_24">Every 24 hours</string>
+    <string name="verification_interval_never">Never</string>
+
+    <string name="prefs_behavior_title">Behavior</string>
+    <string name="prefs_printing_title">Printing</string>
+    <string name="prefs_database_title">Database</string>
+    <string name="prefs_brapi_title">BrAPI</string>
+    <string name="prefs_about_title">About</string>
+
+
+    <!-- Behavior Preferences: Naming and Workflow preferences -->
+    <string name="prefs_behavior_naming_category">Naming</string>
+    <string name="prefs_behavior_allow_blank_male_title">Allow blank male ID</string>
+    <string name="prefs_behavior_allow_blank_male_summary">Keep Male ID as optional while creating a cross.</string>
+    <string name="prefs_behavior_scan_male_first_title">Scan male first</string>
+    <string name="prefs_behavior_scan_male_first_summary">Enter Male ID first while creating a cross.</string>
+    <string name="prefs_behavior_create_cross_id_pattern_title">Create cross ID pattern</string>
+    <string name="prefs_behavior_create_cross_id_pattern_summary">UUID</string>
+
+    <string name="prefs_behavior_workflow_category">Workflow</string>
+    <string name="prefs_behavior_collect_additional_info_title">Collect additional information</string>
+    <string name="prefs_behavior_collect_additional_info_summary">Create and manage additional metadata.</string>
+    <string name="prefs_behavior_create_metadata_title">Create Metadata</string>
+    <string name="prefs_behavior_create_metadata_summary">Create a metadata property.</string>
+    <string name="prefs_behavior_manage_metadata_title">Manage Metadata</string>
+    <string name="prefs_behavior_manage_metadata_summary">Manage existing metadata properties.</string>
+    <string name="prefs_behavior_sound_notifications_title">Sound notifications</string>
+    <string name="prefs_behavior_sound_notifications_summary">Notification sound when a cross is made.</string>
+    <string name="prefs_behavior_open_cross_title">Open Cross After Creating</string>
+    <string name="prefs_behavior_open_cross_summary">Opens the cross immediately after creating.</string>
+    <string name="prefs_behavior_commutative_crossing_title">Commutative Crossing</string>
+    <string name="prefs_behavior_commutative_crossing_summary">When enabled, cross AxB and cross BxA are considered the same.</string>
+
+    <!-- Printing preferences -->
+    <string name="prefs_zebra_print_connect_title">Zebra Print Connect</string>
+    <string name="prefs_zebra_print_connect_summary">Connect a Zebra printer.</string>
+    <string name="prefs_zebra_import_title">ZPL Import</string>
+    <string name="prefs_zebra_import_summary">Import a ZPL file.</string>
+
+    <!-- Database preferences -->
+    <string name="prefs_database_import_title">Import Database</string>
+    <string name="prefs_database_import_summary">Import a new database file that has been saved previously.</string>
+    <string name="prefs_database_export_title">Export Database</string>
+    <string name="prefs_database_export_summary">This will prompt the user to export the local database.</string>
+    <string name="pref_database_title">Database</string>
+
+
+    <string name="ok">OK</string>
+    <string name="person_and_experiment_saved">Person and experiment names saved</string>
+    <string name="naming_workflow_summary">Summary for naming and workflow settings</string>
+    <string name="preferences_about_title">About</string>
+    <string name="about_title_pheno_apps">PhenoApps</string>
+    <string name="check_updates_title">Check for Updates</string>
+    <string name="found_updates_title">Update Available</string>
+    <string name="no_updates_title">Up to Date</string>
+    <string name="about_manual_title">User Manual</string>
+    <string name="citation_card_title">Citation</string>
+    <string name="about_support_title">Support</string>
+    <string name="about_libraries_title">Libraries</string>
+
+    <string name="profile_person">Person</string>
+    <string name="profile_reset">Reset Profile</string>
+    <string name="profile_settings">Profile Settings</string>
+    <string name="profile_require_user">Require User to Collect</string>
+    <string name="profile_verification_interval">Verification Interval</string>
+    <string name="profile_person_title">Set Person</string>
+    <string name="dialog_save">Save</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_export">Export</string>
+    <string name="dialog_confirm">Are you sure you want to reset your profile?</string>
+    <string name="dialog_yes">Yes</string>
+    <string name="dialog_no">No</string>
+    <string name="profile_person_not_set">Not set</string>
+    <string name="dialog_export_message">"Exporting data..."</string>
+
+    <string name="profile_name_first">First name</string>
+    <string name="profile_name_last">Last name</string>
+
+    <!-- Storage Definer -->
+    <string name="storage_definer_title">Storage Location</string>
+    <string name="storage_definer_summary">Please select or create a folder that Intercross can use to store app data.</string>
+    <string name="define_button_text">Choose Folder</string>
+
+    <!--  Export  -->
+    <string name="export_success">Export Successful</string>
+    <string name="export_failed">Export failed: %s</string>
+    <string name="export_no_data">No data to export</string>
+    <string name="export_dialog_delete_crosses_title">Delete Crosses</string>
+    <string name="export_dialog_delete_crosses_message">Do you want to delete all the crosses?</string>
+
+    <string name="brapi_edit_display_name_default">BrAPI Test Server</string>
+    <string name="activity_file_explorer_up_directory_name">Up</string>
+
+    <!-- Permissions  -->
+    <string name="permission_rationale_storage_import">Importing files requires access to the device\'s files.</string>
+
+
+    <!-- Import  -->
+    <string name="dialog_import_parents_title">Import Parents</string>
+    <string name="dialog_import_loading_sample">Importing Sample Data…</string>
+    <string name="load_sample_success_toast">Sample data was imported</string>
+    <string name="load_sample_failed_toast">Sample data could not be imported</string>
+
+    <!-- AppIntroActivity -->
+    <string name="app_intro_activity_label">App Intro</string>
+    <string name="app_intro_intro_title_slide1">Welcome to Intercross!</string>
+    <string name="app_intro_intro_summary_slide1">Intercross is used to track crosses in plant breeding and genetics research programs. The app tracks parents, cross IDs, and metadata as crosses are created. Cross labels can be printed to Bluetooth Zebra label printers and lists of crosses can be exported. Intercross is part of the PhenoApps project which aims to modernize plant breeding data collection in plant breeding through optimized data captured tools.</string>
+    <string name="app_intro_intro_title_slide2">Features</string>
+    <string name="app_intro_intro_summary_slide2">Feature description goes here.\n\n Description 2.</string>
+    <string name="app_intro_required_setup_title">Required Setup</string>
+    <string name="app_intro_required_setup_summary">To get started using Intercross, grant the necessary permissions for the app and then define a folder where your data will be stored.</string>
+    <string name="app_intro_permissions_title">Permissions</string>
+    <string name="app_intro_permissions_summary">Please grant the necessary permissions</string>
+    <string name="app_intro_storage_title">Define Storage</string>
+    <string name="app_intro_storage_summary">Define a folder where your data will be stored.</string>
+    <string name="app_intro_permissions_warning">Permissions not granted</string>
+    <string name="app_intro_storage_warning">Storage directory not set</string>
+    <string name="app_intro_optional_setup_title">Optional Setup</string>
+    <string name="app_intro_optional_setup_summary">Optional settings customize how Intercross is set up for data collection.</string>
+    <string name="app_intro_load_sample_data_title">Load Sample Data</string>
+    <string name="app_intro_load_sample_data_summary">Import sample data.</string>
+    <string name="app_intro_load_sample_parents_title">Parents</string>
+    <string name="app_intro_load_sample_parents_summary">Import a sample parents data.</string>
+    <string name="app_intro_load_sample_wishlist_title">Wishlist</string>
+    <string name="app_intro_load_sample_wishlist_summary">Import a sample wishlist data including parents.</string>
 
 </resources>
