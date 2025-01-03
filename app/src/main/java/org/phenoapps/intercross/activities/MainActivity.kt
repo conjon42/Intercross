@@ -3,7 +3,6 @@ package org.phenoapps.intercross.activities
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.view.MenuItem
@@ -13,6 +12,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
@@ -23,6 +23,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.phenoapps.intercross.BuildConfig
 import org.phenoapps.intercross.R
 import org.phenoapps.intercross.data.EventsRepository
@@ -31,6 +32,7 @@ import org.phenoapps.intercross.data.MetaValuesRepository
 import org.phenoapps.intercross.data.MetadataRepository
 import org.phenoapps.intercross.data.ParentsRepository
 import org.phenoapps.intercross.data.PollenGroupRepository
+import org.phenoapps.intercross.data.SettingsRepository
 import org.phenoapps.intercross.data.WishlistRepository
 import org.phenoapps.intercross.data.models.CrossType
 import org.phenoapps.intercross.data.models.Event
@@ -38,21 +40,25 @@ import org.phenoapps.intercross.data.models.Meta
 import org.phenoapps.intercross.data.models.MetadataValues
 import org.phenoapps.intercross.data.models.Parent
 import org.phenoapps.intercross.data.models.PollenGroup
+import org.phenoapps.intercross.data.models.Settings
 import org.phenoapps.intercross.data.models.Wishlist
 import org.phenoapps.intercross.data.viewmodels.EventListViewModel
 import org.phenoapps.intercross.data.viewmodels.MetaValuesViewModel
 import org.phenoapps.intercross.data.viewmodels.MetadataViewModel
 import org.phenoapps.intercross.data.viewmodels.ParentsListViewModel
 import org.phenoapps.intercross.data.viewmodels.PollenGroupListViewModel
+import org.phenoapps.intercross.data.viewmodels.SettingsViewModel
 import org.phenoapps.intercross.data.viewmodels.WishlistViewModel
 import org.phenoapps.intercross.data.viewmodels.factory.EventsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.MetaValuesViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.MetadataViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.ParentsListViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.PollenGroupListViewModelFactory
+import org.phenoapps.intercross.data.viewmodels.factory.SettingsViewModelFactory
 import org.phenoapps.intercross.data.viewmodels.factory.WishlistViewModelFactory
 import org.phenoapps.intercross.databinding.ActivityMainBinding
 import org.phenoapps.intercross.fragments.EventsFragmentDirections
+import org.phenoapps.intercross.fragments.ImportSampleDialogFragment
 import org.phenoapps.intercross.fragments.PatternFragment
 import org.phenoapps.intercross.fragments.preferences.PreferencesFragment
 import org.phenoapps.intercross.util.DateUtil
@@ -95,6 +101,10 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     private val metaValuesViewModel: MetaValuesViewModel by viewModels {
         MetaValuesViewModelFactory(MetaValuesRepository.getInstance(mDatabase.metaValuesDao()))
+    }
+
+    private val settingsModel: SettingsViewModel by viewModels {
+        SettingsViewModelFactory(SettingsRepository.getInstance(mDatabase.settingsDao()))
     }
 
     private val metadataViewModel: MetadataViewModel by viewModels {
@@ -268,7 +278,9 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     private var mMetaValues: List<MetadataValues> = ArrayList()
 
-    private lateinit var mDatabase: IntercrossDatabase
+    private val mDatabase by lazy {
+        IntercrossDatabase.getInstance(this)
+    }
 
     private lateinit var mSnackbar: SnackbarQueue
 
@@ -337,6 +349,51 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         }
     }
 
+    // add launcher for AppIntroActivity
+    private val appIntroLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        when (result.resultCode) {
+            Activity.RESULT_OK -> {
+
+                val loadSampleWishlist = mPref.getBoolean(mKeyUtil.loadSampleWishlist, false)
+                val loadSampleParents = mPref.getBoolean(mKeyUtil.loadSampleParents, false)
+
+                if (loadSampleParents || loadSampleWishlist) {
+                    ImportSampleDialogFragment().show(supportFragmentManager, "ImportSampleDialogFragment")
+                }
+                mPref.edit().putBoolean(mKeyUtil.firstRunKey, false).apply()
+            }
+            else -> {
+                finish()
+            }
+        }
+    }
+
+    private fun firstRunSetup() {
+        if (mPref.getBoolean(mKeyUtil.firstRunKey, true)) {
+
+            val introIntent = Intent(this, AppIntroActivity::class.java)
+            appIntroLauncher.launch(introIntent)
+
+            settingsModel.insert(
+                Settings().apply {
+                    isUUID = true
+                }
+            )
+
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    for (property in arrayOf("fruits", "flowers", "seeds")) {
+                        metadataViewModel.insert(
+                            Meta(property, 0)
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     private val storageDefinerLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -348,7 +405,8 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
     }
 
     private fun checkStorageAccess() {
-        if (!BaseDocumentTreeUtil.isEnabled(this)) {
+        // when cannot access storage directory and firstRunSetup was already completed
+        if (!BaseDocumentTreeUtil.isEnabled(this) && mPref.getBoolean(mKeyUtil.firstRunKey, false)) {
             val storageDefinerActivity = Intent(this, DefineStorageActivity::class.java)
             storageDefinerLauncher.launch(storageDefinerActivity)
         }
@@ -360,6 +418,8 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
         super.onCreate(savedInstanceState)
 
         verifyPersonHelper.updateAskedSinceOpened()
+
+        firstRunSetup()
 
         checkStorageAccess()
 
@@ -392,25 +452,7 @@ class MainActivity : AppCompatActivity(), SearchPreferenceResultListener {
             }
         }
 
-        mDatabase = IntercrossDatabase.getInstance(this)
-
         startObservers()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            checkPermissions.launch(arrayOf(
-                android.Manifest.permission.BLUETOOTH_CONNECT,
-                android.Manifest.permission.BLUETOOTH_SCAN,
-                android.Manifest.permission.BLUETOOTH_ADMIN,
-                android.Manifest.permission.BLUETOOTH,
-                android.Manifest.permission.INTERNET
-            ))
-        } else {
-            checkPermissions.launch(arrayOf(
-                android.Manifest.permission.BLUETOOTH_ADMIN,
-                android.Manifest.permission.BLUETOOTH,
-                android.Manifest.permission.INTERNET
-            ))
-        }
 
         mBinding.mainTb.setNavigationOnClickListener {
             onBackPressed()

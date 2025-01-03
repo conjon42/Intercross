@@ -542,4 +542,31 @@
 
     <!-- Import  -->
     <string name="dialog_import_parents_title">Import Parents</string>
+    <string name="dialog_import_loading_sample">Importing Sample Data…</string>
+    <string name="load_sample_success_toast">Sample data was imported</string>
+    <string name="load_sample_failed_toast">Sample data could not be imported</string>
+
+    <!-- AppIntroActivity -->
+    <string name="app_intro_activity_label">App Intro</string>
+    <string name="app_intro_intro_title_slide1">Welcome to Intercross!</string>
+    <string name="app_intro_intro_summary_slide1">Intercross is used to track crosses in plant breeding and genetics research programs. The app tracks parents, cross IDs, and metadata as crosses are created. Cross labels can be printed to Bluetooth Zebra label printers and lists of crosses can be exported. Intercross is part of the PhenoApps project which aims to modernize plant breeding data collection in plant breeding through optimized data captured tools.</string>
+    <string name="app_intro_intro_title_slide2">Features</string>
+    <string name="app_intro_intro_summary_slide2">Feature description goes here.\n\n Description 2.</string>
+    <string name="app_intro_required_setup_title">Required Setup</string>
+    <string name="app_intro_required_setup_summary">To get started using Intercross, grant the necessary permissions for the app and then define a folder where your data will be stored.</string>
+    <string name="app_intro_permissions_title">Permissions</string>
+    <string name="app_intro_permissions_summary">Please grant the necessary permissions</string>
+    <string name="app_intro_storage_title">Define Storage</string>
+    <string name="app_intro_storage_summary">Define a folder where your data will be stored.</string>
+    <string name="app_intro_permissions_warning">Permissions not granted</string>
+    <string name="app_intro_storage_warning">Storage directory not set</string>
+    <string name="app_intro_optional_setup_title">Optional Setup</string>
+    <string name="app_intro_optional_setup_summary">Optional settings customize how Intercross is set up for data collection.</string>
+    <string name="app_intro_load_sample_data_title">Load Sample Data</string>
+    <string name="app_intro_load_sample_data_summary">Import sample data.</string>
+    <string name="app_intro_load_sample_parents_title">Parents</string>
+    <string name="app_intro_load_sample_parents_summary">Import a sample parents data.</string>
+    <string name="app_intro_load_sample_wishlist_title">Wishlist</string>
+    <string name="app_intro_load_sample_wishlist_summary">Import a sample wishlist data including parents.</string>
+
 </resources>
