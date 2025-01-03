@@ -19,9 +19,17 @@ class KeyUtil(private val ctx: Context?) {
     private fun key(id: Int): ReadOnlyProperty<Any?, String> =
         ReadOnlyProperty { _, _ -> ctx?.getString(id)!! }
 
+    val firstRunKey by key(R.string.key_first_run)
+    val loadSampleParents by key(R.string.key_load_sample_parents)
+    val loadSampleWishlist by key(R.string.key_load_sample_wishlist)
+
     //non preference keys
     //boolean value to determine if brapi has been imported previously
     val brapiHasBeenImported by key(R.string.key_brapi_has_been_imported)
+
+    // brapi preferences
+    val brapiEnabled by key(R.string.key_pref_brapi_enabled)
+    val brapiDisplayName by key(R.string.key_pref_brapi_display_name)
 
     // behavior preferences
     val behaviorRoot by key(R.string.root_behavior)
@@ -54,6 +62,7 @@ class KeyUtil(private val ctx: Context?) {
     val zplCodeKey by key(R.string.key_pref_print_zpl_code)
 
     val databaseRoot by key(R.string.root_database)
+    val dbStorageDefinerKey by key(R.string.key_pref_storage_definer)
     val dbImportKey by key(R.string.key_pref_db_import)
     val dbExportKey by key(R.string.key_pref_db_export)
 
